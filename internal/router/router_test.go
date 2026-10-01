@@ -544,3 +544,30 @@ func TestMeasuredSpeedReranks(t *testing.T) {
 		t.Fatalf("snapshot %+v", snap)
 	}
 }
+
+func TestForbiddenModelDoesNotDisableKey(t *testing.T) {
+	forbidden := func(w http.ResponseWriter, r *http.Request) {
+		var b struct {
+			Model string `json:"model"`
+		}
+		_ = json.NewDecoder(r.Body).Decode(&b)
+		if b.Model == "m1-up" {
+			w.WriteHeader(403)
+			io.WriteString(w, `{"error":{"message":"m1 is only available on agentic harnesses"}}`)
+			return
+		}
+		okJSON("from m1b")(w, r)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: forbidden}
+	rt := setup(t, a)
+	m := rt.Cat.AllModels()[0]
+	m.Canonical, m.Upstream, m.Quality = "m1b", "m1b-up", map[string]float64{"default": 0.5}
+	rt.Cat.ReplaceProviderModels("a", append([]catalogue.Model{rt.Cat.AllModels()[0]}, m))
+	w := do(t, rt, hello)
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "from m1b") {
+		t.Fatalf("other model on the same provider should answer: %d %s", w.Code, w.Body)
+	}
+	if k, _ := rt.Keys.Get("a"); k == "" || rt.Keys.Rejected("a") {
+		t.Fatal("a 403 on one model must not disable the provider key")
+	}
+}

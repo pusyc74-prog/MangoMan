@@ -1,5 +1,5 @@
 {
-  "version": "seed-2026-10-01.4",
+  "version": "seed-2026-10-01.5",
   "updated": "2026-10-01",
   "providers": [
     {
@@ -708,53 +708,6 @@
         "extraction": 0.62,
         "fast": 0.7,
         "long-context": 0.45
-      }
-    },
-    {
-      "canonical": "inkling",
-      "provider": "openrouter",
-      "upstream": "thinkingmachines/inkling:free",
-      "free": true,
-      "context": 131072,
-      "caps": [
-        "tools",
-        "json",
-        "streaming",
-        "reasoning"
-      ],
-      "limits": {
-        "rpm": 20
-      },
-      "quality": {
-        "code": 0.78,
-        "reasoning": 0.8,
-        "writing": 0.76,
-        "extraction": 0.76,
-        "fast": 0.45,
-        "long-context": 0.7
-      }
-    },
-    {
-      "canonical": "inkling-small",
-      "provider": "openrouter",
-      "upstream": "thinkingmachines/inkling-small:free",
-      "free": true,
-      "context": 65536,
-      "caps": [
-        "tools",
-        "json",
-        "streaming"
-      ],
-      "limits": {
-        "rpm": 20
-      },
-      "quality": {
-        "code": 0.65,
-        "reasoning": 0.66,
-        "writing": 0.68,
-        "extraction": 0.68,
-        "fast": 0.75,
-        "long-context": 0.55
       }
     },
     {

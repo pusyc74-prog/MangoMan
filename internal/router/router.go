@@ -292,10 +292,18 @@ func (rt *Router) upstreamError(resp *http.Response, c Candidate) attemptResult 
 	case s == http.StatusTooManyRequests:
 		rt.Quota.Block(c.QKey, time.Now().Add(quota.RetryAfter(resp.Header)))
 		res.outcome = "rate_limited"
-	case s == http.StatusUnauthorized || s == http.StatusForbidden:
+	case s == http.StatusUnauthorized:
 		// Key invalid or revoked: stop using it until the user fixes it.
 		rt.Keys.Disable(c.Provider.ID)
 		res.outcome = "key_rejected"
+	case s == http.StatusForbidden:
+		// A 403 is usually about this one model (OpenRouter: "only available
+		// on agentic harnesses", region or tier locks), not the key. Avoid
+		// the model; the provider's other models stay in use.
+		rt.Breakers.Failure(c.Target())
+		rt.Breakers.Failure(c.Target())
+		rt.Breakers.Failure(c.Target())
+		res.outcome = "model_forbidden"
 	case s == http.StatusNotFound || s == http.StatusGone:
 		// Model removed, renamed or retired (NVIDIA answers 410): avoid it.
 		rt.Breakers.Failure(c.Target())
