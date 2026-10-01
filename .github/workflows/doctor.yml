@@ -20,9 +20,14 @@ on:
         default: ""
   schedule:
     - cron: "30 2 * * *" # daily, 08:00 IST, quick mode
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/doctor.yml"
+      - "internal/catalogue/seed.json"
 
 permissions:
-  contents: read
+  contents: write # only to publish reports to the doctor-reports branch
 
 concurrency:
   group: doctor
@@ -67,7 +72,30 @@ jobs:
           args=(--yes --out doctor-report.json --summary "$GITHUB_STEP_SUMMARY")
           [ "$MODE" = "full" ] || args+=(--quick)
           [ -z "$PROVIDER" ] || args+=(--provider "$PROVIDER")
-          bin/mangoman doctor "${args[@]}"
+          bin/mangoman doctor "${args[@]}" | tee doctor-output.txt
+      - name: Publish report to doctor-reports branch
+        if: always()
+        run: |
+          [ -f doctor-report.json ] || exit 0
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          git config user.name "mangoman-doctor"
+          git config user.email "doctor@users.noreply.github.com"
+          git fetch origin +refs/heads/doctor-reports:refs/remotes/origin/doctor-reports 2>/dev/null || true
+          if git show-ref --quiet refs/remotes/origin/doctor-reports; then
+            git worktree add ../reports origin/doctor-reports
+            (cd ../reports && git switch -C doctor-reports)
+          else
+            git worktree add --detach ../reports
+            (cd ../reports && git switch --orphan doctor-reports)
+          fi
+          mkdir -p ../reports/reports
+          cp doctor-report.json "../reports/reports/$stamp.json"
+          cp doctor-report.json ../reports/latest.json
+          cp doctor-output.txt ../reports/latest.txt
+          cd ../reports
+          git add -A
+          git commit -q -m "doctor report $stamp (run ${{ github.run_id }})"
+          git push origin doctor-reports
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
