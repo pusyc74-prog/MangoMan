@@ -69,7 +69,7 @@ func TestDoctor(t *testing.T) {
 		by[p.ID] = p
 	}
 	g := by["openrouter"]
-	if g.Status != StatusOK || g.ListedModels != 2 {
+	if g.Status != StatusOK || g.ListedModels != 2 || len(g.ListedIDs) != 2 || g.ListedIDs[0] != "brand-new:free" {
 		t.Fatalf("good provider: %+v", g)
 	}
 	if len(g.MissingUpstream) != 1 || g.MissingUpstream[0] != "renamed-upstream" {

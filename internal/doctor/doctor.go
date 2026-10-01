@@ -77,6 +77,7 @@ type ProviderReport struct {
 	Status           string                  `json:"status"`
 	Error            string                  `json:"error,omitempty"`
 	ListedModels     int                     `json:"listed_models"`
+	ListedIDs        []string                `json:"listed_model_ids,omitempty"`
 	MissingUpstream  []string                `json:"catalogue_models_not_listed,omitempty"`
 	NewFreeModels    []string                `json:"new_free_models,omitempty"`
 	Models           []ModelReport           `json:"models,omitempty"`
@@ -210,6 +211,8 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 	}
 	pr.Status = StatusOK
 	pr.ListedModels = len(ids)
+	pr.ListedIDs = append([]string(nil), ids...)
+	sort.Strings(pr.ListedIDs)
 	listed := map[string]bool{}
 	for _, id := range ids {
 		listed[id] = true
