@@ -14,6 +14,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/breaker"
@@ -37,6 +38,7 @@ type Router struct {
 	Client   *providers.Client
 	Cfg      *config.Config
 	Log      *store.Log
+	Health   *Health
 	Logf     func(format string, args ...any)
 
 	// StreamIdle aborts a stream that sends nothing for this long.
@@ -53,6 +55,7 @@ func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Route
 		Breakers:         breaker.New(3, 30*time.Second, 5*time.Minute),
 		Client:           providers.NewClient(),
 		Logf:             func(string, ...any) {},
+		Health:           NewHealth(),
 		StreamIdle:       60 * time.Second,
 		NonStreamTimeout: 180 * time.Second,
 	}
@@ -62,7 +65,8 @@ const maxBody = 64 << 20
 
 // attemptResult says what happened on one candidate.
 type attemptResult struct {
-	done     bool // response written to the client
+	done     bool          // response written to the client
+	firstOut time.Duration // streams: time to first output; 0 = use total time
 	outcome  string
 	status   int
 	errMsg   string
@@ -109,6 +113,17 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		attempts++
 		start := time.Now()
 		res := rt.attempt(w, r, req, c, class, id, attempts)
+		if res.outcome != "client_gone" {
+			lat := res.firstOut
+			if lat == 0 {
+				lat = time.Since(start)
+			}
+			good := strings.HasPrefix(res.outcome, "ok")
+			if !good {
+				lat = 0
+			}
+			rt.Health.Observe(c, res.outcome, good, lat)
+		}
 		rt.Log.Add(store.Event{
 			Time: start, RequestID: id, Provider: c.Provider.ID, Model: c.Model.Canonical, Class: class,
 			Outcome: res.outcome, Status: res.status, LatencyMS: time.Since(start).Milliseconds(),

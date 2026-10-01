@@ -41,3 +41,27 @@ func TestSummarize(t *testing.T) {
 		t.Fatal("missing log should be empty")
 	}
 }
+
+func TestAnalyze(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "usage.jsonl")
+	l, _ := OpenLog(p)
+	base := time.Now().UTC().Truncate(time.Hour)
+	l.Add(Event{Time: base.Add(-2 * time.Hour), RequestID: "1", Provider: "groq", Model: "m", Outcome: "ok", Attempt: 1})
+	l.Add(Event{Time: base.Add(-2*time.Hour + time.Minute), RequestID: "2", Provider: "groq", Model: "m", Outcome: "rate_limited", Attempt: 1})
+	l.Add(Event{Time: base.Add(-2*time.Hour + time.Minute), RequestID: "2", Provider: "nvidia", Model: "m", Outcome: "ok", Attempt: 2})
+	l.Add(Event{Time: base.Add(time.Minute), RequestID: "3", Provider: "groq", Model: "m", Outcome: "ok", Attempt: 1})
+	l.Close()
+	a, err := Analyze(p, base.Add(-24*time.Hour), 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(a.Hourly) != 3 || a.Hourly[0].Provider != "groq" || a.Hourly[0].Attempts != 2 || a.Hourly[0].OK != 1 {
+		t.Fatalf("hourly %+v", a.Hourly)
+	}
+	if len(a.Recent) != 2 || a.Recent[0].RequestID != "3" {
+		t.Fatalf("recent %+v", a.Recent)
+	}
+	if a.Requests != 3 || a.FailedOver != 1 {
+		t.Fatalf("summary %+v", a.Summary)
+	}
+}

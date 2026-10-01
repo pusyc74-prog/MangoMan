@@ -20,6 +20,7 @@ type FileStore struct {
 	path       string
 	passphrase func() (string, error)
 	mu         sync.Mutex
+	pass       string // remembered after the first successful use
 }
 
 const pbkdf2Iter = 600_000
@@ -42,13 +43,18 @@ func (f *FileStore) derive(salt []byte) (cipher.AEAD, error) {
 	if f.passphrase == nil {
 		return nil, errors.New("no passphrase source")
 	}
-	pass, err := f.passphrase()
-	if err != nil {
-		return nil, err
+	pass := f.pass
+	if pass == "" {
+		p, err := f.passphrase()
+		if err != nil {
+			return nil, err
+		}
+		pass = p
 	}
 	if len(pass) < 8 {
 		return nil, errors.New("passphrase must be at least 8 characters")
 	}
+	f.pass = pass // cleared again if it fails to decrypt
 	k, err := pbkdf2.Key(sha256.New, pass, salt, pbkdf2Iter, 32)
 	if err != nil {
 		return nil, err
@@ -78,6 +84,7 @@ func (f *FileStore) load() (map[string]string, error) {
 	}
 	plain, err := aead.Open(nil, env.Nonce, env.Data, nil)
 	if err != nil {
+		f.pass = ""
 		return nil, errors.New("wrong passphrase or tampered key file")
 	}
 	m := map[string]string{}

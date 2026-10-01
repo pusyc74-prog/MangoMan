@@ -76,3 +76,13 @@ func TestResolverEnvWinsAndDisable(t *testing.T) {
 		t.Fatal("disabled key still returned")
 	}
 }
+
+func TestPassphraseAskedOnce(t *testing.T) {
+	asked := 0
+	s := NewFileStore(filepath.Join(t.TempDir(), "k"), func() (string, error) { asked++; return "correct horse battery", nil })
+	_ = s.Set("a", "1")
+	_ = s.Set("b", "2")
+	if v, _ := s.Get("a"); v != "1" || asked != 1 {
+		t.Fatalf("asked %d times, got %q", asked, v)
+	}
+}

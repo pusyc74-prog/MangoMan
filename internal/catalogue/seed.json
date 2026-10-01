@@ -1,5 +1,5 @@
 {
-  "version": "seed-2026-10-01.3",
+  "version": "seed-2026-10-01.4",
   "updated": "2026-10-01",
   "providers": [
     {
@@ -137,6 +137,23 @@
         "trains_on_data": "no",
         "jurisdiction": "local",
         "verified": true
+      }
+    },
+    {
+      "id": "zen",
+      "name": "OpenCode Zen",
+      "base_url": "https://opencode.ai/zen/v1",
+      "kind": "openai",
+      "key_env": "OPENCODE_ZEN_API_KEY",
+      "needs_key": true,
+      "signup_url": "https://opencode.ai/zen",
+      "speed": 0.6,
+      "policy": {
+        "retention": "varies by model",
+        "trains_on_data": "yes",
+        "jurisdiction": "US",
+        "terms_url": "https://opencode.ai/docs/zen/",
+        "verified": false
       }
     }
   ],
@@ -738,6 +755,218 @@
         "extraction": 0.68,
         "fast": 0.75,
         "long-context": 0.55
+      }
+    },
+    {
+      "canonical": "big-pickle",
+      "provider": "zen",
+      "upstream": "big-pickle",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.75,
+        "reasoning": 0.72,
+        "writing": 0.7,
+        "extraction": 0.72,
+        "fast": 0.6,
+        "long-context": 0.65
+      }
+    },
+    {
+      "canonical": "space-bunny",
+      "provider": "zen",
+      "upstream": "space-bunny-free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.7,
+        "reasoning": 0.7,
+        "writing": 0.7,
+        "extraction": 0.7,
+        "fast": 0.6,
+        "long-context": 0.6
+      },
+      "policy": {
+        "retention": "none",
+        "trains_on_data": "no",
+        "jurisdiction": "US",
+        "terms_url": "https://opencode.ai/docs/zen/",
+        "verified": false
+      }
+    },
+    {
+      "canonical": "longcat-2.5-preview",
+      "provider": "zen",
+      "upstream": "longcat-2.5-preview-free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.72,
+        "reasoning": 0.74,
+        "writing": 0.72,
+        "extraction": 0.72,
+        "fast": 0.55,
+        "long-context": 0.7
+      },
+      "policy": {
+        "retention": "none",
+        "trains_on_data": "no",
+        "jurisdiction": "US",
+        "terms_url": "https://opencode.ai/docs/zen/",
+        "verified": false
+      }
+    },
+    {
+      "canonical": "mimo-v2.6-flash",
+      "provider": "zen",
+      "upstream": "mimo-v2.6-flash-free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.66,
+        "reasoning": 0.66,
+        "writing": 0.66,
+        "extraction": 0.68,
+        "fast": 0.82,
+        "long-context": 0.55
+      }
+    },
+    {
+      "canonical": "mimo-v2.5",
+      "provider": "zen",
+      "upstream": "mimo-v2.5-free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.68,
+        "reasoning": 0.7,
+        "writing": 0.68,
+        "extraction": 0.7,
+        "fast": 0.6,
+        "long-context": 0.6
+      }
+    },
+    {
+      "canonical": "ling-3.0-flash-fin",
+      "provider": "zen",
+      "upstream": "ling-3.0-flash-fin-free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.55,
+        "reasoning": 0.6,
+        "writing": 0.6,
+        "extraction": 0.66,
+        "fast": 0.8,
+        "long-context": 0.5
+      }
+    },
+    {
+      "canonical": "nemotron-3-ultra-550b",
+      "provider": "zen",
+      "upstream": "nemotron-3-ultra-free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.82,
+        "reasoning": 0.84,
+        "writing": 0.78,
+        "extraction": 0.8,
+        "fast": 0.35,
+        "long-context": 0.75
+      },
+      "policy": {
+        "retention": "logged by NVIDIA",
+        "trains_on_data": "yes",
+        "jurisdiction": "US",
+        "terms_url": "https://opencode.ai/docs/zen/",
+        "verified": false
+      }
+    },
+    {
+      "canonical": "nemotron-3.5-lightning",
+      "provider": "zen",
+      "upstream": "nemotron-3.5-lightning-free",
+      "free": true,
+      "context": 32768,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.55,
+        "reasoning": 0.55,
+        "writing": 0.6,
+        "extraction": 0.65,
+        "fast": 0.85,
+        "long-context": 0.45
+      },
+      "policy": {
+        "retention": "logged by NVIDIA",
+        "trains_on_data": "yes",
+        "jurisdiction": "US",
+        "terms_url": "https://opencode.ai/docs/zen/",
+        "verified": false
       }
     }
   ]

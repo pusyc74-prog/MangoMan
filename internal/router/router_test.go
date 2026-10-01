@@ -516,3 +516,31 @@ func TestAccountLimitSharedAcrossModels(t *testing.T) {
 		t.Fatalf("providers used: %v (want a,a then b once the account cap is hit)", got)
 	}
 }
+
+func TestMeasuredSpeedReranks(t *testing.T) {
+	// a looks best on paper (quality and catalogue speed); b looks slow.
+	a := &fake{id: "a", model: "m1", quality: 0.8, speed: 0.9, handler: okJSON("from a")}
+	b := &fake{id: "b", model: "m2", quality: 0.75, speed: 0.3, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	fast := `{"model":"free/fast","messages":[{"role":"user","content":"hi"}]}`
+	if w := do(t, rt, fast); w.Header().Get("X-MangoMan-Provider") != "a" {
+		t.Fatalf("with no measurements the catalogue estimate should pick a, got %s", w.Header().Get("X-MangoMan-Provider"))
+	}
+	ca := Candidate{Model: catalogue.Model{Provider: "a", Canonical: "m1"}, Provider: catalogue.Provider{ID: "a"}}
+	cb := Candidate{Model: catalogue.Model{Provider: "b", Canonical: "m2"}, Provider: catalogue.Provider{ID: "b"}}
+	// In practice a takes 15 s and b 0.3 s.
+	for i := 0; i < 3; i++ {
+		rt.Health.Observe(ca, "ok", true, 15*time.Second)
+		rt.Health.Observe(cb, "ok", true, 300*time.Millisecond)
+	}
+	if w := do(t, rt, fast); w.Header().Get("X-MangoMan-Provider") != "b" {
+		t.Fatalf("measured speed should rerank to b, got %s", w.Header().Get("X-MangoMan-Provider"))
+	}
+	if sp, ok := rt.Health.Speed("a/m1"); !ok || sp > 0.3 {
+		t.Fatalf("speed for slow model %v %v", sp, ok)
+	}
+	snap := rt.Health.Snapshot()
+	if len(snap) != 2 || snap[0].Samples < 3 {
+		t.Fatalf("snapshot %+v", snap)
+	}
+}

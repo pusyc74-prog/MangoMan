@@ -8,9 +8,9 @@ Status: **Phase 1, milestones M1 (Foundations) and M2 (Routing core)**. See the 
 
 ```sh
 go build -o bin/mangoman ./cmd/mangoman
-./bin/mangoman init            # config + local token, prints tool setup
-./bin/mangoman keys add groq   # validated, stored in the OS keychain
+./bin/mangoman setup           # guided: connect free providers one by one
 ./bin/mangoman serve           # http://127.0.0.1:4141/v1
+./bin/mangoman dashboard       # opens the dashboard in your browser
 ./bin/mangoman test "hello"    # shows provider, model, attempts, data policy
 ./bin/mangoman doctor          # live-checks every connected provider and model
 ./bin/mangoman usage           # requests, failovers, tokens, latency
@@ -57,6 +57,21 @@ It also runs daily at 08:00 IST in quick mode, which catches provider changes ea
 | CLI | `init`, `serve`, `keys add/list/rm`, `status`, `models`, `test`, `version` |
 | Usage log | `usage.jsonl`: outcome, latency, tokens per attempt. Never prompt or answer content |
 
+## Setup wizard and dashboard
+
+`mangoman setup` walks through each free provider in turn: it opens the sign-up page, you paste the key, it is checked with the provider and stored in the OS keychain. Skip any provider; one is enough. It also detects Ollama and offers to download a small local model.
+
+`mangoman dashboard` opens a local page (served by the router, nothing loaded from the internet) that shows:
+
+- Which providers are connected, not connected, turned off or rejecting their key, with Connect, Remove key and Turn off/on in each row
+- Requests per hour for the last 24 hours, by provider
+- Every model: state (ready, rate limited, cooling down), requests, success rate, typical speed, tokens, free limit (catalogue or reported by the provider) and whether your data may be used for training
+- Recent requests with their outcome (never their content)
+
+The page gets the local token through the URL fragment, which browsers never send to servers or logs, and runs under a strict content security policy. Requests from other websites are refused.
+
+Routing also uses measured speed: after two answers from a model, its real response time replaces the catalogue estimate, so slow models sink in the ranking.
+
 ## What M2 adds
 
 | Area | Done in M2 |
@@ -97,6 +112,8 @@ internal/config/     config.json (never holds provider keys)
 internal/store/      usage log and summary
 internal/conformance/ corpus, checks, reference provider
 internal/doctor/     live provider checks, report, markdown summary
+internal/setup/      setup wizard and key connection
+internal/ingress/ui/ dashboard page (embedded in the binary)
 scripts/try.sh       one-command live test (Codespaces or any machine)
 .devcontainer/       Codespaces setup
 .github/workflows/   ci (tests, builds) and doctor (live checks)

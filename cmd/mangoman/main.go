@@ -37,11 +37,13 @@ var version = "0.1.0-dev"
 const usage = `MangoMan: free-first local AI router
 
 Usage:
+  mangoman setup                guided setup: connect free providers step by step
   mangoman init                 create config and local token, print tool setup
   mangoman serve [--port N]     run the local endpoint on 127.0.0.1
   mangoman keys add <provider>  store a provider key (OS keychain)
   mangoman keys list            show providers and which keys are present
   mangoman keys rm <provider>   remove a stored key
+  mangoman dashboard            open the dashboard in your browser
   mangoman status               show the running router's providers and quota
   mangoman models               list the free model catalogue with data policies
   mangoman test [prompt]        send a test request through the running router
@@ -64,12 +66,16 @@ func main() {
 	}
 	var err error
 	switch os.Args[1] {
+	case "setup":
+		err = cmdSetup()
 	case "init":
 		err = cmdInit()
 	case "serve":
 		err = cmdServe(os.Args[2:])
 	case "keys":
 		err = cmdKeys(os.Args[2:])
+	case "dashboard", "ui":
+		err = cmdDashboard()
 	case "status":
 		err = cmdStatus()
 	case "models":
@@ -122,9 +128,10 @@ Keys are stored in: %s
 Every free provider is on by default; each model shows its data policy (mangoman models).
 
 Next:
-  1. mangoman keys add groq        (free key: https://console.groq.com/keys)
-  2. mangoman serve
-  3. Point a tool at the router:
+  1. mangoman setup        connect free providers step by step
+  2. mangoman serve        start the router
+  3. mangoman dashboard    see providers, models and usage
+  4. Point a tool at the router:
 
   OpenAI-compatible tools (Cursor, Cline, Continue, n8n, own code)
     Base URL:  %s
@@ -222,7 +229,8 @@ func cmdServe(args []string) error {
 	}
 	discover()
 
-	srv := &ingress.Server{Router: rt, Cfg: cfg, Version: version, Started: time.Now()}
+	srv := &ingress.Server{Router: rt, Cfg: cfg, Version: version, Started: time.Now(),
+		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl"}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
 		return fmt.Errorf("cannot listen on %s: %w", srv.Addr(), err)
@@ -247,6 +255,7 @@ func cmdServe(args []string) error {
 	}()
 
 	logger.Printf("listening on http://%s/v1  (%d cloud providers connected, catalogue %s)", srv.Addr(), connected, cat.Version)
+	logger.Printf("dashboard: run `mangoman dashboard` in another terminal")
 	if connected == 0 {
 		logger.Printf("no provider keys yet: run `mangoman keys add groq`")
 	}

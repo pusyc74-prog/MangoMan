@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 // DefaultPort is the local endpoint port.
@@ -30,14 +31,34 @@ type Config struct {
 	MaxAttempts int `json:"max_attempts,omitempty"`
 }
 
+var mu sync.RWMutex // guards ExcludedProviders, changed live from the dashboard
+
 // Excluded reports whether a provider is turned off.
 func (c *Config) Excluded(provider string) bool {
+	mu.RLock()
+	defer mu.RUnlock()
 	for _, p := range c.ExcludedProviders {
 		if p == provider {
 			return true
 		}
 	}
 	return false
+}
+
+// SetExcluded turns a provider off (true) or back on (false).
+func (c *Config) SetExcluded(provider string, excluded bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	out := c.ExcludedProviders[:0:0]
+	for _, p := range c.ExcludedProviders {
+		if p != provider {
+			out = append(out, p)
+		}
+	}
+	if excluded {
+		out = append(out, provider)
+	}
+	c.ExcludedProviders = out
 }
 
 // Dir returns the config directory, honouring MANGOMAN_HOME.
@@ -106,7 +127,9 @@ func Save(c *Config) error {
 	if err := os.MkdirAll(d, 0o700); err != nil {
 		return err
 	}
+	mu.RLock()
 	data, err := json.MarshalIndent(c, "", "  ")
+	mu.RUnlock()
 	if err != nil {
 		return err
 	}

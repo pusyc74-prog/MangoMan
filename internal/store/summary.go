@@ -111,3 +111,79 @@ func Summarize(path string, since time.Time) (Summary, error) {
 	})
 	return s, nil
 }
+
+// HourBucket counts attempts per provider in one hour.
+type HourBucket struct {
+	Hour     time.Time `json:"hour"`
+	Provider string    `json:"provider"`
+	Attempts int       `json:"attempts"`
+	OK       int       `json:"ok"`
+}
+
+// Activity is what the dashboard shows: totals, per-model rows, requests per
+// hour per provider, and the most recent attempts (never any content).
+type Activity struct {
+	Summary
+	Hourly []HourBucket `json:"hourly"`
+	Recent []Event      `json:"recent"`
+}
+
+// Analyze reads the log once for the dashboard.
+func Analyze(path string, since time.Time, recentN int) (Activity, error) {
+	sum, err := Summarize(path, since)
+	a := Activity{Summary: sum}
+	if err != nil {
+		return a, err
+	}
+	f, err := os.Open(path)
+	if os.IsNotExist(err) {
+		return a, nil
+	}
+	if err != nil {
+		return a, err
+	}
+	defer f.Close()
+	type hk struct {
+		h time.Time
+		p string
+	}
+	hours := map[hk]*HourBucket{}
+	var ring []Event
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 64<<10), 1<<20)
+	for sc.Scan() {
+		var e Event
+		if json.Unmarshal(sc.Bytes(), &e) != nil || e.Time.Before(since) {
+			continue
+		}
+		k := hk{e.Time.UTC().Truncate(time.Hour), e.Provider}
+		b, ok := hours[k]
+		if !ok {
+			b = &HourBucket{Hour: k.h, Provider: e.Provider}
+			hours[k] = b
+		}
+		b.Attempts++
+		if strings.HasPrefix(e.Outcome, "ok") {
+			b.OK++
+		}
+		if recentN > 0 {
+			ring = append(ring, e)
+			if len(ring) > recentN {
+				ring = ring[1:]
+			}
+		}
+	}
+	for _, b := range hours {
+		a.Hourly = append(a.Hourly, *b)
+	}
+	sort.Slice(a.Hourly, func(i, j int) bool {
+		if !a.Hourly[i].Hour.Equal(a.Hourly[j].Hour) {
+			return a.Hourly[i].Hour.Before(a.Hourly[j].Hour)
+		}
+		return a.Hourly[i].Provider < a.Hourly[j].Provider
+	})
+	for i := len(ring) - 1; i >= 0; i-- {
+		a.Recent = append(a.Recent, ring[i]) // newest first
+	}
+	return a, sc.Err()
+}

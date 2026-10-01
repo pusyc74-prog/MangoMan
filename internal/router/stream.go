@@ -37,6 +37,8 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 	br := bufio.NewReaderSize(body, 64<<10)
 
 	flusher, _ := w.(http.Flusher)
+	started := time.Now()
+	var firstOut time.Duration
 	var (
 		pending   bytes.Buffer // events held before commit
 		event     bytes.Buffer // current event
@@ -60,6 +62,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 			flusher.Flush()
 		}
 		committed = true
+		firstOut = time.Since(started)
 	}
 	finishEvent := func() {
 		if event.Len() == 0 {
@@ -170,7 +173,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 	if finish == "length" && req.MaxTokens == 0 {
 		out = "ok_truncated" // already streamed; logged for the quality score
 	}
-	return attemptResult{done: true, outcome: out, status: 200, tokens: tokens}
+	return attemptResult{done: true, outcome: out, status: 200, tokens: tokens, firstOut: firstOut}
 }
 
 func writeStreamError(w io.Writer, f http.Flusher, msg string) {

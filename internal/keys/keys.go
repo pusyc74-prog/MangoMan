@@ -75,15 +75,16 @@ const (
 // Resolver finds a key for a provider: an environment variable override
 // first, then the store. Resolved keys are cached in process memory.
 type Resolver struct {
-	store Store
-	env   map[string]string // provider -> env var name
-	mu    sync.Mutex
-	cache map[string]string
+	store    Store
+	env      map[string]string // provider -> env var name
+	mu       sync.Mutex
+	cache    map[string]string
+	rejected map[string]bool
 }
 
 // NewResolver builds a resolver. env maps provider id to its env var name.
 func NewResolver(s Store, env map[string]string) *Resolver {
-	return &Resolver{store: s, env: env, cache: map[string]string{}}
+	return &Resolver{store: s, env: env, cache: map[string]string{}, rejected: map[string]bool{}}
 }
 
 // Get returns the key for a provider and where it came from.
@@ -114,4 +115,27 @@ func (r *Resolver) Disable(provider string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.cache[provider] = ""
+	r.rejected[provider] = true
 }
+
+// Rejected reports whether the provider refused this key since it was added.
+func (r *Resolver) Rejected(provider string) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.rejected[provider]
+}
+
+// Forget drops a cached key so the next Get reads the store again (after a
+// key is added or removed).
+func (r *Resolver) Forget(provider string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.cache, provider)
+	delete(r.rejected, provider)
+}
+
+// Store returns the underlying key store.
+func (r *Resolver) Store() Store { return r.store }
+
+// EnvName returns the environment variable that overrides a provider's key.
+func (r *Resolver) EnvName(provider string) string { return r.env[provider] }

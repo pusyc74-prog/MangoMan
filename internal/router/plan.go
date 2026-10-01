@@ -106,7 +106,11 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 		if state == breaker.HalfOpen {
 			health = 0.5
 		}
-		c.Score = w.Q*m.QualityFor(class) + w.A*rt.share(c) + w.H*health - w.L*(1-p.Speed)
+		speed := p.Speed
+		if measured, ok := rt.Health.Speed(c.Target()); ok {
+			speed = measured
+		}
+		c.Score = w.Q*m.QualityFor(class) + w.A*rt.share(c) + w.H*health - w.L*(1-speed)
 		if p.Local {
 			local = append(local, c)
 		} else {

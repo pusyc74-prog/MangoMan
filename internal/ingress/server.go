@@ -21,6 +21,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
 	"github.com/pusyc74-prog/mangoman/internal/router"
+	"github.com/pusyc74-prog/mangoman/internal/setup"
 )
 
 const maxRequestBody = 32 << 20
@@ -31,6 +32,12 @@ type Server struct {
 	Cfg     *config.Config
 	Version string
 	Started time.Time
+	// UsagePath is the usage log the dashboard reads.
+	UsagePath string
+	// Validate checks keys added from the dashboard (default: ask the provider).
+	Validate setup.Validator
+	// SaveConfig persists settings changed from the dashboard (default: config.Save).
+	SaveConfig func(*config.Config) error
 }
 
 // Handler returns the HTTP handler with all checks applied.
@@ -43,6 +50,7 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("POST /v1/chat/completions", s.auth(http.HandlerFunc(s.chat)))
 	mux.Handle("GET /v1/models", s.auth(http.HandlerFunc(s.models)))
 	mux.Handle("GET /mangoman/status", s.auth(http.HandlerFunc(s.status)))
+	s.dashRoutes(mux)
 	return s.guardHost(mux)
 }
 
@@ -71,6 +79,9 @@ func (s *Server) guardHost(next http.Handler) http.Handler {
 }
 
 func (s *Server) originAllowed(o string) bool {
+	if s.ownOrigin(o) {
+		return true
+	}
 	for _, a := range s.Cfg.AllowedOrigins {
 		if strings.EqualFold(a, o) {
 			return true

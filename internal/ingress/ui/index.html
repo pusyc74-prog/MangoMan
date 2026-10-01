@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MangoMan</title>
+<link rel="stylesheet" href="app.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"></span>
+    <h1>MangoMan</h1>
+  </div>
+  <p class="runline" id="runline">Connecting to the router…</p>
+  <button type="button" class="ghost" id="refresh">Refresh</button>
+</header>
+
+<main id="app" hidden>
+  <section class="totals" aria-label="Last 24 hours">
+    <div><span class="num" id="t-requests">0</span><span class="lbl">requests in the last 24 hours</span></div>
+    <div><span class="num" id="t-served">0</span><span class="lbl">answered</span></div>
+    <div><span class="num" id="t-failover">0</span><span class="lbl">switched to another model</span></div>
+    <div><span class="num" id="t-tokens">0</span><span class="lbl">tokens</span></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-conn">
+    <div class="block-head">
+      <h2 id="h-conn">Connections</h2>
+      <p class="sub" id="conn-sub"></p>
+    </div>
+    <ol class="board" id="board"></ol>
+  </section>
+
+  <section class="block" aria-labelledby="h-traffic">
+    <div class="block-head">
+      <h2 id="h-traffic">Requests per hour</h2>
+      <p class="sub">Last 24 hours, by provider tried</p>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="chart-wrap" id="chart"></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-models">
+    <div class="block-head">
+      <h2 id="h-models">Models</h2>
+      <div class="seg" role="group" aria-label="Show models">
+        <button type="button" data-filter="used" aria-pressed="true">Used</button>
+        <button type="button" data-filter="connected" aria-pressed="false">Connected</button>
+        <button type="button" data-filter="all" aria-pressed="false">All</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="grid" id="models">
+        <thead><tr>
+          <th scope="col">Model</th><th scope="col">Provider</th><th scope="col">State</th>
+          <th scope="col" class="r">Requests</th><th scope="col" class="r">Success</th>
+          <th scope="col" class="r">Typical speed</th><th scope="col" class="r">Tokens</th>
+          <th scope="col">Free limit</th><th scope="col">Your data</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="empty" id="models-empty" hidden></p>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-recent">
+    <div class="block-head">
+      <h2 id="h-recent">Recent requests</h2>
+      <p class="sub">Outcomes only. Prompts and answers are never stored.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="grid" id="recent">
+        <thead><tr>
+          <th scope="col">Time</th><th scope="col">Task</th><th scope="col">Provider and model</th>
+          <th scope="col">Result</th><th scope="col" class="r">Attempt</th><th scope="col" class="r">Time taken</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="empty" id="recent-empty" hidden></p>
+    </div>
+  </section>
+</main>
+
+<section class="gate" id="gate" hidden>
+  <h2>Open the dashboard from your terminal</h2>
+  <p>This page needs the router's local token. Run this and it opens with access:</p>
+  <pre><code>mangoman dashboard</code></pre>
+</section>
+
+<div class="tip" id="tip" role="tooltip" hidden></div>
+</body>
+</html>
