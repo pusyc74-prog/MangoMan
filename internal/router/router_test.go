@@ -36,6 +36,7 @@ type fake struct {
 	quality float64 // quality score for every class
 	speed   float64
 	handler http.HandlerFunc
+	quirks  catalogue.Quirks
 	calls   atomic.Int32
 	srv     *httptest.Server
 }
@@ -98,6 +99,7 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 		cat.Providers = append(cat.Providers, catalogue.Provider{
 			ID: f.id, Name: f.id, BaseURL: f.srv.URL, Kind: "openai", NeedsKey: true, Speed: speed,
 			Policy: catalogue.DataPolicy{Retention: "none", TrainsOnData: "no", Jurisdiction: "US"},
+			Quirks: f.quirks,
 		})
 		cat.Models = append(cat.Models, catalogue.Model{
 			Canonical: f.model, Provider: f.id, Upstream: f.model + "-up", Free: true, Context: 32000,
@@ -410,5 +412,72 @@ func TestUnreachableProviderSkipsItsOtherModels(t *testing.T) {
 	w := do(t, rt, hello)
 	if w.Header().Get("X-MangoMan-Provider") != "b" || w.Header().Get("X-MangoMan-Attempts") != "2" {
 		t.Fatalf("want b on attempt 2, got %v", w.Header())
+	}
+}
+
+func TestQuirksAppliedUpstream(t *testing.T) {
+	var got map[string]any
+	capture := func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewDecoder(r.Body).Decode(&got)
+		okJSON("fine")(w, r)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: capture,
+		quirks: catalogue.Quirks{DropParams: []string{"logit_bias"}, MaxTokensField: "max_completion_tokens"}}
+	rt := setup(t, a)
+	w := do(t, rt, `{"model":"free/auto","max_tokens":20,"logit_bias":{"1":2},"messages":[{"role":"user","content":"hi"}]}`)
+	if w.Code != 200 {
+		t.Fatal(w.Body)
+	}
+	if _, ok := got["logit_bias"]; ok {
+		t.Fatal("logit_bias reached the provider")
+	}
+	if got["max_completion_tokens"] != float64(20) || got["model"] != "m1-up" {
+		t.Fatalf("upstream body %v", got)
+	}
+}
+
+func TestStreamUsageChunkHiddenWhenWeAddedIt(t *testing.T) {
+	var sawOpts bool
+	h := func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		so, _ := body["stream_options"].(map[string]any)
+		sawOpts = so["include_usage"] == true
+		sse(chunk("hi"), stopChunk, `{"choices":[],"usage":{"total_tokens":77}}`, "[DONE]")(w, r)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: h, quirks: catalogue.Quirks{StreamUsage: true}}
+	rt := setup(t, a)
+	w := do(t, rt, helloStream)
+	if !sawOpts {
+		t.Fatal("include_usage not requested upstream")
+	}
+	if strings.Contains(w.Body.String(), `"choices":[]`) {
+		t.Fatalf("usage-only chunk leaked to a client that did not ask:\n%s", w.Body)
+	}
+	if snap := rt.Quota.Snapshot(); len(snap) != 1 || snap[0].TokToday != 77 {
+		t.Fatalf("exact usage not recorded: %+v", snap)
+	}
+	// A client that asked for usage gets the chunk.
+	w = do(t, rt, `{"model":"free/auto","stream":true,"stream_options":{"include_usage":true},"messages":[{"role":"user","content":"hi"}]}`)
+	if !strings.Contains(w.Body.String(), `"choices":[]`) {
+		t.Fatalf("usage chunk missing for a client that asked:\n%s", w.Body)
+	}
+}
+
+func TestErrorInside200FailsOver(t *testing.T) {
+	errBody := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"error":{"code":429,"message":"free model rate limited upstream"}}`)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: errBody}
+	b := &fake{id: "b", model: "m2", quality: 0.3, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	w := do(t, rt, hello)
+	if w.Header().Get("X-MangoMan-Provider") != "b" {
+		t.Fatalf("got %v %s", w.Header(), w.Body)
+	}
+	do(t, rt, hello)
+	if a.calls.Load() != 1 {
+		t.Fatal("429 inside a 200 should block the bucket")
 	}
 }

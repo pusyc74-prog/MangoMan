@@ -53,7 +53,7 @@ func TestBlockAndHeaders(t *testing.T) {
 	h := http.Header{}
 	h.Set("x-ratelimit-remaining-tokens", "0")
 	h.Set("x-ratelimit-reset-tokens", "7.5s")
-	tr.FromHeaders(k, h)
+	tr.FromHeaders(k, h, nil)
 	ok, reset := tr.Allow(k, catalogue.Limits{}, 1)
 	if ok || !reset.Equal(now.Add(7500*time.Millisecond)) {
 		t.Fatalf("got ok=%v reset=%v", ok, reset)
@@ -95,5 +95,42 @@ func TestSaveLoad(t *testing.T) {
 	}
 	if err := New().Load(filepath.Join(t.TempDir(), "missing.json")); err != nil {
 		t.Fatal("missing file should be fine")
+	}
+}
+
+func TestLearnFromHeaders(t *testing.T) {
+	now := time.Date(2026, 10, 1, 10, 0, 0, 0, time.UTC)
+	tr := New()
+	tr.SetClock(func() time.Time { return now })
+	k := Key{"groq", "default", "m"}
+	rules := []catalogue.RateHeader{
+		{Kind: "requests", Window: "day", Limit: "x-ratelimit-limit-requests", Remaining: "x-ratelimit-remaining-requests", Reset: "x-ratelimit-reset-requests"},
+		{Kind: "tokens", Window: "minute", Limit: "x-ratelimit-limit-tokens", Remaining: "x-ratelimit-remaining-tokens", Reset: "x-ratelimit-reset-tokens"},
+	}
+	h := http.Header{}
+	h.Set("x-ratelimit-limit-requests", "14400")
+	h.Set("x-ratelimit-remaining-requests", "14370")
+	h.Set("x-ratelimit-reset-requests", "2m59.56s")
+	h.Set("x-ratelimit-limit-tokens", "18000")
+	h.Set("x-ratelimit-remaining-tokens", "17000")
+	h.Set("x-ratelimit-reset-tokens", "7.66s")
+	tr.FromHeaders(k, h, rules)
+	if got := tr.Learned(k); got.RPD != 14400 || got.TPM != 18000 {
+		t.Fatalf("learned %+v", got)
+	}
+	// The seed said RPD 1000; the learned 14400 wins, and 30 are used.
+	seed := catalogue.Limits{RPD: 1000, TPM: 6000}
+	if ok, _ := tr.Allow(k, seed, 500); !ok {
+		t.Fatal("learned limits should allow this")
+	}
+	if s := tr.Share(k, seed); s > 0.95 || s < 0.9 {
+		t.Fatalf("share %v, want about 1000/18000 used", s)
+	}
+	// Tokens exhausted: blocked until the reported reset.
+	h.Set("x-ratelimit-remaining-tokens", "0")
+	tr.FromHeaders(k, h, rules)
+	ok, reset := tr.Allow(k, seed, 1)
+	if ok || !reset.Equal(now.Add(7660*time.Millisecond)) {
+		t.Fatalf("got ok=%v reset=%v", ok, reset)
 	}
 }

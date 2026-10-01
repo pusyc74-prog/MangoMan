@@ -53,6 +53,32 @@ type Provider struct {
 	SignupURL string     `json:"signup_url,omitempty"`
 	Speed     float64    `json:"speed"` // 0..1, higher is faster (seed estimate)
 	Policy    DataPolicy `json:"policy"`
+	Quirks    Quirks     `json:"quirks,omitempty"`
+	// RateHeaders say which window each rate-limit header describes. Empty
+	// means the generic x-ratelimit-remaining-* handling.
+	RateHeaders []RateHeader `json:"rate_headers,omitempty"`
+}
+
+// Quirks adjust a request for one provider. They are data, so a catalogue
+// update can fix a provider without a new release.
+type Quirks struct {
+	// DropParams are top-level request fields the provider rejects.
+	DropParams []string `json:"drop_params,omitempty"`
+	// MaxTokensField renames max_tokens / max_completion_tokens to the one
+	// field this provider accepts.
+	MaxTokensField string `json:"max_tokens_field,omitempty"`
+	// StreamUsage asks for a final usage chunk on streams
+	// (stream_options.include_usage), so quota counts are exact.
+	StreamUsage bool `json:"stream_usage,omitempty"`
+}
+
+// RateHeader maps one family of rate-limit headers to a quota window.
+type RateHeader struct {
+	Kind      string `json:"kind"`   // "requests" or "tokens"
+	Window    string `json:"window"` // "minute" or "day"
+	Limit     string `json:"limit"`
+	Remaining string `json:"remaining"`
+	Reset     string `json:"reset"`
 }
 
 // Limits are free-tier limits; 0 means unknown or unlimited.
@@ -136,6 +162,14 @@ func (c *Catalogue) validate() error {
 		}
 		if !strings.HasPrefix(p.BaseURL, "https://") && !p.Local {
 			return fmt.Errorf("catalogue: provider %s must use https", p.ID)
+		}
+		for _, rh := range p.RateHeaders {
+			if (rh.Kind != "requests" && rh.Kind != "tokens") || (rh.Window != "minute" && rh.Window != "day") || rh.Remaining == "" {
+				return fmt.Errorf("catalogue: provider %s has a bad rate_headers entry", p.ID)
+			}
+		}
+		if f := p.Quirks.MaxTokensField; f != "" && f != "max_tokens" && f != "max_completion_tokens" {
+			return fmt.Errorf("catalogue: provider %s has a bad max_tokens_field", p.ID)
 		}
 		seen[p.ID] = true
 	}

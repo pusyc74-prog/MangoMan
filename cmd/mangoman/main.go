@@ -45,6 +45,8 @@ Usage:
   mangoman status               show the running router's providers and quota
   mangoman models               list the free model catalogue with data policies
   mangoman test [prompt]        send a test request through the running router
+  mangoman doctor [flags]       live-check every connected provider and model
+  mangoman usage [--days N]     summarise requests, failovers and tokens
   mangoman version
 
 Environment:
@@ -74,6 +76,10 @@ func main() {
 		err = cmdModels()
 	case "test":
 		err = cmdTest(os.Args[2:])
+	case "doctor":
+		err = cmdDoctor(os.Args[2:])
+	case "usage":
+		err = cmdUsage(os.Args[2:])
 	case "version", "--version", "-v":
 		fmt.Println("mangoman", version)
 	case "help", "--help", "-h":

@@ -24,7 +24,7 @@ import (
 // later failure ends the stream with an error event (continuation is a P2
 // research item).
 func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.ResponseWriter,
-	req *core.Request, c Candidate, class string, n int, resp *http.Response) attemptResult {
+	req *core.Request, c Candidate, class string, n int, resp *http.Response, addedUsage bool) attemptResult {
 
 	if mt, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type")); mt != "text/event-stream" {
 		data, _ := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
@@ -94,6 +94,9 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 						if d.usage > 0 {
 							usageTot = d.usage
 						}
+						if addedUsage && d.usageOnly {
+							continue // we asked for this chunk; the client did not
+						}
 						if d.finish != "" {
 							finish = d.finish
 						}
@@ -135,7 +138,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 
 	if clientGone {
 		rt.Quota.Record(c.QKey, tokens)
-		return attemptResult{done: true, outcome: "client_gone"}
+		return attemptResult{done: true, outcome: "client_gone", tokens: tokens}
 	}
 	if !committed {
 		if readErr != nil || !sawDone {
@@ -149,7 +152,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		// Clean end with no output at all: an empty answer.
 		rt.Breakers.Success(c.Target())
 		rt.Quota.Record(c.QKey, tokens)
-		return attemptResult{outcome: "quality:" + guard.Empty, status: 200, errMsg: "empty stream"}
+		return attemptResult{outcome: "quality:" + guard.Empty, status: 200, errMsg: "empty stream", tokens: tokens}
 	}
 
 	rt.Quota.Record(c.QKey, tokens)
@@ -160,14 +163,14 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 			msg = "upstream stream failed: " + readErr.Error()
 		}
 		writeStreamError(w, flusher, msg)
-		return attemptResult{done: true, outcome: "stream_broken_after_commit", status: 200, errMsg: msg}
+		return attemptResult{done: true, outcome: "stream_broken_after_commit", status: 200, errMsg: msg, tokens: tokens}
 	}
 	rt.Breakers.Success(c.Target())
 	out := "ok"
 	if finish == "length" && req.MaxTokens == 0 {
 		out = "ok_truncated" // already streamed; logged for the quality score
 	}
-	return attemptResult{done: true, outcome: out, status: 200}
+	return attemptResult{done: true, outcome: out, status: 200, tokens: tokens}
 }
 
 func writeStreamError(w io.Writer, f http.Flusher, msg string) {
@@ -190,6 +193,7 @@ type delta struct {
 	chars      int
 	finish     string
 	usage      int
+	usageOnly  bool
 	err        string
 }
 
@@ -220,6 +224,7 @@ func parseDelta(data []byte) delta {
 	}
 	if ch.Usage != nil {
 		d.usage = ch.Usage.Total
+		d.usageOnly = len(ch.Choices) == 0
 	}
 	for _, c := range ch.Choices {
 		for _, s := range []*string{c.Delta.Content, c.Delta.Reasoning, c.Delta.ReasoningContent} {

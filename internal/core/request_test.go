@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -42,5 +43,36 @@ func TestEstimate(t *testing.T) {
 	r, _ := ParseChat([]byte(`{"messages":[{"role":"user","content":"` + string(make([]byte, 0)) + `abcdabcdabcdabcd"}]}`))
 	if r.EstTokens != 4+4 {
 		t.Fatalf("est %d", r.EstTokens)
+	}
+}
+
+func TestBodyWithQuirks(t *testing.T) {
+	r, _ := ParseChat([]byte(`{"model":"x","stream":true,"max_tokens":50,"logit_bias":{},"stream_options":{"foo":1},"messages":[{"role":"user","content":"hi"}]}`))
+	b, added, err := r.BodyWith("up", Upstream{Drop: []string{"logit_bias"}, MaxTokensField: "max_completion_tokens", StreamUsage: true})
+	if err != nil || !added {
+		t.Fatal(err, added)
+	}
+	var m map[string]any
+	_ = json.Unmarshal(b, &m)
+	if _, ok := m["logit_bias"]; ok {
+		t.Fatal("logit_bias not dropped")
+	}
+	if _, ok := m["max_tokens"]; ok || m["max_completion_tokens"] != float64(50) {
+		t.Fatalf("max tokens not renamed: %v", m)
+	}
+	so := m["stream_options"].(map[string]any)
+	if so["include_usage"] != true || so["foo"] != float64(1) {
+		t.Fatalf("stream_options %v", so)
+	}
+	// Client already asked for usage: we did not add it.
+	r2, _ := ParseChat([]byte(`{"stream":true,"stream_options":{"include_usage":true},"messages":[{"role":"user","content":"hi"}]}`))
+	if _, added, _ := r2.BodyWith("up", Upstream{StreamUsage: true}); added {
+		t.Fatal("should not mark usage as added")
+	}
+	// Non-stream requests never get stream_options.
+	r3, _ := ParseChat([]byte(`{"messages":[{"role":"user","content":"hi"}]}`))
+	b3, _, _ := r3.BodyWith("up", Upstream{StreamUsage: true})
+	if strings.Contains(string(b3), "stream_options") {
+		t.Fatal("stream_options on non-stream request")
 	}
 }

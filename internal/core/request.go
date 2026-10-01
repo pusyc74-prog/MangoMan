@@ -158,11 +158,60 @@ func (r *Request) LastUserText() string {
 
 // BodyFor returns the request body to send upstream, with the model replaced.
 func (r *Request) BodyFor(upstreamModel string) ([]byte, error) {
-	out := make(map[string]json.RawMessage, len(r.Raw))
+	b, _, err := r.BodyWith(upstreamModel, Upstream{})
+	return b, err
+}
+
+// Upstream holds per-provider request adjustments.
+type Upstream struct {
+	Drop           []string // top-level fields to remove
+	MaxTokensField string   // "max_tokens" or "max_completion_tokens"
+	StreamUsage    bool     // ask for a final usage chunk on streams
+}
+
+// BodyWith returns the upstream body with provider adjustments applied.
+// addedUsage reports that the router asked for the usage chunk itself, so
+// the caller should not forward that chunk to a client that did not ask.
+func (r *Request) BodyWith(upstreamModel string, u Upstream) (body []byte, addedUsage bool, err error) {
+	out := make(map[string]json.RawMessage, len(r.Raw)+1)
 	for k, v := range r.Raw {
 		out[k] = v
 	}
 	m, _ := json.Marshal(upstreamModel)
 	out["model"] = m
-	return json.Marshal(out)
+	for _, k := range u.Drop {
+		delete(out, k)
+	}
+	if f := u.MaxTokensField; f != "" {
+		var v json.RawMessage
+		for _, k := range []string{"max_completion_tokens", "max_tokens"} {
+			if x, ok := out[k]; ok {
+				if v == nil {
+					v = x
+				}
+				delete(out, k)
+			}
+		}
+		if v != nil {
+			out[f] = v
+		}
+	}
+	if u.StreamUsage && r.Stream {
+		opts := map[string]json.RawMessage{}
+		if x, ok := out["stream_options"]; ok {
+			_ = json.Unmarshal(x, &opts)
+		}
+		var already bool
+		if x, ok := opts["include_usage"]; ok {
+			_ = json.Unmarshal(x, &already)
+		}
+		if !already {
+			opts["include_usage"] = json.RawMessage("true")
+			b, _ := json.Marshal(opts)
+			out["stream_options"] = b
+			addedUsage = true
+		}
+	}
+	body, err = json.Marshal(out)
+	return body, addedUsage, err
 }

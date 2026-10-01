@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -75,27 +76,47 @@ func (c *Client) Chat(ctx context.Context, p catalogue.Provider, key string, bod
 	return c.HTTP.Do(req)
 }
 
-// ValidateKey checks a key by listing models. It returns nil when the
-// provider accepts the key.
-func (c *Client) ValidateKey(ctx context.Context, p catalogue.Provider, key string) error {
+// ErrKeyRejected means the provider refused the key.
+var ErrKeyRejected = errors.New("key rejected")
+
+// ListModels returns the model ids a provider serves for this key.
+func (c *Client) ListModels(ctx context.Context, p catalogue.Provider, key string) ([]string, error) {
 	req, err := c.newRequest(ctx, p, key, http.MethodGet, "/models", nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
-	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 1<<20))
 	switch {
-	case resp.StatusCode == http.StatusOK:
-		return nil
 	case resp.StatusCode == 401 || resp.StatusCode == 403:
-		return fmt.Errorf("%s rejected the key (HTTP %d)", p.Name, resp.StatusCode)
-	default:
-		return fmt.Errorf("%s returned HTTP %d while checking the key", p.Name, resp.StatusCode)
+		_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 1<<20))
+		return nil, fmt.Errorf("%w by %s (HTTP %d)", ErrKeyRejected, p.Name, resp.StatusCode)
+	case resp.StatusCode != http.StatusOK:
+		_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 1<<20))
+		return nil, fmt.Errorf("%s returned HTTP %d listing models", p.Name, resp.StatusCode)
 	}
+	var list struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 16<<20)).Decode(&list); err != nil {
+		return nil, fmt.Errorf("%s model list: %w", p.Name, err)
+	}
+	ids := make([]string, 0, len(list.Data))
+	for _, m := range list.Data {
+		ids = append(ids, m.ID)
+	}
+	return ids, nil
+}
+
+// ValidateKey checks a key by listing models.
+func (c *Client) ValidateKey(ctx context.Context, p catalogue.Provider, key string) error {
+	_, err := c.ListModels(ctx, p, key)
+	return err
 }
 
 // DiscoverOllama lists local Ollama models. It returns nil, nil when Ollama is

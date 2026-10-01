@@ -32,6 +32,26 @@ type window struct {
 type bucket struct {
 	ReqMin, ReqDay, TokMin, TokDay window
 	BlockedUntil                   time.Time `json:"blocked_until"`
+	// Learned holds limits reported by the provider's own headers. They
+	// override the catalogue seed, which may be out of date.
+	Learned catalogue.Limits `json:"learned"`
+}
+
+// effective merges learned limits over catalogue limits.
+func (b *bucket) effective(l catalogue.Limits) catalogue.Limits {
+	if b.Learned.RPM > 0 {
+		l.RPM = b.Learned.RPM
+	}
+	if b.Learned.RPD > 0 {
+		l.RPD = b.Learned.RPD
+	}
+	if b.Learned.TPM > 0 {
+		l.TPM = b.Learned.TPM
+	}
+	if b.Learned.TPD > 0 {
+		l.TPD = b.Learned.TPD
+	}
+	return l
 }
 
 // Tracker holds all buckets. Safe for concurrent use.
@@ -81,6 +101,7 @@ func (t *Tracker) Allow(k Key, l catalogue.Limits, estTokens int) (bool, time.Ti
 	if now.Before(b.BlockedUntil) {
 		return false, b.BlockedUntil
 	}
+	l = b.effective(l)
 	var resetAt time.Time
 	check := func(w *window, period time.Duration, limit, add int) {
 		if limit <= 0 {
@@ -139,6 +160,7 @@ func (t *Tracker) Share(k Key, l catalogue.Limits) float64 {
 	if now.Before(b.BlockedUntil) {
 		return 0
 	}
+	l = b.effective(l)
 	share := 1.0
 	f := func(w *window, period time.Duration, limit int) {
 		if limit <= 0 {
@@ -160,24 +182,106 @@ func (t *Tracker) Share(k Key, l catalogue.Limits) float64 {
 	return share
 }
 
-// FromHeaders reads common rate-limit headers. When the provider reports
-// zero remaining requests or tokens, the bucket is blocked until the reset.
-func (t *Tracker) FromHeaders(k Key, h http.Header) {
+// FromHeaders reads rate-limit headers. With rules (from the catalogue) it
+// learns the provider's real limits and syncs the local window to the
+// provider's count. Without rules it only blocks when a generic
+// x-ratelimit-remaining-* header reaches zero.
+func (t *Tracker) FromHeaders(k Key, h http.Header, rules []catalogue.RateHeader) {
+	if len(rules) == 0 {
+		t.genericHeaders(k, h)
+		return
+	}
+	for _, r := range rules {
+		rem, ok := headerInt(h, r.Remaining)
+		if !ok {
+			continue
+		}
+		limit, _ := headerInt(h, r.Limit)
+		t.Observe(k, r.Kind, r.Window, limit, rem, ParseReset(h.Get(r.Reset)))
+	}
+}
+
+func (t *Tracker) genericHeaders(k Key, h http.Header) {
 	for _, kind := range []string{"requests", "tokens"} {
-		rem := h.Get("x-ratelimit-remaining-" + kind)
-		if rem == "" {
+		n, ok := headerInt(h, "x-ratelimit-remaining-"+kind)
+		if !ok || n > 0 {
 			continue
 		}
-		n, err := strconv.ParseFloat(rem, 64)
-		if err != nil || n > 0 {
-			continue
+		d := ParseReset(h.Get("x-ratelimit-reset-" + kind))
+		if d <= 0 {
+			d = time.Minute
 		}
-		if d := ParseReset(h.Get("x-ratelimit-reset-" + kind)); d > 0 {
-			t.Block(k, t.now().Add(d))
-		} else {
-			t.Block(k, t.now().Add(time.Minute))
+		t.Block(k, t.now().Add(d))
+	}
+}
+
+func headerInt(h http.Header, name string) (int, bool) {
+	if name == "" {
+		return 0, false
+	}
+	v := strings.TrimSpace(h.Get(name))
+	if v == "" {
+		return 0, false
+	}
+	f, err := strconv.ParseFloat(v, 64)
+	if err != nil {
+		return 0, false
+	}
+	return int(f), true
+}
+
+// Observe applies one provider-reported window: kind is "requests" or
+// "tokens", window is "minute" or "day". limit may be 0 when unknown.
+func (t *Tracker) Observe(k Key, kind, win string, limit, remaining int, resetIn time.Duration) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	now := t.now()
+	b := t.get(k)
+	var w *window
+	var period time.Duration
+	var lim *int
+	switch {
+	case kind == "requests" && win == "minute":
+		w, period, lim = &b.ReqMin, time.Minute, &b.Learned.RPM
+	case kind == "requests" && win == "day":
+		w, period, lim = &b.ReqDay, 24*time.Hour, &b.Learned.RPD
+	case kind == "tokens" && win == "minute":
+		w, period, lim = &b.TokMin, time.Minute, &b.Learned.TPM
+	case kind == "tokens" && win == "day":
+		w, period, lim = &b.TokDay, 24*time.Hour, &b.Learned.TPD
+	default:
+		return
+	}
+	if limit > 0 {
+		*lim = limit
+		used := limit - remaining
+		if used < 0 {
+			used = 0
+		}
+		w.Used = used
+		// Align our window with the provider's reset time.
+		if resetIn > 0 && resetIn <= period {
+			w.Start = now.Add(resetIn - period)
+		} else if w.Start.IsZero() {
+			w.Start = now
 		}
 	}
+	if remaining <= 0 {
+		until := now.Add(resetIn)
+		if resetIn <= 0 {
+			until = now.Add(time.Minute)
+		}
+		if until.After(b.BlockedUntil) {
+			b.BlockedUntil = until
+		}
+	}
+}
+
+// Learned returns limits learned from headers for a bucket.
+func (t *Tracker) Learned(k Key) catalogue.Limits {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.get(k).Learned
 }
 
 // RetryAfter returns how long a 429 asks us to wait, defaulting to a minute.

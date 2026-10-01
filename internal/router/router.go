@@ -69,6 +69,7 @@ type attemptResult struct {
 	badBody  []byte // a complete answer that failed the guard, kept as last resort
 	badWhy   string
 	clientIn bool // upstream rejected the request itself (4xx client error)
+	tokens   int  // tokens counted against quota
 }
 
 // Handle serves one Chat Completions request end to end.
@@ -111,7 +112,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		rt.Log.Add(store.Event{
 			Time: start, RequestID: id, Provider: c.Provider.ID, Model: c.Model.Canonical, Class: class,
 			Outcome: res.outcome, Status: res.status, LatencyMS: time.Since(start).Milliseconds(),
-			Attempt: attempts, Stream: req.Stream,
+			Attempt: attempts, Stream: req.Stream, Tokens: res.tokens,
 		})
 		rt.Logf("req=%s attempt=%d %s -> %s (%d) %s", id, attempts, c.Target(), res.outcome, res.status, res.errMsg)
 		if res.done {
@@ -197,7 +198,10 @@ func (rt *Router) setHeaders(w http.ResponseWriter, c Candidate, class string, a
 
 // attempt sends the request to one candidate.
 func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Request, c Candidate, class, id string, n int) attemptResult {
-	body, err := req.BodyFor(c.Model.Upstream)
+	q := c.Provider.Quirks
+	body, addedUsage, err := req.BodyWith(c.Model.Upstream, core.Upstream{
+		Drop: q.DropParams, MaxTokensField: q.MaxTokensField, StreamUsage: q.StreamUsage,
+	})
 	if err != nil {
 		return attemptResult{outcome: "internal", errMsg: err.Error()}
 	}
@@ -223,13 +227,13 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 		return attemptResult{outcome: out, errMsg: err.Error()}
 	}
 	defer resp.Body.Close()
-	rt.Quota.FromHeaders(c.QKey, resp.Header)
+	rt.Quota.FromHeaders(c.QKey, resp.Header, c.Provider.RateHeaders)
 
 	if resp.StatusCode != http.StatusOK {
 		return rt.upstreamError(resp, c)
 	}
 	if req.Stream {
-		return rt.stream(ctx, cancel, w, req, c, class, n, resp)
+		return rt.stream(ctx, cancel, w, req, c, class, n, resp, addedUsage)
 	}
 
 	data, err := io.ReadAll(io.LimitReader(resp.Body, maxBody))
@@ -239,19 +243,29 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 	}
 	ans, ok := guard.ParseChatResponse(data)
 	if !ok {
+		// Some providers (OpenRouter) report errors inside a 200 body.
+		if code, msg, isErr := errorIn200(data); isErr {
+			if code == http.StatusTooManyRequests {
+				rt.Quota.Block(c.QKey, time.Now().Add(time.Minute))
+				return attemptResult{outcome: "rate_limited", status: code, errMsg: msg}
+			}
+			rt.Breakers.Failure(c.Target())
+			return attemptResult{outcome: "error_in_200", status: code, errMsg: msg}
+		}
 		rt.Breakers.Failure(c.Target())
 		return attemptResult{outcome: "quality:" + guard.Unparseable, status: resp.StatusCode, errMsg: "unparseable response"}
 	}
 	rt.Breakers.Success(c.Target())
-	rt.Quota.Record(c.QKey, usageTokens(data, req.EstTokens, len(ans.Content)))
+	tokens := usageTokens(data, req.EstTokens, len(ans.Content))
+	rt.Quota.Record(c.QKey, tokens)
 	if why := guard.Check(req, ans); why != "" {
-		return attemptResult{outcome: "quality:" + why, status: resp.StatusCode, errMsg: "answer failed guard: " + why, badBody: data, badWhy: why}
+		return attemptResult{outcome: "quality:" + why, status: resp.StatusCode, errMsg: "answer failed guard: " + why, badBody: data, badWhy: why, tokens: tokens}
 	}
 	rt.setHeaders(w, c, class, n)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(data)
-	return attemptResult{done: true, outcome: "ok", status: 200}
+	return attemptResult{done: true, outcome: "ok", status: 200, tokens: tokens}
 }
 
 // upstreamError classifies a non-200 reply.
@@ -303,6 +317,29 @@ func upstreamMessage(data []byte) string {
 		data = data[:300]
 	}
 	return string(data)
+}
+
+// errorIn200 detects {"error":{...}} bodies sent with HTTP 200.
+func errorIn200(data []byte) (code int, msg string, ok bool) {
+	var e struct {
+		Error *struct {
+			Code    any    `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(data, &e) != nil || e.Error == nil {
+		return 0, "", false
+	}
+	switch v := e.Error.Code.(type) {
+	case float64:
+		code = int(v)
+	case string:
+		code, _ = strconv.Atoi(v)
+	}
+	if code < 400 || code > 599 {
+		code = http.StatusBadGateway
+	}
+	return code, e.Error.Message, true
 }
 
 // usageTokens reads usage.total_tokens, else estimates.

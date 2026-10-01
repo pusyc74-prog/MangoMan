@@ -22,6 +22,7 @@ type Event struct {
 	LatencyMS int64     `json:"latency_ms"`
 	PromptTok int       `json:"prompt_tokens,omitempty"`
 	OutputTok int       `json:"completion_tokens,omitempty"`
+	Tokens    int       `json:"tokens,omitempty"` // total, from usage or estimated
 	Attempt   int       `json:"attempt"`
 	Stream    bool      `json:"stream"`
 }
