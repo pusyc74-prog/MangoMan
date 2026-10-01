@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 	"text/tabwriter"
 	"time"
 
@@ -42,6 +43,7 @@ func cmdDoctor(args []string) error {
 	yes := fs.Bool("yes", false, "do not ask before spending free quota")
 	out := fs.String("out", "", "report path (default: config dir/doctor-<time>.json)")
 	summary := fs.String("summary", "", "also write a markdown summary to this file (for CI run pages)")
+	timeout := fs.Duration("timeout", 60*time.Second, "time limit per check; a model that times out has its other checks skipped")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -58,7 +60,7 @@ func cmdDoctor(args []string) error {
 		return err
 	}
 	d := &doctor.Doctor{Cat: cat, Keys: keys.NewResolver(st, envMap(cat)), Client: providers.NewClient(), Version: version}
-	o := doctor.Options{Providers: splitList(*prov), Models: splitList(*model), Cases: splitList(*cases), Excluded: cfg.Excluded, Progress: os.Stdout}
+	o := doctor.Options{Providers: splitList(*prov), Models: splitList(*model), Cases: splitList(*cases), Excluded: cfg.Excluded, Progress: os.Stdout, Timeout: *timeout}
 	if *quick {
 		o.Cases = append(conformance.QuickIDs, "bad_model")
 	}
@@ -102,7 +104,9 @@ func cmdDoctor(args []string) error {
 	}
 	fmt.Println()
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	// Ctrl-C or a CI cancellation stops the run but still saves what was
+	// checked so far.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	rep := d.Run(ctx, o)
 	printDoctor(rep)

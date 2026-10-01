@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -144,5 +145,80 @@ func TestDoctorKeepsWithinAccountBudget(t *testing.T) {
 	}
 	if skipped == 0 {
 		t.Fatal("over-budget cases should be reported as skipped")
+	}
+}
+
+func TestSlowModelTimesOutAndIsSkipped(t *testing.T) {
+	ref := conformance.Reference(false, []string{"slow", "fast"})
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			var b struct {
+				Model string `json:"model"`
+			}
+			body, _ := io.ReadAll(r.Body)
+			_ = json.Unmarshal(body, &b)
+			r.Body = io.NopCloser(bytes.NewReader(body))
+			if b.Model == "slow" {
+				select {
+				case <-r.Context().Done():
+				case <-time.After(5 * time.Second):
+				}
+				return
+			}
+		}
+		ref(w, r)
+	}))
+	defer srv.Close()
+	cat := catalogue.Catalogue{Version: "t", Providers: []catalogue.Provider{
+		{ID: "p", Name: "P", BaseURL: srv.URL, Kind: "openai", NeedsKey: true},
+	}, Models: []catalogue.Model{
+		{Canonical: "slow", Provider: "p", Upstream: "slow", Free: true, Caps: []string{"tools", "json", "streaming"}},
+		{Canonical: "fast", Provider: "p", Upstream: "fast", Free: true, Caps: []string{"tools", "json", "streaming"}},
+	}}
+	data, _ := json.Marshal(&cat)
+	parsed, _ := catalogue.Parse(data)
+	client := providers.NewClient()
+	client.HTTP = srv.Client()
+	d := &Doctor{Cat: parsed, Keys: keys.NewResolver(mem{"p": "k"}, nil), Client: client}
+	start := time.Now()
+	rep := d.Run(context.Background(), Options{Cases: []string{"basic", "stream", "json"}, Timeout: 300 * time.Millisecond,
+		Spacing: func(catalogue.Model) time.Duration { return 0 }})
+	if time.Since(start) > 3*time.Second {
+		t.Fatalf("slow model stalled the run: %s", time.Since(start))
+	}
+	for _, m := range rep.Providers[0].Models {
+		pa, _, f, s := m.Counts()
+		switch m.Canonical {
+		case "slow":
+			if f != 1 || s != 2 || !strings.Contains(m.Results[0].Detail, "within") {
+				t.Fatalf("slow model: %+v", m.Results)
+			}
+		case "fast":
+			if pa != 3 {
+				t.Fatalf("fast model: %+v", m.Results)
+			}
+		}
+	}
+}
+
+func TestCancelledRunReturnsPartialReport(t *testing.T) {
+	srv := httptest.NewTLSServer(conformance.Reference(false, []string{"a"}))
+	defer srv.Close()
+	cat := catalogue.Catalogue{Version: "t", Providers: []catalogue.Provider{
+		{ID: "p", Name: "P", BaseURL: srv.URL, Kind: "openai", NeedsKey: true}},
+		Models: []catalogue.Model{{Canonical: "a", Provider: "p", Upstream: "a", Free: true, Caps: []string{"tools", "json", "streaming"}}}}
+	data, _ := json.Marshal(&cat)
+	parsed, _ := catalogue.Parse(data)
+	client := providers.NewClient()
+	client.HTTP = srv.Client()
+	d := &Doctor{Cat: parsed, Keys: keys.NewResolver(mem{"p": "k"}, nil), Client: client}
+	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
+	defer cancel()
+	// Spacing longer than the deadline: the run is cut off after the first check.
+	rep := d.Run(ctx, Options{Spacing: func(catalogue.Model) time.Duration { return time.Second }})
+	m := rep.Providers[0].Models[0]
+	pa, _, _, s := m.Counts()
+	if pa < 1 || s < 1 || rep.Providers[0].Status != StatusOK {
+		t.Fatalf("partial report: %+v", m.Results)
 	}
 }

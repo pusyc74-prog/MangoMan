@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/catalogue"
@@ -30,6 +32,9 @@ type Options struct {
 	Excluded  func(provider string) bool
 	// Spacing between requests to one model. Default: from the seed RPM.
 	Spacing func(m catalogue.Model) time.Duration
+	// Timeout per check. Default 60s; a model that times out once has its
+	// remaining checks skipped, so one slow model cannot stall a run.
+	Timeout time.Duration
 	// Progress receives one line per finished model. May be nil.
 	Progress io.Writer
 }
@@ -159,14 +164,25 @@ func (d *Doctor) cases(o Options) []conformance.Case {
 	return out
 }
 
-// Run checks every selected provider.
+// Run checks every selected provider, providers in parallel. When ctx is
+// cancelled it returns what it has so far.
 func (d *Doctor) Run(ctx context.Context, o Options) Report {
 	start := time.Now()
 	rep := Report{Version: d.Version, Catalogue: d.Cat.Version, Started: start}
 	if o.Spacing == nil {
 		o.Spacing = DefaultSpacing
 	}
+	if o.Timeout <= 0 {
+		o.Timeout = 60 * time.Second
+	}
+	if o.Progress != nil {
+		o.Progress = &lockedWriter{w: o.Progress}
+	}
 	cases := d.cases(o)
+	var (
+		wg       sync.WaitGroup
+		requests atomic.Int64
+	)
 	for _, p := range d.Cat.AllProviders() {
 		if !in(o.Providers, p.ID) {
 			continue
@@ -174,20 +190,39 @@ func (d *Doctor) Run(ctx context.Context, o Options) Report {
 		pr := ProviderReport{ID: p.ID, Name: p.Name}
 		if o.Excluded != nil && o.Excluded(p.ID) {
 			pr.Status = StatusExcluded
-			rep.Providers = append(rep.Providers, pr)
+		}
+		rep.Providers = append(rep.Providers, pr)
+	}
+	for i := range rep.Providers {
+		pr := &rep.Providers[i]
+		if pr.Status == StatusExcluded {
 			continue
 		}
-		d.checkProvider(ctx, p, cases, o, &pr, &rep.Requests)
-		rep.Providers = append(rep.Providers, pr)
-		if ctx.Err() != nil {
-			break
-		}
+		p, _ := d.Cat.Provider(pr.ID)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			d.checkProvider(ctx, p, cases, o, pr, &requests)
+		}()
 	}
+	wg.Wait()
+	rep.Requests = int(requests.Load())
 	rep.Duration = time.Since(start).Round(time.Second).String()
 	return rep
 }
 
-func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases []conformance.Case, o Options, pr *ProviderReport, requests *int) {
+type lockedWriter struct {
+	mu sync.Mutex
+	w  io.Writer
+}
+
+func (l *lockedWriter) Write(b []byte) (int, error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return l.w.Write(b)
+}
+
+func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases []conformance.Case, o Options, pr *ProviderReport, requests *atomic.Int64) {
 	key := ""
 	if p.NeedsKey {
 		k, _ := d.Keys.Get(p.ID)
@@ -252,6 +287,7 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 		sort.Strings(pr.NewFreeModels)
 	}
 
+	var lastCtx context.Context // the most recent check's context, to spot timeouts
 	send := func(ctx context.Context, body []byte, stream bool) (*http.Response, error) {
 		req, err := core.ParseChat(body)
 		if err != nil {
@@ -262,7 +298,8 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 		if err != nil {
 			return nil, err
 		}
-		cctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
+		cctx, cancel := context.WithTimeout(ctx, o.Timeout)
+		lastCtx = cctx
 		resp, err := d.Client.Chat(cctx, p, key, up, stream)
 		if err != nil {
 			cancel()
@@ -305,7 +342,7 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 				}
 			}
 		}
-		limited := false
+		stopped := "" // why the rest of this model's checks are skipped
 		for _, c := range run {
 			if c.DirectOnly {
 				continue
@@ -314,8 +351,11 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 				mr.Results = append(mr.Results, conformance.CaseResult{Case: c.ID, Status: conformance.Skip, Detail: "catalogue does not declare " + c.Needs})
 				continue
 			}
-			if limited || ctx.Err() != nil {
-				mr.Results = append(mr.Results, conformance.CaseResult{Case: c.ID, Status: conformance.Skip, Detail: "rate limited earlier in this run"})
+			if ctx.Err() != nil {
+				stopped = "run stopped before this check"
+			}
+			if stopped != "" {
+				mr.Results = append(mr.Results, conformance.CaseResult{Case: c.ID, Status: conformance.Skip, Detail: stopped})
 				continue
 			}
 			if !spend() {
@@ -323,13 +363,19 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 					Detail: fmt.Sprintf("skipped to keep within half of the %d requests/day free limit", p.AccountLimits.RPD)})
 				continue
 			}
+			lastCtx = nil
 			res := conformance.Run(ctx, send, c, m.Upstream)
-			*requests++
+			requests.Add(1)
 			for k, v := range res.RateHeaders {
 				seen[k] = v
 			}
-			if res.HTTP == http.StatusTooManyRequests {
-				limited = true
+			switch {
+			case res.HTTP == http.StatusTooManyRequests:
+				stopped = "rate limited earlier in this run"
+			case lastCtx != nil && errors.Is(lastCtx.Err(), context.DeadlineExceeded) && ctx.Err() == nil:
+				res.Status = conformance.Fail
+				res.Detail = fmt.Sprintf("no complete answer within %s", o.Timeout)
+				stopped = "skipped: timed out earlier in this run"
 			}
 			mr.Results = append(mr.Results, res)
 			wait(m)
@@ -343,7 +389,7 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 	for _, c := range cases {
 		if c.DirectOnly && ctx.Err() == nil && spend() {
 			res := conformance.Run(ctx, send, c, "")
-			*requests++
+			requests.Add(1)
 			pr.BadModel = &res
 		}
 	}
