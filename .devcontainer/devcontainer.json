@@ -1,0 +1,31 @@
+{
+  "name": "MangoMan",
+  "image": "mcr.microsoft.com/devcontainers/go:1-1.24-bookworm",
+  "containerEnv": {
+    "MANGOMAN_HOME": "/home/vscode/.mangoman"
+  },
+  "secrets": {
+    "GROQ_API_KEY": {
+      "description": "Free Groq API key, used directly from this codespace. Optional.",
+      "documentationUrl": "https://console.groq.com/keys"
+    },
+    "CEREBRAS_API_KEY": {
+      "description": "Free Cerebras API key. Optional.",
+      "documentationUrl": "https://cloud.cerebras.ai/"
+    },
+    "OPENROUTER_API_KEY": {
+      "description": "OpenRouter key (free models only are used). Optional.",
+      "documentationUrl": "https://openrouter.ai/keys"
+    },
+    "NVIDIA_API_KEY": {
+      "description": "Free NVIDIA API key. Optional.",
+      "documentationUrl": "https://build.nvidia.com/"
+    }
+  },
+  "postCreateCommand": "go mod tidy && make build && bin/mangoman init >/dev/null && echo 'Ready: run scripts/try.sh'",
+  "customizations": {
+    "vscode": {
+      "extensions": ["golang.go"]
+    }
+  }
+}

@@ -20,6 +20,26 @@ Point any OpenAI-compatible tool (Cursor, Cline, Continue, n8n, your code) at `h
 
 Every response carries `X-MangoMan-Provider`, `X-MangoMan-Model`, `X-MangoMan-Attempts`, `X-MangoMan-Class` and `X-MangoMan-Data-Policy`.
 
+## Test in the cloud (nothing to install)
+
+Push this repo to GitHub (private is fine), then use either option. Keys go in as GitHub secrets, become environment variables, and are never written to disk.
+
+### Option A: GitHub Codespaces (interactive)
+
+1. Add `GROQ_API_KEY` (and any other provider keys) at github.com/settings/codespaces > Secrets, and give them access to this repo.
+2. On the repo page: Code > Codespaces > Create codespace. Setup builds MangoMan automatically.
+3. In the codespace terminal: `scripts/try.sh` (or `scripts/try.sh --full`).
+
+It starts the router, sends a plain and a streaming request, runs `doctor` and shows `usage`. After that, use any command from Quick start in the same terminal. Commit `go.sum` from the codespace once, since setup completes it.
+
+### Option B: GitHub Actions (repeatable)
+
+1. Add the same keys under repo Settings > Secrets and variables > Actions.
+2. Actions tab > doctor > Run workflow (quick or full, optionally one provider).
+3. The results table appears on the run page; the JSON report is attached as `doctor-report`.
+
+It also runs daily at 08:00 IST in quick mode, which catches provider changes early.
+
 ## What M1 includes
 
 | Area | Done in M1 |
@@ -76,7 +96,10 @@ internal/ingress/    local HTTP endpoint and security checks
 internal/config/     config.json (never holds provider keys)
 internal/store/      usage log and summary
 internal/conformance/ corpus, checks, reference provider
-internal/doctor/     live provider checks and report
+internal/doctor/     live provider checks, report, markdown summary
+scripts/try.sh       one-command live test (Codespaces or any machine)
+.devcontainer/       Codespaces setup
+.github/workflows/   ci (tests, builds) and doctor (live checks)
 ```
 
 ## Tests

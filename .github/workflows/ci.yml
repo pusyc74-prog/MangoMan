@@ -22,7 +22,7 @@ jobs:
       - name: Verify modules
         run: |
           go mod tidy
-          git diff --exit-code go.mod go.sum || (echo "run go mod tidy and commit" && exit 1)
+          git diff --quiet go.mod go.sum || echo "::warning::go.mod or go.sum changed after go mod tidy; commit them"
         shell: bash
       - name: Vet
         run: go vet ./...

@@ -1,0 +1,77 @@
+name: doctor
+
+# Live check of every provider with a key in this repo's secrets.
+# Add any of GROQ_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY, NVIDIA_API_KEY
+# under Settings > Secrets and variables > Actions, then run this workflow
+# from the Actions tab. The summary appears on the run page; the JSON report
+# (no keys, no model answers) is attached as an artifact.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "quick (basic, stream, tools, json) or full corpus"
+        type: choice
+        options: [quick, full]
+        default: quick
+      provider:
+        description: "comma-separated provider ids (empty = all with keys)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "30 2 * * *" # daily, 08:00 IST, quick mode
+
+permissions:
+  contents: read
+
+concurrency:
+  group: doctor
+  cancel-in-progress: false
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MANGOMAN_KEYSTORE: file
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        run: |
+          go mod tidy
+          go build -o bin/mangoman ./cmd/mangoman
+      - name: Check keys
+        run: |
+          n=0
+          for v in GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY NVIDIA_API_KEY; do
+            if [ -n "${!v}" ]; then echo "found $v"; n=$((n+1)); fi
+          done
+          if [ "$n" -eq 0 ]; then
+            echo "::error::No provider keys. Add GROQ_API_KEY (or another) under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+      - name: Run doctor
+        env:
+          MODE: ${{ inputs.mode }}
+          PROVIDER: ${{ inputs.provider }}
+        run: |
+          export MANGOMAN_HOME="$RUNNER_TEMP/mangoman"
+          bin/mangoman init > /dev/null
+          args=(--yes --out doctor-report.json --summary "$GITHUB_STEP_SUMMARY")
+          [ "$MODE" = "full" ] || args+=(--quick)
+          [ -z "$PROVIDER" ] || args+=(--provider "$PROVIDER")
+          bin/mangoman doctor "${args[@]}"
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: doctor-report
+          path: doctor-report.json
+          if-no-files-found: ignore

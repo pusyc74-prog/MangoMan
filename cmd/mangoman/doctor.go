@@ -41,6 +41,7 @@ func cmdDoctor(args []string) error {
 	quick := fs.Bool("quick", false, "run only "+strings.Join(conformance.QuickIDs, ", "))
 	yes := fs.Bool("yes", false, "do not ask before spending free quota")
 	out := fs.String("out", "", "report path (default: config dir/doctor-<time>.json)")
+	summary := fs.String("summary", "", "also write a markdown summary to this file (for CI run pages)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -114,6 +115,17 @@ func cmdDoctor(args []string) error {
 	data, _ := json.MarshalIndent(rep, "", "  ")
 	if err := os.WriteFile(path, data, 0o600); err != nil {
 		return err
+	}
+	if *summary != "" {
+		f, err := os.OpenFile(*summary, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+		if err != nil {
+			return err
+		}
+		_, err = f.WriteString(doctor.Markdown(rep))
+		f.Close()
+		if err != nil {
+			return err
+		}
 	}
 	fmt.Printf("\nFull report: %s\nIt holds no keys and no model answers, so it is safe to share.\n", path)
 	return nil

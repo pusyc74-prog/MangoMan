@@ -108,4 +108,10 @@ func TestDoctor(t *testing.T) {
 	if strings.Contains(string(js), `"k"`) {
 		t.Fatal("report contains a key")
 	}
+	md := Markdown(rep)
+	for _, want := range []string{"| openrouter | ok | 2 | 1 | 1 |", "| openrouter | good | pass | pass |", "renamed-upstream", "**radar**"} {
+		if !strings.Contains(md, want) {
+			t.Fatalf("markdown missing %q:\n%s", want, md)
+		}
+	}
 }
