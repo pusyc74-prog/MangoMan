@@ -37,6 +37,7 @@ type fake struct {
 	speed   float64
 	handler http.HandlerFunc
 	quirks  catalogue.Quirks
+	account catalogue.Limits
 	calls   atomic.Int32
 	srv     *httptest.Server
 }
@@ -99,7 +100,7 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 		cat.Providers = append(cat.Providers, catalogue.Provider{
 			ID: f.id, Name: f.id, BaseURL: f.srv.URL, Kind: "openai", NeedsKey: true, Speed: speed,
 			Policy: catalogue.DataPolicy{Retention: "none", TrainsOnData: "no", Jurisdiction: "US"},
-			Quirks: f.quirks,
+			Quirks: f.quirks, AccountLimits: f.account,
 		})
 		cat.Models = append(cat.Models, catalogue.Model{
 			Canonical: f.model, Provider: f.id, Upstream: f.model + "-up", Free: true, Context: 32000,
@@ -479,5 +480,39 @@ func TestErrorInside200FailsOver(t *testing.T) {
 	do(t, rt, hello)
 	if a.calls.Load() != 1 {
 		t.Fatal("429 inside a 200 should block the bucket")
+	}
+}
+
+func TestGone410FailsOverWithoutStopping(t *testing.T) {
+	// Two retired models (410) must not count as client errors that end the
+	// request: the third candidate still answers.
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: status(410, nil)}
+	b := &fake{id: "b", model: "m2", quality: 0.8, handler: status(410, nil)}
+	c := &fake{id: "c", model: "m3", quality: 0.1, handler: okJSON("from c")}
+	rt := setup(t, a, b, c)
+	w := do(t, rt, hello)
+	if w.Code != 200 || w.Header().Get("X-MangoMan-Provider") != "c" {
+		t.Fatalf("got %d %v %s", w.Code, w.Header(), w.Body)
+	}
+	do(t, rt, hello)
+	if a.calls.Load() != 1 || b.calls.Load() != 1 {
+		t.Fatal("retired models should be avoided after a 410")
+	}
+}
+
+func TestAccountLimitSharedAcrossModels(t *testing.T) {
+	// Provider a allows 2 requests a day in total, across both its models.
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: okJSON("from a"), account: catalogue.Limits{RPD: 2}}
+	b := &fake{id: "b", model: "m2", quality: 0.1, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	m := rt.Cat.AllModels()[0]
+	m.Canonical, m.Upstream = "m1b", "m1b-up"
+	rt.Cat.ReplaceProviderModels("a", append([]catalogue.Model{rt.Cat.AllModels()[0]}, m))
+	got := []string{}
+	for i := 0; i < 4; i++ {
+		got = append(got, do(t, rt, hello).Header().Get("X-MangoMan-Provider"))
+	}
+	if strings.Join(got, ",") != "a,a,b,b" {
+		t.Fatalf("providers used: %v (want a,a then b once the account cap is hit)", got)
 	}
 }

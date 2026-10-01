@@ -54,6 +54,9 @@ type Provider struct {
 	Speed     float64    `json:"speed"` // 0..1, higher is faster (seed estimate)
 	Policy    DataPolicy `json:"policy"`
 	Quirks    Quirks     `json:"quirks,omitempty"`
+	// AccountLimits apply across all of this provider's models for one key,
+	// e.g. OpenRouter's daily cap on free requests.
+	AccountLimits Limits `json:"account_limits,omitempty"`
 	// RateHeaders say which window each rate-limit header describes. Empty
 	// means the generic x-ratelimit-remaining-* handling.
 	RateHeaders []RateHeader `json:"rate_headers,omitempty"`

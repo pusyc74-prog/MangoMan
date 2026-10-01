@@ -137,7 +137,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 	}
 
 	if clientGone {
-		rt.Quota.Record(c.QKey, tokens)
+		rt.record(c, tokens)
 		return attemptResult{done: true, outcome: "client_gone", tokens: tokens}
 	}
 	if !committed {
@@ -151,11 +151,11 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		}
 		// Clean end with no output at all: an empty answer.
 		rt.Breakers.Success(c.Target())
-		rt.Quota.Record(c.QKey, tokens)
+		rt.record(c, tokens)
 		return attemptResult{outcome: "quality:" + guard.Empty, status: 200, errMsg: "empty stream", tokens: tokens}
 	}
 
-	rt.Quota.Record(c.QKey, tokens)
+	rt.record(c, tokens)
 	if readErr != nil || !sawDone {
 		rt.Breakers.Failure(c.Target())
 		msg := "upstream stream ended early"

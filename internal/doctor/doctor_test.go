@@ -115,3 +115,34 @@ func TestDoctor(t *testing.T) {
 		}
 	}
 }
+
+func TestDoctorKeepsWithinAccountBudget(t *testing.T) {
+	srv := httptest.NewTLSServer(conformance.Reference(false, []string{"a", "b", "c"}))
+	defer srv.Close()
+	cat := catalogue.Catalogue{Version: "t", Providers: []catalogue.Provider{
+		{ID: "capped", Name: "Capped", BaseURL: srv.URL, Kind: "openai", NeedsKey: true, AccountLimits: catalogue.Limits{RPD: 10}},
+	}}
+	for _, id := range []string{"a", "b", "c"} {
+		cat.Models = append(cat.Models, catalogue.Model{Canonical: id, Provider: "capped", Upstream: id, Free: true, Caps: []string{"tools", "json", "streaming"}})
+	}
+	data, _ := json.Marshal(&cat)
+	parsed, _ := catalogue.Parse(data)
+	client := providers.NewClient()
+	client.HTTP = srv.Client()
+	d := &Doctor{Cat: parsed, Keys: keys.NewResolver(mem{"capped": "k"}, nil), Client: client}
+	if plan := d.Plan(Options{}); plan["capped"] != 5 {
+		t.Fatalf("plan should be capped at half of 10, got %v", plan)
+	}
+	rep := d.Run(context.Background(), Options{Spacing: func(catalogue.Model) time.Duration { return 0 }})
+	if rep.Requests != 5 {
+		t.Fatalf("made %d requests, budget is 5", rep.Requests)
+	}
+	skipped := 0
+	for _, m := range rep.Providers[0].Models {
+		_, _, _, s := m.Counts()
+		skipped += s
+	}
+	if skipped == 0 {
+		t.Fatal("over-budget cases should be reported as skipped")
+	}
+}

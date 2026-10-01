@@ -91,7 +91,7 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			info.BreakerOpen++
 			continue
 		}
-		if ok, reset := rt.Quota.Allow(c.QKey, m.Limits, req.EstTokens); !ok {
+		if ok, reset := rt.allow(c, req.EstTokens); !ok {
 			info.QuotaBlocked++
 			if info.EarliestReset.IsZero() || reset.Before(info.EarliestReset) {
 				info.EarliestReset = reset
@@ -106,7 +106,7 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 		if state == breaker.HalfOpen {
 			health = 0.5
 		}
-		c.Score = w.Q*m.QualityFor(class) + w.A*rt.Quota.Share(c.QKey, m.Limits) + w.H*health - w.L*(1-p.Speed)
+		c.Score = w.Q*m.QualityFor(class) + w.A*rt.share(c) + w.H*health - w.L*(1-p.Speed)
 		if p.Local {
 			local = append(local, c)
 		} else {
@@ -176,4 +176,37 @@ func (rt *Router) cap(cs []Candidate) []Candidate {
 		return cs[:n]
 	}
 	return cs
+}
+
+// accountKey is the bucket shared by every model of a provider.
+func accountKey(c Candidate) quota.Key {
+	return quota.Key{Provider: c.Provider.ID, Account: c.QKey.Account, Model: "*"}
+}
+
+func hasLimits(l catalogue.Limits) bool { return l.RPM+l.RPD+l.TPM+l.TPD > 0 }
+
+// allow checks the model's bucket and, if set, the provider account bucket.
+func (rt *Router) allow(c Candidate, est int) (bool, time.Time) {
+	ok, reset := rt.Quota.Allow(c.QKey, c.Model.Limits, est)
+	if !ok || !hasLimits(c.Provider.AccountLimits) {
+		return ok, reset
+	}
+	return rt.Quota.Allow(accountKey(c), c.Provider.AccountLimits, est)
+}
+
+func (rt *Router) record(c Candidate, tokens int) {
+	rt.Quota.Record(c.QKey, tokens)
+	if hasLimits(c.Provider.AccountLimits) {
+		rt.Quota.Record(accountKey(c), tokens)
+	}
+}
+
+func (rt *Router) share(c Candidate) float64 {
+	s := rt.Quota.Share(c.QKey, c.Model.Limits)
+	if hasLimits(c.Provider.AccountLimits) {
+		if a := rt.Quota.Share(accountKey(c), c.Provider.AccountLimits); a < s {
+			s = a
+		}
+	}
+	return s
 }

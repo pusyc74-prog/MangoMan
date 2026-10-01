@@ -1,5 +1,5 @@
 {
-  "version": "seed-2026-10-01.2",
+  "version": "seed-2026-10-01.3",
   "updated": "2026-10-01",
   "providers": [
     {
@@ -102,6 +102,9 @@
       },
       "quirks": {
         "stream_usage": true
+      },
+      "account_limits": {
+        "rpd": 50
       }
     },
     {
@@ -193,185 +196,61 @@
       }
     },
     {
-      "canonical": "gpt-oss-120b",
-      "provider": "openrouter",
-      "upstream": "openai/gpt-oss-120b:free",
-      "free": true,
-      "context": 131072,
-      "caps": [
-        "tools",
-        "json",
-        "streaming",
-        "reasoning"
-      ],
-      "limits": {
-        "rpm": 20,
-        "rpd": 50
-      },
-      "quality": {
-        "code": 0.8,
-        "reasoning": 0.85,
-        "writing": 0.75,
-        "extraction": 0.8,
-        "fast": 0.5,
-        "long-context": 0.7
-      }
-    },
-    {
-      "canonical": "gpt-oss-120b",
-      "provider": "nvidia",
-      "upstream": "openai/gpt-oss-120b",
-      "free": true,
-      "context": 131072,
-      "caps": [
-        "tools",
-        "json",
-        "streaming",
-        "reasoning"
-      ],
-      "limits": {
-        "rpm": 40
-      },
-      "quality": {
-        "code": 0.8,
-        "reasoning": 0.85,
-        "writing": 0.75,
-        "extraction": 0.8,
-        "fast": 0.5,
-        "long-context": 0.7
-      }
-    },
-    {
-      "canonical": "llama-3.3-70b",
+      "canonical": "gpt-oss-20b",
       "provider": "groq",
-      "upstream": "llama-3.3-70b-versatile",
+      "upstream": "openai/gpt-oss-20b",
       "free": true,
       "context": 131072,
       "caps": [
         "tools",
         "json",
-        "streaming"
+        "streaming",
+        "reasoning"
       ],
       "limits": {
         "rpm": 30,
         "rpd": 1000,
-        "tpm": 12000,
-        "tpd": 100000
+        "tpm": 8000
       },
       "quality": {
-        "code": 0.65,
+        "code": 0.62,
         "reasoning": 0.65,
-        "writing": 0.75,
-        "extraction": 0.75,
-        "fast": 0.8,
-        "long-context": 0.7
+        "writing": 0.6,
+        "extraction": 0.7,
+        "fast": 0.9,
+        "long-context": 0.55
       }
     },
     {
-      "canonical": "llama-3.3-70b",
-      "provider": "openrouter",
-      "upstream": "meta-llama/llama-3.3-70b-instruct:free",
-      "free": true,
-      "context": 131072,
-      "caps": [
-        "tools",
-        "json",
-        "streaming"
-      ],
-      "limits": {
-        "rpm": 20,
-        "rpd": 50
-      },
-      "quality": {
-        "code": 0.65,
-        "reasoning": 0.65,
-        "writing": 0.75,
-        "extraction": 0.75,
-        "fast": 0.5,
-        "long-context": 0.7
-      }
-    },
-    {
-      "canonical": "llama-3.3-70b",
+      "canonical": "gpt-oss-20b",
       "provider": "nvidia",
-      "upstream": "meta/llama-3.3-70b-instruct",
+      "upstream": "openai/gpt-oss-20b",
       "free": true,
       "context": 131072,
       "caps": [
         "tools",
         "json",
-        "streaming"
+        "streaming",
+        "reasoning"
       ],
       "limits": {
         "rpm": 40
       },
       "quality": {
-        "code": 0.65,
+        "code": 0.62,
         "reasoning": 0.65,
-        "writing": 0.75,
-        "extraction": 0.75,
-        "fast": 0.5,
-        "long-context": 0.7
+        "writing": 0.6,
+        "extraction": 0.7,
+        "fast": 0.6,
+        "long-context": 0.55
       }
     },
     {
-      "canonical": "llama-3.1-8b",
+      "canonical": "qwen3.8-27b",
       "provider": "groq",
-      "upstream": "llama-3.1-8b-instant",
+      "upstream": "qwen/qwen3.8-27b",
       "free": true,
-      "context": 131072,
-      "caps": [
-        "tools",
-        "json",
-        "streaming"
-      ],
-      "limits": {
-        "rpm": 30,
-        "rpd": 14400,
-        "tpm": 6000,
-        "tpd": 500000
-      },
-      "quality": {
-        "code": 0.4,
-        "reasoning": 0.4,
-        "writing": 0.55,
-        "extraction": 0.55,
-        "fast": 0.95,
-        "long-context": 0.5
-      }
-    },
-    {
-      "canonical": "llama-3.1-8b",
-      "provider": "cerebras",
-      "upstream": "llama3.1-8b",
-      "free": true,
-      "context": 8192,
-      "caps": [
-        "tools",
-        "json",
-        "streaming"
-      ],
-      "limits": {
-        "rpm": 30,
-        "rpd": 14400,
-        "tpm": 60000,
-        "tpd": 1000000
-      },
-      "quality": {
-        "code": 0.4,
-        "reasoning": 0.4,
-        "writing": 0.55,
-        "extraction": 0.55,
-        "fast": 0.95,
-        "long-context": 0.3
-      }
-    },
-    {
-      "canonical": "qwen3-32b",
-      "provider": "groq",
-      "upstream": "qwen/qwen3-32b",
-      "free": true,
-      "context": 131072,
+      "context": 32768,
       "caps": [
         "tools",
         "json",
@@ -381,16 +260,484 @@
       "limits": {
         "rpm": 60,
         "rpd": 1000,
-        "tpm": 6000,
-        "tpd": 500000
+        "tpm": 6000
+      },
+      "quality": {
+        "code": 0.74,
+        "reasoning": 0.75,
+        "writing": 0.68,
+        "extraction": 0.72,
+        "fast": 0.75,
+        "long-context": 0.5
+      }
+    },
+    {
+      "canonical": "qwen3.8-27b",
+      "provider": "openrouter",
+      "upstream": "qwen/qwen3.8-27b:free",
+      "free": true,
+      "context": 32768,
+      "caps": [
+        "tools",
+        "json",
+        "streaming",
+        "reasoning"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.74,
+        "reasoning": 0.75,
+        "writing": 0.68,
+        "extraction": 0.72,
+        "fast": 0.5,
+        "long-context": 0.5
+      }
+    },
+    {
+      "canonical": "kimi-k3",
+      "provider": "nvidia",
+      "upstream": "moonshotai/kimi-k3",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming",
+        "reasoning"
+      ],
+      "limits": {
+        "rpm": 40
+      },
+      "quality": {
+        "code": 0.86,
+        "reasoning": 0.84,
+        "writing": 0.8,
+        "extraction": 0.8,
+        "fast": 0.45,
+        "long-context": 0.8
+      }
+    },
+    {
+      "canonical": "deepseek-v4.1-flash",
+      "provider": "nvidia",
+      "upstream": "deepseek-ai/deepseek-v4.1-flash",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming",
+        "reasoning"
+      ],
+      "limits": {
+        "rpm": 40
+      },
+      "quality": {
+        "code": 0.8,
+        "reasoning": 0.8,
+        "writing": 0.74,
+        "extraction": 0.78,
+        "fast": 0.65,
+        "long-context": 0.75
+      }
+    },
+    {
+      "canonical": "glm-5.3",
+      "provider": "nvidia",
+      "upstream": "z-ai/glm-5.3",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming",
+        "reasoning"
+      ],
+      "limits": {
+        "rpm": 40
+      },
+      "quality": {
+        "code": 0.82,
+        "reasoning": 0.8,
+        "writing": 0.76,
+        "extraction": 0.78,
+        "fast": 0.45,
+        "long-context": 0.75
+      }
+    },
+    {
+      "canonical": "glm-5.3-flash",
+      "provider": "nvidia",
+      "upstream": "z-ai/glm-5.3-flash",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 40
+      },
+      "quality": {
+        "code": 0.7,
+        "reasoning": 0.68,
+        "writing": 0.68,
+        "extraction": 0.72,
+        "fast": 0.8,
+        "long-context": 0.65
+      }
+    },
+    {
+      "canonical": "nemotron-3-ultra-550b",
+      "provider": "nvidia",
+      "upstream": "nvidia/nemotron-3-ultra-550b-a55b",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming",
+        "reasoning"
+      ],
+      "limits": {
+        "rpm": 40
+      },
+      "quality": {
+        "code": 0.82,
+        "reasoning": 0.84,
+        "writing": 0.78,
+        "extraction": 0.8,
+        "fast": 0.4,
+        "long-context": 0.75
+      }
+    },
+    {
+      "canonical": "nemotron-3-ultra-550b",
+      "provider": "openrouter",
+      "upstream": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming",
+        "reasoning"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.82,
+        "reasoning": 0.84,
+        "writing": 0.78,
+        "extraction": 0.8,
+        "fast": 0.35,
+        "long-context": 0.75
+      }
+    },
+    {
+      "canonical": "nemotron-3-super-120b",
+      "provider": "nvidia",
+      "upstream": "nvidia/nemotron-3-super-120b-a12b",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming",
+        "reasoning"
+      ],
+      "limits": {
+        "rpm": 40
+      },
+      "quality": {
+        "code": 0.76,
+        "reasoning": 0.78,
+        "writing": 0.74,
+        "extraction": 0.76,
+        "fast": 0.6,
+        "long-context": 0.7
+      }
+    },
+    {
+      "canonical": "nemotron-3-super-120b",
+      "provider": "openrouter",
+      "upstream": "nvidia/nemotron-3-super-120b-a12b:free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming",
+        "reasoning"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.76,
+        "reasoning": 0.78,
+        "writing": 0.74,
+        "extraction": 0.76,
+        "fast": 0.5,
+        "long-context": 0.7
+      }
+    },
+    {
+      "canonical": "nemotron-3.5-lightning",
+      "provider": "nvidia",
+      "upstream": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "free": true,
+      "context": 32768,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 40
+      },
+      "quality": {
+        "code": 0.55,
+        "reasoning": 0.55,
+        "writing": 0.6,
+        "extraction": 0.65,
+        "fast": 0.92,
+        "long-context": 0.45
+      }
+    },
+    {
+      "canonical": "nemotron-3.5-lightning",
+      "provider": "openrouter",
+      "upstream": "nvidia/nemotron-3.5-lightning:free",
+      "free": true,
+      "context": 32768,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.55,
+        "reasoning": 0.55,
+        "writing": 0.6,
+        "extraction": 0.65,
+        "fast": 0.85,
+        "long-context": 0.45
+      }
+    },
+    {
+      "canonical": "gemma-4-31b",
+      "provider": "nvidia",
+      "upstream": "google/gemma-4-31b-it",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 40
+      },
+      "quality": {
+        "code": 0.68,
+        "reasoning": 0.68,
+        "writing": 0.76,
+        "extraction": 0.72,
+        "fast": 0.6,
+        "long-context": 0.65
+      }
+    },
+    {
+      "canonical": "gemma-4-31b",
+      "provider": "openrouter",
+      "upstream": "google/gemma-4-31b-it:free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.68,
+        "reasoning": 0.68,
+        "writing": 0.76,
+        "extraction": 0.72,
+        "fast": 0.5,
+        "long-context": 0.65
+      }
+    },
+    {
+      "canonical": "gemma-4-26b-a4b",
+      "provider": "openrouter",
+      "upstream": "google/gemma-4-26b-a4b-it:free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.62,
+        "reasoning": 0.62,
+        "writing": 0.72,
+        "extraction": 0.68,
+        "fast": 0.7,
+        "long-context": 0.6
+      }
+    },
+    {
+      "canonical": "laguna-xs-2.1",
+      "provider": "nvidia",
+      "upstream": "poolside/laguna-xs-2.1",
+      "free": true,
+      "context": 32768,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 40
+      },
+      "quality": {
+        "code": 0.7,
+        "reasoning": 0.55,
+        "writing": 0.5,
+        "extraction": 0.6,
+        "fast": 0.8,
+        "long-context": 0.45
+      }
+    },
+    {
+      "canonical": "laguna-xs-2.1",
+      "provider": "openrouter",
+      "upstream": "poolside/laguna-xs-2.1:free",
+      "free": true,
+      "context": 32768,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.7,
+        "reasoning": 0.55,
+        "writing": 0.5,
+        "extraction": 0.6,
+        "fast": 0.75,
+        "long-context": 0.45
+      }
+    },
+    {
+      "canonical": "laguna-s-2.1",
+      "provider": "openrouter",
+      "upstream": "poolside/laguna-s-2.1:free",
+      "free": true,
+      "context": 65536,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.78,
+        "reasoning": 0.62,
+        "writing": 0.55,
+        "extraction": 0.65,
+        "fast": 0.55,
+        "long-context": 0.55
+      }
+    },
+    {
+      "canonical": "north-mini-code",
+      "provider": "openrouter",
+      "upstream": "cohere/north-mini-code:free",
+      "free": true,
+      "context": 32768,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
       },
       "quality": {
         "code": 0.72,
-        "reasoning": 0.75,
-        "writing": 0.65,
-        "extraction": 0.7,
-        "fast": 0.6,
-        "long-context": 0.6
+        "reasoning": 0.58,
+        "writing": 0.55,
+        "extraction": 0.62,
+        "fast": 0.7,
+        "long-context": 0.45
+      }
+    },
+    {
+      "canonical": "inkling",
+      "provider": "openrouter",
+      "upstream": "thinkingmachines/inkling:free",
+      "free": true,
+      "context": 131072,
+      "caps": [
+        "tools",
+        "json",
+        "streaming",
+        "reasoning"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.78,
+        "reasoning": 0.8,
+        "writing": 0.76,
+        "extraction": 0.76,
+        "fast": 0.45,
+        "long-context": 0.7
+      }
+    },
+    {
+      "canonical": "inkling-small",
+      "provider": "openrouter",
+      "upstream": "thinkingmachines/inkling-small:free",
+      "free": true,
+      "context": 65536,
+      "caps": [
+        "tools",
+        "json",
+        "streaming"
+      ],
+      "limits": {
+        "rpm": 20
+      },
+      "quality": {
+        "code": 0.65,
+        "reasoning": 0.66,
+        "writing": 0.68,
+        "extraction": 0.68,
+        "fast": 0.75,
+        "long-context": 0.55
       }
     }
   ]

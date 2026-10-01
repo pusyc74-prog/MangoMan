@@ -140,8 +140,11 @@ func (d *Doctor) Plan(o Options) map[string]int {
 			}
 		}
 	}
-	for p := range out {
-		out[p]++ // the bad_model check, once per provider
+	for id := range out {
+		out[id]++ // the bad_model check, once per provider
+		if p, ok := d.Cat.Provider(id); ok && p.AccountLimits.RPD > 0 && out[id] > p.AccountLimits.RPD/2 {
+			out[id] = p.AccountLimits.RPD / 2
+		}
 	}
 	return out
 }
@@ -269,6 +272,20 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 		return resp, nil
 	}
 
+	// Stay within half of an account-wide daily cap (OpenRouter free), so a
+	// check never uses up the user's free requests for the day.
+	budget, used := 0, 0
+	if p.AccountLimits.RPD > 0 {
+		budget = p.AccountLimits.RPD / 2
+	}
+	spend := func() bool {
+		if budget > 0 && used >= budget {
+			return false
+		}
+		used++
+		return true
+	}
+
 	seen := map[string]string{}
 	wait := func(m catalogue.Model) {
 		select {
@@ -301,6 +318,11 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 				mr.Results = append(mr.Results, conformance.CaseResult{Case: c.ID, Status: conformance.Skip, Detail: "rate limited earlier in this run"})
 				continue
 			}
+			if !spend() {
+				mr.Results = append(mr.Results, conformance.CaseResult{Case: c.ID, Status: conformance.Skip,
+					Detail: fmt.Sprintf("skipped to keep within half of the %d requests/day free limit", p.AccountLimits.RPD)})
+				continue
+			}
 			res := conformance.Run(ctx, send, c, m.Upstream)
 			*requests++
 			for k, v := range res.RateHeaders {
@@ -319,7 +341,7 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 	}
 
 	for _, c := range cases {
-		if c.DirectOnly && ctx.Err() == nil {
+		if c.DirectOnly && ctx.Err() == nil && spend() {
 			res := conformance.Run(ctx, send, c, "")
 			*requests++
 			pr.BadModel = &res

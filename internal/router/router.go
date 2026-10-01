@@ -103,7 +103,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		if !rt.Breakers.Allow(c.Target()) {
 			continue
 		}
-		if ok, _ := rt.Quota.Allow(c.QKey, c.Model.Limits, req.EstTokens); !ok {
+		if ok, _ := rt.allow(c, req.EstTokens); !ok {
 			continue
 		}
 		attempts++
@@ -257,7 +257,7 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 	}
 	rt.Breakers.Success(c.Target())
 	tokens := usageTokens(data, req.EstTokens, len(ans.Content))
-	rt.Quota.Record(c.QKey, tokens)
+	rt.record(c, tokens)
 	if why := guard.Check(req, ans); why != "" {
 		return attemptResult{outcome: "quality:" + why, status: resp.StatusCode, errMsg: "answer failed guard: " + why, badBody: data, badWhy: why, tokens: tokens}
 	}
@@ -281,8 +281,8 @@ func (rt *Router) upstreamError(resp *http.Response, c Candidate) attemptResult 
 		// Key invalid or revoked: stop using it until the user fixes it.
 		rt.Keys.Disable(c.Provider.ID)
 		res.outcome = "key_rejected"
-	case s == http.StatusNotFound:
-		// Model removed or renamed upstream: avoid it for a while.
+	case s == http.StatusNotFound || s == http.StatusGone:
+		// Model removed, renamed or retired (NVIDIA answers 410): avoid it.
 		rt.Breakers.Failure(c.Target())
 		rt.Breakers.Failure(c.Target())
 		rt.Breakers.Failure(c.Target())

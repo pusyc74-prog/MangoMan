@@ -94,7 +94,7 @@ func TestModelsListsVirtualAndConnected(t *testing.T) {
 	if _, ok := ids["free/auto"]; !ok {
 		t.Fatal("virtual model missing")
 	}
-	if p := ids["llama-3.3-70b"]; len(p) != 1 || p[0] != "groq" {
+	if p := ids["gpt-oss-120b"]; len(p) != 1 || p[0] != "groq" {
 		t.Fatalf("only connected providers should be listed, got %v", p)
 	}
 }
