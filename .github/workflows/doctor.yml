@@ -25,6 +25,8 @@ on:
     paths:
       - ".github/workflows/doctor.yml"
       - "internal/catalogue/seed.json"
+      - "internal/doctor/**"
+      - "internal/conformance/**"
 
 permissions:
   contents: write # only to publish reports to the doctor-reports branch
