@@ -83,6 +83,9 @@ type Overview struct {
 	KeyStore  string         `json:"key_store"`
 	Providers []DashProvider `json:"providers"`
 	Models    []DashModel    `json:"models"`
+	// Favorites is My list, in order: the router tries these first.
+	Favorites []string `json:"favorites"`
+	NewModels int      `json:"new_models"` // radar items marked new
 }
 
 func (s *Server) dashRoutes(mux *http.ServeMux) {
@@ -95,6 +98,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /mangoman/keys", s.auth(http.HandlerFunc(s.addKey)))
 	mux.Handle("DELETE /mangoman/keys/{provider}", s.auth(http.HandlerFunc(s.removeKey)))
 	mux.Handle("POST /mangoman/providers/{provider}/exclude", s.auth(http.HandlerFunc(s.setExcluded)))
+	s.myListRoutes(mux)
 }
 
 // securityHeaders lock the dashboard page down: own files only, no
@@ -136,7 +140,8 @@ func (s *Server) providerStatus(p catalogue.Provider, modelCount int) DashProvid
 
 func (s *Server) overview(w http.ResponseWriter, _ *http.Request) {
 	rt := s.Router
-	ov := Overview{Version: s.Version, UptimeS: int(time.Since(s.Started).Seconds()), Catalogue: rt.Cat.Version, Port: s.Cfg.Port}
+	ov := Overview{Version: s.Version, UptimeS: int(time.Since(s.Started).Seconds()), Catalogue: rt.Cat.Version, Port: s.Cfg.Port,
+		Favorites: nonNil(s.Cfg.GetFavorites()), NewModels: s.radarView().NewCount}
 	if st := rt.Keys.Store(); st != nil {
 		ov.KeyStore = st.Name()
 	}

@@ -20,6 +20,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/classify"
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
+	"github.com/pusyc74-prog/mangoman/internal/radar"
 	"github.com/pusyc74-prog/mangoman/internal/router"
 	"github.com/pusyc74-prog/mangoman/internal/setup"
 )
@@ -38,6 +39,8 @@ type Server struct {
 	Validate setup.Validator
 	// SaveConfig persists settings changed from the dashboard (default: config.Save).
 	SaveConfig func(*config.Config) error
+	// Radar finds new free models to offer; nil turns the feature off.
+	Radar *radar.Radar
 }
 
 // Handler returns the HTTP handler with all checks applied.

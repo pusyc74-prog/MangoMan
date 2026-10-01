@@ -60,6 +60,33 @@ type Provider struct {
 	// RateHeaders say which window each rate-limit header describes. Empty
 	// means the generic x-ratelimit-remaining-* handling.
 	RateHeaders []RateHeader `json:"rate_headers,omitempty"`
+	// Discover says which models in the provider's live list count as free
+	// chat models for the new-model radar.
+	Discover Discover `json:"discover,omitempty"`
+}
+
+// Discover is a provider's radar rule.
+type Discover struct {
+	Mode    string   `json:"mode,omitempty"`    // "all", "suffix" or "" (off)
+	Suffix  string   `json:"suffix,omitempty"`  // for "suffix": e.g. ":free"
+	Exclude []string `json:"exclude,omitempty"` // substrings of non-chat models
+}
+
+// Matches reports whether a listed model id is a free chat model.
+func (d Discover) Matches(id string) bool {
+	low := strings.ToLower(id)
+	for _, x := range d.Exclude {
+		if strings.Contains(low, strings.ToLower(x)) {
+			return false
+		}
+	}
+	switch d.Mode {
+	case "all":
+		return true
+	case "suffix":
+		return d.Suffix != "" && strings.HasSuffix(low, strings.ToLower(d.Suffix))
+	}
+	return false
 }
 
 // Quirks adjust a request for one provider. They are data, so a catalogue
@@ -225,6 +252,53 @@ func (c *Catalogue) PolicyFor(m Model) DataPolicy {
 	}
 	p, _ := c.Provider(m.Provider)
 	return p.Policy
+}
+
+// HasUpstream reports whether a provider's model id is in the catalogue.
+func (c *Catalogue) HasUpstream(provider, upstream string) bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	for _, m := range c.Models {
+		if m.Provider == provider && m.Upstream == upstream {
+			return true
+		}
+	}
+	return false
+}
+
+// AddModel adds one model unless the provider already has that upstream id.
+func (c *Catalogue) AddModel(m Model) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for _, x := range c.Models {
+		if x.Provider == m.Provider && x.Upstream == m.Upstream {
+			return false
+		}
+	}
+	c.Models = append(c.Models, m)
+	return true
+}
+
+// DiscoveredModel builds a usable catalogue entry for a model the radar
+// found: the provider's policy and typical limits, cautious defaults
+// otherwise. Capabilities are assumed and corrected by failover.
+func (c *Catalogue) DiscoveredModel(provider, upstream string) Model {
+	name := upstream
+	if i := strings.LastIndex(name, "/"); i >= 0 {
+		name = name[i+1:]
+	}
+	name = strings.TrimSuffix(strings.TrimSuffix(name, ":free"), "-free")
+	m := Model{Canonical: name, Provider: provider, Upstream: upstream, Free: true, Context: 32768,
+		Caps: []string{"tools", "json", "streaming"}, Quality: map[string]float64{"default": 0.6}}
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	for _, x := range c.Models {
+		if x.Provider == provider {
+			m.Limits = x.Limits
+			break
+		}
+	}
+	return m
 }
 
 // ReplaceProviderModels swaps all models of one provider, used for models

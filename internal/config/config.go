@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -29,9 +30,67 @@ type Config struct {
 	AllowedOrigins []string `json:"allowed_origins,omitempty"`
 	// MaxAttempts caps candidates tried per request.
 	MaxAttempts int `json:"max_attempts,omitempty"`
+	// Favorites is "My list": models tried first, in this order, before the
+	// router's own ranking. An entry is a model name ("gpt-oss-120b", any
+	// provider) or provider/model ("groq/gpt-oss-120b", that provider only).
+	Favorites []string `json:"favorites,omitempty"`
+	// CustomModels are new models the user added from the radar; they are
+	// not in the catalogue yet.
+	CustomModels []CustomModel `json:"custom_models,omitempty"`
 }
 
-var mu sync.RWMutex // guards ExcludedProviders, changed live from the dashboard
+// CustomModel is a model added by the user from a provider's live list.
+type CustomModel struct {
+	Provider string `json:"provider"`
+	Upstream string `json:"upstream"`
+	Added    string `json:"added,omitempty"`
+}
+
+var mu sync.RWMutex // guards fields changed live from the dashboard
+
+// GetFavorites returns a copy of My list.
+func (c *Config) GetFavorites() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return append([]string(nil), c.Favorites...)
+}
+
+// SetFavorites replaces My list, dropping blanks and duplicates.
+func (c *Config) SetFavorites(list []string) {
+	seen := map[string]bool{}
+	var out []string
+	for _, f := range list {
+		f = strings.TrimSpace(f)
+		k := strings.ToLower(f)
+		if f == "" || seen[k] {
+			continue
+		}
+		seen[k] = true
+		out = append(out, f)
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	c.Favorites = out
+}
+
+// GetCustomModels returns a copy of the user-added models.
+func (c *Config) GetCustomModels() []CustomModel {
+	mu.RLock()
+	defer mu.RUnlock()
+	return append([]CustomModel(nil), c.CustomModels...)
+}
+
+// AddCustomModel records a user-added model once.
+func (c *Config) AddCustomModel(m CustomModel) {
+	mu.Lock()
+	defer mu.Unlock()
+	for _, x := range c.CustomModels {
+		if x.Provider == m.Provider && x.Upstream == m.Upstream {
+			return
+		}
+	}
+	c.CustomModels = append(c.CustomModels, m)
+}
 
 // Excluded reports whether a provider is turned off.
 func (c *Config) Excluded(provider string) bool {

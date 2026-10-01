@@ -5,7 +5,7 @@
 
 const ORDER = ["groq", "cerebras", "nvidia", "openrouter", "zen", "ollama"];
 const NUM = new Intl.NumberFormat();
-const state = { token: "", overview: null, activity: null, filter: "used", open: new Set() };
+const state = { token: "", overview: null, activity: null, radar: null, filter: "used", open: new Set(), drawer: false };
 
 function $(id) { return document.getElementById(id); }
 
@@ -243,6 +243,151 @@ async function removeKey(p) {
   await load();
 }
 
+// ---------- My list ----------
+
+function sameEntry(a, b) { return a.toLowerCase() === b.toLowerCase(); }
+function entryMatches(entry, m) { return sameEntry(entry, m.model) || sameEntry(entry, `${m.provider}/${m.model}`); }
+function inMyList(m) { return (state.overview.favorites || []).some((f) => entryMatches(f, m)); }
+
+// What a My list entry resolves to right now.
+function entryStatus(entry, ov) {
+  const ms = ov.models.filter((m) => entryMatches(entry, m));
+  const names = Object.fromEntries(ov.providers.map((p) => [p.id, p.name]));
+  const pinned = entry.includes("/");
+  const where = pinned ? (names[ms[0] && ms[0].provider] || entry.split("/")[0])
+    : ms.length === 1 ? names[ms[0].provider] : `${ms.length} providers`;
+  if (!ms.length) return { lamp: "bad", text: "No longer in the catalogue", where: "" };
+  const ready = ms.filter((m) => m.state === "ready");
+  if (ready.length) return { lamp: "on", text: ready.length < ms.length ? `Ready on ${ready.length} of ${ms.length}` : "Ready", where };
+  const limited = ms.filter((m) => m.state === "rate_limited" && m.blocked_until);
+  if (limited.length) {
+    const back = limited.map((m) => new Date(m.blocked_until)).sort((a, b) => a - b)[0];
+    return { lamp: "warn", text: `Used up, back at ${hm(back)}`, where };
+  }
+  if (ms.some((m) => m.state === "cooling_down")) return { lamp: "warn", text: "Cooling down after errors", where };
+  return { lamp: "", text: "Provider not connected", where };
+}
+
+async function saveMyList(models) {
+  try {
+    const res = await api("/mangoman/favorites", { method: "PUT", body: JSON.stringify({ models }) });
+    state.overview.favorites = res.models;
+  } catch (err) { alert(err.message); }
+  renderMyList(state.overview);
+  renderModels(state.overview, state.activity);
+}
+
+function renderMyList(ov) {
+  const fav = ov.favorites || [];
+  const move = (i, d) => { const m = [...fav]; [m[i], m[i + d]] = [m[i + d], m[i]]; saveMyList(m); };
+  $("mylist").replaceChildren(...fav.map((f, i) => {
+    const st = entryStatus(f, ov);
+    const [prov, name] = f.includes("/") ? [f.slice(0, f.indexOf("/")), f.slice(f.indexOf("/") + 1)] : ["", f];
+    return el("li", { class: "fav" },
+      el("span", { class: "pos" }, String(i + 1)),
+      el("div", { class: "fname" }, name,
+        el("small", {}, prov ? `${st.where} only` : `Any provider (${st.where})`)),
+      el("div", { class: "fstate" }, el("span", { class: "lamp " + st.lamp, "aria-hidden": "true" }), st.text),
+      el("div", { class: "actions" },
+        el("button", { type: "button", class: "ghost icon", "aria-label": `Move ${name} up`, disabled: i === 0, onclick: () => move(i, -1) }, "↑"),
+        el("button", { type: "button", class: "ghost icon", "aria-label": `Move ${name} down`, disabled: i === fav.length - 1, onclick: () => move(i, 1) }, "↓"),
+        el("button", { type: "button", class: "ghost", onclick: () => saveMyList(fav.filter((_, j) => j !== i)) }, "Remove")));
+  }));
+  const empty = $("mylist-empty");
+  empty.hidden = fav.length > 0;
+  empty.textContent = "Your list is empty, so MangoMan picks the best free model for each request. Add the models you prefer and they are tried first.";
+
+  // Picker: connected models not yet in the list, then the rest.
+  const pick = $("mylist-pick");
+  const names = Object.fromEntries(ov.providers.map((p) => [p.id, p.name]));
+  const avail = ov.models.filter((m) => !inMyList(m))
+    .sort((a, b) => Number(b.connected) - Number(a.connected) || a.model.localeCompare(b.model) || a.provider.localeCompare(b.provider));
+  const groups = [["Connected", avail.filter((m) => m.connected)], ["Not connected yet", avail.filter((m) => !m.connected)]];
+  pick.replaceChildren(el("option", { value: "" }, "Choose a model"),
+    ...groups.filter(([, ms]) => ms.length).map(([label, ms]) => el("optgroup", { label },
+      ...ms.map((m) => el("option", { value: `${m.provider}/${m.model}` }, `${m.model} (${names[m.provider] || m.provider})`)))));
+}
+
+async function toggleStar(m) {
+  const fav = state.overview.favorites || [];
+  if (inMyList(m)) await saveMyList(fav.filter((f) => !entryMatches(f, m)));
+  else await saveMyList([...fav, `${m.provider}/${m.model}`]);
+}
+
+// ---------- new models drawer ----------
+
+function ago(t) {
+  const d = Math.max(0, (Date.now() - new Date(t).getTime()) / 1000);
+  if (d < 3600) return "within the hour";
+  if (d < 86400) return `${Math.round(d / 3600)} h ago`;
+  return `${Math.round(d / 86400)} days ago`;
+}
+
+function renderFab() {
+  const rv = state.radar;
+  const fab = $("fab");
+  fab.hidden = !rv || !rv.enabled;
+  if (fab.hidden) return;
+  const n = rv.new_count || 0;
+  fab.classList.toggle("has-new", n > 0);
+  $("fab-text").textContent = n ? plural(n, "new model", "new models") : "New models";
+  fab.setAttribute("aria-expanded", String(state.drawer));
+}
+
+function renderDrawer() {
+  const rv = state.radar || { items: [] };
+  const ov = state.overview;
+  const names = Object.fromEntries(ov.providers.map((p) => [p.id, p.name]));
+  $("drawer-sub").textContent = rv.last_scan
+    ? `Free models your connected providers serve that are not in your catalogue yet. Checked ${ago(rv.last_scan)}; checked again every 6 hours.`
+    : "Not checked yet. The first check runs shortly after the router starts.";
+  const list = $("radar");
+  if (!rv.items.length) {
+    list.replaceChildren(el("li", { class: "empty" }, rv.last_scan ? "Nothing new right now. You have every free model your providers list." : "Press Check now to look for new models."));
+    return;
+  }
+  list.replaceChildren(...rv.items.map((it) => {
+    const btn = el("button", { type: "button", class: "primary" }, "Add to my list");
+    btn.addEventListener("click", async () => {
+      btn.disabled = true; btn.textContent = "Adding…";
+      try {
+        await api("/mangoman/radar/add", { method: "POST", body: JSON.stringify({ provider: it.provider, upstream: it.upstream }) });
+        $("drawer-msg").className = "msg ok";
+        $("drawer-msg").textContent = `${it.name} added to My list.`;
+        await load();
+      } catch (err) {
+        btn.disabled = false; btn.textContent = "Add to my list";
+        $("drawer-msg").className = "msg err"; $("drawer-msg").textContent = err.message;
+      }
+    });
+    return el("li", { class: "ritem" },
+      el("div", { class: "rmain" },
+        el("div", { class: "rname" }, it.new ? el("span", { class: "badge" }, "New") : null, it.name),
+        el("div", { class: "rmeta" }, el("i", { class: "dot", style: { background: color(it.provider) } }),
+          `${names[it.provider] || it.provider} · first seen ${ago(it.first_seen)}`),
+        el("div", { class: "rmeta dim", title: it.data_policy }, `${dataText(it.trains_on_data)} · ${it.upstream}`)),
+      btn);
+  }));
+}
+
+function openDrawer(open) {
+  state.drawer = open;
+  $("drawer").hidden = !open;
+  renderFab();
+  if (open) { renderDrawer(); $("drawer-close").focus(); } else { $("fab").focus(); }
+}
+
+async function scanNow() {
+  const btn = $("drawer-scan"), msg = $("drawer-msg");
+  btn.disabled = true; msg.className = "msg"; msg.textContent = "Checking your providers…";
+  try {
+    state.radar = await api("/mangoman/radar/scan", { method: "POST" });
+    msg.textContent = state.radar.new_count ? `${plural(state.radar.new_count, "new model", "new models")} found.` : "Checked. Nothing new.";
+  } catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+  btn.disabled = false;
+  renderFab(); renderDrawer();
+}
+
 // ---------- chart: requests per hour, stacked by provider ----------
 
 function renderChart(act, ov) {
@@ -356,7 +501,13 @@ function renderModels(ov, act) {
     const stateText = m.state === "rate_limited" && m.blocked_until ? `${label} until ${hm(m.blocked_until)}` : label;
     const attempts = u ? u.attempts : 0;
     const okPct = u && u.attempts ? `${Math.round(100 * u.ok / u.attempts)}%` : "–";
+    const starred = inMyList(m);
     return el("tr", {},
+      el("td", { class: "star-col" }, el("button", {
+        type: "button", class: "star" + (starred ? " on" : ""), "aria-pressed": String(starred),
+        "aria-label": starred ? `Remove ${m.model} (${names[m.provider] || m.provider}) from My list` : `Add ${m.model} (${names[m.provider] || m.provider}) to My list`,
+        title: starred ? "In My list" : "Add to My list", onclick: () => toggleStar(m),
+      }, starred ? "★" : "☆")),
       el("td", { title: m.upstream }, m.model),
       el("td", {}, el("i", { class: "dot", style: { background: color(m.provider) } }), names[m.provider] || m.provider),
       el("td", {}, el("span", { class: "state" }, el("span", { class: `lamp ${kind === "good" ? "on" : kind === "warning" ? "warn" : kind === "off" ? "" : "bad"}`, "aria-hidden": "true" }), stateText)),
@@ -406,11 +557,15 @@ function renderRecent(ov, act) {
 
 async function load() {
   try {
-    const [ov, act] = await Promise.all([api("/mangoman/overview"), api("/mangoman/activity?hours=24")]);
-    state.overview = ov; state.activity = act;
+    const [ov, act, rv] = await Promise.all([api("/mangoman/overview"), api("/mangoman/activity?hours=24"),
+      api("/mangoman/radar").catch(() => null)]);
+    state.overview = ov; state.activity = act; state.radar = rv;
     $("app").hidden = false; $("gate").hidden = true;
     renderHead(ov, act);
     renderBoard(ov, act);
+    renderMyList(ov);
+    renderFab();
+    if (state.drawer) renderDrawer();
     renderChart(act, ov);
     renderModels(ov, act);
     renderRecent(ov, act);
@@ -424,6 +579,16 @@ document.addEventListener("DOMContentLoaded", () => {
   state.token = readToken();
   if (!state.token) { $("gate").hidden = false; $("runline").textContent = "No access token."; return; }
   $("refresh").addEventListener("click", load);
+  $("mylist-add").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = $("mylist-pick").value;
+    if (v) saveMyList([...(state.overview.favorites || []), v]);
+  });
+  $("mylist-new").addEventListener("click", () => openDrawer(true));
+  $("fab").addEventListener("click", () => openDrawer(!state.drawer));
+  $("drawer-close").addEventListener("click", () => openDrawer(false));
+  $("drawer-scan").addEventListener("click", scanNow);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && state.drawer) openDrawer(false); });
   for (const b of document.querySelectorAll(".seg button")) {
     b.addEventListener("click", () => {
       state.filter = b.dataset.filter;
@@ -437,5 +602,5 @@ document.addEventListener("DOMContentLoaded", () => {
     resizeTimer = setTimeout(() => { if (state.overview) renderChart(state.activity, state.overview); }, 150);
   });
   load();
-  setInterval(() => { if (!document.hidden && !state.open.size) load(); }, 15000);
+  setInterval(() => { if (!document.hidden && !state.open.size && !state.drawer) load(); }, 15000);
 });

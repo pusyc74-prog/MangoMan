@@ -203,3 +203,80 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
 .more { margin: 0; padding: 10px 14px; border-top: 1px solid var(--hair); }
+
+/* My list */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mylist-wrap { background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; }
+.mylist { list-style: none; margin: 0; padding: 0; }
+.fav {
+  display: grid; align-items: center; column-gap: 16px; row-gap: 4px; padding: 12px 16px;
+  grid-template-columns: 28px minmax(0, 1fr) 240px auto; border-bottom: 1px solid var(--hair);
+}
+.pos {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--leaf-wash); color: var(--leaf); font-weight: 650; font-size: 13px; font-variant-numeric: tabular-nums;
+}
+.fname { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.fname small { display: block; font-weight: 400; color: var(--ink-2); font-size: 13px; }
+.fstate { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.ghost.icon { padding: 6px 10px; line-height: 1; }
+.ghost:disabled { opacity: 0.35; cursor: default; background: transparent; }
+.mylist-add { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 16px; }
+.mylist-add label { font-size: 14px; color: var(--ink-2); }
+.mylist-add select {
+  font: inherit; font-size: 14px; padding: 6px 8px; min-width: 0; max-width: 100%; flex: 0 1 340px;
+  border: 1px solid var(--axis); border-radius: 6px; background: var(--page); color: var(--ink);
+}
+#mylist-new { margin-left: auto; }
+.mylist-wrap .empty { border-bottom: 1px solid var(--hair); }
+
+/* Star column in the models table */
+.grid .star-col { width: 36px; padding-right: 0; }
+.star {
+  background: transparent; border: 0; padding: 2px 4px; font-size: 18px; line-height: 1;
+  color: var(--off); border-radius: 4px;
+}
+.star:hover { color: var(--mango); }
+.star.on { color: var(--mango); }
+
+/* Floating new-models button and drawer */
+.fab {
+  position: fixed; right: 20px; bottom: 20px; z-index: 20;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--ring);
+  padding: 10px 16px; border-radius: 999px; font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+.fab-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--off); }
+.fab.has-new { background: var(--leaf); color: var(--leaf-ink); border-color: transparent; }
+.fab.has-new .fab-dot { background: var(--mango); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mango) 35%, transparent); }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 30; width: min(440px, 100vw);
+  background: var(--surface); border-left: 1px solid var(--ring);
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.14);
+  display: flex; flex-direction: column; gap: 10px; padding: 20px;
+}
+.drawer[hidden] { display: none; }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.drawer-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.radar { list-style: none; margin: 0 -20px; padding: 0; overflow-y: auto; flex: 1; border-top: 1px solid var(--hair); }
+.ritem { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--hair); }
+.ritem .primary { white-space: nowrap; font-size: 14px; padding: 6px 12px; }
+.rmain { flex: 1; min-width: 0; }
+.rname { font-weight: 600; display: flex; align-items: center; gap: 8px; overflow-wrap: anywhere; }
+.rmeta { font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; }
+.rmeta.dim { color: var(--muted); }
+.badge {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  background: var(--mango); color: #0b0b0b; padding: 1px 6px; border-radius: 4px; flex-shrink: 0; white-space: nowrap;
+}
+.radar .empty { padding: 18px 20px; }
+
+@media (max-width: 760px) {
+  .fav { grid-template-columns: 28px minmax(0, 1fr); }
+  .fav .fstate { grid-column: 2; grid-row: 2; }
+  .fav .actions { grid-column: 2; grid-row: 3; flex-direction: row; justify-content: flex-start; padding-top: 4px; }
+  #mylist-new { margin-left: 0; }
+  .ritem { flex-wrap: wrap; }
+  .fab { right: 16px; bottom: 16px; }
+}

@@ -72,6 +72,28 @@ The page gets the local token through the URL fragment, which browsers never sen
 
 Routing also uses measured speed: after two answers from a model, its real response time replaces the catalogue estimate, so slow models sink in the ranking.
 
+## My list and new models
+
+**My list** is your ordered set of preferred models. Every request tries them first, top to bottom; when they are used up (rate limited, cooling down after errors, or missing a capability the request needs), MangoMan falls back to its normal best-free-model ranking.
+
+| Entry | Meaning |
+| --- | --- |
+| `kimi-k3` | that model on any connected provider |
+| `groq/gpt-oss-120b` | that model on Groq only |
+
+**New models.** The router lists each connected provider's models every 6 hours (model lists only, no prompts). Free chat models that are not in the catalogue appear behind the floating "New models" button on the dashboard, newest first, marked New for 14 days. One click adds a model to the catalogue and to the end of My list; it stays after restarts.
+
+```sh
+mangoman list                              # show My list
+mangoman list add kimi-k3 groq/gpt-oss-120b
+mangoman list up groq/gpt-oss-120b         # reorder
+mangoman list rm kimi-k3
+mangoman list new [--scan]                 # new free models not yet in the catalogue
+mangoman list add openrouter/acme/model:free   # add one of those
+```
+
+On the dashboard: the My list section (reorder, remove, add from a picker), a star on every row of the models table, and the New models drawer with Check now.
+
 ## What M2 adds
 
 | Area | Done in M2 |
@@ -112,6 +134,7 @@ internal/config/     config.json (never holds provider keys)
 internal/store/      usage log and summary
 internal/conformance/ corpus, checks, reference provider
 internal/doctor/     live provider checks, report, markdown summary
+internal/radar/      new-model radar (watches provider model lists)
 internal/setup/      setup wizard and key connection
 internal/ingress/ui/ dashboard page (embedded in the binary)
 scripts/try.sh       one-command live test (Codespaces or any machine)

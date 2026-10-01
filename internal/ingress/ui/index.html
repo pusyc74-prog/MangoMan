@@ -33,6 +33,23 @@
     <ol class="board" id="board"></ol>
   </section>
 
+  <section class="block" aria-labelledby="h-mylist">
+    <div class="block-head">
+      <h2 id="h-mylist">My list</h2>
+      <p class="sub" id="mylist-sub">Models tried first, top to bottom. When they are used up, MangoMan switches to the rest.</p>
+    </div>
+    <div class="mylist-wrap">
+      <ol class="mylist" id="mylist"></ol>
+      <p class="empty" id="mylist-empty" hidden></p>
+      <form class="mylist-add" id="mylist-add">
+        <label for="mylist-pick">Add a model</label>
+        <select id="mylist-pick"></select>
+        <button type="submit" class="ghost">Add</button>
+        <button type="button" class="ghost" id="mylist-new">Browse new models</button>
+      </form>
+    </div>
+  </section>
+
   <section class="block" aria-labelledby="h-traffic">
     <div class="block-head">
       <h2 id="h-traffic">Requests per hour</h2>
@@ -54,7 +71,7 @@
     <div class="table-wrap">
       <table class="grid" id="models">
         <thead><tr>
-          <th scope="col">Model</th><th scope="col">Provider</th><th scope="col">State</th>
+          <th scope="col" class="star-col"><span class="sr">My list</span></th><th scope="col">Model</th><th scope="col">Provider</th><th scope="col">State</th>
           <th scope="col" class="r">Requests</th><th scope="col" class="r">Success</th>
           <th scope="col" class="r">Typical speed</th><th scope="col" class="r">Tokens</th>
           <th scope="col">Free limit</th><th scope="col">Your data</th>
@@ -88,6 +105,23 @@
   <p>This page needs the router's local token. Run this and it opens with access:</p>
   <pre><code>mangoman dashboard</code></pre>
 </section>
+
+<button type="button" class="fab" id="fab" hidden aria-controls="drawer" aria-expanded="false">
+  <span class="fab-dot" aria-hidden="true"></span><span id="fab-text">New models</span>
+</button>
+
+<aside class="drawer" id="drawer" role="dialog" aria-labelledby="h-drawer" hidden>
+  <div class="drawer-head">
+    <h2 id="h-drawer">New free models</h2>
+    <button type="button" class="ghost" id="drawer-close" aria-label="Close">Close</button>
+  </div>
+  <p class="sub" id="drawer-sub"></p>
+  <div class="drawer-tools">
+    <button type="button" class="ghost" id="drawer-scan">Check now</button>
+    <span class="msg" id="drawer-msg" role="status"></span>
+  </div>
+  <ul class="radar" id="radar"></ul>
+</aside>
 
 <div class="tip" id="tip" role="tooltip" hidden></div>
 </body>

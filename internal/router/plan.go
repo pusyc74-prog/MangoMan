@@ -141,16 +141,58 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 		sort.SliceStable(first, func(i, j int) bool {
 			return strings.ToLower(first[i].Model.ID()) == requested && strings.ToLower(first[j].Model.ID()) != requested
 		})
-		out := append(first, sameModelFirst(rest)...)
+		fav, others := rt.splitFavorites(rest)
+		out := append(first, fav...)
+		out = append(out, sameModelFirst(others)...)
 		return rt.cap(out), info
 	}
-	// Local models are the backstop: the best one is always tried last, after
-	// the capped list of cloud candidates.
-	out := rt.cap(sameModelFirst(cloud))
-	if len(local) > 0 {
-		out = append(out, local[0])
+	// My list first, in the user's order; then the router's own ranking;
+	// then the best local model as the backstop, always kept last.
+	fav, others := rt.splitFavorites(append(cloud, local...))
+	var restCloud, restLocal []Candidate
+	for _, c := range others {
+		if c.Provider.Local {
+			restLocal = append(restLocal, c)
+		} else {
+			restCloud = append(restCloud, c)
+		}
+	}
+	out := rt.cap(append(fav, sameModelFirst(restCloud)...))
+	if len(restLocal) > 0 {
+		out = append(out, restLocal[0])
 	}
 	return out, info
+}
+
+// splitFavorites moves candidates on My list to the front, ordered by their
+// position on the list (score order within one entry, so the same model on
+// its best provider is tried first). Anything exhausted or failing was
+// already filtered out by plan, so the list naturally falls through.
+func (rt *Router) splitFavorites(cs []Candidate) (fav, rest []Candidate) {
+	list := rt.Cfg.GetFavorites()
+	if len(list) == 0 {
+		return nil, cs
+	}
+	idx := func(c Candidate) int {
+		for i, f := range list {
+			f = strings.ToLower(f)
+			if f == strings.ToLower(c.Model.Canonical) || f == strings.ToLower(c.Model.ID()) {
+				return i
+			}
+		}
+		return -1
+	}
+	pos := map[string]int{}
+	for _, c := range cs {
+		if i := idx(c); i >= 0 {
+			pos[c.Target()] = i
+			fav = append(fav, c)
+		} else {
+			rest = append(rest, c)
+		}
+	}
+	sort.SliceStable(fav, func(i, j int) bool { return pos[fav[i].Target()] < pos[fav[j].Target()] })
+	return fav, rest
 }
 
 // sameModelFirst keeps score order but, after each model, puts the same

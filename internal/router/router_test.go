@@ -571,3 +571,45 @@ func TestForbiddenModelDoesNotDisableKey(t *testing.T) {
 		t.Fatal("a 403 on one model must not disable the provider key")
 	}
 }
+
+func TestMyListFirstThenFallsThrough(t *testing.T) {
+	// The router alone would pick a (best quality). My list says c, then b.
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: okJSON("from a")}
+	b := &fake{id: "b", model: "m2", quality: 0.5, handler: okJSON("from b")}
+	c := &fake{id: "c", model: "m3", quality: 0.2, handler: status(429, map[string]string{"Retry-After": "600"})}
+	rt := setup(t, a, b, c)
+	rt.Cfg.SetFavorites([]string{"m3", "b/m2"})
+
+	w := do(t, rt, hello)
+	if w.Header().Get("X-MangoMan-Provider") != "b" || w.Header().Get("X-MangoMan-Attempts") != "2" {
+		t.Fatalf("want c tried first (rate limited), then b from My list; got %v", w.Header())
+	}
+	// c is now exhausted: b answers on the first attempt.
+	if w := do(t, rt, hello); w.Header().Get("X-MangoMan-Provider") != "b" || w.Header().Get("X-MangoMan-Attempts") != "1" {
+		t.Fatalf("exhausted list entry should be skipped: %v", w.Header())
+	}
+	// b fails: the router's own choice (a) takes over.
+	b.handler = status(503, nil)
+	if w := do(t, rt, hello); w.Header().Get("X-MangoMan-Provider") != "a" {
+		t.Fatalf("after My list is exhausted the router should pick a: %v", w.Header())
+	}
+	// An explicitly requested model still wins over My list.
+	if w := do(t, rt, `{"model":"m1","messages":[{"role":"user","content":"hi"}]}`); w.Header().Get("X-MangoMan-Provider") != "a" || w.Header().Get("X-MangoMan-Attempts") != "1" {
+		t.Fatalf("explicit model should be first: %v", w.Header())
+	}
+}
+
+func TestMyListProviderPin(t *testing.T) {
+	// Same model on two providers; the list pins provider b.
+	a := &fake{id: "a", model: "m1", quality: 0.9, speed: 0.9, handler: okJSON("from a")}
+	b := &fake{id: "b", model: "m1", quality: 0.9, speed: 0.1, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	rt.Cfg.SetFavorites([]string{"b/m1"})
+	if w := do(t, rt, hello); w.Header().Get("X-MangoMan-Provider") != "b" {
+		t.Fatalf("provider pin ignored: %v", w.Header())
+	}
+	rt.Cfg.SetFavorites([]string{"m1"})
+	if w := do(t, rt, hello); w.Header().Get("X-MangoMan-Provider") != "a" {
+		t.Fatalf("model-wide entry should use the best provider first: %v", w.Header())
+	}
+}

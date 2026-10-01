@@ -27,6 +27,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/ingress"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/providers"
+	"github.com/pusyc74-prog/mangoman/internal/radar"
 	"github.com/pusyc74-prog/mangoman/internal/router"
 	"github.com/pusyc74-prog/mangoman/internal/store"
 )
@@ -44,6 +45,7 @@ Usage:
   mangoman keys list            show providers and which keys are present
   mangoman keys rm <provider>   remove a stored key
   mangoman dashboard            open the dashboard in your browser
+  mangoman list [add|rm|up|new]  My list: models tried first; new free models
   mangoman status               show the running router's providers and quota
   mangoman models               list the free model catalogue with data policies
   mangoman test [prompt]        send a test request through the running router
@@ -76,6 +78,8 @@ func main() {
 		err = cmdKeys(os.Args[2:])
 	case "dashboard", "ui":
 		err = cmdDashboard()
+	case "list", "mylist":
+		err = cmdList(os.Args[2:])
 	case "status":
 		err = cmdStatus()
 	case "models":
@@ -190,6 +194,7 @@ func cmdServe(args []string) error {
 	if err != nil {
 		return err
 	}
+	loadCustomModels(cat, cfg)
 	rt := router.New(cat, keys.NewResolver(st, envMap(cat)), cfg)
 	logger := log.New(os.Stderr, "mangoman ", log.LstdFlags)
 	rt.Logf = logger.Printf
@@ -229,8 +234,15 @@ func cmdServe(args []string) error {
 	}
 	discover()
 
+	rd := &radar.Radar{Cat: cat, Keys: rt.Keys, List: rt.Client.ListModels, Excluded: cfg.Excluded,
+		Path: dir + string(os.PathSeparator) + "radar.json"}
+	if err := rd.Load(); err != nil {
+		logger.Printf("radar state ignored: %v", err)
+	}
+	go rd.Run(ctx, 30*time.Second, 6*time.Hour, logger.Printf)
+
 	srv := &ingress.Server{Router: rt, Cfg: cfg, Version: version, Started: time.Now(),
-		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl"}
+		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl", Radar: rd}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
 		return fmt.Errorf("cannot listen on %s: %w", srv.Addr(), err)
@@ -542,4 +554,13 @@ func readSecret(prompt string) (string, error) {
 		return "", err
 	}
 	return strings.TrimSpace(line), nil
+}
+
+// loadCustomModels adds models the user picked from the new-model radar.
+func loadCustomModels(cat *catalogue.Catalogue, cfg *config.Config) {
+	for _, m := range cfg.GetCustomModels() {
+		if _, ok := cat.Provider(m.Provider); ok {
+			cat.AddModel(cat.DiscoveredModel(m.Provider, m.Upstream))
+		}
+	}
 }

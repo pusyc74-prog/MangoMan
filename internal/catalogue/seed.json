@@ -41,7 +41,17 @@
           "remaining": "x-ratelimit-remaining-tokens",
           "reset": "x-ratelimit-reset-tokens"
         }
-      ]
+      ],
+      "discover": {
+        "mode": "all",
+        "exclude": [
+          "whisper",
+          "guard",
+          "orpheus",
+          "safeguard",
+          "tts"
+        ]
+      }
     },
     {
       "id": "cerebras",
@@ -82,7 +92,10 @@
           "remaining": "x-ratelimit-remaining-tokens-minute",
           "reset": "x-ratelimit-reset-tokens-minute"
         }
-      ]
+      ],
+      "discover": {
+        "mode": "all"
+      }
     },
     {
       "id": "openrouter",
@@ -105,6 +118,14 @@
       },
       "account_limits": {
         "rpd": 50
+      },
+      "discover": {
+        "mode": "suffix",
+        "suffix": ":free",
+        "exclude": [
+          "safety",
+          "guard"
+        ]
       }
     },
     {
@@ -121,6 +142,30 @@
         "trains_on_data": "unknown",
         "jurisdiction": "US",
         "verified": false
+      },
+      "discover": {
+        "mode": "all",
+        "exclude": [
+          "embed",
+          "guard",
+          "safety",
+          "reward",
+          "parse",
+          "rerank",
+          "detector",
+          "calibration",
+          "translate",
+          "deplot",
+          "kosmos",
+          "fuyu",
+          "neva",
+          "vila",
+          "clip",
+          "retriev",
+          "cosmos",
+          "diffusion",
+          "vision"
+        ]
       }
     },
     {
@@ -154,6 +199,10 @@
         "jurisdiction": "US",
         "terms_url": "https://opencode.ai/docs/zen/",
         "verified": false
+      },
+      "discover": {
+        "mode": "suffix",
+        "suffix": "-free"
       }
     }
   ],
