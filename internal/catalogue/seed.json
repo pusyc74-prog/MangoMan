@@ -1,0 +1,63 @@
+{
+  "version": "seed-2026-10-01",
+  "updated": "2026-10-01",
+  "providers": [
+    {
+      "id": "groq", "name": "Groq", "base_url": "https://api.groq.com/openai/v1", "kind": "openai",
+      "key_env": "GROQ_API_KEY", "needs_key": true, "signup_url": "https://console.groq.com/keys", "speed": 0.95,
+      "policy": {"retention": "unknown", "trains_on_data": "unknown", "jurisdiction": "US", "terms_url": "https://groq.com/terms-of-use/", "verified": false}
+    },
+    {
+      "id": "cerebras", "name": "Cerebras", "base_url": "https://api.cerebras.ai/v1", "kind": "openai",
+      "key_env": "CEREBRAS_API_KEY", "needs_key": true, "signup_url": "https://cloud.cerebras.ai/", "speed": 0.95,
+      "policy": {"retention": "unknown", "trains_on_data": "unknown", "jurisdiction": "US", "verified": false}
+    },
+    {
+      "id": "openrouter", "name": "OpenRouter (free models)", "base_url": "https://openrouter.ai/api/v1", "kind": "openai",
+      "key_env": "OPENROUTER_API_KEY", "needs_key": true, "signup_url": "https://openrouter.ai/keys", "speed": 0.55,
+      "policy": {"retention": "varies by upstream", "trains_on_data": "unknown", "jurisdiction": "US", "terms_url": "https://openrouter.ai/terms", "verified": false}
+    },
+    {
+      "id": "nvidia", "name": "NVIDIA", "base_url": "https://integrate.api.nvidia.com/v1", "kind": "openai",
+      "key_env": "NVIDIA_API_KEY", "needs_key": true, "signup_url": "https://build.nvidia.com/", "speed": 0.6,
+      "policy": {"retention": "unknown", "trains_on_data": "unknown", "jurisdiction": "US", "verified": false}
+    },
+    {
+      "id": "ollama", "name": "Ollama (local)", "base_url": "http://127.0.0.1:11434/v1", "kind": "openai",
+      "needs_key": false, "local": true, "signup_url": "https://ollama.com/download", "speed": 0.4,
+      "policy": {"retention": "none", "trains_on_data": "no", "jurisdiction": "local", "verified": true}
+    }
+  ],
+  "models": [
+    {"canonical": "gpt-oss-120b", "provider": "groq", "upstream": "openai/gpt-oss-120b", "free": true, "context": 131072,
+     "caps": ["tools", "json", "streaming", "reasoning"], "limits": {"rpm": 30, "rpd": 1000, "tpm": 8000, "tpd": 200000},
+     "quality": {"code": 0.8, "reasoning": 0.85, "writing": 0.75, "extraction": 0.8, "fast": 0.7, "long-context": 0.7}},
+    {"canonical": "gpt-oss-120b", "provider": "cerebras", "upstream": "gpt-oss-120b", "free": true, "context": 65536,
+     "caps": ["tools", "json", "streaming", "reasoning"], "limits": {"rpm": 30, "rpd": 14400, "tpm": 60000, "tpd": 1000000},
+     "quality": {"code": 0.8, "reasoning": 0.85, "writing": 0.75, "extraction": 0.8, "fast": 0.75, "long-context": 0.6}},
+    {"canonical": "gpt-oss-120b", "provider": "openrouter", "upstream": "openai/gpt-oss-120b:free", "free": true, "context": 131072,
+     "caps": ["tools", "json", "streaming", "reasoning"], "limits": {"rpm": 20, "rpd": 50},
+     "quality": {"code": 0.8, "reasoning": 0.85, "writing": 0.75, "extraction": 0.8, "fast": 0.5, "long-context": 0.7}},
+    {"canonical": "gpt-oss-120b", "provider": "nvidia", "upstream": "openai/gpt-oss-120b", "free": true, "context": 131072,
+     "caps": ["tools", "json", "streaming", "reasoning"], "limits": {"rpm": 40},
+     "quality": {"code": 0.8, "reasoning": 0.85, "writing": 0.75, "extraction": 0.8, "fast": 0.5, "long-context": 0.7}},
+    {"canonical": "llama-3.3-70b", "provider": "groq", "upstream": "llama-3.3-70b-versatile", "free": true, "context": 131072,
+     "caps": ["tools", "json", "streaming"], "limits": {"rpm": 30, "rpd": 1000, "tpm": 12000, "tpd": 100000},
+     "quality": {"code": 0.65, "reasoning": 0.65, "writing": 0.75, "extraction": 0.75, "fast": 0.8, "long-context": 0.7}},
+    {"canonical": "llama-3.3-70b", "provider": "openrouter", "upstream": "meta-llama/llama-3.3-70b-instruct:free", "free": true, "context": 131072,
+     "caps": ["tools", "json", "streaming"], "limits": {"rpm": 20, "rpd": 50},
+     "quality": {"code": 0.65, "reasoning": 0.65, "writing": 0.75, "extraction": 0.75, "fast": 0.5, "long-context": 0.7}},
+    {"canonical": "llama-3.3-70b", "provider": "nvidia", "upstream": "meta/llama-3.3-70b-instruct", "free": true, "context": 131072,
+     "caps": ["tools", "json", "streaming"], "limits": {"rpm": 40},
+     "quality": {"code": 0.65, "reasoning": 0.65, "writing": 0.75, "extraction": 0.75, "fast": 0.5, "long-context": 0.7}},
+    {"canonical": "llama-3.1-8b", "provider": "groq", "upstream": "llama-3.1-8b-instant", "free": true, "context": 131072,
+     "caps": ["tools", "json", "streaming"], "limits": {"rpm": 30, "rpd": 14400, "tpm": 6000, "tpd": 500000},
+     "quality": {"code": 0.4, "reasoning": 0.4, "writing": 0.55, "extraction": 0.55, "fast": 0.95, "long-context": 0.5}},
+    {"canonical": "llama-3.1-8b", "provider": "cerebras", "upstream": "llama3.1-8b", "free": true, "context": 8192,
+     "caps": ["tools", "json", "streaming"], "limits": {"rpm": 30, "rpd": 14400, "tpm": 60000, "tpd": 1000000},
+     "quality": {"code": 0.4, "reasoning": 0.4, "writing": 0.55, "extraction": 0.55, "fast": 0.95, "long-context": 0.3}},
+    {"canonical": "qwen3-32b", "provider": "groq", "upstream": "qwen/qwen3-32b", "free": true, "context": 131072,
+     "caps": ["tools", "json", "streaming", "reasoning"], "limits": {"rpm": 60, "rpd": 1000, "tpm": 6000, "tpd": 500000},
+     "quality": {"code": 0.72, "reasoning": 0.75, "writing": 0.65, "extraction": 0.7, "fast": 0.6, "long-context": 0.6}}
+  ]
+}
