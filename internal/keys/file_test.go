@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -22,7 +23,9 @@ func TestFileStoreRoundTrip(t *testing.T) {
 	if strings.Contains(string(raw), "gsk_secret_value") {
 		t.Fatal("key stored in plain text")
 	}
-	if fi, _ := os.Stat(p); fi.Mode().Perm() != 0o600 {
+	// Unix only: Windows has no owner-only mode bits (ACLs protect the
+	// user's profile directory instead).
+	if fi, _ := os.Stat(p); runtime.GOOS != "windows" && fi.Mode().Perm() != 0o600 {
 		t.Fatalf("perm %v", fi.Mode().Perm())
 	}
 	if v, err := s.Get("groq"); err != nil || v != "gsk_secret_value" {
