@@ -42,6 +42,7 @@ jobs:
           go-version-file: go.mod
       - name: Build
         run: |
+          go mod tidy
           GOOS=${TARGET%/*} GOARCH=${TARGET#*/}
           export GOOS GOARCH
           ext=""; [ "$GOOS" = windows ] && ext=".exe"
