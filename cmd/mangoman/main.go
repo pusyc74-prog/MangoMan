@@ -46,6 +46,8 @@ Usage:
   mangoman keys rm <provider>   remove a stored key
   mangoman dashboard            open the dashboard in your browser
   mangoman list [add|rm|up|new]  My list: models tried first; new free models
+  mangoman code [--model M]     open OpenCode on free models (starts the router if needed)
+  mangoman mcp                  assist mode: MCP server for Claude Code and Codex
   mangoman group [set|rm]       model groups: "group/<name>" never leaves the group
   mangoman status               show the running router's providers and quota
   mangoman models               list the free model catalogue with data policies
@@ -83,6 +85,10 @@ func main() {
 		err = cmdList(os.Args[2:])
 	case "group", "groups":
 		err = cmdGroup(os.Args[2:])
+	case "code":
+		err = cmdCode(os.Args[2:])
+	case "mcp":
+		err = cmdMCP()
 	case "status":
 		err = cmdStatus()
 	case "models":
@@ -180,6 +186,16 @@ Next:
       },
       "model": "mangoman/free/coder"
     }
+
+  Assist mode (keep Claude or GPT as the main model, offload routine work):
+    Claude Code:  claude mcp add --scope user mangoman -- mangoman mcp
+    Codex:        add to ~/.codex/config.toml
+                    [mcp_servers.mangoman]
+                    command = "mangoman"
+                    args = ["mcp"]
+    Tools: free_ask (tests, docs, summaries), free_review (git changes), free_status.
+
+  Or just run: mangoman code   (OpenCode, already wired to MangoMan)
 
   Same model every time (workflows): use "strict/<model>", or create a group
   with "mangoman group set <name> <model>..." and use "group/<name>".

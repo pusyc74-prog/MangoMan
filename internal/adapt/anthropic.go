@@ -222,8 +222,21 @@ func AnthropicToChat(body []byte) ([]byte, AnthropicRequest, error) {
 			} else {
 				msgs = append(msgs, map[string]any{"role": "user", "content": parts})
 			}
+		case "system":
+			// Newer Claude Code sends system messages inside the conversation.
+			// Many free models only accept a system message first and strict
+			// user/assistant alternation, so fold it into the neighbouring turn.
+			var t []string
+			for _, b := range blocks {
+				if b.Type == "text" && b.Text != "" {
+					t = append(t, b.Text)
+				}
+			}
+			if len(t) > 0 {
+				msgs = foldSystem(msgs, strings.Join(t, "\n\n"))
+			}
 		default:
-			return nil, info, bad("messages[%d].role must be user or assistant", i)
+			return nil, info, bad("messages[%d].role must be user, assistant or system", i)
 		}
 	}
 
@@ -494,4 +507,29 @@ func (c *AnthropicCodec) Done() []Event {
 func (c *AnthropicCodec) StreamError(msg string) []Event {
 	return []Event{{Name: "error", Data: map[string]any{"type": "error",
 		"error": map[string]any{"type": "api_error", "message": msg}}}}
+}
+
+// foldSystem adds mid-conversation system text where every provider accepts
+// it: into the leading system message if nothing else came yet, onto the last
+// user message, or as a new user message after an assistant or tool turn.
+func foldSystem(msgs []map[string]any, text string) []map[string]any {
+	n := len(msgs)
+	if n == 0 || n == 1 && msgs[0]["role"] == "system" {
+		if n == 1 {
+			msgs[0]["content"] = msgs[0]["content"].(string) + "\n\n" + text
+			return msgs
+		}
+		return append(msgs, map[string]any{"role": "system", "content": text})
+	}
+	last := msgs[n-1]
+	if last["role"] == "user" {
+		switch c := last["content"].(type) {
+		case string:
+			last["content"] = c + "\n\n" + text
+		case []map[string]any:
+			last["content"] = append(c, map[string]any{"type": "text", "text": text})
+		}
+		return msgs
+	}
+	return append(msgs, map[string]any{"role": "user", "content": text})
 }

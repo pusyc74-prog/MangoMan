@@ -136,6 +136,7 @@ internal/conformance/ corpus, checks, reference provider
 internal/doctor/     live provider checks, report, markdown summary
 internal/radar/      new-model radar (watches provider model lists)
 internal/adapt/      Anthropic Messages and OpenAI Responses translation
+internal/mcp/        assist mode: MCP server and free_ask / free_review / free_status
 internal/setup/      setup wizard and key connection
 internal/ingress/ui/ dashboard page (embedded in the binary)
 scripts/try.sh       one-command live test (Codespaces or any machine)
@@ -225,6 +226,38 @@ mangoman group rm coding
 
 The context check still applies inside a scope: a request too long for a model skips it.
 
-## Next: M4 (Assist mode and tray)
+## What M4 adds: assist mode and `mangoman code`
 
-An MCP server so a paid main model (Claude Code on Claude, Codex on GPT) can hand routine work to free models, plus the tray icon.
+**Assist mode** keeps Claude or GPT as your main model and lets it hand routine work to free models, so your paid limits last longer. MangoMan runs as an MCP server the coding tool starts itself:
+
+```sh
+claude mcp add --scope user mangoman -- mangoman mcp      # Claude Code
+```
+
+```toml
+# Codex: ~/.codex/config.toml
+[mcp_servers.mangoman]
+command = "mangoman"
+args = ["mcp"]
+```
+
+| Tool | What the main model can do with it |
+| --- | --- |
+| `free_ask` | Send a self-contained task (tests, docs, summaries, boilerplate) plus project files to a free model |
+| `free_review` | Get a free model's review of the current git changes (bugs, edge cases, leaked secrets) |
+| `free_status` | See which free providers are connected and how many models are ready |
+
+Guardrails: only files inside the project are sent, never files that look like secrets (`.env`, keys, credentials), symlinks out of the project are refused, 200 KB per file and 600 KB per call. `free_review` excludes secrets files from the diff.
+
+**`mangoman code`** opens OpenCode already connected to MangoMan (no config files touched), starts the router for the session if it is not running, and turns on OpenCode's web search so it can research while it codes (`--no-web` to turn it off). Pick the model with `--model free/coder`, `strict/<model>` or `group/<name>`.
+
+Checked end to end with the real tools: OpenCode 1.18 through `mangoman code`, and Claude Code 2.1 running on MangoMan and calling `free_status` through assist mode.
+
+**Local models:** Ollama serves a small context by default, too small for coding agents' instructions. Start Ollama with `OLLAMA_CONTEXT_LENGTH=32768` (or more) and MangoMan uses that size.
+
+**Tray icon: deferred.** A tray needs native GUI libraries on macOS and Linux, which would end the single cross-platform binary built without C toolchains. The dashboard and `mangoman code` cover "is it running" for now; the tray returns with the desktop app.
+
+## Next
+
+1. **Decision brain:** a fast model (Jev-style) that picks the model per task and checks answers, swappable between Jev, a fast Groq model or a local model.
+2. **MangoMan coding workspace (M5):** a coding screen in MangoMan with the OpenCode engine running underneath (credited under its MIT licence).

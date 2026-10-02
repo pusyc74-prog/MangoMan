@@ -12,6 +12,8 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -144,10 +146,16 @@ func (c *Client) DiscoverOllama(ctx context.Context, p catalogue.Provider) ([]ca
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 4<<20)).Decode(&list); err != nil {
 		return nil, err
 	}
+	// Ollama serves a small context unless OLLAMA_CONTEXT_LENGTH raises it;
+	// coding agents need 32K or more.
+	ctxLen := 8192
+	if n, err := strconv.Atoi(os.Getenv("OLLAMA_CONTEXT_LENGTH")); err == nil && n >= 2048 {
+		ctxLen = n
+	}
 	out := make([]catalogue.Model, 0, len(list.Data))
 	for _, m := range list.Data {
 		out = append(out, catalogue.Model{
-			Canonical: m.ID, Provider: p.ID, Upstream: m.ID, Free: true, Context: 8192,
+			Canonical: m.ID, Provider: p.ID, Upstream: m.ID, Free: true, Context: ctxLen,
 			Caps:    []string{"streaming", "json", "tools"},
 			Quality: map[string]float64{"default": 0.45},
 		})
