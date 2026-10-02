@@ -46,9 +46,9 @@ def main():
     slides = spec.get("slides", [])
     types = [s.get("type") for s in slides]
     r("PASS" if types[:1] == ["title"] else "FAIL", "opens with a title slide" if types[:1] == ["title"] else "slide 1 must be the title slide")
-    ans_ok = len(types) > 1 and types[1] in ("answer", "kpis")
+    ans_ok = len(types) > 1 and types[1] in ("answer", "kpis", "stat")
     r("PASS" if ans_ok else "FAIL", "the answer comes first (slide 2)" if ans_ok else
-      "slide 2 must give the answer (type answer or kpis): executives read the conclusion first")
+      "slide 2 must give the answer (type answer, kpis or stat): executives read the conclusion first")
     r("PASS" if "next_steps" in types else "WARN", "ends with next steps" if "next_steps" in types else "no next-steps slide: say what should happen now")
     n = len(slides)
     r("PASS" if 5 <= n <= 15 else "WARN", "%d slides" % n + ("" if 5 <= n <= 15 else ": aim for 5 to 15; move detail to an appendix"))
@@ -58,7 +58,7 @@ def main():
       "headlines over %d words: %s" % (MAX_HEADLINE_WORDS, "; ".join("slide %d (%d words)" % (i, words(h)) for i, h in long_heads)))
     bl = []
     for i, s in enumerate(slides, 1):
-        items = s.get("bullets", []) + s.get("points", [])
+        items = s.get("bullets", []) + [B.point_text(p) for p in s.get("points", [])]
         if len(s.get("bullets", [])) > MAX_BULLETS or len(s.get("points", [])) > 3:
             bl.append("slide %d has too many points (bullets at most %d, answer points at most 3)" % (i, MAX_BULLETS))
         bl += ["slide %d bullet over %d words" % (i, MAX_BULLET_WORDS) for b in items if words(b) > MAX_BULLET_WORDS]
@@ -68,10 +68,11 @@ def main():
       "slides %s have topic labels as headlines; write the takeaway as a sentence" % ", ".join(map(str, noverb)))
 
     computed = V.numbers_in({k: v for k, v in spec.items() if k != "slides"}) + V.numbers_in(
-        [{k: v for k, v in s.items() if k not in ("headline", "points", "bullets", "takeaway", "title", "subtitle")} for s in slides])
+        [{k: v for k, v in s.items() if k not in ("headline", "points", "bullets", "takeaway", "title", "subtitle", "note")} for s in slides])
     bad = []
     for i, s in enumerate(slides, 1):
-        for txt in [s.get("headline", ""), s.get("takeaway", "")] + s.get("points", []) + s.get("bullets", []):
+        pts = [B.point_text(p) + " " + str(p.get("stat", "") if isinstance(p, dict) else "") for p in s.get("points", [])]
+        for txt in [s.get("headline", ""), s.get("takeaway", ""), s.get("note", "")] + pts + s.get("bullets", []):
             u = tracenum.untraced(txt, computed)
             if u:
                 bad.append("slide %d: %s" % (i, ", ".join(u)))

@@ -4,7 +4,7 @@ description: Turn raw data or an analysis into a CEO or board-ready slide deck (
 license: Apache-2.0
 metadata:
   pack: mangoman
-  version: "1.0"
+  version: "1.1"
 ---
 
 # CEO deck
@@ -14,6 +14,12 @@ it work: **the answer comes first**, and **every number comes from code**
 (an analysis script you write and run), never typed or estimated. The scripts
 in this skill's `scripts/` folder build the slides in one tested design and
 check the result.
+
+The design: dark title, stat and closing slides frame light content slides;
+one motif (a large soft circle with a small accent dot) on the dark slides;
+big numbers carry the story; charts grey out everything except the category
+the headline is about. PowerPoint and PDF are drawn from the same layout, so
+they match.
 
 ## 1. Understand (ask before building)
 
@@ -55,6 +61,7 @@ spec** to stdout:
   "subtitle": "April to September 2026",
   "date": "October 2026",
   "source": "sales.csv, 18,275 orders",
+  "theme": "ink",
   "facts": {"east_growth": -0.027, "aug_returns": 0.114},
   "slides": [
     {"type": "title"},
@@ -64,6 +71,9 @@ spec** to stdout:
     {"type": "kpis", "headline": "Revenue and order value up, order count flat",
      "kpis": [{"label": "Revenue", "value": 17500000, "format": "currency", "currency": "INR",
                "delta": 0.034, "delta_label": "vs previous half"}]},
+    {"type": "stat", "value": 0.114, "format": "percent",
+     "headline": "of August orders came back, against 4.7% in other months",
+     "note": "optional one-line context"},
     {"type": "chart", "headline": "East is the only region that shrank",
      "chart": {"type": "bar", "x": ["South", "North", "West", "East"],
                "series": [{"name": "Growth", "values": [0.059, 0.055, 0.011, -0.027]}], "format": "percent"},
@@ -78,14 +88,29 @@ spec** to stdout:
 }
 ```
 
-Slide types: `title`, `answer` (up to 3 points), `kpis` (1 to 4), `chart`
-(`line`, `bar`, `hbar`, `stacked`; same chart rules as the dashboard skill:
-one axis, at most 4 series, `highlight` to make one the point), `table`,
-`bullets` (up to 5), `next_steps`, `section`.
+Slide types: `title`, `answer` (up to 3 points; each point's first number is
+shown large beside it, or give `{"text": "...", "stat": "₹1.75 Cr"}`), `kpis`
+(1 to 4), `stat` (one huge number with the headline as its sentence; use it
+once or twice for the number the audience must remember), `chart` (`line`,
+`bar`, `hbar`, `stacked`; same chart rules as the dashboard skill: one axis, at
+most 4 series), `table` (up to about 8 rows; `highlight_row` by index or first
+cell), `bullets` (up to 5), `next_steps` (up to 4, shown as numbered cards),
+`section`.
+
+Themes: `ink` (navy and saffron, default), `forest` (green and gold), `coral`
+(slate and coral). Pick one that suits the company; never mix.
+
+Chart emphasis: when the headline names one category ("East", "August"), that
+bar or point is drawn in the accent colour and the rest in grey, and its value
+appears large in the side panel. Set `"highlight_x"` to choose another
+category, `false` to turn it off, or `"callout": {"label": "...", "value": n}`
+to show a different number. Give a `takeaway` (one sentence) for the panel
+when the chart needs context.
 
 Writing rules:
 - **Every headline is the takeaway as a sentence**, at most 16 words ("East is the only region that shrank", not "Regional growth").
 - One message per slide. Bullets at most 16 words; no paragraphs.
+- Vary the rhythm: after two or three light slides, a `stat` or `section` slide resets attention.
 - Every number in a headline, point, bullet or takeaway must be computed by the script. Numbers that appear only in text go in `facts`.
 - Every claim must be true of the data ("the only region that shrank" needs exactly one negative region). Back claims with facts and reread them against the charts.
 

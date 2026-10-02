@@ -17,15 +17,15 @@ PALETTE_DARK = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#008300"
 CSS_TOKENS = """
 :root { color-scheme: light;
   --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
-  --grid:#e1e0d9; --axis:#c3c2b7; --ring:rgba(11,11,11,0.10); --up:#006300; --down:#d03b3b;
+  --grid:#e1e0d9; --axis:#c3c2b7; --dim:#c3c2b7; --ring:rgba(11,11,11,0.10); --up:#006300; --down:#d03b3b;
   %s }
 @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) { color-scheme: dark;
   --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
-  --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,0.10); --up:#0ca30c; --down:#e66767;
+  --grid:#2c2c2a; --axis:#383835; --dim:#55544f; --ring:rgba(255,255,255,0.10); --up:#0ca30c; --down:#e66767;
   %s } }
 :root[data-theme="dark"] { color-scheme: dark;
   --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
-  --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,0.10); --up:#0ca30c; --down:#e66767;
+  --grid:#2c2c2a; --axis:#383835; --dim:#55544f; --ring:rgba(255,255,255,0.10); --up:#0ca30c; --down:#e66767;
   %s }
 """ % (
     " ".join("--s%d:%s;" % (i + 1, c) for i, c in enumerate(PALETTE_LIGHT)),
@@ -172,6 +172,13 @@ def nice_ticks(lo, hi, n=4):
 
 # ---------- charts ----------
 
+def _bar_color(i, j, chart):
+    hx = chart.get("highlight_x")
+    if hx is not None and len(chart["series"]) == 1:
+        return "var(--s1)" if str(chart["x"][j]) == str(hx) else "var(--dim)"
+    return _color(i, chart)
+
+
 def _color(i, chart):
     hl = chart.get("highlight")
     if hl:
@@ -224,6 +231,9 @@ def _xy(chart, W, H, kind):
     k, cur = chart.get("format", "number"), chart.get("currency")
     xs, series = chart["x"], chart["series"]
     L, R, T, B = 52, 16, 12, 28
+    bare = bool(chart.get("hide_axis")) and kind == "bar" and len(series) == 1
+    if bare:
+        L, T = 16, 24  # values sit on the bars, so no value axis
     if kind == "line" and len(series) <= 4:
         R = 110  # room for end labels
     n = len(xs)
@@ -241,6 +251,10 @@ def _xy(chart, W, H, kind):
     xc = lambda j: L + slot * (j + 0.5)
     out = ['<svg viewBox="0 0 %d %d" role="img" aria-label="%s">' % (W, H, esc(chart.get("title", "")))]
     for tk in ticks:
+        if bare:
+            if tk == 0:
+                out.append('<line class="base" x1="%d" x2="%d" y1="%.1f" y2="%.1f"/>' % (L, W - R, y(tk), y(tk)))
+            continue
         out.append('<line class="%s" x1="%d" x2="%d" y1="%.1f" y2="%.1f"/>' % ("base" if tk == 0 else "grid", L, W - R, y(tk), y(tk)))
         out.append('<text x="%d" y="%.1f" text-anchor="end">%s</text>' % (L - 8, y(tk) + 4, esc(fmt(tk, k, cur))))
     every = max(1, math.ceil(n / max(1, pw // 70)))
@@ -257,6 +271,14 @@ def _xy(chart, W, H, kind):
                 c, " ".join("%.1f,%.1f" % p for p in pts)))
             ex, ey = pts[-1]
             out.append('<circle cx="%.1f" cy="%.1f" r="4" fill="%s" stroke="var(--surface)" stroke-width="2"/>' % (ex, ey, c))
+            hx = chart.get("highlight_x")
+            sx = [str(v) for v in xs]
+            if hx is not None and len(series) == 1 and str(hx) in sx:
+                j = sx.index(str(hx))
+                v = s["values"][j]
+                if v is not None:  # mark the point the headline is about
+                    out.append('<circle class="hlpt" cx="%.1f" cy="%.1f" r="7" fill="var(--s1)" stroke="var(--surface)" stroke-width="3"/>' % (xc(j), y(v)))
+                    out.append('<text class="lbl hl" x="%.1f" y="%.1f" text-anchor="middle">%s</text>' % (xc(j), y(v) - 16, esc(fmt(v, k, cur))))
         if len(series) <= 4:  # direct end labels when they do not collide
             ends = sorted(((y(s["values"][-1]), s) for s in series if s["values"] and s["values"][-1] is not None), key=lambda e: e[0])
             if all(b[0] - a[0] >= 14 for a, b in zip(ends, ends[1:])):
@@ -265,7 +287,7 @@ def _xy(chart, W, H, kind):
                     out.append('<text class="lbl" x="%.1f" y="%.1f">%s</text>' % (W - R + 10, ey + 4, esc(lab)))
     elif kind == "bar":
         m = len(series)
-        bw = min(24, slot * 0.7 / m)
+        bw = min(chart.get("bar_max", 24), slot * 0.7 / m)
         gap = 2 if m > 1 else 0
         for j in range(n):
             x0 = xc(j) - (bw * m + gap * (m - 1)) / 2
@@ -274,11 +296,11 @@ def _xy(chart, W, H, kind):
                 if v is None:
                     continue
                 y0, y1 = y(max(v, 0)), y(min(v, 0))
-                d = _bar_path(x0 + i * (bw + gap), y0, bw, max(1, y1 - y0), 4)
+                d = _bar_path(x0 + i * (bw + gap), y0, bw, max(1, y1 - y0), chart.get("bar_radius", 4))
                 if v < 0:  # round the data end, which is the bottom
                     cx, cy = x0 + i * (bw + gap) + bw / 2, (y0 + y1) / 2
                     d = '%s" transform="rotate(180 %.1f %.1f)' % (d, cx, cy)
-                out.append('<path fill="%s" d="%s"/>' % (_color(i, chart), d))
+                out.append('<path fill="%s" d="%s"/>' % (_bar_color(i, j, chart), d))
                 if m == 1 and n <= 12:  # value at the tip of each bar
                     ty = y0 - 7 if v >= 0 else y1 + 15
                     out.append('<text class="lbl" x="%.1f" y="%.1f" text-anchor="middle">%s</text>' % (
@@ -319,7 +341,8 @@ def _hbar(chart, W):
         if v is None:
             continue
         w = max(1, pw * v / vmax)
-        col = "var(--s1)" if not chart.get("highlight") or c == chart.get("highlight") else "var(--muted)"
+        hl = chart.get("highlight_x", chart.get("highlight"))
+        col = "var(--s1)" if not hl or c == hl else "var(--dim)"
         out.append('<path fill="%s" d="%s"/>' % (col, _bar_path(label_w, yc - bh / 2, w, bh, 4, True)))
         out.append('<text class="lbl" x="%.1f" y="%.1f">%s</text>' % (label_w + w + 8, yc + 4, esc(fmt(v, k, cur))))
         out.append('<rect class="hit" x="0" y="%.1f" width="%d" height="%d" data-tip="%s"/>' % (
