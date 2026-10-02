@@ -1,4 +1,4 @@
-VERSION ?= 0.5.0-brain
+VERSION ?= 0.6.0-skills
 LDFLAGS := -s -w -X main.version=$(VERSION)
 
 .PHONY: build test vet dist clean

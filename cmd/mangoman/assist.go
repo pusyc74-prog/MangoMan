@@ -143,11 +143,20 @@ func cmdCode(args []string) error {
 		"MANGOMAN_TOKEN="+cfg.Token,
 		"OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model),
 	)
+	if os.Getenv("OPENCODE_CONFIG_DIR") == "" {
+		if oc, err := codeSkillsDir(); err == nil {
+			env = append(env, "OPENCODE_CONFIG_DIR="+oc)
+		} else {
+			fmt.Println("Skill packs not loaded:", err)
+		}
+	} else {
+		fmt.Println("OPENCODE_CONFIG_DIR is set; MangoMan skill packs not added there (mangoman skills install --dir to add them).")
+	}
 	if !*noWeb {
 		// OpenCode's web search (via Exa) lets it research while it codes.
 		env = append(env, "OPENCODE_ENABLE_EXA=1")
 	}
-	fmt.Printf("Opening OpenCode on MangoMan free models (%s). Web search %s.\n", *model, map[bool]string{true: "off", false: "on"}[*noWeb])
+	fmt.Printf("Opening OpenCode on MangoMan free models (%s). Web search %s. Skill packs: resume, data dashboard, CEO deck.\n", *model, map[bool]string{true: "off", false: "on"}[*noWeb])
 
 	cmd := exec.Command(oc, fs.Args()...)
 	cmd.Stdin, cmd.Stdout, cmd.Stderr, cmd.Env = os.Stdin, os.Stdout, os.Stderr, env

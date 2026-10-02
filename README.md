@@ -138,6 +138,7 @@ internal/radar/      new-model radar (watches provider model lists)
 internal/adapt/      Anthropic Messages and OpenAI Responses translation
 internal/mcp/        assist mode: MCP server and free_ask / free_review / free_status
 internal/brain/      decision brain: typed questions, budget, cache, stats
+internal/skills/     skill packs (embedded) and their installer
 internal/setup/      setup wizard and key connection
 internal/ingress/ui/ dashboard page (embedded in the binary)
 scripts/try.sh       one-command live test (Codespaces or any machine)
@@ -278,8 +279,29 @@ mangoman brain test "Is this a coding question: how do I sort a list?"
 
 The dashboard shows the same, with an on/off switch. Jev can be the engine once added from the new-models list (OpenCode Zen key needed); whether it follows the JSON answer format has to be checked with a real key.
 
+## Skill packs (wave 1)
+
+Skill packs make specific outputs come out polished on free models. Each is a folder in the open Agent Skills format (a `SKILL.md` with expert instructions, plus Python scripts), so OpenCode, Claude Code and Codex load it by themselves. The model writes the content and the analysis code; a tested renderer applies the design; a checker verifies the result before delivery.
+
+| Pack | Asks first | Builds | Checks |
+| --- | --- | --- | --- |
+| `mangoman-resume` | Target role, classic (ATS-safe) or modern design, length, region | PDF and HTML in two tested designs | Page count, page well filled, selectable text, every section filled, action-first bullets with results, no "I", one date format |
+| `mangoman-data-dashboard` | Audience and decision, period and measures, currency | Interactive HTML dashboard (KPI tiles, charts, table view, light and dark) | Analysis reproduces the numbers, spec valid, every number in the text traces to computed data, page renders |
+| `mangoman-ceo-deck` | Audience and decision, the main question, period and currency | Editable PowerPoint (native charts and tables), PDF, web version | Same number checks, answer-first structure, headline and bullet length, no slide overflows, one PDF page per slide |
+
+Numbers are never typed by the model: an `analysis.py` it writes computes them, and the checker re-runs it and traces every figure in the text (headline, titles, notes) back to computed values. Numbers that appear only in text go in a `facts` field.
+
+```sh
+mangoman skills                       # list
+mangoman skills install               # for Claude Code, Codex and OpenCode (~/.claude, ~/.codex, ~/.agents)
+mangoman skills install --for claude  # or one tool, or --dir PATH
+mangoman code                         # OpenCode with the packs already loaded, nothing installed
+```
+
+Requirements on the user's machine: Python 3; for PDFs, Chrome, Chromium or Playwright; for PowerPoint, `pip install python-pptx`; pandas optional.
+
 ## Next
 
-1. **Understand step and skill packs:** 1 or 2 sharp questions when needed, expert instructions per task; first packs resume, data to dashboard, CEO deck.
+1. **More skill packs** (agency skills in waves: social media, email campaigns, e-commerce listings, SEO, ads, landing pages, proposals), then paid advanced agents and the marketplace (P3).
 2. **Output checks:** run code and tests, render pages and slides and check the screenshot, recompute numbers from the data.
 3. **MangoMan coding workspace (M5):** a coding screen in MangoMan with the OpenCode engine running underneath (credited under its MIT licence).
