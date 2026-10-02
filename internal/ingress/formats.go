@@ -79,7 +79,6 @@ func (s *Server) countTokens(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]int{"input_tokens": req.EstTokens})
 }
 
-
 // responses serves the OpenAI Responses API (Codex CLI, newer OpenAI SDKs).
 func (s *Server) responses(w http.ResponseWriter, r *http.Request) {
 	fail := func(status int, msg string) {
