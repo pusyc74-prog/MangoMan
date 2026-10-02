@@ -43,6 +43,28 @@ type Config struct {
 	// order, and never falls back to anything else. Entries use the same
 	// form as Favorites.
 	Groups map[string][]string `json:"groups,omitempty"`
+	// Brain configures the decision brain. It is on by default.
+	Brain BrainConfig `json:"brain,omitempty"`
+}
+
+// BrainConfig is the decision brain's setting.
+type BrainConfig struct {
+	Off   bool   `json:"off,omitempty"`
+	Model string `json:"model,omitempty"` // engine; empty = free/fast
+}
+
+// GetBrain returns the brain setting.
+func (c *Config) GetBrain() BrainConfig {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.Brain
+}
+
+// SetBrain replaces the brain setting.
+func (c *Config) SetBrain(b BrainConfig) {
+	mu.Lock()
+	defer mu.Unlock()
+	c.Brain = b
 }
 
 // CustomModel is a model added by the user from a provider's live list.

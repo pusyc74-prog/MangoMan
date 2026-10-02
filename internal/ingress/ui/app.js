@@ -314,6 +314,42 @@ async function toggleStar(m) {
   else await saveMyList([...fav, `${m.provider}/${m.model}`]);
 }
 
+// ---------- decision brain ----------
+
+const BRAIN_KIND = { task: "Task type", non_answer: "Is it a non-answer?", test: "Test question" };
+const BRAIN_FALLBACK = { timeout: "too slow, rules kept", error: "engine unavailable, rules kept", unsure: "unsure, rules kept", bad_answer: "unclear reply, rules kept" };
+
+function renderBrain(ov) {
+  const b = ov.brain;
+  $("brain-block").hidden = !b;
+  if (!b) return;
+  $("brain-lamp").className = "lamp " + (b.enabled ? "on" : "");
+  const parts = [`${b.enabled ? "On" : "Off"}, engine ${b.model}.`];
+  if (b.calls || b.cache_hits) {
+    parts.push(`${plural(b.decided, "decision", "decisions")}, ${NUM.format(b.fallbacks)} kept the rules, ${NUM.format(b.cache_hits)} from memory; average ${seconds(b.avg_ms)}.`);
+  } else {
+    parts.push("No decisions yet.");
+  }
+  $("brain-summary").textContent = parts.join(" ");
+  const btn = $("brain-toggle");
+  btn.textContent = b.enabled ? "Turn off" : "Turn on";
+  btn.onclick = async () => {
+    btn.disabled = true;
+    try { await api("/mangoman/brain", { method: "PUT", body: JSON.stringify({ enabled: !b.enabled }) }); }
+    catch (err) { alert(err.message); }
+    btn.disabled = false;
+    await load();
+  };
+  const rows = b.recent || [];
+  $("brain-recent-wrap").hidden = rows.length === 0;
+  $("brain-recent").tBodies[0].replaceChildren(...rows.map((d) => el("tr", {},
+    el("td", { class: "dim" }, clock(d.time)),
+    el("td", {}, BRAIN_KIND[d.kind] || d.kind),
+    el("td", {}, d.answer ? d.answer.replace("non_answer", "non-answer") : el("span", { class: "dim" }, BRAIN_FALLBACK[d.fallback] || "rules kept")),
+    el("td", { class: "r" }, d.answer ? `${Math.round(100 * d.confidence)}%` : "–"),
+    el("td", { class: "r dim" }, d.cached ? "from memory" : seconds(d.latency_ms)))));
+}
+
 // ---------- new models drawer ----------
 
 function ago(t) {
@@ -564,6 +600,7 @@ async function load() {
     renderHead(ov, act);
     renderBoard(ov, act);
     renderMyList(ov);
+    renderBrain(ov);
     renderFab();
     if (state.drawer) renderDrawer();
     renderChart(act, ov);

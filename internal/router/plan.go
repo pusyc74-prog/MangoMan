@@ -68,6 +68,10 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 		need = req.EstTokens + req.MaxTokens
 	}
 
+	split := rt.splitFavorites
+	if req.Internal {
+		split = func(cs []Candidate) ([]Candidate, []Candidate) { return nil, cs }
+	}
 	var cloud, local []Candidate
 	for _, m := range rt.Cat.AllModels() {
 		if !m.Free && !rt.Cfg.PaidFallback {
@@ -157,14 +161,14 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 		sort.SliceStable(first, func(i, j int) bool {
 			return strings.ToLower(first[i].Model.ID()) == requested && strings.ToLower(first[j].Model.ID()) != requested
 		})
-		fav, others := rt.splitFavorites(rest)
+		fav, others := split(rest)
 		out := append(first, fav...)
 		out = append(out, sameModelFirst(others)...)
 		return rt.cap(out), info
 	}
 	// My list first, in the user's order; then the router's own ranking;
 	// then the best local model as the backstop, always kept last.
-	fav, others := rt.splitFavorites(append(cloud, local...))
+	fav, others := split(append(cloud, local...))
 	var restCloud, restLocal []Candidate
 	for _, c := range others {
 		if c.Provider.Local {

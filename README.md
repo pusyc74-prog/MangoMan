@@ -137,6 +137,7 @@ internal/doctor/     live provider checks, report, markdown summary
 internal/radar/      new-model radar (watches provider model lists)
 internal/adapt/      Anthropic Messages and OpenAI Responses translation
 internal/mcp/        assist mode: MCP server and free_ask / free_review / free_status
+internal/brain/      decision brain: typed questions, budget, cache, stats
 internal/setup/      setup wizard and key connection
 internal/ingress/ui/ dashboard page (embedded in the binary)
 scripts/try.sh       one-command live test (Codespaces or any machine)
@@ -257,7 +258,28 @@ Checked end to end with the real tools: OpenCode 1.18 through `mangoman code`, a
 
 **Tray icon: deferred.** A tray needs native GUI libraries on macOS and Linux, which would end the single cross-platform binary built without C toolchains. The dashboard and `mangoman code` cover "is it running" for now; the tray returns with the desktop app.
 
+## Decision brain (smart layer, part 1)
+
+A fast model answers small, typed questions where the router's rules are unsure, and its answer comes with a confidence. Two decisions so far:
+
+| Decision | When it is asked | Effect |
+| --- | --- | --- |
+| Which kind of task is this? (code, reasoning, writing, extraction, fast) | Only when the keyword rules are unsure; once per conversation, then remembered | Better model choice |
+| Is this short reply a refusal or non-answer? | Only for short replies that sound like "I can't help with that" | A confident "yes" (75%+) tries the next model; a justified refusal is kept |
+
+Safety: each decision has a 1.5 second budget, and below 60% confidence it is ignored. A slow, failing or unsure engine leaves today's rules in charge, so the brain can only help. Its own requests go through the router (free-first, failover, quota counted) and never trigger the brain or My list.
+
+```sh
+mangoman brain                       # engine, counts, recent decisions
+mangoman brain off | on
+mangoman brain set strict/ollama/qwen3:4b    # a local engine; default free/fast
+mangoman brain test "Is this a coding question: how do I sort a list?"
+```
+
+The dashboard shows the same, with an on/off switch. Jev can be the engine once added from the new-models list (OpenCode Zen key needed); whether it follows the JSON answer format has to be checked with a real key.
+
 ## Next
 
-1. **Decision brain:** a fast model (Jev-style) that picks the model per task and checks answers, swappable between Jev, a fast Groq model or a local model.
-2. **MangoMan coding workspace (M5):** a coding screen in MangoMan with the OpenCode engine running underneath (credited under its MIT licence).
+1. **Understand step and skill packs:** 1 or 2 sharp questions when needed, expert instructions per task; first packs resume, data to dashboard, CEO deck.
+2. **Output checks:** run code and tests, render pages and slides and check the screenshot, recompute numbers from the data.
+3. **MangoMan coding workspace (M5):** a coding screen in MangoMan with the OpenCode engine running underneath (credited under its MIT licence).

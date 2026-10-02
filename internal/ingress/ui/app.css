@@ -280,3 +280,9 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
   .ritem { flex-wrap: wrap; }
   .fab { right: 16px; bottom: 16px; }
 }
+
+/* Decision brain */
+.brain-wrap { background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; }
+.brain-line { display: flex; align-items: center; gap: 12px; padding: 14px 16px; flex-wrap: wrap; }
+.brain-line #brain-summary { flex: 1; min-width: 220px; font-size: 14px; }
+.brain-table { border: 0; border-top: 1px solid var(--hair); border-radius: 0 0 10px 10px; }

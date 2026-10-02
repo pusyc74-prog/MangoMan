@@ -48,6 +48,7 @@ Usage:
   mangoman list [add|rm|up|new]  My list: models tried first; new free models
   mangoman code [--model M]     open OpenCode on free models (starts the router if needed)
   mangoman mcp                  assist mode: MCP server for Claude Code and Codex
+  mangoman brain [on|off|set|test]  decision brain: smarter task detection, refusal checks
   mangoman group [set|rm]       model groups: "group/<name>" never leaves the group
   mangoman status               show the running router's providers and quota
   mangoman models               list the free model catalogue with data policies
@@ -87,6 +88,8 @@ func main() {
 		err = cmdGroup(os.Args[2:])
 	case "code":
 		err = cmdCode(os.Args[2:])
+	case "brain":
+		err = cmdBrain(os.Args[2:])
 	case "mcp":
 		err = cmdMCP()
 	case "status":
@@ -296,8 +299,11 @@ func cmdServe(args []string) error {
 	}
 	go rd.Run(ctx, 30*time.Second, 6*time.Hour, logger.Printf)
 
+	br := ingress.BrainFromConfig(cfg, rt.InternalCall)
+	rt.Brain = br
+
 	srv := &ingress.Server{Router: rt, Cfg: cfg, Version: version, Started: time.Now(),
-		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl", Radar: rd}
+		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl", Radar: rd, Brain: br}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
 		return fmt.Errorf("cannot listen on %s: %w", srv.Addr(), err)

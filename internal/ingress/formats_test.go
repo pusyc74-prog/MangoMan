@@ -71,8 +71,12 @@ func formatServer(t *testing.T, ups ...*upstream) http.Handler {
 	rt := router.New(parsed, keys.NewResolver(store, nil), cfg)
 	rt.Client.HTTP = client
 	rt.StreamIdle = 2 * time.Second
-	return (&Server{Router: rt, Cfg: cfg, Version: "t", Started: time.Now()}).Handler()
+	lastServer = &Server{Router: rt, Cfg: cfg, Version: "t", Started: time.Now()}
+	return lastServer.Handler()
 }
+
+// lastServer is the server formatServer built most recently.
+var lastServer *Server
 
 func jsonReply(body string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -456,5 +460,40 @@ func TestResponsesErrors(t *testing.T) {
 	w = call(h, "POST", "/v1/responses", "127.0.0.1:4141", bearer, `{"model":"free/auto","input":"hi"}`)
 	if w.Code != 429 || !strings.Contains(w.Body.String(), "free_capacity_exhausted") {
 		t.Fatalf("exhausted %d %s", w.Code, w.Body)
+	}
+}
+
+func TestBrainAPI(t *testing.T) {
+	up := &upstream{id: "a", quality: 0.9, handler: jsonReply(`{"choices":[{"index":0,"message":{"role":"assistant","content":"{\"answer\":\"code\",\"confidence\":0.88}"},"finish_reason":"stop"}]}`)}
+	h0 := formatServer(t, up)
+	_ = h0
+	// Rebuild with a brain attached.
+	srv := lastServer
+	br := BrainFromConfig(srv.Cfg, srv.Router.InternalCall)
+	srv.Router.Brain, srv.Brain = br, br
+	srv.SaveConfig = func(*config.Config) error { return nil }
+	h := srv.Handler()
+
+	w := call(h, "POST", "/mangoman/brain/test", "127.0.0.1:4141", bearer, `{"question":"which?","options":["code","writing"]}`)
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"answer": "code"`) || !strings.Contains(w.Body.String(), `"decided": true`) {
+		t.Fatalf("test %d %s", w.Code, w.Body)
+	}
+	if up.last()["response_format"] == nil {
+		t.Fatal("brain should ask for JSON")
+	}
+	w = call(h, "PUT", "/mangoman/brain", "127.0.0.1:4141", bearer, `{"enabled":false}`)
+	if w.Code != 200 || !srv.Cfg.GetBrain().Off || br.Enabled() {
+		t.Fatalf("off %d %s", w.Code, w.Body)
+	}
+	if w := call(h, "PUT", "/mangoman/brain", "127.0.0.1:4141", bearer, `{"model":"group/missing"}`); w.Code != 422 {
+		t.Fatalf("bad engine accepted: %d", w.Code)
+	}
+	w = call(h, "PUT", "/mangoman/brain", "127.0.0.1:4141", bearer, `{"enabled":true,"model":"strict/m-a"}`)
+	if w.Code != 200 || srv.Cfg.GetBrain().Model != "strict/m-a" || !strings.Contains(w.Body.String(), `"model": "strict/m-a"`) {
+		t.Fatalf("set model %d %s", w.Code, w.Body)
+	}
+	w = call(h, "GET", "/mangoman/overview", "127.0.0.1:4141", bearer, "")
+	if !strings.Contains(w.Body.String(), `"brain"`) {
+		t.Fatal("overview should include brain stats")
 	}
 }

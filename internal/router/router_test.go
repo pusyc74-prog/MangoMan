@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -656,5 +657,99 @@ func TestGroupOrderAndScope(t *testing.T) {
 	}
 	if w := do(t, rt, `{"model":"strict/typo-model","messages":[{"role":"user","content":"hi"}]}`); w.Code != 404 {
 		t.Fatalf("unknown strict model %d %s", w.Code, w.Body)
+	}
+}
+
+// fakeBrain answers fixed decisions and counts calls.
+type fakeBrain struct {
+	class  string
+	nonAns bool
+	conf   float64
+	choose atomic.Int32
+	yesno  atomic.Int32
+}
+
+func (f *fakeBrain) Choose(_ context.Context, kind, key, q string, opts []string) (string, float64, bool) {
+	f.choose.Add(1)
+	return f.class, f.conf, f.class != ""
+}
+func (f *fakeBrain) YesNo(_ context.Context, kind, key, q string) (bool, float64, bool) {
+	f.yesno.Add(1)
+	return f.nonAns, f.conf, true
+}
+
+func TestBrainClassifiesOnlyWhenRulesUnsure(t *testing.T) {
+	a := &fake{id: "p1", model: "alpha", quality: 0.9, handler: okJSON("ok")}
+	rt := setup(t, a)
+	fb := &fakeBrain{class: "code", conf: 0.9}
+	rt.Brain = fb
+	w := do(t, rt, `{"model":"free/auto","messages":[{"role":"user","content":"tell me about mangoes"}]}`)
+	if w.Header().Get("X-MangoMan-Class") != "code" || fb.choose.Load() != 1 {
+		t.Fatalf("unsure request should ask the brain: class=%s calls=%d", w.Header().Get("X-MangoMan-Class"), fb.choose.Load())
+	}
+	// Sure by rules (tools / code hints / virtual model): no brain call.
+	for _, body := range []string{
+		`{"model":"free/auto","messages":[{"role":"user","content":"fix this python traceback"}]}`,
+		`{"model":"free/writer","messages":[{"role":"user","content":"hello"}]}`,
+		`{"model":"free/auto","tools":[{"type":"function","function":{"name":"f","parameters":{}}}],"messages":[{"role":"user","content":"hello"}]}`,
+	} {
+		do(t, rt, body)
+	}
+	if fb.choose.Load() != 1 {
+		t.Fatalf("brain asked for confident requests: %d", fb.choose.Load())
+	}
+	// No confident answer: the rule result stands.
+	rt.Brain = &fakeBrain{}
+	if w := do(t, rt, `{"model":"free/auto","messages":[{"role":"user","content":"tell me about mangoes"}]}`); w.Header().Get("X-MangoMan-Class") != "writing" {
+		t.Fatalf("fallback class %s", w.Header().Get("X-MangoMan-Class"))
+	}
+}
+
+func TestBrainCatchesNonAnswer(t *testing.T) {
+	refuse := okJSON("I'm sorry, but I can't help with that request.")
+	good := okJSON("Mangoes are tropical stone fruits.")
+	run := func(b Brain) (*httptest.ResponseRecorder, *fake, *fake) {
+		r := &fake{id: "r1", model: "refuser", quality: 0.95, handler: refuse}
+		g := &fake{id: "g1", model: "helper", quality: 0.5, handler: good}
+		rt := setup(t, r, g)
+		rt.Brain = b
+		return do(t, rt, hello), r, g
+	}
+	w, _, g := run(&fakeBrain{nonAns: true, conf: 0.9})
+	if w.Header().Get("X-MangoMan-Model") != "helper" || g.calls.Load() != 1 {
+		t.Fatalf("non-answer should fail over: %s", w.Header())
+	}
+	w, _, g = run(&fakeBrain{nonAns: true, conf: 0.6})
+	if w.Header().Get("X-MangoMan-Model") != "refuser" || g.calls.Load() != 0 {
+		t.Fatalf("an unsure verdict must keep the answer: %s", w.Header())
+	}
+	w, _, _ = run(nil)
+	if w.Header().Get("X-MangoMan-Model") != "refuser" {
+		t.Fatal("without a brain nothing changes")
+	}
+	// A normal answer never reaches the brain.
+	fb := &fakeBrain{nonAns: true, conf: 1}
+	a := &fake{id: "p1", model: "alpha", quality: 0.9, handler: good}
+	rt := setup(t, a)
+	rt.Brain = fb
+	do(t, rt, hello)
+	if fb.yesno.Load() != 0 {
+		t.Fatal("brain consulted for an ordinary answer")
+	}
+}
+
+func TestInternalCallSkipsBrainAndMyList(t *testing.T) {
+	fast := &fake{id: "f1", model: "fast-model", quality: 0.5, handler: okJSON(`{"answer":"code","confidence":0.9}`)}
+	fav := &fake{id: "v1", model: "fav-model", quality: 0.4, handler: okJSON(`{"answer":"writing","confidence":0.9}`)}
+	rt := setup(t, fast, fav)
+	rt.Cfg.SetFavorites([]string{"fav-model"})
+	fb := &fakeBrain{class: "code", conf: 0.9}
+	rt.Brain = fb
+	status, body, err := rt.InternalCall(context.Background(), []byte(`{"model":"free/fast","messages":[{"role":"user","content":"tell me about mangoes"}],"response_format":{"type":"json_object"}}`))
+	if err != nil || status != 200 || !strings.Contains(string(body), `\"code\"`) {
+		t.Fatalf("internal call %d %s %v", status, body, err)
+	}
+	if fb.choose.Load() != 0 || fav.calls.Load() != 0 {
+		t.Fatalf("internal call used the brain (%d) or My list (%d)", fb.choose.Load(), fav.calls.Load())
 	}
 }

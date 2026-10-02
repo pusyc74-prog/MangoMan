@@ -39,23 +39,33 @@ var (
 
 // Classify returns the class for a request. A virtual model wins over rules.
 func Classify(r *core.Request) string {
+	c, _ := ClassifySure(r)
+	return c
+}
+
+// ClassifySure also reports whether the rules are confident. Unsure results
+// (only weak hints, or nothing matched) are where the decision brain helps.
+func ClassifySure(r *core.Request) (string, bool) {
 	if c, ok := Virtual[strings.ToLower(r.Model)]; ok && c != "" {
-		return c
+		return c, true
 	}
 	switch {
 	case r.HasImages:
-		return Vision
+		return Vision, true
 	case r.EstTokens > LongContextTokens:
-		return LongContext
+		return LongContext, true
 	case r.WantsJSON:
-		return Extraction
+		return Extraction, true
 	}
 	text := r.LastUserText()
 	switch {
 	case r.HasTools() || codeHints.MatchString(text):
-		return Code
+		return Code, true
 	case reasonHints.MatchString(text):
-		return Reasoning
+		return Reasoning, false
 	}
-	return Writing
+	return Writing, false
 }
+
+// BrainClasses are the classes the decision brain may choose between.
+var BrainClasses = []string{Code, Reasoning, Writing, Extraction, Fast}

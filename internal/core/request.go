@@ -36,6 +36,9 @@ type Request struct {
 	// KeepUsage forwards the usage chunk the router asks providers for, even
 	// though the client did not ask (format adapters read it).
 	KeepUsage bool
+	// Internal marks the router's own requests (decision brain): no brain
+	// calls of their own, My list not applied.
+	Internal bool
 }
 
 // HasTools reports whether the client declared any tools.
@@ -146,6 +149,18 @@ func contentText(c json.RawMessage) (string, int) {
 		}
 	}
 	return b.String(), images
+}
+
+// FirstUserText returns the text of the first user message: a stable key
+// for one conversation, since agents resend the history on every turn.
+func (r *Request) FirstUserText() string {
+	for _, m := range r.Messages {
+		if m.Role == "user" {
+			t, _ := contentText(m.Content)
+			return t
+		}
+	}
+	return ""
 }
 
 // LastUserText returns the text of the last user message, for classification.

@@ -50,6 +50,26 @@
     </div>
   </section>
 
+  <section class="block" aria-labelledby="h-brain" id="brain-block" hidden>
+    <div class="block-head">
+      <h2 id="h-brain">Decision brain</h2>
+      <p class="sub">Fast, typed decisions where the rules are unsure: which kind of task a request is, and whether a short reply is a refusal to retry.</p>
+    </div>
+    <div class="brain-wrap">
+      <div class="brain-line">
+        <span class="lamp" id="brain-lamp" aria-hidden="true"></span>
+        <span id="brain-summary"></span>
+        <button type="button" class="ghost" id="brain-toggle"></button>
+      </div>
+      <div class="table-wrap brain-table" id="brain-recent-wrap">
+        <table class="grid" id="brain-recent">
+          <thead><tr><th scope="col">Time</th><th scope="col">Question</th><th scope="col">Decision</th><th scope="col" class="r">Confidence</th><th scope="col" class="r">Time taken</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section class="block" aria-labelledby="h-traffic">
     <div class="block-head">
       <h2 id="h-traffic">Requests per hour</h2>

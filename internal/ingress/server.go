@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pusyc74-prog/mangoman/internal/brain"
 	"github.com/pusyc74-prog/mangoman/internal/breaker"
 	"github.com/pusyc74-prog/mangoman/internal/classify"
 	"github.com/pusyc74-prog/mangoman/internal/config"
@@ -41,6 +42,8 @@ type Server struct {
 	SaveConfig func(*config.Config) error
 	// Radar finds new free models to offer; nil turns the feature off.
 	Radar *radar.Radar
+	// Brain is the decision brain (also set on the router); nil = none.
+	Brain *brain.Brain
 }
 
 // Handler returns the HTTP handler with all checks applied.

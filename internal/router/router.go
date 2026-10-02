@@ -45,6 +45,14 @@ type Router struct {
 	StreamIdle time.Duration
 	// NonStreamTimeout caps one non-streaming attempt.
 	NonStreamTimeout time.Duration
+	// Brain makes typed decisions where the rules are unsure; nil = off.
+	Brain Brain
+}
+
+// Brain is the decision brain as the router uses it (package brain).
+type Brain interface {
+	Choose(ctx context.Context, kind, key, question string, options []string) (string, float64, bool)
+	YesNo(ctx context.Context, kind, key, question string) (bool, float64, bool)
 }
 
 // New returns a router with default breaker and timeout settings.
@@ -83,7 +91,14 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		core.WriteError(w, http.StatusNotFound, "model_not_found", msg)
 		return
 	}
-	class := classify.Classify(req)
+	class, sure := classify.ClassifySure(req)
+	if !sure && rt.Brain != nil && !req.Internal {
+		class = rt.brainClass(r.Context(), req, class)
+	}
+	logClass := class
+	if req.Internal {
+		logClass = "brain"
+	}
 	cands, info := rt.plan(req, class)
 	if len(cands) == 0 {
 		rt.writeNoCandidate(w, info)
@@ -129,7 +144,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			rt.Health.Observe(c, res.outcome, good, lat)
 		}
 		rt.Log.Add(store.Event{
-			Time: start, RequestID: id, Provider: c.Provider.ID, Model: c.Model.Canonical, Class: class,
+			Time: start, RequestID: id, Provider: c.Provider.ID, Model: c.Model.Canonical, Class: logClass,
 			Outcome: res.outcome, Status: res.status, LatencyMS: time.Since(start).Milliseconds(),
 			Attempt: attempts, Stream: req.Stream, Tokens: res.tokens,
 		})
@@ -277,7 +292,11 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 	rt.Breakers.Success(c.Target())
 	tokens := usageTokens(data, req.EstTokens, len(ans.Content))
 	rt.record(c, tokens)
-	if why := guard.Check(req, ans); why != "" {
+	why := guard.Check(req, ans)
+	if why == "" && rt.Brain != nil && !req.Internal && suspicious(req, ans) && rt.nonAnswer(r.Context(), req, ans) {
+		why = NonAnswer
+	}
+	if why != "" {
 		return attemptResult{outcome: "quality:" + why, status: resp.StatusCode, errMsg: "answer failed guard: " + why, badBody: data, badWhy: why, tokens: tokens}
 	}
 	rt.setHeaders(w, c, class, n)
@@ -387,6 +406,10 @@ func newID() string {
 	_, _ = rand.Read(b)
 	return hex.EncodeToString(b)
 }
+
+// ScopeProblem explains a model field that can never match (unknown group,
+// strict model not in the catalogue); "" when it can.
+func (rt *Router) ScopeProblem(model string) string { return rt.scopeProblem(model) }
 
 // scopeProblem explains a strict or group request that can never match.
 func (rt *Router) scopeProblem(model string) string {
