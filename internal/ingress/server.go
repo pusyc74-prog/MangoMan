@@ -136,6 +136,7 @@ type modelEntry struct {
 	Created   int64    `json:"created"`
 	OwnedBy   string   `json:"owned_by"`
 	Providers []string `json:"providers,omitempty"`
+	Models    []string `json:"models,omitempty"` // groups: the models in the group
 }
 
 // models lists virtual models plus every canonical model the user can reach.
@@ -149,6 +150,9 @@ func (s *Server) models(w http.ResponseWriter, _ *http.Request) {
 	sort.Strings(virt)
 	for _, v := range virt {
 		out = append(out, modelEntry{ID: v, Object: "model", Created: now, OwnedBy: "mangoman"})
+	}
+	for _, g := range s.Cfg.GroupNames() {
+		out = append(out, modelEntry{ID: router.GroupPrefix + g, Object: "model", Created: now, OwnedBy: "mangoman", Models: s.Cfg.Group(g)})
 	}
 	byModel := map[string][]string{}
 	for _, m := range s.Router.Cat.AllModels() {

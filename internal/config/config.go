@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -37,6 +38,11 @@ type Config struct {
 	// CustomModels are new models the user added from the radar; they are
 	// not in the catalogue yet.
 	CustomModels []CustomModel `json:"custom_models,omitempty"`
+	// Groups are named sets of models tested as equivalent for a workflow.
+	// Asking for model "group/<name>" only ever uses these models, in this
+	// order, and never falls back to anything else. Entries use the same
+	// form as Favorites.
+	Groups map[string][]string `json:"groups,omitempty"`
 }
 
 // CustomModel is a model added by the user from a provider's live list.
@@ -71,6 +77,55 @@ func (c *Config) SetFavorites(list []string) {
 	mu.Lock()
 	defer mu.Unlock()
 	c.Favorites = out
+}
+
+// Group returns one group's models (nil if there is no such group).
+func (c *Config) Group(name string) []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	for k, v := range c.Groups {
+		if strings.EqualFold(k, name) {
+			return append([]string(nil), v...)
+		}
+	}
+	return nil
+}
+
+// GroupNames returns the group names, sorted.
+func (c *Config) GroupNames() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	out := make([]string, 0, len(c.Groups))
+	for k := range c.Groups {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// SetGroup creates or replaces a group; an empty list deletes it.
+func (c *Config) SetGroup(name string, models []string) {
+	name = strings.ToLower(strings.TrimSpace(name))
+	seen := map[string]bool{}
+	var out []string
+	for _, m := range models {
+		m = strings.TrimSpace(m)
+		if m == "" || seen[strings.ToLower(m)] {
+			continue
+		}
+		seen[strings.ToLower(m)] = true
+		out = append(out, m)
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	if len(out) == 0 {
+		delete(c.Groups, name)
+		return
+	}
+	if c.Groups == nil {
+		c.Groups = map[string][]string{}
+	}
+	c.Groups[name] = out
 }
 
 // GetCustomModels returns a copy of the user-added models.

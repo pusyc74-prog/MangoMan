@@ -22,6 +22,8 @@ type RadarView struct {
 func (s *Server) myListRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /mangoman/favorites", s.auth(http.HandlerFunc(s.getFavorites)))
 	mux.Handle("PUT /mangoman/favorites", s.auth(http.HandlerFunc(s.putFavorites)))
+	mux.Handle("GET /mangoman/groups", s.auth(http.HandlerFunc(s.getGroups)))
+	mux.Handle("PUT /mangoman/groups/{name}", s.auth(http.HandlerFunc(s.putGroup)))
 	mux.Handle("GET /mangoman/radar", s.auth(http.HandlerFunc(s.getRadar)))
 	mux.Handle("POST /mangoman/radar/scan", s.auth(http.HandlerFunc(s.scanRadar)))
 	mux.Handle("POST /mangoman/radar/add", s.auth(http.HandlerFunc(s.addFromRadar)))
@@ -162,4 +164,48 @@ func (s *Server) addFromRadar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, map[string]any{"added": id, "models": nonNil(s.Cfg.GetFavorites())})
+}
+
+func (s *Server) groupsView() map[string][]string {
+	out := map[string][]string{}
+	for _, n := range s.Cfg.GroupNames() {
+		out[n] = s.Cfg.Group(n)
+	}
+	return out
+}
+
+func (s *Server) getGroups(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, map[string]any{"groups": s.groupsView()})
+}
+
+// putGroup creates, replaces or (with an empty list) deletes a group.
+func (s *Server) putGroup(w http.ResponseWriter, r *http.Request) {
+	name := strings.ToLower(strings.TrimSpace(r.PathValue("name")))
+	if name == "" || len(name) > 40 || strings.ContainsAny(name, "/ ") {
+		core.WriteError(w, http.StatusBadRequest, "bad_group_name", "a group name is one word, up to 40 characters")
+		return
+	}
+	var in struct {
+		Models []string `json:"models"`
+	}
+	if err := readJSON(r, &in); err != nil {
+		core.WriteError(w, http.StatusBadRequest, "bad_request", "send {\"models\": [\"provider/model\", ...]}")
+		return
+	}
+	if len(in.Models) > 20 {
+		core.WriteError(w, http.StatusBadRequest, "too_many", "a group holds up to 20 models")
+		return
+	}
+	for _, m := range in.Models {
+		if !s.knownModel(strings.TrimSpace(m)) {
+			core.WriteError(w, http.StatusUnprocessableEntity, "unknown_model", "no model called "+m+" in the catalogue")
+			return
+		}
+	}
+	s.Cfg.SetGroup(name, in.Models)
+	if err := s.save(); err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "config_not_saved", err.Error())
+		return
+	}
+	s.getGroups(w, r)
 }

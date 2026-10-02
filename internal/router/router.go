@@ -79,6 +79,10 @@ type attemptResult struct {
 // Handle serves one Chat Completions request end to end.
 func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Request) {
 	id := newID()
+	if msg := rt.scopeProblem(req.Model); msg != "" {
+		core.WriteError(w, http.StatusNotFound, "model_not_found", msg)
+		return
+	}
 	class := classify.Classify(req)
 	cands, info := rt.plan(req, class)
 	if len(cands) == 0 {
@@ -382,4 +386,22 @@ func newID() string {
 	b := make([]byte, 6)
 	_, _ = rand.Read(b)
 	return hex.EncodeToString(b)
+}
+
+// scopeProblem explains a strict or group request that can never match.
+func (rt *Router) scopeProblem(model string) string {
+	requested := strings.ToLower(strings.TrimSpace(model))
+	scope := rt.scope(requested)
+	if scope == nil {
+		return ""
+	}
+	if len(scope) == 0 {
+		return "no group called " + strings.TrimPrefix(requested, GroupPrefix) + ": create it with `mangoman group set <name> <model>...`"
+	}
+	for _, m := range rt.Cat.AllModels() {
+		if scopeIndex(scope, m) >= 0 {
+			return ""
+		}
+	}
+	return "none of " + strings.Join(scope, ", ") + " is in the catalogue: see `mangoman models`"
 }

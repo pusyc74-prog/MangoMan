@@ -53,6 +53,15 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 	requested := strings.ToLower(strings.TrimSpace(req.Model))
 	_, virtual := classify.Virtual[requested]
 	explicit := requested != "" && !virtual
+	// Strict scope: "strict/<model>" uses only that model, "group/<name>"
+	// only the group's models. Nothing outside the scope is ever tried.
+	scope := rt.scope(requested)
+	inScope := func(m catalogue.Model) bool {
+		if scope == nil {
+			return true
+		}
+		return scopeIndex(scope, m) >= 0
+	}
 
 	need := req.EstTokens + 1024
 	if req.MaxTokens > 0 {
@@ -65,7 +74,7 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			continue
 		}
 		p, ok := rt.Cat.Provider(m.Provider)
-		if !ok || rt.Cfg.Excluded(p.ID) {
+		if !ok || rt.Cfg.Excluded(p.ID) || !inScope(m) {
 			continue
 		}
 		info.Considered++
@@ -124,6 +133,13 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 	byScore(cloud)
 	byScore(local)
 
+	if scope != nil {
+		// Scope order (the user's order), then score within one entry, so the
+		// same model on its best provider goes first.
+		all := append(cloud, local...)
+		sort.SliceStable(all, func(i, j int) bool { return scopeIndex(scope, all[i].Model) < scopeIndex(scope, all[j].Model) })
+		return rt.cap(all), info
+	}
 	if explicit {
 		// The asked-for model on every provider first, then everything else.
 		match := func(c Candidate) bool {
@@ -255,4 +271,38 @@ func (rt *Router) share(c Candidate) float64 {
 		}
 	}
 	return s
+}
+
+// StrictPrefix and GroupPrefix select a strict scope in the model field.
+const (
+	StrictPrefix = "strict/"
+	GroupPrefix  = "group/"
+)
+
+// scope returns the entries a strict request may use, or nil for normal
+// routing. An unknown group yields an empty, non-nil scope (no candidates).
+func (rt *Router) scope(requested string) []string {
+	switch {
+	case strings.HasPrefix(requested, StrictPrefix):
+		return []string{strings.TrimPrefix(requested, StrictPrefix)}
+	case strings.HasPrefix(requested, GroupPrefix):
+		g := rt.Cfg.Group(strings.TrimPrefix(requested, GroupPrefix))
+		if g == nil {
+			return []string{}
+		}
+		return g
+	}
+	return nil
+}
+
+// scopeIndex is the position of the first scope entry naming m, or -1.
+// An entry is a model name (any provider) or provider/model.
+func scopeIndex(scope []string, m catalogue.Model) int {
+	for i, e := range scope {
+		e = strings.ToLower(strings.TrimSpace(e))
+		if e == strings.ToLower(m.Canonical) || e == strings.ToLower(m.ID()) {
+			return i
+		}
+	}
+	return -1
 }

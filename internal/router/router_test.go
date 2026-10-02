@@ -15,6 +15,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
+	"github.com/pusyc74-prog/mangoman/internal/quota"
 )
 
 type memStore map[string]string
@@ -611,5 +612,49 @@ func TestMyListProviderPin(t *testing.T) {
 	rt.Cfg.SetFavorites([]string{"m1"})
 	if w := do(t, rt, hello); w.Header().Get("X-MangoMan-Provider") != "a" {
 		t.Fatalf("model-wide entry should use the best provider first: %v", w.Header())
+	}
+}
+
+func TestStrictNeverSwitchesModel(t *testing.T) {
+	limited := &fake{id: "p1", model: "alpha", quality: 0.9, handler: status(429, nil)}
+	other := &fake{id: "p2", model: "beta", quality: 0.8, handler: okJSON("from beta")}
+	rt := setup(t, limited, other)
+
+	// Normal routing falls over to beta.
+	if w := do(t, rt, `{"model":"alpha","messages":[{"role":"user","content":"hi"}]}`); w.Header().Get("X-MangoMan-Model") != "beta" {
+		t.Fatalf("explicit model should fall back: %d %s", w.Code, w.Header())
+	}
+	rt.Quota = quota.New() // forget the block
+	w := do(t, rt, `{"model":"strict/alpha","messages":[{"role":"user","content":"hi"}]}`)
+	if w.Code != 429 || w.Header().Get("Retry-After") == "" || other.calls.Load() != 1 {
+		t.Fatalf("strict must not use beta: %d %s calls=%d", w.Code, w.Body, other.calls.Load())
+	}
+	// Strict on the same model served by two providers still fails over between them.
+	a1 := &fake{id: "a1", model: "alpha", quality: 0.9, handler: status(500, nil)}
+	a2 := &fake{id: "a2", model: "alpha", quality: 0.7, handler: okJSON("alpha on a2")}
+	b := &fake{id: "b", model: "beta", quality: 0.95, handler: okJSON("beta")}
+	rt = setup(t, a1, a2, b)
+	w = do(t, rt, `{"model":"strict/alpha","messages":[{"role":"user","content":"hi"}]}`)
+	if w.Header().Get("X-MangoMan-Provider") != "a2" || b.calls.Load() != 0 {
+		t.Fatalf("strict should try alpha elsewhere: %s", w.Header())
+	}
+}
+
+func TestGroupOrderAndScope(t *testing.T) {
+	a := &fake{id: "pa", model: "alpha", quality: 0.5, handler: status(429, nil)}
+	b := &fake{id: "pb", model: "beta", quality: 0.6, handler: okJSON("beta")}
+	c := &fake{id: "pc", model: "gamma", quality: 0.99, handler: okJSON("gamma")}
+	rt := setup(t, a, b, c)
+	rt.Cfg.SetGroup("Workflow", []string{"alpha", "pb/beta"})
+	rt.Cfg.SetFavorites([]string{"gamma"}) // My list must not leak into a group
+	w := do(t, rt, `{"model":"group/workflow","messages":[{"role":"user","content":"hi"}]}`)
+	if w.Code != 200 || w.Header().Get("X-MangoMan-Model") != "beta" || a.calls.Load() != 1 || c.calls.Load() != 0 {
+		t.Fatalf("group order: %d %s a=%d c=%d", w.Code, w.Header(), a.calls.Load(), c.calls.Load())
+	}
+	if w := do(t, rt, `{"model":"group/nope","messages":[{"role":"user","content":"hi"}]}`); w.Code != 404 || !strings.Contains(w.Body.String(), "no group called nope") {
+		t.Fatalf("unknown group %d %s", w.Code, w.Body)
+	}
+	if w := do(t, rt, `{"model":"strict/typo-model","messages":[{"role":"user","content":"hi"}]}`); w.Code != 404 {
+		t.Fatalf("unknown strict model %d %s", w.Code, w.Body)
 	}
 }

@@ -205,6 +205,26 @@ wire_api = "responses"
 
 Then `export MANGOMAN_TOKEN=<your local token>`. MangoMan keeps no conversation state, so `previous_response_id` is refused; Codex sends the full history, which is what it does with custom providers. Freeform tools (such as `apply_patch`) are passed to free models as a function with one `input` string and turned back into custom tool calls. OpenAI-hosted tools (web search, file search) are skipped.
 
+**OpenCode** (open-source coding agent, officially supports any model): add a `mangoman` provider to `opencode.json` using `@ai-sdk/openai-compatible` with `baseURL` `http://127.0.0.1:4141/v1` and `apiKey` `{env:MANGOMAN_TOKEN}`. `mangoman init` prints the full block.
+
+## Same model every time (workflows)
+
+Normal routing switches models to keep answering. For workflows where output must stay consistent:
+
+| Model field | Uses | When all are used up |
+| --- | --- | --- |
+| `strict/kimi-k3` | Only kimi-k3, on any provider that serves it | 429 with the time capacity returns |
+| `strict/groq/gpt-oss-120b` | Only that model on that provider | 429 |
+| `group/<name>` | Only the group's models, in your order (My list is ignored) | 429 |
+
+```sh
+mangoman group set coding kimi-k3 groq/gpt-oss-120b   # models you tested as equivalent
+mangoman group                                        # list
+mangoman group rm coding
+```
+
+The context check still applies inside a scope: a request too long for a model skips it.
+
 ## Next: M4 (Assist mode and tray)
 
 An MCP server so a paid main model (Claude Code on Claude, Codex on GPT) can hand routine work to free models, plus the tray icon.

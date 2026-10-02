@@ -46,6 +46,7 @@ Usage:
   mangoman keys rm <provider>   remove a stored key
   mangoman dashboard            open the dashboard in your browser
   mangoman list [add|rm|up|new]  My list: models tried first; new free models
+  mangoman group [set|rm]       model groups: "group/<name>" never leaves the group
   mangoman status               show the running router's providers and quota
   mangoman models               list the free model catalogue with data policies
   mangoman test [prompt]        send a test request through the running router
@@ -80,6 +81,8 @@ func main() {
 		err = cmdDashboard()
 	case "list", "mylist":
 		err = cmdList(os.Args[2:])
+	case "group", "groups":
+		err = cmdGroup(os.Args[2:])
 	case "status":
 		err = cmdStatus()
 	case "models":
@@ -160,7 +163,27 @@ Next:
     wire_api = "responses"
 
     then: export MANGOMAN_TOKEN=%s
-`, store, base, cfg.Token, cfg.Port, cfg.Token, base, cfg.Token)
+
+  OpenCode: add to opencode.json (project) or ~/.config/opencode/opencode.json
+    {
+      "$schema": "https://opencode.ai/config.json",
+      "provider": {
+        "mangoman": {
+          "npm": "@ai-sdk/openai-compatible",
+          "name": "MangoMan (free)",
+          "options": { "baseURL": "%s", "apiKey": "{env:MANGOMAN_TOKEN}" },
+          "models": {
+            "free/coder": { "name": "Free coder", "limit": { "context": 65536, "output": 8192 } },
+            "free/fast":  { "name": "Free fast",  "limit": { "context": 32768, "output": 4096 } }
+          }
+        }
+      },
+      "model": "mangoman/free/coder"
+    }
+
+  Same model every time (workflows): use "strict/<model>", or create a group
+  with "mangoman group set <name> <model>..." and use "group/<name>".
+`, store, base, cfg.Token, cfg.Port, cfg.Token, base, cfg.Token, base)
 	return nil
 }
 

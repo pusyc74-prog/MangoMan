@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -206,4 +207,71 @@ func printRadar(rv ingress.RadarView) error {
 	_ = tw.Flush()
 	fmt.Println("\nAdd one with: mangoman list add <provider/id>")
 	return nil
+}
+
+const groupUsage = `Usage:
+  mangoman group                         list groups
+  mangoman group set <name> <model>...   create or replace a group (order = try order)
+  mangoman group rm <name>               delete a group
+
+Use a group as the model "group/<name>": only its models are used, in order,
+and the router never switches to anything else. For one model only, use
+"strict/<model>" (no group needed). When all are used up, requests get a 429
+with the time capacity returns.
+`
+
+func cmdGroup(args []string) error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	var res struct {
+		Groups map[string][]string `json:"groups"`
+	}
+	sub := ""
+	if len(args) > 0 {
+		sub, args = args[0], args[1:]
+	}
+	switch sub {
+	case "", "list", "ls":
+		err = localDo(cfg, http.MethodGet, "/mangoman/groups", nil, &res)
+	case "set":
+		if len(args) < 2 {
+			return errors.New("usage: mangoman group set <name> <model>...")
+		}
+		err = localDo(cfg, http.MethodPut, "/mangoman/groups/"+args[0], favList{args[1:]}, &res)
+	case "rm", "remove", "delete":
+		if len(args) != 1 {
+			return errors.New("usage: mangoman group rm <name>")
+		}
+		err = localDo(cfg, http.MethodPut, "/mangoman/groups/"+args[0], favList{[]string{}}, &res)
+	case "help", "-h", "--help":
+		fmt.Print(groupUsage)
+		return nil
+	default:
+		fmt.Print(groupUsage)
+		return fmt.Errorf("unknown group command %q", sub)
+	}
+	if err != nil {
+		return err
+	}
+	if len(res.Groups) == 0 {
+		fmt.Println("No groups yet. Create one with `mangoman group set coding kimi-k3 groq/gpt-oss-120b`.")
+		return nil
+	}
+	tw := tabwriter.NewWriter(os.Stdout, 0, 2, 2, ' ', 0)
+	fmt.Fprintln(tw, "MODEL NAME TO USE\tMODELS (TRIED IN THIS ORDER, NOTHING ELSE)")
+	for _, n := range sortedKeys(res.Groups) {
+		fmt.Fprintf(tw, "group/%s\t%s\n", n, strings.Join(res.Groups[n], ", "))
+	}
+	return tw.Flush()
+}
+
+func sortedKeys(m map[string][]string) []string {
+	out := make([]string, 0, len(m))
+	for k := range m {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
 }
