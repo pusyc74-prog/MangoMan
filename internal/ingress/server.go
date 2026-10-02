@@ -52,6 +52,7 @@ func (s *Server) Handler() http.Handler {
 	})
 	mux.Handle("POST /v1/chat/completions", s.auth(http.HandlerFunc(s.chat)))
 	mux.Handle("GET /v1/models", s.auth(http.HandlerFunc(s.models)))
+	s.formatRoutes(mux)
 	mux.Handle("GET /mangoman/status", s.auth(http.HandlerFunc(s.status)))
 	s.dashRoutes(mux)
 	return s.guardHost(mux)

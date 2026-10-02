@@ -33,6 +33,9 @@ type Request struct {
 	MaxTokens int             // client-set output limit, 0 if none
 	HasImages bool
 	EstTokens int // rough input token estimate
+	// KeepUsage forwards the usage chunk the router asks providers for, even
+	// though the client did not ask (format adapters read it).
+	KeepUsage bool
 }
 
 // HasTools reports whether the client declared any tools.
@@ -209,7 +212,7 @@ func (r *Request) BodyWith(upstreamModel string, u Upstream) (body []byte, added
 			opts["include_usage"] = json.RawMessage("true")
 			b, _ := json.Marshal(opts)
 			out["stream_options"] = b
-			addedUsage = true
+			addedUsage = !r.KeepUsage
 		}
 	}
 	body, err = json.Marshal(out)

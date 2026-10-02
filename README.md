@@ -135,6 +135,7 @@ internal/store/      usage log and summary
 internal/conformance/ corpus, checks, reference provider
 internal/doctor/     live provider checks, report, markdown summary
 internal/radar/      new-model radar (watches provider model lists)
+internal/adapt/      Anthropic Messages and OpenAI Responses translation
 internal/setup/      setup wizard and key connection
 internal/ingress/ui/ dashboard page (embedded in the binary)
 scripts/try.sh       one-command live test (Codespaces or any machine)
@@ -167,6 +168,43 @@ The router tests run fake TLS providers to prove each failover path, same-model-
 - **Run `mangoman doctor` with real keys.** Upstream calls could not be made from the build sandbox; doctor is the way to verify every provider, model id, quirk and header rule.
 - **Quirks and header rules in the seed are from memory** (Groq, Cerebras), so doctor will flag any that are wrong.
 
-## Next: M3 (Three API formats)
+## What M3 adds: Claude Code and Codex
 
-Anthropic Messages (`/v1/messages`, for Claude Code and Anthropic SDKs) and OpenAI Responses (`/v1/responses`, required by Codex CLI), each with streaming and tool calls, translated into the internal model, plus the corpus extended to all three formats.
+MangoMan now speaks all three client formats. Each one is translated into the router's internal format and back, so free-first routing, switching on bad answers, My list and quota tracking work the same for every tool.
+
+| Endpoint | Format | Used by |
+| --- | --- | --- |
+| `POST /v1/chat/completions` | OpenAI Chat Completions | Cursor, Cline, Continue, n8n, most SDKs |
+| `POST /v1/messages` (+ `/count_tokens`) | Anthropic Messages | Claude Code, Anthropic SDKs |
+| `POST /v1/responses` | OpenAI Responses | Codex CLI (required since Feb 2026), newer OpenAI SDKs |
+
+Streaming and tool calls work in all three, checked with the official Anthropic and OpenAI Python SDKs (text, tool loops, streamed tool calls, token counting, errors).
+
+**Claude Code**
+
+```sh
+export ANTHROPIC_BASE_URL=http://127.0.0.1:4141
+export ANTHROPIC_AUTH_TOKEN=<your local token from mangoman init>
+claude
+```
+
+Claude model names map to free models: `haiku` goes to `free/fast`, everything else to `free/coder`. Anthropic does not support Claude Code on other models, so some features (extended thinking, Anthropic-hosted tools like web search) are not available; assist mode (MCP, next) is the supported path for keeping Claude as the main model.
+
+**Codex CLI** (`~/.codex/config.toml`)
+
+```toml
+model = "free/coder"
+model_provider = "mangoman"
+
+[model_providers.mangoman]
+name = "MangoMan"
+base_url = "http://127.0.0.1:4141/v1"
+env_key = "MANGOMAN_TOKEN"
+wire_api = "responses"
+```
+
+Then `export MANGOMAN_TOKEN=<your local token>`. MangoMan keeps no conversation state, so `previous_response_id` is refused; Codex sends the full history, which is what it does with custom providers. Freeform tools (such as `apply_patch`) are passed to free models as a function with one `input` string and turned back into custom tool calls. OpenAI-hosted tools (web search, file search) are skipped.
+
+## Next: M4 (Assist mode and tray)
+
+An MCP server so a paid main model (Claude Code on Claude, Codex on GPT) can hand routine work to free models, plus the tray icon.

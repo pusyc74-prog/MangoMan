@@ -142,9 +142,25 @@ Next:
     API key:   %s
     Model:     free/auto   (or free/coder, free/writer, free/fast, free/long)
 
-  Claude Code: assist mode (MCP) arrives in M4; Anthropic endpoint in M3.
-  Codex CLI:   Responses endpoint arrives in M3.
-`, store, base, cfg.Token)
+  Claude Code (Anthropic Messages API)
+    export ANTHROPIC_BASE_URL=http://127.0.0.1:%d
+    export ANTHROPIC_AUTH_TOKEN=%s
+    claude
+    Claude model names map to free models (haiku -> free/fast, others -> free/coder).
+    Anthropic does not support Claude Code on other models; assist mode (MCP) follows.
+
+  Codex CLI (Responses API): add to ~/.codex/config.toml
+    model = "free/coder"
+    model_provider = "mangoman"
+
+    [model_providers.mangoman]
+    name = "MangoMan"
+    base_url = "%s"
+    env_key = "MANGOMAN_TOKEN"
+    wire_api = "responses"
+
+    then: export MANGOMAN_TOKEN=%s
+`, store, base, cfg.Token, cfg.Port, cfg.Token, base, cfg.Token)
 	return nil
 }
 
