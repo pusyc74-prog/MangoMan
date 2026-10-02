@@ -4,7 +4,7 @@ description: Turn raw data or an analysis into a CEO or board-ready slide deck (
 license: Apache-2.0
 metadata:
   pack: mangoman
-  version: "1.1"
+  version: "1.2"
 ---
 
 # CEO deck
@@ -29,8 +29,13 @@ question tool if you have one), at most:
 1. **Who is the audience and what decision or meeting is it for?** (board review, monthly business review, a funding ask)
 2. **What is the main question the deck must answer?** (for example "where did growth come from, and what should we fix?")
 3. **Period, currency and number style** (₹ with lakh and crore, or $).
+4. **Brand:** "Attach your logo (PNG or JPG) and share brand colours if you have them, or say skip and I'll choose a look."
 
-If the user says "just do it", choose sensible answers, state them in one line, and continue.
+Ask the brand question in the same message as the others, never as a separate
+round. If the user attaches only a logo, the build reads the brand colours from
+it and prints them; tell the user which colours you used so they can correct
+them. If they skip, or say "just do it", choose sensible answers, state them in
+one line, and continue. Never hold the deck back waiting for a logo.
 
 ## 2. Get the numbers
 
@@ -61,7 +66,8 @@ spec** to stdout:
   "subtitle": "April to September 2026",
   "date": "October 2026",
   "source": "sales.csv, 18,275 orders",
-  "theme": "ink",
+  "theme": "ink", "motif": "orb", "mode": "contrast", "type": "modern",
+  "brand": {"logo": "logo.png"},
   "facts": {"east_growth": -0.027, "aug_returns": 0.114},
   "slides": [
     {"type": "title"},
@@ -97,8 +103,42 @@ most 4 series), `table` (up to about 8 rows; `highlight_row` by index or first
 cell), `bullets` (up to 5), `next_steps` (up to 4, shown as numbered cards),
 `section`.
 
-Themes: `ink` (navy and saffron, default), `forest` (green and gold), `coral`
-(slate and coral). Pick one that suits the company; never mix.
+### The look
+
+Four independent choices, so two decks rarely look alike:
+
+| Key | Options |
+|---|---|
+| `theme` | one of the 12 below, or leave it out when `brand` is given |
+| `motif` | `orb` (large soft circle, default), `rings` (concentric outlines), `dots` (dot grid in the corner) |
+| `mode` | `contrast` (dark title, stat and closing slides; default) or `light` (every slide light, calmer) |
+| `type` | `modern` (Calibri, default), `editorial` (Cambria headlines, Calibri text), `classic` (Arial) |
+
+| Theme | Colours and where it fits |
+|---|---|
+| `ink` | navy and saffron; finance, consulting, general business |
+| `forest` | deep green and gold; agriculture, sustainability, banking |
+| `coral` | slate and coral; consumer brands, marketing, startups |
+| `ocean` | deep blue and aqua; health, logistics, travel |
+| `plum` | plum and marigold; fashion, beauty, hospitality |
+| `emerald` | teal and lime; climate, fintech, wellness |
+| `royal` | indigo and pink; media, education, creative |
+| `nordic` | slate and ice blue; technology, SaaS, engineering |
+| `wine` | burgundy and champagne; luxury, real estate, wine and food |
+| `clay` | earth and peach; food, crafts, retail, D2C |
+| `graphite` | graphite and mint; data, AI, developer tools |
+| `cobalt` | cobalt and sunflower; public sector, education, energy |
+
+Pick the theme from the company's industry and mood, not `ink` every time.
+Board and finance decks suit `contrast` with `modern` or `editorial`;
+consumer, creative and internal decks often read better `light`.
+
+**Brand:** `"brand": {"primary": "#2B1710", "accent": "#D62839", "logo": "logo.png"}`.
+Every field is optional: with only a logo, colours are read from it; with only
+`primary`, the accent comes from `theme`. The logo path is relative to
+`analysis.py`. It appears on the title slide and small in every footer, on a
+white chip where it would not show against the background. Brand colours are
+adjusted only as far as needed for readable text and charts.
 
 Chart emphasis: when the headline names one category ("East", "August"), that
 bar or point is drawn in the accent colour and the rest in grey, and its value

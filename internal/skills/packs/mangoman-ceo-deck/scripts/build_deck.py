@@ -9,7 +9,7 @@ Design: each slide is laid out once as a scene (shapes, text, a chart or a
 table, placed in inches on a 13.333 x 7.5 inch canvas). The same scene is drawn
 to PowerPoint and to HTML/PDF, so the two match. Dark title, stat, section and
 closing slides frame light content slides; one motif (a large soft circle)
-repeats on the dark slides; charts grey out everything except the category the
+(orb, rings or dots) repeats on the dark slides; charts grey out everything except the category the
 headline is about.
 """
 import html
@@ -22,24 +22,13 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import vizlib as V  # noqa: E402
 import render  # noqa: E402
+import brandkit as BK  # noqa: E402
 
 SLIDE_TYPES = ("title", "answer", "kpis", "stat", "chart", "bullets", "table", "next_steps", "section")
 W, H, M = 13.333, 7.5, 0.75  # canvas and side margin, inches
 CW = W - 2 * M  # content width
-FONT = "Calibri"
-HTML_FONT = 'Calibri, Carlito, "Segoe UI", Arial, sans-serif'
+BASE_DIR = "."  # folder of the analysis script; logo paths are relative to it
 
-THEMES = {
-    "ink": dict(dark="14213D", dark2="1F2F57", bg="FFFFFF", tint="EEF1F7", text="14213D", body="3B4660", muted="7A8499",
-                accent="F4A300", accent_dark="B87900", good="1E8E5A", bad="D1495B", grid="E3E7EF", dim="B8C0CF",
-                on_dark="FFFFFF", on_dark2="D5DBEA", on_dark_muted="A9B4CC"),
-    "forest": dict(dark="1E3A2B", dark2="2A4D3A", bg="FFFFFF", tint="EEF4EF", text="1E3A2B", body="3F5247", muted="7D8C83",
-                   accent="D9A21B", accent_dark="8F6A0E", good="2E8B57", bad="C0392B", grid="E2E9E3", dim="BCC7BF",
-                   on_dark="FFFFFF", on_dark2="D6E2D9", on_dark_muted="A8BCAE"),
-    "coral": dict(dark="2B2D42", dark2="3A3D58", bg="FFFFFF", tint="F2F3F8", text="2B2D42", body="4A4D63", muted="8A8DA0",
-                  accent="FF6B4A", accent_dark="D9482A", good="1E8E5A", bad="C0392B", grid="E4E5EC", dim="C2C4D0",
-                  on_dark="FFFFFF", on_dark2="DADBE6", on_dark_muted="ABAEC4"),
-}
 SERIES_EXTRA = ["3B82C4", "1BAF7A", "E87BA4", "4A3AA7", "8A8DA0", "E34948", "008300"]
 
 
@@ -69,8 +58,26 @@ def validate(spec):
         p.append("deck needs a title")
     if not slides:
         p.append("deck has no slides")
-    if spec.get("theme", "ink") not in THEMES:
-        p.append("theme must be one of %s" % ", ".join(THEMES))
+    if spec.get("theme", "ink") not in BK.CURATED and spec.get("theme") != "brand":
+        p.append("theme must be one of %s, or give brand colours" % ", ".join(BK.CURATED))
+    for key, allowed in (("motif", BK.MOTIFS), ("mode", BK.MODES), ("type", tuple(BK.TYPES))):
+        if spec.get(key) is not None and spec[key] not in allowed:
+            p.append("%s must be one of %s" % (key, ", ".join(allowed)))
+    b = spec.get("brand")
+    if b is not None:
+        if not isinstance(b, dict):
+            p.append("brand must be an object: primary, accent, logo")
+        else:
+            for key in ("primary", "accent"):
+                if b.get(key):
+                    try:
+                        BK.hexc(b[key])
+                    except ValueError:
+                        p.append("brand %s must be a hex colour like #1F5FA8" % key)
+            if b.get("logo"):
+                prob = BK.logo_check(logo_path(b["logo"]))
+                if prob:
+                    p.append(prob)
     for i, s in enumerate(slides, 1):
         t = s.get("type")
         if t not in SLIDE_TYPES:
@@ -98,10 +105,11 @@ def validate(spec):
 
 # ---------- scene helpers ----------
 
-def blend(fg, bg, a):
-    """fg at opacity a over bg, as an opaque hex colour (same in both outputs)."""
-    f, b = [int(fg[i:i + 2], 16) for i in (0, 2, 4)], [int(bg[i:i + 2], 16) for i in (0, 2, 4)]
-    return "".join("%02X" % round(x * a + y * (1 - a)) for x, y in zip(f, b))
+blend = BK.mix  # fg at opacity a over bg, as an opaque hex colour (same in both outputs)
+
+
+def logo_path(p):
+    return p if os.path.isabs(p) else os.path.join(BASE_DIR, p)
 
 
 def run(t, size, color, bold=False):
@@ -125,6 +133,14 @@ def rect(x, y, w, h, fill, r=0.0):
 
 def circle(x, y, d, fill):
     return {"k": "circle", "x": x, "y": y, "d": d, "fill": fill}
+
+
+def ring(x, y, d, color, width=1.5):
+    return {"k": "ring", "x": x, "y": y, "d": d, "color": color, "width": width}
+
+
+def image(path, x, y, w, h):
+    return {"k": "image", "path": path, "x": x, "y": y, "w": w, "h": h}
 
 
 def hline(x, y, w, color):
@@ -159,15 +175,50 @@ def est_width(s, size):
 
 # ---------- layouts ----------
 
-def footer(spec, n, total, T, dark=False):
+def logo(T, bg, x, y, max_w, max_h, right=False):
+    """The brand logo fitted in a box; on a white chip when it would not show on bg."""
+    path = T.get("logo")
+    if not path:
+        return [], 0
+    w, h = BK.fit(path, max_w, max_h)
+    if right:
+        x = x - w
+    els = []
+    if BK.logo_hidden_share(path, bg) > 0.15:  # part of the logo would vanish on this background
+        chip = "FFFFFF" if BK.luminance(bg) < 0.4 else T["dark"]
+        pad = min(0.12, h * 0.35)
+        els.append(rect(x - pad, y - pad, w + 2 * pad, h + 2 * pad, chip, r=min(0.08, (h + 2 * pad) / 2)))
+    els.append(image(path, x, y, w, h))
+    return els, w
+
+
+def footer(spec, n, total, T, dark=False, bg=None):
     c = T["on_dark_muted"] if dark else T["muted"]
-    return [text(M, 7.0, 9.5, 0.3, [run(spec.get("source", spec.get("title", "")), 10, c)], valign="m"),
-            text(W - M - 1.5, 7.0, 1.5, 0.3, [run("%d / %d" % (n, total), 10, c)], align="r", valign="m")]
+    lg, lw = logo(T, bg or (T["dark"] if dark else T["bg"]), W - M, 6.99, 1.3, 0.3, right=True)
+    nx = W - M - (lw + 0.25 if lw else 0)
+    return lg + [text(M, 7.0, 8.5, 0.3, [run(spec.get("source", spec.get("title", "")), 10, c)], valign="m"),
+                 text(nx - 1.5, 7.0, 1.5, 0.3, [run("%d / %d" % (n, total), 10, c)], align="r", valign="m")]
 
 
 def motif(T, base, big=(8.4, -1.7, 7.6), small=None, a=0.06):
+    """The deck's one motif, in the style the spec chose (orb, rings, dots)."""
     x, y, d = big
-    els = [circle(x, y, d, blend("FFFFFF", base, a))]
+    ink = T.get("motif_base", "FFFFFF")
+    style = T.get("motif", "orb")
+    els = []
+    if style == "rings":
+        cx, cy = x + d / 2, y + d / 2
+        for k, f in enumerate((1.0, 0.78, 0.56, 0.34)):
+            dd = d * f
+            els.append(ring(cx - dd / 2, cy - dd / 2, dd, blend(ink, base, a * (2.2 if k else 2.6)), 1.25))
+    elif style == "dots":
+        cols, rows, gap = 7, 6, 0.34
+        x0, y0 = W - 0.55 - gap * (cols - 1), 0.5  # always the top-right corner
+        for r_ in range(rows):
+            for c_ in range(cols):
+                els.append(circle(x0 + c_ * gap, y0 + r_ * gap, 0.07, blend(ink, base, 0.18 if (r_ + c_) % 3 else 0.3)))
+    else:
+        els.append(circle(x, y, d, blend(ink, base, a)))
     if small:
         sx, sy, sd = small
         els.append(circle(sx, sy, sd, T["accent"]))
@@ -184,7 +235,9 @@ def headline_left(s, n, T, w=4.4, size=30):
 
 def scene_title(s, spec, n, total, T):
     els = motif(T, T["dark"], big=(8.3, -1.9, 7.8), small=(7.75, 5.55, 0.7))
-    els.append(circle(10.9, 4.3, 3.6, blend("FFFFFF", T["dark"], 0.035)))
+    if T.get("motif", "orb") == "orb":
+        els.append(circle(10.9, 4.3, 3.6, blend(T.get("motif_base", "FFFFFF"), T["dark"], 0.035)))
+    els += logo(T, T["dark"], M, 0.65, 2.4, 0.6)[0]
     els.append(text(M, 1.6, 7.6, 2.75, [run(s.get("title") or spec["title"], 46, T["on_dark"], True)], valign="b", check="title-%d" % n, lh=1.04))
     sub = s.get("subtitle") or spec.get("subtitle")
     if sub:
@@ -312,7 +365,7 @@ def scene_bullets(s, spec, n, total, T):
     y0 = 1.15 + (5.2 - rh * len(bs)) / 2
     for i, b in enumerate(bs):
         y = y0 + i * rh
-        els.append(circle(5.8, y + rh / 2 - 0.08, 0.16, T["accent"]))
+        els.append(circle(5.8, y + rh / 2 - 0.08, 0.16, T["accent_fill"]))
         els.append(text(6.25, y, W - M - 6.25, rh, [run(b, 18, T["body"])], valign="m", check="bullet-%d-%d" % (n, i), lh=1.18))
     return {"bg": T["bg"], "els": els + footer(spec, n, total, T)}
 
@@ -356,7 +409,7 @@ def scene_table(s, spec, n, total, T):
 
 
 def scene_next(s, spec, n, total, T):
-    els = motif(T, T["dark"], big=(8.9, 3.6, 6.4), a=0.04)
+    els = [] if T.get("motif") == "dots" else motif(T, T["dark"], big=(8.9, 3.6, 6.4), a=0.04)
     els.append(headline_top(s, n, T, size=30, color=T["on_dark"]))
     items = s.get("items", [])
     gap = 0.3
@@ -366,7 +419,8 @@ def scene_next(s, spec, n, total, T):
         x = M + i * (cw + gap)
         els.append(rect(x, y, cw, h, T["dark2"], r=0.14))
         els.append(circle(x + 0.35, y + 0.4, 0.62, T["accent"]))
-        els.append(text(x + 0.35, y + 0.4, 0.62, 0.62, [run(i + 1, 18, T["dark"], True)], align="c", valign="m"))
+        num = "FFFFFF" if BK.contrast("FFFFFF", T["accent"]) > BK.contrast(T["text"], T["accent"]) else T["text"]
+        els.append(text(x + 0.35, y + 0.4, 0.62, 0.62, [run(i + 1, 18, num, True)], align="c", valign="m"))
         els.append(text(x + 0.35, y + 1.3, cw - 0.7, 1.75, [run(it.get("action", ""), 19, T["on_dark"], True)], check="step-%d-%d" % (n, i), lh=1.15))
         if it.get("owner"):
             els.append(text(x + 0.35, y + h - 0.95, cw - 0.7, 0.35, [run(it["owner"], 13, T["on_dark_muted"])], valign="m"))
@@ -379,16 +433,49 @@ SCENES = {"title": scene_title, "section": scene_section, "stat": scene_stat, "a
           "chart": scene_chart, "bullets": scene_bullets, "table": scene_table, "next_steps": scene_next}
 
 
+DARK_SLIDES = ("title", "section", "stat", "next_steps")
+
+
+def resolve_theme(spec):
+    """Tokens for the deck: brand colours (or colours read from the logo), else a curated theme."""
+    kw = dict(motif=spec.get("motif", "orb"), mode=spec.get("mode", "contrast"), type_=spec.get("type", "modern"))
+    b = spec.get("brand") or {}
+    lp = logo_path(b["logo"]) if b.get("logo") else None
+    primary, accent = b.get("primary"), b.get("accent")
+    note = ""
+    if lp and not primary:
+        lp_primary, lp_accent = BK.logo_colors(lp)
+        primary, accent = primary or lp_primary, accent or lp_accent
+        if primary:
+            note = "brand colours read from the logo: primary #%s%s" % (primary, ", accent #%s" % accent if accent else "")
+    if primary:
+        if not accent:  # brand gave one colour: pair it with the curated accent closest in spirit
+            accent = BK.CURATED.get(spec.get("theme", "ink"), BK.CURATED["ink"])[1]
+        T = BK.brand_theme(primary, accent, **kw)
+    else:
+        T = BK.theme(spec.get("theme", "ink"), **kw)
+    if lp:
+        T["logo"] = BK.prepare_logo(lp)
+    T["note"] = note
+    return T
+
+
 def scenes(spec):
-    T = THEMES[spec.get("theme", "ink")]
+    T = resolve_theme(spec)
+    D = BK.light_mode(T) if T["mode"] == "light" else T
     sl = spec["slides"]
-    return T, [SCENES[s["type"]](s, spec, i + 1, len(sl), T) for i, s in enumerate(sl)]
+    return T, [SCENES[s["type"]](s, spec, i + 1, len(sl), D if s["type"] in DARK_SLIDES else T) for i, s in enumerate(sl)]
 
 
 # ---------- HTML / PDF ----------
 
 PX = 96
 e = lambda s: html.escape(str(s), quote=True)
+
+
+def is_head(r):
+    """Headlines, titles and big numbers use the heading font."""
+    return r["bold"] and r["size"] >= 24
 
 
 def box(el):
@@ -403,13 +490,23 @@ def html_el(el, T, bg):
         d = el["d"] * PX
         return '<div class="el" style="left:%.1fpx;top:%.1fpx;width:%.1fpx;height:%.1fpx;background:#%s;border-radius:50%%"></div>' % (
             el["x"] * PX, el["y"] * PX, d, d, el["fill"])
+    if k == "ring":
+        d = el["d"] * PX
+        return '<div class="el" style="left:%.1fpx;top:%.1fpx;width:%.1fpx;height:%.1fpx;border:%.2fpx solid #%s;border-radius:50%%"></div>' % (
+            el["x"] * PX, el["y"] * PX, d, d, el["width"] * 4 / 3, el["color"])
+    if k == "image":
+        import base64
+        ext = os.path.splitext(el["path"])[1].lower().lstrip(".").replace("jpg", "jpeg")
+        with open(el["path"], "rb") as f:
+            data = base64.b64encode(f.read()).decode()
+        return '<img class="el" alt="logo" style="%s" src="data:image/%s;base64,%s">' % (box(el), ext, data)
     if k == "text":
         jc = {"t": "flex-start", "m": "center", "b": "flex-end"}[el["valign"]]
         ta = {"l": "left", "r": "right", "c": "center"}[el["align"]]
         ps = []
         for p in el["paras"]:
-            runs = "".join('<span style="font-size:%gpt;color:#%s;font-weight:%d">%s</span>' % (
-                r["size"], r["color"], 700 if r["bold"] else 400, e(r["t"])) for r in p["runs"])
+            runs = "".join('<span style="font-size:%gpt;color:#%s;font-weight:%d;font-family:%s">%s</span>' % (
+                r["size"], r["color"], 700 if r["bold"] else 400, e(T["html_head"] if is_head(r) else T["html_body"]), e(r["t"])) for r in p["runs"])
             mx = max(r["size"] for r in p["runs"])
             ps.append('<p style="line-height:%.2fpt;margin-bottom:%gpt">%s</p>' % (mx * el["lh"] * 1.2, p.get("after", 0), runs))
         chk = ' data-check="%s"' % e(el["check"]) if el.get("check") else ""
@@ -465,7 +562,7 @@ table.dt th:last-child, table.dt td:last-child { padding-right: 0; }
 table.dt .n { text-align: right; }
 table.dt tr.hl td { color: #%(text)s; font-weight: 700; }
 table.dt tr.hl td:first-child { color: #%(accent_dark)s; }
-""" % dict(T, font=HTML_FONT)
+""" % dict(T, font=T["html_body"], accent=T["accent_fill"])
     slides = "".join('<section class="slide" id="s%d" style="background:#%s">%s</section>' % (
         i + 1, s["bg"], "".join(html_el(x, T, s["bg"]) for x in s["els"])) for i, s in enumerate(sc))
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>%s</title><style>%s%s</style></head><body>%s<script>%s</script></body></html>' % (
@@ -522,7 +619,7 @@ def build_pptx(spec, path):
                 rn = para.add_run()
                 rn.text = r["t"]
                 f = rn.font
-                f.size, f.bold, f.name = Pt(r["size"]), r["bold"], FONT
+                f.size, f.bold, f.name = Pt(r["size"]), r["bold"], T["font_head"] if is_head(r) else T["font_body"]
                 f.color.rgb = rgb(r["color"])
         if el.get("check"):
             tb.name = el["check"]
@@ -542,7 +639,7 @@ def build_pptx(spec, path):
             cd.add_series(sr["name"], list(sr["values"]))
         gf = sl.shapes.add_chart(kind, Inches(el["x"]), Inches(el["y"]), Inches(el["w"]), Inches(el["h"]), cd)
         ch = gf.chart
-        ch.font.size, ch.font.name = Pt(12), FONT
+        ch.font.size, ch.font.name = Pt(12), T["font_body"]
         ch.font.color.rgb = rgb(T["muted"])
         ch.has_title = False
         ch.has_legend = len(series) > 1
@@ -566,13 +663,13 @@ def build_pptx(spec, path):
             va.has_major_gridlines = True
             va.major_gridlines.format.line.color.rgb = rgb(T["grid"])
         hx, hl = c.get("highlight_x"), c.get("highlight")
-        palette = [T["accent"]] + SERIES_EXTRA
+        palette = [T["accent_fill"]] + SERIES_EXTRA
         plot = ch.plots[0]
         for i, ps in enumerate(plot.series):
             name = series[i]["name"]
             col = palette[i % len(palette)]
             if hl:
-                col = T["accent"] if name == hl else T["dim"]
+                col = T["accent_fill"] if name == hl else T["dim"]
             if kind == XL_CHART_TYPE.LINE:
                 lc = T["dim"] if hx is not None and len(series) == 1 else col
                 ps.format.line.color.rgb = rgb(lc)
@@ -584,13 +681,13 @@ def build_pptx(spec, path):
                     pt = ps.points[j]
                     pt.marker.style, pt.marker.size = XL_MARKER_STYLE.CIRCLE, 11
                     pt.marker.format.fill.solid()
-                    pt.marker.format.fill.fore_color.rgb = rgb(T["accent"])
+                    pt.marker.format.fill.fore_color.rgb = rgb(T["accent_fill"])
                     pt.marker.format.line.color.rgb = rgb(T["bg"])
                     dl = pt.data_label
                     dl.position = XL_LABEL_POSITION.ABOVE
                     dr = dl.text_frame.paragraphs[0].add_run()
                     dr.text = V.fmt(series[0]["values"][j], c.get("format", "number"), c.get("currency"))
-                    dr.font.size, dr.font.bold, dr.font.name = Pt(13), True, FONT
+                    dr.font.size, dr.font.bold, dr.font.name = Pt(13), True, T["font_body"]
                     dr.font.color.rgb = rgb(T["accent_dark"])
             else:
                 ps.format.fill.solid()
@@ -600,7 +697,7 @@ def build_pptx(spec, path):
                     for j, x in enumerate(xs):
                         p = ps.points[j]
                         p.format.fill.solid()
-                        p.format.fill.fore_color.rgb = rgb(T["accent"] if x == str(hx) else T["dim"])
+                        p.format.fill.fore_color.rgb = rgb(T["accent_fill"] if x == str(hx) else T["dim"])
                         p.format.line.fill.background()
                 # Negative values must keep their colour (no inverted fill).
                 ps.invert_if_negative = False
@@ -622,7 +719,7 @@ def build_pptx(spec, path):
         p.alignment = align
         r = p.add_run()
         r.text = s
-        r.font.size, r.font.bold, r.font.name = Pt(size), bold, FONT
+        r.font.size, r.font.bold, r.font.name = Pt(size), bold, T["font_body"]
         r.font.color.rgb = rgb(color)
         cell.margin_top = cell.margin_bottom = 0
         cell.vertical_anchor = MSO_ANCHOR.MIDDLE
@@ -683,6 +780,14 @@ def build_pptx(spec, path):
             elif k == "circle":
                 shp = sl.shapes.add_shape(MSO_SHAPE.OVAL, Inches(el["x"]), Inches(el["y"]), Inches(el["d"]), Inches(el["d"]))
                 solid(shp, el["fill"])
+            elif k == "ring":
+                shp = sl.shapes.add_shape(MSO_SHAPE.OVAL, Inches(el["x"]), Inches(el["y"]), Inches(el["d"]), Inches(el["d"]))
+                solid(shp, "FFFFFF")
+                shp.fill.background()
+                shp.line.color.rgb = rgb(el["color"])
+                shp.line.width = Pt(el["width"])
+            elif k == "image":
+                sl.shapes.add_picture(el["path"], Inches(el["x"]), Inches(el["y"]), Inches(el["w"]), Inches(el["h"]))
             elif k == "text":
                 add_text(sl, el)
             elif k == "chart":
@@ -698,6 +803,8 @@ def main():
     if not args:
         sys.exit(__doc__)
     out = args[args.index("--out") + 1] if "--out" in args else "deck"
+    global BASE_DIR
+    BASE_DIR = os.path.dirname(os.path.abspath(args[0]))
     spec = run_analysis(args[0])
     probs = validate(spec)
     if probs:
@@ -718,6 +825,9 @@ def main():
             made.append(out + ".pptx")
         else:
             print("PowerPoint skipped: run `pip install python-pptx` and build again")
+    note = resolve_theme(spec)["note"]
+    if note:
+        print(note + " (tell the user; they can set brand.primary and brand.accent to change them)")
     print("built " + ", ".join(made))
 
 

@@ -30,6 +30,7 @@ def main():
     if len(sys.argv) < 3:
         sys.exit(__doc__)
     script, out = sys.argv[1], sys.argv[2]
+    B.BASE_DIR = os.path.dirname(os.path.abspath(script))
     rs = []
 
     def r(level, msg):
