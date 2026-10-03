@@ -298,12 +298,21 @@ func Install(pkg, agentsDir string) (Manifest, error) {
 	if err != nil {
 		return m, err
 	}
-	if m, err = Load(tmp); err != nil {
+	m, findings, err := Review(tmp)
+	if err != nil {
 		return m, err
+	}
+	for _, f := range findings {
+		if f.Level == "block" {
+			return m, fmt.Errorf("%s fails the safety review: %s:%d %s", m.Name, f.File, f.Line, f.Reason)
+		}
 	}
 	dest := filepath.Join(agentsDir, m.Name)
 	if old, err := os.ReadFile(filepath.Join(dest, pubFile)); err == nil && strings.TrimSpace(string(old)) != publisher {
 		return m, fmt.Errorf("%s is installed from a different creator key; remove it first if you trust the new one", m.Name)
+	}
+	if cur, err := Load(dest); err == nil && newer(cur.Version, m.Version) {
+		return m, fmt.Errorf("%s %s is installed; %s is older (remove it first to go back)", m.Name, cur.Version, m.Version)
 	}
 	if err := skills.CopyShared(filepath.Join(tmp, "scripts")); err != nil {
 		return m, err
@@ -332,12 +341,17 @@ func Unpack(pkg, dir string) (string, error) {
 		return "", errors.New("package has too many files")
 	}
 	contents := map[string][]byte{}
+	seen := map[string]bool{}
 	var total int64
 	for _, f := range zr.File {
 		n := f.Name
-		if n != path.Clean(n) || path.IsAbs(n) || strings.HasPrefix(n, "../") || strings.Contains(n, `\`) || n == ".." {
+		if n != path.Clean(n) || path.IsAbs(n) || strings.HasPrefix(n, "../") || strings.ContainsAny(n, "\\\n\r") || n == ".." {
 			return "", fmt.Errorf("unsafe path %q in package", n)
 		}
+		if seen[strings.ToLower(n)] {
+			return "", fmt.Errorf("package has %q twice (names must differ by more than case)", n)
+		}
+		seen[strings.ToLower(n)] = true
 		if f.FileInfo().IsDir() {
 			continue
 		}

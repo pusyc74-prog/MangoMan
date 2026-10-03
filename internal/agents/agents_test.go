@@ -152,30 +152,40 @@ func TestUnsafePathsAndBadManifests(t *testing.T) {
 }
 
 func TestGuardBlocksUndeclaredAccess(t *testing.T) {
-	py, err := exec.LookPath("python3")
-	if err != nil {
+	if _, err := exec.LookPath("python3"); err != nil {
 		t.Skip("python3 not installed")
 	}
 	root := t.TempDir()
-	pkg, _ := packDemo(t, root, nil)
+	home, _ := os.UserHomeDir()
+	secret := filepath.Join(home, ".ssh", "id_rsa")
+	cases := map[string]string{
+		"write outside":   "open(" + quote(filepath.Join(root, "outside.txt")) + ", 'w').write('x')",
+		"read secrets":    "open(" + quote(secret) + ")",
+		"network":         "import socket; socket.getaddrinfo('example.com', 443)",
+		"other lookups":   "import socket; socket.gethostbyname('example.com')",
+		"other programs":  "import subprocess; subprocess.run(['curl', 'https://example.com'])",
+		"shell":           "import os; os.system('true')",
+		"local services":  "import socket; socket.create_connection(('127.0.0.1', 4141), timeout=2)",
+		"python -S child": "import subprocess, sys; subprocess.run([sys.executable, '-S', '-c', 'print(1)'], check=True)",
+		"bare env child":  "import subprocess, sys; subprocess.run([sys.executable, '-c', 'print(1)'], env={'PATH': '/usr/bin'}, check=True)",
+		"hard link":       "import os; os.link(" + quote(secret) + ", 'leak')",
+	}
+	pkg, _ := packDemo(t, root, map[string]string{"scripts/ok.py": "import os, subprocess, sys\nopen('ok.txt','w').write(os.environ.get('GROQ_API_KEY','none') + os.environ.get('DATABASE_URL','none'))\nsubprocess.run([sys.executable, '-c', 'pass'], check=True)\n"})
 	dir := filepath.Join(root, "agents")
 	if _, err := Install(pkg, dir); err != nil {
 		t.Fatal(err)
 	}
+	// The attacks are placed after install, as if they had slipped past the
+	// review: the guard must stop them on its own.
+	for name, code := range cases {
+		writeAgent(t, filepath.Join(dir, "demo-agent"), map[string]string{"scripts/" + strings.ReplaceAll(name, " ", "_") + ".py": code + "\n"})
+	}
 	work := filepath.Join(root, "work")
 	os.MkdirAll(work, 0o755)
-	home, _ := os.UserHomeDir()
 	t.Setenv("GROQ_API_KEY", "secret-value")
-	cases := map[string]string{
-		"write outside":  "open(" + quote(filepath.Join(root, "outside.txt")) + ", 'w').write('x')",
-		"read secrets":   "open(" + quote(filepath.Join(home, ".ssh", "id_rsa")) + ")",
-		"network":        "import socket; socket.getaddrinfo('example.com', 443)",
-		"other programs": "import subprocess; subprocess.run(['curl', 'https://example.com'])",
-		"shell":          "import os; os.system('true')",
-		"local services": "import socket; socket.create_connection(('127.0.0.1', 4141), timeout=2)",
-	}
-	for name, code := range cases {
-		cmd, err := Command(dir, "demo-agent", work, []string{py, "-c", code})
+	t.Setenv("DATABASE_URL", "postgres://u:p@h/db")
+	for name := range cases {
+		cmd, err := Command(dir, "demo-agent", work, strings.ReplaceAll(name, " ", "_")+".py", nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -184,13 +194,38 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 			t.Errorf("%s was not blocked: %v %s", name, err, out)
 		}
 	}
-	cmd, _ := Command(dir, "demo-agent", work, []string{py, "-c",
-		"import os; open('ok.txt','w').write(os.environ.get('GROQ_API_KEY','none'))"})
+	cmd, _ := Command(dir, "demo-agent", work, "ok.py", nil)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		t.Fatalf("allowed write failed: %v %s", err, out)
+		t.Fatalf("allowed work failed: %v %s", err, out)
 	}
-	if b, _ := os.ReadFile(filepath.Join(work, "ok.txt")); string(b) != "none" {
-		t.Fatalf("secret env reached the agent: %q", b)
+	if b, _ := os.ReadFile(filepath.Join(work, "ok.txt")); string(b) != "nonenone" {
+		t.Fatalf("secrets reached the agent: %q", b)
+	}
+	for _, bad := range []string{"/bin/sh", "../../x.py", "run.sh", "../demo-agent/scripts/ok.py"} {
+		if _, err := Command(dir, "demo-agent", work, bad, nil); err == nil && bad != "../demo-agent/scripts/ok.py" {
+			t.Errorf("exec accepted %q", bad)
+		}
+	}
+	if _, err := Command(dir, "../agents/demo-agent", work, "ok.py", nil); err == nil {
+		t.Error("exec accepted a path as the agent name")
+	}
+}
+
+func TestInstallRunsTheReviewAndRefusesDowngrades(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "agents")
+	bad, _ := packDemo(t, root, map[string]string{"scripts/run.py": "import ctypes\n"})
+	if _, err := Install(bad, dir); err == nil || !strings.Contains(err.Error(), "safety review") {
+		t.Fatalf("an agent that loads native code installed: %v", err)
+	}
+	v2 := strings.Replace(testManifest, `"version": "1.0.0"`, `"version": "2.0.0"`, 1)
+	newer, _ := packDemo(t, root, map[string]string{"agent.json": v2, "scripts/run.py": "print('ok')\n"})
+	if _, err := Install(newer, dir); err != nil {
+		t.Fatal(err)
+	}
+	older, _ := packDemo(t, root, map[string]string{"agent.json": testManifest})
+	if _, err := Install(older, dir); err == nil || !strings.Contains(err.Error(), "older") {
+		t.Fatalf("downgrade allowed: %v", err)
 	}
 }
 

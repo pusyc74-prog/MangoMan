@@ -159,8 +159,12 @@ func (r Registry) get(name string) ([]byte, error) {
 	return io.ReadAll(io.LimitReader(resp.Body, maxBytes+1))
 }
 
-// Fetch downloads the index and checks its signature.
-func (r Registry) Fetch() (Index, error) {
+// Fetch downloads the index and checks its signature. With seenFile set, an
+// index older than the last one seen is refused (an old, validly signed index
+// could otherwise bring back an agent version that was pulled).
+func (r Registry) Fetch() (Index, error) { return r.fetch("") }
+
+func (r Registry) fetch(seenFile string) (Index, error) {
 	var ix Index
 	pub, err := base64.StdEncoding.DecodeString(r.Key)
 	if err != nil || len(pub) != ed25519.PublicKeySize {
@@ -178,13 +182,25 @@ func (r Registry) Fetch() (Index, error) {
 	if err != nil || !ed25519.Verify(pub, data, sig) {
 		return ix, errors.New("the marketplace index failed its signature check")
 	}
-	return ix, json.Unmarshal(data, &ix)
+	if err := json.Unmarshal(data, &ix); err != nil {
+		return ix, err
+	}
+	if seenFile != "" {
+		if last, err := os.ReadFile(seenFile); err == nil && ix.Updated < strings.TrimSpace(string(last)) {
+			return ix, errors.New("the marketplace index is older than one already seen; try again later")
+		}
+		_ = os.WriteFile(seenFile, []byte(ix.Updated+"\n"), 0o644)
+	}
+	return ix, nil
 }
 
 // InstallListed downloads a listed agent, checks it against the signed
 // index and installs it.
 func (r Registry) InstallListed(name, agentsDir string) (Listing, error) {
-	ix, err := r.Fetch()
+	if err := os.MkdirAll(agentsDir, 0o755); err != nil {
+		return Listing{}, err
+	}
+	ix, err := r.fetch(filepath.Join(agentsDir, ".index-seen"))
 	if err != nil {
 		return Listing{}, err
 	}
@@ -222,10 +238,4 @@ func (r Registry) InstallListed(name, agentsDir string) (Listing, error) {
 		return l, err
 	}
 	return Listing{}, fmt.Errorf("no agent named %q in the marketplace", name)
-}
-
-// Publisher returns the key an installed agent was signed with.
-func Publisher(agentsDir, name string) string {
-	b, _ := os.ReadFile(filepath.Join(agentsDir, name, pubFile))
-	return strings.TrimSpace(string(b))
 }

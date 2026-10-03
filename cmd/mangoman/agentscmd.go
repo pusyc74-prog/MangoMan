@@ -103,13 +103,8 @@ func cmdAgents(args []string) error {
 		if err := need(2); err != nil {
 			return err
 		}
-		argv := args[1:]
-		if strings.HasSuffix(argv[0], ".py") {
-			script := filepath.Join(dir, args[0], "scripts", filepath.Clean("/"+argv[0]))
-			argv = append([]string{"python3", script}, argv[1:]...)
-		}
 		wd, _ := os.Getwd()
-		cmd, err := agents.Command(dir, args[0], wd, argv)
+		cmd, err := agents.Command(dir, args[0], wd, args[1], args[2:])
 		if err != nil {
 			return err
 		}

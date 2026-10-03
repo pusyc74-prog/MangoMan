@@ -30,6 +30,8 @@ var reviewRules = []struct {
 	{regexp.MustCompile(`\bsys\.addaudithook|\bsys\.settrace|\bsys\.setprofile|sitecustomize`), "block", "tampers with the sandbox"},
 	{regexp.MustCompile(`\bos\.system\s*\(|shell\s*=\s*True`), "block", "starts a shell"},
 	{regexp.MustCompile(`expanduser\s*\(\s*["']~|Path\.home\s*\(|os\.environ\[\s*["']HOME`), "check", "reads the user's home folder"},
+	{regexp.MustCompile(`__builtins__|\bimport\s+builtins|\bfrom\s+builtins\b`), "block", "reaches into Python's built-ins"},
+	{regexp.MustCompile(`\bsubprocess\b|\bos\.(exec|spawn|posix_spawn|fork)`), "check", "starts other programs"},
 }
 
 var hostInCode = regexp.MustCompile(`https?://([a-zA-Z0-9.-]+)`)

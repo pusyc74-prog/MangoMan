@@ -2,6 +2,7 @@ package agents
 
 import (
 	_ "embed"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,17 +14,30 @@ import (
 //go:embed guard/sitecustomize.py
 var guardPy []byte
 
-// secretEnv matches environment variables that must not reach an agent.
-var secretEnv = regexp.MustCompile(`(?i)(KEY|TOKEN|SECRET|PASSWORD|PASSPHRASE|CREDENTIAL|AUTH)`)
+// safeEnv is the only environment an agent gets from the user's: anything
+// else (keys, tokens, database addresses, proxies) stays out.
+var safeEnv = regexp.MustCompile(`(?i)^(PATH|HOME|USERPROFILE|USER|USERNAME|LOGNAME|LANG|LANGUAGE|LC_[A-Z]+|TERM|TZ|SYSTEMROOT|WINDIR|COMSPEC|PATHEXT|PROGRAMFILES|PROGRAMFILES\(X86\)|LOCALAPPDATA|APPDATA|XDG_CACHE_HOME|PLAYWRIGHT_BROWSERS_PATH)$`)
 
-// Command builds the sandboxed command for one of an installed agent's
-// programs: it runs in workdir with the guard loaded, without secrets in its
-// environment, and (on Linux, for agents with no network) with no network.
-func Command(agentsDir, name, workdir string, argv []string) (*exec.Cmd, error) {
+// Command builds the sandboxed command that runs one of an installed agent's
+// Python scripts: in workdir, with the guard loaded, with only safe
+// environment variables, and (on Linux, for agents with no network) with no
+// network at all.
+func Command(agentsDir, name, workdir, script string, args []string) (*exec.Cmd, error) {
+	if !nameRe.MatchString(name) {
+		return nil, fmt.Errorf("no agent named %q", name)
+	}
 	dir := filepath.Join(agentsDir, name)
 	m, err := Load(dir)
 	if err != nil {
 		return nil, err
+	}
+	scripts := filepath.Join(dir, "scripts")
+	path := filepath.Join(scripts, filepath.Clean("/"+script))
+	if !strings.HasSuffix(path, ".py") || filepath.Dir(path) != scripts {
+		return nil, fmt.Errorf("%s is not one of %s's scripts", script, name)
+	}
+	if _, err := os.Stat(path); err != nil {
+		return nil, fmt.Errorf("%s has no script %s", name, script)
 	}
 	guard := filepath.Join(agentsDir, ".guard")
 	if err := os.MkdirAll(guard, 0o755); err != nil {
@@ -50,12 +64,11 @@ func Command(agentsDir, name, workdir string, argv []string) (*exec.Cmd, error) 
 		"MANGOMAN_ALLOW_CMDS=" + strings.Join(m.Permissions.Commands, ","),
 	}
 	for _, kv := range os.Environ() {
-		k, _, _ := strings.Cut(kv, "=")
-		if secretEnv.MatchString(k) || strings.HasSuffix(strings.ToUpper(k), "_PROXY") || strings.HasPrefix(k, "PYTHON") || strings.HasPrefix(k, "MANGOMAN_") || k == "TMPDIR" || k == "TEMP" || k == "TMP" {
-			continue
+		if k, _, _ := strings.Cut(kv, "="); safeEnv.MatchString(k) {
+			env = append(env, kv)
 		}
-		env = append(env, kv)
 	}
+	argv := append([]string{"python3", path}, args...)
 	if len(m.Permissions.Network) == 0 && noNetwork() {
 		argv = append([]string{"unshare", "--map-root-user", "--net", "--"}, argv...)
 	}
