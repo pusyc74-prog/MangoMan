@@ -1,7 +1,7 @@
 name: doctor
 
 # Live check of every provider with a key in this repo's secrets.
-# Add any of GROQ_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY, NVIDIA_API_KEY
+# Add any of GROQ_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY, NVIDIA_API_KEY (one is enough)
 # under Settings > Secrets and variables > Actions, then run this workflow
 # from the Actions tab. The summary appears on the run page; the JSON report
 # (no keys, no model answers) is attached as an artifact.
