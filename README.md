@@ -279,7 +279,7 @@ mangoman brain test "Is this a coding question: how do I sort a list?"
 
 The dashboard shows the same, with an on/off switch. Jev can be the engine once added from the new-models list (OpenCode Zen key needed); whether it follows the JSON answer format has to be checked with a real key.
 
-## Skill packs (wave 1)
+## Skill packs
 
 Skill packs make specific outputs come out polished on free models. Each is a folder in the open Agent Skills format (a `SKILL.md` with expert instructions, plus Python scripts), so OpenCode, Claude Code and Codex load it by themselves. The model writes the content and the analysis code; a tested renderer applies the design; a checker verifies the result before delivery.
 
@@ -287,7 +287,8 @@ Skill packs make specific outputs come out polished on free models. Each is a fo
 | --- | --- | --- | --- |
 | `mangoman-resume` | Target role, classic (ATS-safe) or modern design, length, region | PDF and HTML in two tested designs | Page count, page well filled, selectable text, every section filled, action-first bullets with results, no "I", one date format |
 | `mangoman-data-dashboard` | Audience and decision, period and measures, currency | Interactive HTML dashboard (KPI tiles, charts, table view, light and dark) | Analysis reproduces the numbers, spec valid, every number in the text traces to computed data, page renders |
-| `mangoman-ceo-deck` | Audience and decision, the main question, period and currency | Editable PowerPoint (native charts and tables), PDF, web version | Same number checks, answer-first structure, headline and bullet length, no slide overflows, one PDF page per slide |
+| `mangoman-ceo-deck` | Audience and decision, the main question, period and currency, brand (logo, colours) | Editable PowerPoint (native charts and tables), PDF, web version; 12 themes, 3 motifs, light mode, brand colours and logo | Same number checks, answer-first structure, headline and bullet length, no slide overflows, one PDF page per slide |
+| `mangoman-social-posts` | Goal and action, platforms, number of posts, facts to use, brand, language and tone | Images at each platform's size (Instagram, LinkedIn, Facebook, X, Threads, WhatsApp status, stories), carousels (plus a LinkedIn PDF), captions per platform, hashtags, alt text, a preview sheet | Every size right, text fits at a readable size, captions within each platform's limit, valid hashtags, every number from the user's facts, "five tips" really has five, risky claims flagged, links in Instagram captions flagged |
 
 Numbers are never typed by the model: an `analysis.py` it writes computes them, and the checker re-runs it and traces every figure in the text (headline, titles, notes) back to computed values. Numbers that appear only in text go in a `facts` field.
 

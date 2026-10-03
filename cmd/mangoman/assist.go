@@ -11,11 +11,13 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/mcp"
+	"github.com/pusyc74-prog/mangoman/internal/skills"
 )
 
 // cmdMCP runs the assist-mode MCP server on stdin/stdout. Coding tools start
@@ -156,7 +158,15 @@ func cmdCode(args []string) error {
 		// OpenCode's web search (via Exa) lets it research while it codes.
 		env = append(env, "OPENCODE_ENABLE_EXA=1")
 	}
-	fmt.Printf("Opening OpenCode on MangoMan free models (%s). Web search %s. Skill packs: resume, data dashboard, CEO deck.\n", *model, map[bool]string{true: "off", false: "on"}[*noWeb])
+	packs := "none"
+	if ps, err := skills.List(); err == nil && len(ps) > 0 {
+		names := make([]string, len(ps))
+		for i, p := range ps {
+			names[i] = strings.ReplaceAll(strings.TrimPrefix(p.Name, "mangoman-"), "-", " ")
+		}
+		packs = strings.Join(names, ", ")
+	}
+	fmt.Printf("Opening OpenCode on MangoMan free models (%s). Web search %s. Skill packs: %s.\n", *model, map[bool]string{true: "off", false: "on"}[*noWeb], packs)
 
 	cmd := exec.Command(oc, fs.Args()...)
 	cmd.Stdin, cmd.Stdout, cmd.Stderr, cmd.Env = os.Stdin, os.Stdout, os.Stderr, env

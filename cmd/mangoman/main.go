@@ -48,7 +48,7 @@ Usage:
   mangoman list [add|rm|up|new]  My list: models tried first; new free models
   mangoman code [--model M]     open OpenCode on free models (starts the router if needed)
   mangoman mcp                  assist mode: MCP server for Claude Code and Codex
-  mangoman skills [install|remove]  skill packs: resume, data dashboard, CEO deck
+  mangoman skills [install|remove]  skill packs: resume, dashboard, CEO deck, social posts
   mangoman brain [on|off|set|test]  decision brain: smarter task detection, refusal checks
   mangoman group [set|rm]       model groups: "group/<name>" never leaves the group
   mangoman status               show the running router's providers and quota

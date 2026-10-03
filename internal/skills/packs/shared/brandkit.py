@@ -243,3 +243,29 @@ def logo_colors(path):
         others = [c for c in vivid if c != primary]
         accent = others[0] if others else None
     return primary, accent
+
+
+def resolve_spec(spec, base_dir="."):
+    """Theme tokens for a spec with optional theme, motif, mode, type and
+    brand {primary, accent, logo}. Returns (tokens, note) where note says
+    which colours were read from the logo ('' when none were)."""
+    kw = dict(motif=spec.get("motif", "orb"), mode=spec.get("mode", "contrast"), type_=spec.get("type", "modern"))
+    b = spec.get("brand") or {}
+    lp = None
+    if b.get("logo"):
+        lp = b["logo"] if os.path.isabs(b["logo"]) else os.path.join(base_dir, b["logo"])
+    primary, accent = b.get("primary"), b.get("accent")
+    note = ""
+    if lp and not primary and os.path.exists(lp):
+        p2, a2 = logo_colors(lp)
+        primary, accent = primary or p2, accent or a2
+        if primary:
+            note = "brand colours read from the logo: primary #%s%s" % (primary, ", accent #%s" % accent if accent else "")
+    if primary:
+        accent = accent or CURATED.get(spec.get("theme", "ink"), CURATED["ink"])[1]
+        T = brand_theme(primary, accent, **kw)
+    else:
+        T = theme(spec.get("theme", "ink"), **kw)
+    if lp and os.path.exists(lp):
+        T["logo"] = prepare_logo(lp)
+    return T, note

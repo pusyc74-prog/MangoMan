@@ -100,6 +100,38 @@ def screenshot(html_path, png_path, width=1280, height=900, full_page=True, dark
     return False
 
 
+FRAME_JS = "() => window.__fit || null"
+
+
+def render_frames(jobs):
+    """Screenshot many fixed-size HTML frames with one browser.
+
+    jobs: list of (html_path, png_path, width, height). Returns a list with,
+    per job, what the page's fit script reported in window.__fit (font sizes
+    and overflow per text box), or None when it could not be measured (no
+    Playwright: Chrome is used, one process per frame). Returns None when no
+    engine is available at all.
+    """
+    if _playwright():
+        from playwright.sync_api import sync_playwright
+        out = []
+        with sync_playwright() as p:
+            b = p.chromium.launch()
+            for html_path, png_path, w, h in jobs:
+                page = b.new_page(viewport={"width": w, "height": h})
+                page.goto(_url(html_path), wait_until="networkidle")
+                out.append(page.evaluate(FRAME_JS))
+                page.screenshot(path=png_path, full_page=False)
+                page.close()
+            b.close()
+        return out
+    if _chrome():
+        for html_path, png_path, w, h in jobs:
+            screenshot(html_path, png_path, w, h, full_page=False)
+        return [None] * len(jobs)
+    return None
+
+
 OVERFLOW_JS = """
 (sel) => {
   const out = [];

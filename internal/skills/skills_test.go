@@ -20,7 +20,7 @@ func TestPacksAreValid(t *testing.T) {
 			t.Errorf("%s: no metadata version", p.Name)
 		}
 	}
-	if strings.Join(names, ",") != "mangoman-ceo-deck,mangoman-data-dashboard,mangoman-resume" {
+	if strings.Join(names, ",") != "mangoman-ceo-deck,mangoman-data-dashboard,mangoman-resume,mangoman-social-posts" {
 		t.Fatalf("packs %v", names)
 	}
 }
@@ -35,14 +35,14 @@ func TestInstallUpdateRemove(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got) != 2 || len(skipped) != 1 || skipped[0] != mine {
+	if len(got) != 3 || len(skipped) != 1 || skipped[0] != mine {
 		t.Fatalf("installed %v skipped %v", got, skipped)
 	}
 	if b, _ := os.ReadFile(filepath.Join(mine, "SKILL.md")); string(b) != "mine" {
 		t.Fatal("user's own skill overwritten")
 	}
 	deck := filepath.Join(dir, "mangoman-ceo-deck")
-	for _, f := range []string{"SKILL.md", "scripts/build_deck.py", "scripts/vizlib.py", "scripts/render.py", "scripts/tracenum.py", Marker} {
+	for _, f := range []string{"SKILL.md", "scripts/build_deck.py", "scripts/vizlib.py", "scripts/render.py", "scripts/tracenum.py", "scripts/brandkit.py", Marker} {
 		if _, err := os.Stat(filepath.Join(deck, f)); err != nil {
 			t.Fatalf("missing %s", f)
 		}
@@ -56,7 +56,7 @@ func TestInstallUpdateRemove(t *testing.T) {
 		t.Fatal("update kept a stale file")
 	}
 	removed, err := Remove(dir)
-	if err != nil || len(removed) != 2 {
+	if err != nil || len(removed) != 3 {
 		t.Fatalf("removed %v %v", removed, err)
 	}
 	if _, err := os.Stat(mine); err != nil {
