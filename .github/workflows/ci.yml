@@ -29,7 +29,12 @@ jobs:
       - name: Vet
         run: go vet ./...
       - name: Test
-        run: go test -race -count=1 ./...
+        run: |
+          go test -race -count=1 ./... 2>&1 | tee test.log
+          status=${PIPESTATUS[0]}
+          grep -E -A8 -- "--- FAIL|panic:" test.log | head -40 | sed 's/^/::error::/'
+          exit $status
+        shell: bash
 
   packs:
     runs-on: ubuntu-latest
@@ -51,7 +56,12 @@ jobs:
             t=$(mktemp -d); cp internal/skills/packs/shared/*.py "$d"/scripts/*.py "$t"; python -m pyflakes "$t"/*.py || exit 1
           done
       - name: Build and check every pack's sample
-        run: scripts/check-packs.sh
+        run: |
+          scripts/check-packs.sh 2>&1 | tee packs.log
+          status=${PIPESTATUS[0]}
+          grep -E -A12 "^FAIL" packs.log | head -60 | sed 's/^/::error::/'
+          exit $status
+        shell: bash
 
   build:
     needs: test

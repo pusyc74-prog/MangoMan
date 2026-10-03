@@ -94,7 +94,7 @@ func cmdAgents(args []string) error {
 		}
 		argv := args[1:]
 		if strings.HasSuffix(argv[0], ".py") {
-			script := filepath.Join(dir, args[0], "scripts", filepath.Clean("/" + argv[0]))
+			script := filepath.Join(dir, args[0], "scripts", filepath.Clean("/"+argv[0]))
 			argv = append([]string{"python3", script}, argv[1:]...)
 		}
 		wd, _ := os.Getwd()
