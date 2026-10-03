@@ -124,8 +124,8 @@ def main():
         r("PASS" if n <= 12 else "WARN", "%d pages" % n if n <= 12 else "%d pages: decision makers read short proposals; move detail to an appendix" % n)
         txt = render.pdf_text(pdf)
         if txt:
-            norm = re.sub(r"\s+", " ", txt).lower()
-            missing = [s["headline"] for s in spec["sections"] if re.sub(r"\s+", " ", s["headline"]).lower()[:30] not in norm]
+            norm = re.sub(r"\s+", "", txt).lower()  # PDF text can split words, so compare without spaces
+            missing = [s["headline"] for s in spec["sections"] if re.sub(r"\s+", "", s["headline"]).lower()[:30] not in norm]
             r("PASS" if not missing else "FAIL", "every section is in the PDF" if not missing else "sections missing from the PDF: " + "; ".join(missing))
             if one:
                 tot = B.money(one["total"], nums["currency"])

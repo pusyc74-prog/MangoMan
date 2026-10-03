@@ -28,4 +28,5 @@ run listing   "python3 $P/mangoman-ecommerce-listing/scripts/build_listing.py li
 run invoice   "python3 $P/mangoman-invoice/scripts/build_invoice.py invoice.json --out invoice"    "python3 $P/mangoman-invoice/scripts/check_invoice.py invoice.json invoice"
 run ads       "python3 $P/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads"                "python3 $P/mangoman-ad-copy/scripts/check_ads.py ads.json ads"
 run seo       "python3 $P/mangoman-seo-article/scripts/build_article.py article.json --out article" "python3 $P/mangoman-seo-article/scripts/check_article.py article.json article"
+run report    "python3 $P/mangoman-client-report/scripts/build_report.py analysis.py --out report" "python3 $P/mangoman-client-report/scripts/check_report.py analysis.py report"
 exit $fail

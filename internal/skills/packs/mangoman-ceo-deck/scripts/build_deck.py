@@ -16,7 +16,6 @@ import html
 import json
 import os
 import re
-import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -32,19 +31,7 @@ BASE_DIR = "."  # folder of the analysis script; logo paths are relative to it
 SERIES_EXTRA = ["3B82C4", "1BAF7A", "E87BA4", "4A3AA7", "8A8DA0", "E34948", "008300"]
 
 
-def run_analysis(script):
-    res = subprocess.run([sys.executable, script], capture_output=True, text=True, timeout=600,
-                         cwd=os.path.dirname(os.path.abspath(script)) or ".")
-    if res.returncode != 0:
-        sys.exit("analysis failed:\n" + res.stderr[-4000:])
-    out = res.stdout.strip()
-    start = out.find("{")
-    if start < 0:
-        sys.exit("analysis printed no JSON object")
-    try:
-        return json.loads(out[start:])
-    except json.JSONDecodeError as e:
-        sys.exit("analysis output is not valid JSON: %s" % e)
+run_analysis = V.run_analysis
 
 
 def point_text(p):

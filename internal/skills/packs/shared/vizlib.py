@@ -10,6 +10,9 @@ palette in a fixed order, light and dark; a table view for every chart.
 import html
 import json
 import math
+import os
+import subprocess
+import sys
 
 PALETTE_LIGHT = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
 PALETTE_DARK = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#008300", "#9085e9", "#e66767"]
@@ -392,3 +395,19 @@ def numbers_in(obj):
         for v in obj:
             out += numbers_in(v)
     return out
+
+
+def run_analysis(script):
+    """Run the user's analysis script and return the JSON spec it prints."""
+    res = subprocess.run([sys.executable, script], capture_output=True, text=True, timeout=600,
+                         cwd=os.path.dirname(os.path.abspath(script)) or ".")
+    if res.returncode != 0:
+        sys.exit("analysis failed:\n" + res.stderr[-4000:])
+    out = res.stdout.strip()
+    start = out.find("{")
+    if start < 0:
+        sys.exit("analysis printed no JSON object")
+    try:
+        return json.loads(out[start:])
+    except json.JSONDecodeError as e:
+        sys.exit("analysis output is not valid JSON: %s" % e)
