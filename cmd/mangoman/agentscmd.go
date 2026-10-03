@@ -1,0 +1,256 @@
+package main
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"text/tabwriter"
+
+	"github.com/pusyc74-prog/mangoman/internal/agents"
+	"github.com/pusyc74-prog/mangoman/internal/config"
+)
+
+const agentsUsage = `Usage:
+  mangoman agents                       list installed advanced agents
+  mangoman agents install FILE.mmagent  check the creator's signature and install
+  mangoman agents remove NAME           remove an agent
+  mangoman agents exec NAME SCRIPT [ARGS]  run an agent's script in the sandbox
+  mangoman agents eval NAME [--cases DIR] [--runner CMD]  score it against its free pack
+
+For creators:
+  mangoman agents new NAME              start an agent folder from a template
+  mangoman agents keygen                make your signing key (keep it safe)
+  mangoman agents pack DIR [--out FILE] sign the folder into FILE.mmagent
+`
+
+func agentsDir() (string, error) { return config.Path("agents") }
+
+func cmdAgents(args []string) error {
+	sub := ""
+	if len(args) > 0 {
+		sub, args = args[0], args[1:]
+	}
+	dir, err := agentsDir()
+	if err != nil {
+		return err
+	}
+	need := func(n int) error {
+		if len(args) < n {
+			fmt.Print(agentsUsage)
+			return errors.New("missing argument")
+		}
+		return nil
+	}
+	switch sub {
+	case "", "list", "ls":
+		list, err := agents.List(dir)
+		if err != nil {
+			return err
+		}
+		if len(list) == 0 {
+			fmt.Println("No advanced agents installed. Install one with: mangoman agents install FILE.mmagent")
+			return nil
+		}
+		tw := tabwriter.NewWriter(os.Stdout, 0, 2, 2, ' ', 0)
+		fmt.Fprintln(tw, "AGENT\tVERSION\tBY\tRUNS ON\tNETWORK\tIMPROVES ON")
+		for _, m := range list {
+			net := strings.Join(m.Permissions.Network, ", ")
+			if net == "" {
+				net = "none"
+			}
+			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", m.Name, m.Version, m.Author.Name, m.RunsOn, net, m.Skill)
+		}
+		return tw.Flush()
+	case "install":
+		if err := need(1); err != nil {
+			return err
+		}
+		m, err := agents.Install(args[0], dir)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Installed %s %s by %s (%s).\n", m.Name, m.Version, m.Author.Name, m.Author.Contact)
+		if len(m.Permissions.Network) > 0 {
+			fmt.Println("It may reach:", strings.Join(m.Permissions.Network, ", "))
+		}
+		fmt.Println("Data policy:", m.DataPolicy)
+		return nil
+	case "remove", "rm":
+		if err := need(1); err != nil {
+			return err
+		}
+		if err := agents.Remove(dir, args[0]); err != nil {
+			return err
+		}
+		fmt.Println("Removed", args[0])
+		return nil
+	case "exec":
+		if err := need(2); err != nil {
+			return err
+		}
+		argv := args[1:]
+		if strings.HasSuffix(argv[0], ".py") {
+			script := filepath.Join(dir, args[0], "scripts", filepath.Clean("/" + argv[0]))
+			argv = append([]string{"python3", script}, argv[1:]...)
+		}
+		wd, _ := os.Getwd()
+		cmd, err := agents.Command(dir, args[0], wd, argv)
+		if err != nil {
+			return err
+		}
+		cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+		if err := cmd.Run(); err != nil {
+			os.Exit(exitCode(err))
+		}
+		return nil
+	case "eval":
+		if err := need(1); err != nil {
+			return err
+		}
+		return cmdEval(dir, args)
+	case "new":
+		if err := need(1); err != nil {
+			return err
+		}
+		if err := agents.Scaffold(args[0]); err != nil {
+			return err
+		}
+		fmt.Printf("Started %s/. Edit agent.json and SKILL.md, then: mangoman agents pack %s\n", args[0], args[0])
+		return nil
+	case "keygen":
+		key, err := config.Path("creator.key")
+		if err != nil {
+			return err
+		}
+		pub, err := agents.Keygen(key)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Your signing key is in %s. Back it up: updates to your agents must be signed with it.\nPublic key: %s\n", key, pub)
+		return nil
+	case "pack":
+		if err := need(1); err != nil {
+			return err
+		}
+		key, err := config.Path("creator.key")
+		if err != nil {
+			return err
+		}
+		src := args[0]
+		out := flagValue(args, "--out")
+		m, err := agents.Load(src)
+		if err != nil {
+			return err
+		}
+		if out == "" {
+			out = fmt.Sprintf("%s-%s.mmagent", m.Name, m.Version)
+		}
+		if _, err := agents.Pack(src, key, out); err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				return errors.New("no signing key yet: run mangoman agents keygen")
+			}
+			return err
+		}
+		fmt.Println("Wrote", out)
+		return nil
+	case "help", "-h", "--help":
+		fmt.Print(agentsUsage)
+		return nil
+	}
+	fmt.Print(agentsUsage)
+	return errors.New("unknown agents command " + sub)
+}
+
+func flagValue(args []string, name string) string {
+	for i, a := range args {
+		if a == name && i+1 < len(args) {
+			return args[i+1]
+		}
+		if v, ok := strings.CutPrefix(a, name+"="); ok {
+			return v
+		}
+	}
+	return ""
+}
+
+// cmdEval scores an installed agent against its free pack on the pack's
+// public test set, running both through the same headless OpenCode.
+func cmdEval(dir string, args []string) error {
+	name := args[0]
+	m, err := agents.Load(filepath.Join(dir, name))
+	if err != nil {
+		return err
+	}
+	oc, err := codeSkillsDir()
+	if err != nil {
+		return err
+	}
+	cases := flagValue(args, "--cases")
+	if cases == "" {
+		cases = filepath.Join(oc, "skills", m.Skill, "tests")
+	}
+	runner := strings.Fields(flagValue(args, "--runner"))
+	if len(runner) == 0 {
+		self, err := os.Executable()
+		if err != nil {
+			return err
+		}
+		runner = []string{self, "code", "--no-web", "run", "--auto", "--dir", "{dir}", "{prompt}"}
+	}
+	work, err := os.MkdirTemp("", "mangoman-eval-")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Scoring %s against %s on %s (work in %s)...\n", name, m.Skill, cases, work)
+	results, err := agents.Eval(cases, []string{m.Skill, name}, work, func(contender, d, prompt string) error {
+		argv := make([]string, len(runner))
+		for i, a := range runner {
+			argv[i] = strings.NewReplacer("{dir}", d, "{prompt}", prompt, "{skill}", contender).Replace(a)
+		}
+		c := exec.Command(argv[0], argv[1:]...)
+		c.Dir = d
+		out, err := c.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("%v: %s", err, lastLine(string(out)))
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	tw := tabwriter.NewWriter(os.Stdout, 0, 2, 2, ' ', 0)
+	fmt.Fprintf(tw, "CASE\t%s\t%s\n", m.Skill, name)
+	for _, r := range results {
+		fmt.Fprintf(tw, "%s\t%.0f\t%.0f\n", r.Case, r.Scores[m.Skill], r.Scores[name])
+	}
+	pa, aa, beats := agents.Verdict(results, m.Skill, name)
+	fmt.Fprintf(tw, "AVERAGE\t%.1f\t%.1f\n", pa, aa)
+	_ = tw.Flush()
+	b, _ := json.MarshalIndent(results, "", " ")
+	if err := os.WriteFile("eval.json", b, 0o644); err != nil {
+		return err
+	}
+	if !beats {
+		return fmt.Errorf("%s does not beat the free pack yet (details in eval.json)", name)
+	}
+	fmt.Printf("%s beats the free pack: it can list as Advanced. Details in eval.json.\n", name)
+	return nil
+}
+
+func lastLine(s string) string {
+	lines := strings.Split(strings.TrimSpace(s), "\n")
+	return lines[len(lines)-1]
+}
+
+func exitCode(err error) int {
+	var ee *exec.ExitError
+	if errors.As(err, &ee) {
+		return ee.ExitCode()
+	}
+	fmt.Fprintln(os.Stderr, "Error:", err)
+	return 1
+}

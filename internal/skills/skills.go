@@ -51,7 +51,7 @@ func List() ([]Pack, error) {
 		if err != nil {
 			return nil, fmt.Errorf("pack %s: %w", e.Name(), err)
 		}
-		p, err := parseFrontmatter(data)
+		p, err := ParseSkill(data)
 		if err != nil {
 			return nil, fmt.Errorf("pack %s: %w", e.Name(), err)
 		}
@@ -64,9 +64,9 @@ func List() ([]Pack, error) {
 	return out, nil
 }
 
-// parseFrontmatter reads name, description and metadata.version from the
-// YAML frontmatter, checking the Agent Skills rules.
-func parseFrontmatter(data []byte) (Pack, error) {
+// ParseSkill reads name, description and metadata.version from a SKILL.md
+// frontmatter, checking the Agent Skills rules.
+func ParseSkill(data []byte) (Pack, error) {
 	var p Pack
 	if !bytes.HasPrefix(data, []byte("---\n")) {
 		return p, errors.New("SKILL.md must start with --- frontmatter")
@@ -110,10 +110,6 @@ func Install(dir string) (installed []string, skipped []string, err error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, nil, err
 	}
-	shared, err := fs.ReadDir(packsFS, "packs/shared")
-	if err != nil {
-		return nil, nil, err
-	}
 	for _, p := range packs {
 		dest := filepath.Join(dir, p.Name)
 		if st, err := os.Stat(dest); err == nil && st.IsDir() {
@@ -143,13 +139,8 @@ func Install(dir string) (installed []string, skipped []string, err error) {
 		if werr != nil {
 			return installed, skipped, werr
 		}
-		for _, s := range shared {
-			if s.IsDir() || !strings.HasSuffix(s.Name(), ".py") {
-				continue
-			}
-			if err := writeFrom(path.Join("packs/shared", s.Name()), filepath.Join(dest, "scripts", s.Name())); err != nil {
-				return installed, skipped, err
-			}
+		if err := CopyShared(filepath.Join(dest, "scripts")); err != nil {
+			return installed, skipped, err
 		}
 		if err := os.WriteFile(filepath.Join(dest, Marker), []byte(p.Version+"\n"), 0o644); err != nil {
 			return installed, skipped, err
@@ -157,6 +148,47 @@ func Install(dir string) (installed []string, skipped []string, err error) {
 		installed = append(installed, dest)
 	}
 	return installed, skipped, nil
+}
+
+// CopyShared writes the shared Python helpers (render, vizlib, brandkit,
+// checks, tracenum) into dir, so packs and agents can import them.
+func CopyShared(dir string) error {
+	shared, err := fs.ReadDir(packsFS, "packs/shared")
+	if err != nil {
+		return err
+	}
+	for _, s := range shared {
+		if s.IsDir() || !strings.HasSuffix(s.Name(), ".py") {
+			continue
+		}
+		if err := writeFrom(path.Join("packs/shared", s.Name()), filepath.Join(dir, s.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CopyScripts writes a pack's own scripts into dir, skipping files dir
+// already has, so an agent can build on the free pack it improves.
+func CopyScripts(pack, dir string) error {
+	root := path.Join("packs", pack, "scripts")
+	entries, err := fs.ReadDir(packsFS, root)
+	if err != nil {
+		return fmt.Errorf("no skill pack named %q", pack)
+	}
+	for _, e := range entries {
+		target := filepath.Join(dir, e.Name())
+		if e.IsDir() || strings.Contains(e.Name(), "__pycache__") {
+			continue
+		}
+		if _, err := os.Stat(target); err == nil {
+			continue
+		}
+		if err := writeFrom(path.Join(root, e.Name()), target); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func writeFrom(src, target string) error {

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/pusyc74-prog/mangoman/internal/agents"
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/skills"
 )
@@ -54,17 +55,7 @@ func cmdSkills(args []string) error {
 	if len(args) > 0 {
 		sub, args = args[0], args[1:]
 	}
-	flag := func(name string) string {
-		for i, a := range args {
-			if a == name && i+1 < len(args) {
-				return args[i+1]
-			}
-			if strings.HasPrefix(a, name+"=") {
-				return strings.TrimPrefix(a, name+"=")
-			}
-		}
-		return ""
-	}
+	flag := func(name string) string { return flagValue(args, name) }
 	switch sub {
 	case "", "list", "ls":
 		packs, err := skills.List()
@@ -129,5 +120,9 @@ func codeSkillsDir() (string, error) {
 	if _, _, err := skills.Install(filepath.Join(oc, "skills")); err != nil {
 		return "", err
 	}
-	return oc, nil
+	ad, err := agentsDir()
+	if err != nil {
+		return "", err
+	}
+	return oc, agents.Expose(ad, filepath.Join(oc, "skills"))
 }

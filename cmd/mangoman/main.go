@@ -50,6 +50,7 @@ Usage:
   mangoman code [--model M]     open OpenCode on free models (starts the router if needed)
   mangoman mcp                  assist mode: MCP server for Claude Code and Codex
   mangoman skills [install|remove]  list or install the skill packs
+  mangoman agents [install|remove|exec|eval|new|pack]  advanced agents
   mangoman brain [on|off|set|test]  decision brain: smarter task detection, refusal checks
   mangoman group [set|rm]       model groups: "group/<name>" never leaves the group
   mangoman status               show the running router's providers and quota
@@ -92,6 +93,8 @@ func main() {
 		err = cmdCode(os.Args[2:])
 	case "brain":
 		err = cmdBrain(os.Args[2:])
+	case "agents", "agent":
+		err = cmdAgents(os.Args[2:])
 	case "skills", "skill":
 		err = cmdSkills(os.Args[2:])
 	case "mcp":

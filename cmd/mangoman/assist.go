@@ -75,6 +75,10 @@ func openCodeConfig(cfg *config.Config, model string) string {
 		"model":       "mangoman/" + model,
 		"small_model": "mangoman/free/fast",
 	}
+	if ad, err := agentsDir(); err == nil {
+		// Agent scripts run only through mangoman agents exec (the sandbox).
+		c["permission"] = map[string]any{"bash": map[string]string{"*": "allow", "*" + ad + "*": "deny"}}
+	}
 	b, _ := json.Marshal(c)
 	return string(b)
 }
