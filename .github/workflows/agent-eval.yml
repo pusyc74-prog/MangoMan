@@ -1,0 +1,98 @@
+name: agent-eval
+
+# Scores an advanced agent against its free pack on the pack's public test
+# set, with real free models through MangoMan (keys from this repo's secrets,
+# as for the doctor). Results go to the eval-reports branch: the score table,
+# each contender's listing.json and report, and the router log (no keys).
+
+on:
+  workflow_dispatch:
+    inputs:
+      agent:
+        description: "agent folder under agents/"
+        default: amazon-listing-pro
+      model:
+        description: "model for OpenCode (free/coder, free/auto, strict/<model>)"
+        default: free/coder
+
+permissions:
+  contents: write # only to publish results to the eval-reports branch
+
+concurrency:
+  group: agent-eval
+  cancel-in-progress: false
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      MANGOMAN_KEYSTORE: file
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      AGENT: ${{ inputs.agent }}
+      MODEL: ${{ inputs.model }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install tools
+        run: |
+          pip install pandas pillow python-pptx python-docx pypdf playwright
+          python -m playwright install --with-deps chromium
+          npm install -g opencode-ai
+          mkdir -p "$RUNNER_TEMP/bin"
+          go build -o "$RUNNER_TEMP/bin/mangoman" ./cmd/mangoman
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: Install the agent
+        run: |
+          export MANGOMAN_HOME="$RUNNER_TEMP/mangoman"
+          mangoman init > /dev/null
+          mangoman agents keygen > /dev/null
+          mangoman agents pack "agents/$AGENT" --out agent.mmagent
+          mangoman agents install agent.mmagent
+      - name: Evaluate
+        timeout-minutes: 100
+        run: |
+          set +e
+          export MANGOMAN_HOME="$RUNNER_TEMP/mangoman"
+          mangoman agents eval "$AGENT" --runner "mangoman code --model $MODEL --no-web run --auto --dir {dir} {prompt}" 2>&1 | tee eval-output.txt
+          echo "::notice::$(awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}' eval-output.txt | tail -c 3500)"
+          exit 0
+      - name: Publish results to eval-reports branch
+        if: always()
+        run: |
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          out="../reports/$AGENT/$stamp"
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports 2>/dev/null || true
+          if git show-ref --quiet refs/remotes/origin/eval-reports; then
+            git worktree add ../reports origin/eval-reports
+            (cd ../reports && git switch -C eval-reports)
+          else
+            git worktree add --detach ../reports
+            (cd ../reports && git switch --orphan eval-reports)
+          fi
+          mkdir -p "$out"
+          cp eval-output.txt eval.json "$out/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/mangoman/serve.log" "$out/" 2>/dev/null || true
+          for d in /tmp/mangoman-eval-*/*/*; do
+            [ -d "$d" ] || continue
+            dest="$out/$(basename "$(dirname "$d")")/$(basename "$d")"
+            mkdir -p "$dest"
+            cp "$d"/listing.json "$d"/report.md "$d"/research.md "$dest/" 2>/dev/null || true
+          done
+          cd ../reports
+          git add -A
+          git commit -q -m "eval $AGENT $stamp (run ${{ github.run_id }})" || exit 0
+          git push origin eval-reports
