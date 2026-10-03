@@ -4,37 +4,36 @@ Requests go straight from this machine to each provider with your keys; nothing 
   groq        up to 13 requests
   openrouter  up to 25 requests
 
-openrouter  qwen3.8-27b                basic:- stream:- tools:- json:-
 groq        gpt-oss-120b               basic:P stream:P tools:P json:P
+openrouter  qwen3.8-27b                basic:P stream:P tools:P json:P
 groq        gpt-oss-20b                basic:P stream:P tools:P json:P
-openrouter  nemotron-3-ultra-550b      basic:P stream:P tools:F json:P
-groq        qwen3.8-27b                basic:P stream:P tools:P json:-
+groq        qwen3.8-27b                basic:P stream:- tools:- json:-
+openrouter  nemotron-3-ultra-550b      basic:P stream:P tools:P json:P
 openrouter  nemotron-3-super-120b      basic:P stream:P tools:P json:P
-openrouter  nemotron-3.5-lightning     basic:P stream:P tools:P json:P
+openrouter  nemotron-3.5-lightning     basic:F stream:- tools:- json:-
 openrouter  gemma-4-31b                basic:- stream:- tools:- json:-
 openrouter  gemma-4-26b-a4b            basic:- stream:- tools:- json:-
 openrouter  laguna-xs-2.1              basic:- stream:- tools:- json:-
 openrouter  laguna-s-2.1               basic:P stream:P tools:P json:P
 openrouter  north-mini-code            basic:P stream:P tools:P json:P
 
-Done in 1m45s, 38 requests.
+Done in 2m49s, 36 requests.
 
-PROVIDER    STATUS                                              MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
-cerebras    no_key                                              0              0                         0
-groq        ok                                                  11             0                         0
-nvidia      no_key                                              0              0                         0
-ollama      not_running: Ollama is not running on this machine  0              0                         0
-openrouter  ok                                                  466            0                         8
-zen         no_key                                              0              0                         0
+PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
+cerebras    no_key  0              0                         0
+groq        ok      11             0                         0
+nvidia      no_key  0              0                         0
+openrouter  ok      466            0                         8
+zen         no_key  0              0                         0
 
 PROVIDER    MODEL                   PASS  WARN  FAIL  SKIP  VERDICT
 groq        gpt-oss-120b            4     0     0     0     ready
 groq        gpt-oss-20b             4     0     0     0     ready
-groq        qwen3.8-27b             3     0     0     1     ready
-openrouter  qwen3.8-27b             0     0     0     4     not tested
-openrouter  nemotron-3-ultra-550b   3     0     1     0     needs work
+groq        qwen3.8-27b             1     0     0     3     ready
+openrouter  qwen3.8-27b             4     0     0     0     ready
+openrouter  nemotron-3-ultra-550b   4     0     0     0     ready
 openrouter  nemotron-3-super-120b   4     0     0     0     ready
-openrouter  nemotron-3.5-lightning  4     0     0     0     ready
+openrouter  nemotron-3.5-lightning  0     0     1     3     needs work
 openrouter  gemma-4-31b             0     0     0     4     not tested
 openrouter  gemma-4-26b-a4b         0     0     0     4     not tested
 openrouter  laguna-xs-2.1           0     0     0     4     not tested
@@ -42,7 +41,7 @@ openrouter  laguna-s-2.1            4     0     0     0     ready
 openrouter  north-mini-code         4     0     0     0     ready
 
 Notes:
-  FAIL openrouter/nemotron-3-ultra-550b tools: error in body: Upstream error from Nvidia: Service temporarily overloaded
+  FAIL openrouter/nemotron-3.5-lightning basic: no complete answer within 1m0s
   RADAR openrouter: 8 free models not in the catalogue, e.g. apodex/apodex-1.1-mini:free, dots-studio/dots-3-note-preview:free, inclusionai/ling-3.0-flash-sante:free
 
 Full report: doctor-report.json
