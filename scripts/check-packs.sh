@@ -25,4 +25,5 @@ run landing   "python3 $P/mangoman-landing-page/scripts/build_page.py page.json 
 run proposal  "python3 $P/mangoman-proposal/scripts/build_proposal.py proposal.json --out proposal"  "python3 $P/mangoman-proposal/scripts/check_proposal.py proposal.json proposal"
 run email     "python3 $P/mangoman-email-campaign/scripts/build_emails.py campaign.json --out emails" "python3 $P/mangoman-email-campaign/scripts/check_emails.py campaign.json emails"
 run listing   "python3 $P/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing" "python3 $P/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing"
+run invoice   "python3 $P/mangoman-invoice/scripts/build_invoice.py invoice.json --out invoice"    "python3 $P/mangoman-invoice/scripts/check_invoice.py invoice.json invoice"
 exit $fail

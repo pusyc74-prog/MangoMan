@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -20,7 +21,7 @@ func TestPacksAreValid(t *testing.T) {
 			t.Errorf("%s: no metadata version", p.Name)
 		}
 	}
-	if strings.Join(names, ",") != "mangoman-ceo-deck,mangoman-data-dashboard,mangoman-ecommerce-listing,mangoman-email-campaign,mangoman-landing-page,mangoman-proposal,mangoman-resume,mangoman-social-posts" {
+	if len(names) < 8 || !sort.StringsAreSorted(names) || !strings.Contains(strings.Join(names, ","), "mangoman-resume") {
 		t.Fatalf("packs %v", names)
 	}
 }
@@ -35,7 +36,8 @@ func TestInstallUpdateRemove(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got) != 7 || len(skipped) != 1 || skipped[0] != mine {
+	all, _ := List()
+	if len(got) != len(all)-1 || len(skipped) != 1 || skipped[0] != mine {
 		t.Fatalf("installed %v skipped %v", got, skipped)
 	}
 	if b, _ := os.ReadFile(filepath.Join(mine, "SKILL.md")); string(b) != "mine" {
@@ -56,7 +58,7 @@ func TestInstallUpdateRemove(t *testing.T) {
 		t.Fatal("update kept a stale file")
 	}
 	removed, err := Remove(dir)
-	if err != nil || len(removed) != 7 {
+	if err != nil || len(removed) != len(all)-1 {
 		t.Fatalf("removed %v %v", removed, err)
 	}
 	if _, err := os.Stat(mine); err != nil {

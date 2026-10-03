@@ -1,0 +1,16 @@
+{
+  "kind": "invoice",
+  "number": "NB/26-27/041",
+  "date": "2026-11-20",
+  "due_date": "2026-12-05",
+  "brand": {"logo": "agency-logo.png"},
+  "supplier": {"name": "Northbeam Studio", "address": "4th floor, 22 Baner Road, Pune 411045", "gstin": "27ABCDE1234F1Z0", "email": "accounts@northbeam.example.in"},
+  "bill_to": {"name": "Kesari Retail Pvt Ltd", "address": "88 Residency Road, Bengaluru 560025", "gstin": "29PQRSX5678K1ZU"},
+  "items": [
+    {"description": "Online store: design and build", "details": "Milestone 2 of 3, designs approved", "hsn": "998314", "qty": 1, "unit": "job", "rate": 120000, "gst_rate": 0.18},
+    {"description": "WhatsApp ordering setup", "hsn": "998313", "qty": 1, "unit": "job", "rate": 42500, "gst_rate": 0.18},
+    {"description": "Training sessions", "hsn": "999293", "qty": 2, "unit": "session", "rate": 12500, "discount_percent": 0.1, "gst_rate": 0.18}
+  ],
+  "payment": {"bank": "HDFC Bank", "account_name": "Northbeam Studio", "account": "50200012345678", "ifsc": "HDFC0001234", "upi": "northbeam@hdfcbank"},
+  "terms": ["Payment due within 15 days.", "Please quote the invoice number with your payment."]
+}
