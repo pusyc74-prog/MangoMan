@@ -1,0 +1,15 @@
+{
+  "name": "Kesari Foods",
+  "tagline": "Alphonso from Ratnagiri orchards, delivered to your door.",
+  "logo": "logo.png",
+  "type": "modern",
+  "extra_colors": [{"name": "Mango yellow", "hex": "#FFB703", "use": "Illustrations and seasonal highlights"}],
+  "voice": {
+    "personality": ["Warm", "Honest", "Rooted"],
+    "we_are": ["Specific about where fruit comes from", "Friendly, like a farmer you know", "Plain-spoken"],
+    "we_are_not": ["Salesy or loud", "Vague about origin", "Full of superlatives"],
+    "do": ["Name the place and the season", "Use simple words and short sentences", "Show real customers and real farms"],
+    "dont": ["Claim health benefits", "Use exclamation marks in headlines", "Say best or number one"],
+    "sample": {"headline": "Picked this morning in Ratnagiri", "text": "Our Alphonso are hand-picked, ripened in hay and with you in 48 hours. That is all there is to it."}
+  }
+}

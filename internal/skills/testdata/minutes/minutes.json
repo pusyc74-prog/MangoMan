@@ -1,0 +1,15 @@
+{
+  "title": "2027 pre-order launch plan",
+  "date": "2027-01-09", "time": "11:00", "location": "Video call",
+  "attendees": [{"name": "Rohan Iyer", "role": "Kesari Foods"}, {"name": "Meera Nair", "role": "Northbeam"}, {"name": "Priya Shah", "role": "Operations"}],
+  "transcript": "transcript.vtt",
+  "summary": "Pre-orders open on 1 February with 10% off for returning customers. We stay with the current courier this season, subject to capacity for 2,000 boxes in March.",
+  "decisions": [{"text": "Stay with the current courier this season (₹82 per box against a ₹95 quote)."},
+                {"text": "Open pre-orders on 1 February with 10% off for returning customers."}],
+  "actions": [{"action": "Confirm the current courier's capacity for 2,000 boxes in March, in writing", "owner": "Priya Shah", "due": "2027-01-15"},
+              {"action": "Send the pre-order email to past customers", "owner": "Meera Nair", "due": "2027-02-01"},
+              {"action": "Send the WhatsApp broadcast", "owner": "Meera Nair", "due": "2027-02-01"}],
+  "topics": [{"title": "Courier", "points": ["Bluedart quoted ₹95 per box; the current partner charges ₹82.", "Capacity for March is the open risk."]}],
+  "open_questions": ["Should the box of 24 be offered to offices?"],
+  "next_meeting": {"date": "2027-01-16", "time": "11:00", "agenda": "Office orders, courier confirmation"}
+}
