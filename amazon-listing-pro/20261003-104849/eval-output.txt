@@ -1,0 +1,7 @@
+Scoring amazon-listing-pro against mangoman-ecommerce-listing on /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/tests (work in /tmp/mangoman-eval-1209174631)...
+CASE          mangoman-ecommerce-listing  amazon-listing-pro
+cotton-kurta  0                           0
+mango-pulp    0                           0
+steel-bottle  0                           0
+AVERAGE       0.0                         0.0
+error: amazon-listing-pro does not beat the free pack yet (details in eval.json)

@@ -1,0 +1,35 @@
+[
+ {
+  "case": "cotton-kurta",
+  "scores": {
+   "amazon-listing-pro": 0,
+   "mangoman-ecommerce-listing": 0
+  },
+  "notes": {
+   "amazon-listing-pro": "no listing.json",
+   "mangoman-ecommerce-listing": "no listing.json"
+  }
+ },
+ {
+  "case": "mango-pulp",
+  "scores": {
+   "amazon-listing-pro": 0,
+   "mangoman-ecommerce-listing": 0
+  },
+  "notes": {
+   "amazon-listing-pro": "no listing.json",
+   "mangoman-ecommerce-listing": "no listing.json"
+  }
+ },
+ {
+  "case": "steel-bottle",
+  "scores": {
+   "amazon-listing-pro": 0,
+   "mangoman-ecommerce-listing": 0
+  },
+  "notes": {
+   "amazon-listing-pro": "no listing.json",
+   "mangoman-ecommerce-listing": "no listing.json"
+  }
+ }
+]
