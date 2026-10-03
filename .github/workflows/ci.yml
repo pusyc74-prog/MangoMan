@@ -32,7 +32,10 @@ jobs:
         run: |
           go test -race -count=1 ./... 2>&1 | tee test.log
           status=${PIPESTATUS[0]}
-          grep -E -A8 -- "--- FAIL|panic:" test.log | head -40 | sed 's/^/::error::/'
+          if [ "$status" != 0 ]; then
+            { grep -E -B2 -A12 -- "--- FAIL|panic:|^FAIL|cannot|undefined" test.log || tail -40 test.log; } | tail -c 3500 > fail.txt
+            echo "::error::$(awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}' fail.txt)"
+          fi
           exit $status
         shell: bash
 
@@ -59,7 +62,10 @@ jobs:
         run: |
           scripts/check-packs.sh 2>&1 | tee packs.log
           status=${PIPESTATUS[0]}
-          grep -E -A12 "^FAIL" packs.log | head -60 | sed 's/^/::error::/'
+          if [ "$status" != 0 ]; then
+            { grep -E -A14 "^FAIL" packs.log || tail -40 packs.log; } | tail -c 3500 > fail.txt
+            echo "::error::$(awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}' fail.txt)"
+          fi
           exit $status
         shell: bash
 
