@@ -9,7 +9,7 @@ go run ./cmd/mangoman skills install --dir "$work/skills" > /dev/null || exit 1
 fail=0
 run() { # name, then the build and check commands (S = this pack's scripts folder)
   local name=$1 build=$2 check=$3 d="$work/$1"
-  mkdir -p "$d" && cp internal/skills/testdata/assets/* "$d/" && cp internal/skills/testdata/"$name"/* "$d/"
+  mkdir -p "$d" && cp internal/skills/testdata/assets/* "$d/" && cp -r internal/skills/testdata/"$name"/* "$d/"
   if (cd "$d" && eval "$build" > build.log 2>&1 && eval "$check" > check.log 2>&1); then
     echo "PASS  $name ($(grep -c '^PASS' "$d/check.log") checks)"
   else
@@ -32,4 +32,5 @@ run report    "python3 $P/mangoman-client-report/scripts/build_report.py analysi
 run minutes   "python3 $P/mangoman-meeting-minutes/scripts/build_minutes.py minutes.json --out minutes" "python3 $P/mangoman-meeting-minutes/scripts/check_minutes.py minutes.json minutes"
 run brand     "python3 $P/mangoman-brand-kit/scripts/build_brand.py brand.json --out brand"      "python3 $P/mangoman-brand-kit/scripts/check_brand.py brand.json brand"
 run review    "bash setup.sh && python3 $P/mangoman-code-review/scripts/collect.py repo --out facts.json" "python3 $P/mangoman-code-review/scripts/check_review.py review.json facts.json --out review.md"
+run webapp    "python3 $P/mangoman-web-app/scripts/scaffold.py app.json --out starter"         "python3 $P/mangoman-web-app/scripts/check_app.py app/index.html tests.json"
 exit $fail

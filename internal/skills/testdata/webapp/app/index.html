@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GST calculator</title>
+<style>
+:root { --base: #2B1710; --accent: #D62839; --on-accent: #FFFFFF; --text: #2B1710; --body: #51413B; --muted: #8D827F;
+  --tint: #F2F1F1; --line: #E8E5E5; --good: #1E8E5A; --bad: #C9384A; --radius: 12px; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--text); background: var(--tint); }
+header { background: var(--base); color: #fff; padding: 16px 20px; } header h1 { margin: 0; font-size: 1.25rem; }
+main { width: min(960px, 100%); margin: 0 auto; padding: 20px; display: grid; gap: 16px; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+h2 { margin: 0 0 12px; font-size: 1.1rem; }
+label { display: grid; gap: 6px; font-weight: 600; font-size: .95rem; }
+input, select, textarea { font: inherit; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 10px; min-height: 46px; width: 100%; background: #fff; color: var(--text); }
+input:focus, select:focus, textarea:focus { outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); border-color: var(--accent); }
+.row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); align-items: end; }
+button { font: inherit; font-weight: 700; min-height: 46px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); cursor: pointer; }
+button.secondary { background: transparent; color: var(--text); border: 1.5px solid var(--line); }
+button:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; } th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); }
+.num { text-align: right; } .muted { color: var(--muted); } .error { color: var(--bad); font-weight: 600; } .ok { color: var(--good); font-weight: 600; }
+.big { font-size: 1.8rem; font-weight: 800; }
+</style>
+</head>
+<body>
+<header><h1>GST calculator</h1></header>
+<main>
+  <section class="card">
+    <h2>Add GST to a price</h2>
+    <form id="calc-form" class="row">
+      <label>Amount before GST (₹)<input id="amount" type="number" inputmode="decimal" min="0" step="0.01" required></label>
+      <label>GST rate<select id="rate"><option value="0.05">5%</option><option value="0.18" selected>18%</option><option value="0.40">40%</option></select></label>
+      <button id="calc" type="submit">Add GST</button>
+    </form>
+    <p id="error" class="error" hidden>Enter an amount of 0 or more.</p>
+    <p class="muted" style="margin:14px 0 0">Total with GST</p>
+    <p id="total" class="big" aria-live="polite">₹0.00</p>
+    <p id="breakup" class="muted"></p>
+  </section>
+  <section class="card">
+    <h2>Recent calculations</h2>
+    <ol id="history"></ol>
+    <button id="clear" class="secondary" type="button">Clear history</button>
+  </section>
+</main>
+<script>
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const store = {  // data kept in this browser; survives reloads
+  get(key, fallback) { try { const v = localStorage.getItem("gst:" + key); return v === null ? fallback : JSON.parse(v); } catch { return fallback; } },
+  set(key, value) { try { localStorage.setItem("gst:" + key, JSON.stringify(value)); } catch {} },
+};
+const inr = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(n);
+
+const history = store.get("history", []);
+function showHistory() {
+  $("#history").innerHTML = "";
+  history.slice(-5).reverse().forEach(h => {
+    const li = document.createElement("li");
+    li.textContent = `${inr(h.amount)} + ${h.rate * 100}% = ${inr(h.total)}`;
+    $("#history").append(li);
+  });
+}
+$("#calc-form").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const amount = parseFloat($("#amount").value), rate = parseFloat($("#rate").value);
+  $("#error").hidden = amount >= 0;
+  if (!(amount >= 0)) return;
+  const tax = Math.round(amount * rate * 100) / 100, total = Math.round((amount + tax) * 100) / 100;
+  $("#total").textContent = inr(total);
+  $("#breakup").textContent = `${inr(amount)} plus GST ${inr(tax)}`;
+  history.push({ amount, rate, total });
+  store.set("history", history);
+  showHistory();
+});
+$("#clear").addEventListener("click", () => { history.length = 0; store.set("history", history); showHistory(); });
+showHistory();
+</script>
+</body>
+</html>
