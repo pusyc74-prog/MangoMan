@@ -1,0 +1,31 @@
+{
+  "brand": "Kesari",
+  "facts": {"price": "boxes from ₹749", "delivery": "delivered in 48 hours", "discount": "10% off pre-orders", "origin": "Ratnagiri Alphonso", "cities": "Pune, Mumbai and Bengaluru", "boxes": "boxes of 6, 12 and 24"},
+  "google": {
+    "campaign": "Alphonso pre-orders 2027",
+    "ad_groups": [{
+      "name": "Alphonso mango online",
+      "final_url": "https://kesarifoods.in/preorder",
+      "path1": "alphonso", "path2": "preorder",
+      "keywords": [{"text": "alphonso mango online", "match": "phrase"}, {"text": "buy alphonso mangoes", "match": "phrase"}, {"text": "ratnagiri alphonso", "match": "exact"}, {"text": "hapus mango", "match": "broad"}],
+      "negatives": ["plant", "sapling", "seeds"],
+      "headlines": ["Ratnagiri Alphonso Mangoes", "Buy Alphonso Mangoes Online", "Kesari Alphonso Boxes", "Delivered in 48 Hours",
+                    "10% Off Pre-Orders", "Boxes From ₹749", "Hand-Picked in Ratnagiri", "Naturally Ripened in Hay", "Pune, Mumbai and Bengaluru",
+                    "Pre-Order the 2027 Season", "Alphonso Mango Online"],
+      "descriptions": ["Hand-picked Alphonso from Ratnagiri, ripened in hay and delivered in 48 hours.",
+                       "Pre-order now and get 10% off. Boxes of 6, 12 and 24, from ₹749.",
+                       "Straight from our partner farms to your door. Pay by UPI or cash on delivery."],
+      "pins": {"1": "1"}
+    }]
+  },
+  "meta": {
+    "ads": [
+      {"name": "Pre-order, orchard photo", "primary_text": "The 2027 Alphonso season is almost here. Pre-order now and get 10% off, delivered in 48 hours.",
+       "headline": "Ratnagiri Alphonso, 10% off", "description": "Boxes from ₹749", "cta": "ORDER_NOW", "url": "https://kesarifoods.in/preorder",
+       "image_brief": "Crate of ripe Alphonso in morning light at the orchard"},
+      {"name": "Taste, family", "primary_text": "The mango your parents remember. Hand-picked in Ratnagiri and naturally ripened in hay.",
+       "headline": "Real Alphonso, delivered", "cta": "SHOP_NOW", "url": "https://kesarifoods.in/preorder",
+       "image_brief": "Family sharing sliced mangoes at a dining table"}
+    ]
+  }
+}

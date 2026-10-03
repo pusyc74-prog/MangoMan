@@ -6,7 +6,7 @@ suffixes). Untraceable numbers are reported so they can be fixed.
 """
 import re
 
-TOKEN = re.compile(r"(?<![\w.])([₹$€£]?\s?[-+−]?\d[\d,]*(?:\.\d+)?)\s*(%|pp|Cr|cr|L|lakh|K|k|M|B|bn|mn)?(?![\w])")
+TOKEN = re.compile(r"(?<![\w.])([₹$€£]?\s?[-+−]?\d(?:[\d,]*\d)?(?:\.\d+)?)\s*(%|pp|Cr|cr|L|lakh|K|k|M|B|bn|mn)?(?![\w])")
 MULT = {"cr": 1e7, "l": 1e5, "lakh": 1e5, "k": 1e3, "m": 1e6, "mn": 1e6, "b": 1e9, "bn": 1e9}
 YEARS = range(1990, 2101)
 
