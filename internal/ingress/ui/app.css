@@ -162,7 +162,7 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
 .chart-wrap .hit:hover { fill: var(--ink); fill-opacity: 0.04; }
 
 /* Tables */
-.table-wrap { background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; overflow-x: auto; }
+.table-wrap { position: relative; background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; overflow-x: auto; }
 .grid { width: 100%; border-collapse: collapse; font-size: 14px; }
 .grid th, .grid td { padding: 9px 14px; text-align: left; border-top: 1px solid var(--hair); white-space: nowrap; }
 .grid thead th { border-top: 0; color: var(--ink-2); font-weight: 600; font-size: 13px; }
@@ -287,3 +287,4 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
 .brain-line { display: flex; align-items: center; gap: 12px; padding: 14px 16px; flex-wrap: wrap; }
 .brain-line #brain-summary { flex: 1; min-width: 220px; font-size: 14px; }
 .brain-table { border: 0; border-top: 1px solid var(--hair); border-radius: 0 0 10px 10px; }
+#market-list td:first-child, #agents-installed td:first-child { white-space: normal; min-width: 240px; max-width: 520px; }

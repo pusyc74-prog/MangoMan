@@ -350,6 +350,52 @@ function renderBrain(ov) {
     el("td", { class: "r dim" }, d.cached ? "from memory" : seconds(d.latency_ms)))));
 }
 
+// ---------- advanced agents ----------
+
+async function agentAction(btn, path, opts) {
+  btn.disabled = true;
+  try { await api(path, opts); } catch (err) { alert(err.message); }
+  btn.disabled = false;
+  await loadAgents();
+  if (!$("market").hidden) await loadMarket();
+}
+
+async function loadAgents() {
+  const { installed = [] } = await api("/mangoman/agents");
+  state.agents = installed;
+  $("agents-empty").hidden = installed.length > 0;
+  $("agents-installed").hidden = installed.length === 0;
+  $("agents-installed").tBodies[0].replaceChildren(...installed.map((a) => {
+    const rm = el("button", { type: "button", class: "ghost" }, "Remove");
+    rm.onclick = () => { if (confirm(`Remove ${a.title}?`)) agentAction(rm, `/mangoman/agents/${a.name}`, { method: "DELETE" }); };
+    return el("tr", {},
+      el("td", {}, el("b", {}, a.title), el("div", { class: "dim" }, `${a.name} ${a.version}`)),
+      el("td", {}, a.author.name),
+      el("td", {}, (a.permissions.network || []).join(", ") || "Nothing (no network)"),
+      el("td", { class: "dim" }, a.skill.replace("mangoman-", "").replaceAll("-", " ")),
+      el("td", { class: "r" }, rm));
+  }));
+}
+
+async function loadMarket() {
+  $("market").hidden = false;
+  const m = await api("/mangoman/agents/market");
+  $("market-msg").textContent = m.open ? "Every listed agent passed MangoMan's safety review. Installs check the marketplace's and the creator's signatures." : m.message;
+  const have = new Set((state.agents || []).map((a) => a.name));
+  $("market-list").hidden = !m.open;
+  $("market-list").tBodies[0].replaceChildren(...(m.agents || []).map((a) => {
+    const btn = el("button", { type: "button", class: have.has(a.name) ? "ghost" : "primary" }, have.has(a.name) ? "Installed" : "Install");
+    btn.disabled = have.has(a.name);
+    btn.onclick = () => agentAction(btn, "/mangoman/agents/install", { method: "POST", body: JSON.stringify({ name: a.name }) });
+    return el("tr", {},
+      el("td", {}, el("b", {}, a.title), el("div", { class: "dim" }, a.description)),
+      el("td", {}, a.author.name),
+      el("td", {}, a.price_inr_month > 0 ? `₹${NUM.format(a.price_inr_month)} a month` : "Free"),
+      el("td", { class: "r" }, a.score ? `${Math.round(a.score.pack)} / ${Math.round(a.score.agent)}` : "–"),
+      el("td", { class: "r" }, btn));
+  }));
+}
+
 // ---------- new models drawer ----------
 
 function ago(t) {
@@ -601,6 +647,7 @@ async function load() {
     renderBoard(ov, act);
     renderMyList(ov);
     renderBrain(ov);
+    await loadAgents();
     renderFab();
     if (state.drawer) renderDrawer();
     renderChart(act, ov);
@@ -622,6 +669,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (v) saveMyList([...(state.overview.favorites || []), v]);
   });
   $("mylist-new").addEventListener("click", () => openDrawer(true));
+  $("agents-browse").addEventListener("click", () => loadMarket().catch((err) => alert(err.message)));
   $("fab").addEventListener("click", () => openDrawer(!state.drawer));
   $("drawer-close").addEventListener("click", () => openDrawer(false));
   $("drawer-scan").addEventListener("click", scanNow);

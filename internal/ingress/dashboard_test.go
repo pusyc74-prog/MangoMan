@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -141,5 +142,29 @@ func TestDashboardSecurity(t *testing.T) {
 	w := call(h, "GET", "/ui/", "127.0.0.1:4141", nil, "")
 	if w.Code != 200 || !strings.Contains(w.Header().Get("Content-Security-Policy"), "frame-ancestors 'none'") {
 		t.Fatalf("ui: %d %v", w.Code, w.Header())
+	}
+}
+
+func TestAgentsAPI(t *testing.T) {
+	t.Setenv("MANGOMAN_HOME", t.TempDir())
+	t.Setenv("MANGOMAN_REGISTRY", "file:///nonexistent/")
+	t.Setenv("MANGOMAN_REGISTRY_KEY", "")
+	h, _ := dashServer(t, mem{})
+	do := func(method, path, body string) *httptest.ResponseRecorder {
+		return call(h, method, path, "127.0.0.1:4141", authz, body)
+	}
+	w := do("GET", "/mangoman/agents", "")
+	if w.Code != 200 || !strings.Contains(strings.ReplaceAll(w.Body.String(), " ", ""), `"installed":[]`) {
+		t.Fatalf("list: %d %s", w.Code, w.Body)
+	}
+	w = do("GET", "/mangoman/agents/market", "")
+	if w.Code != 200 || !strings.Contains(strings.ReplaceAll(w.Body.String(), " ", ""), `"open":false`) || !strings.Contains(w.Body.String(), "not open yet") {
+		t.Fatalf("market: %d %s", w.Code, w.Body)
+	}
+	if w = do("DELETE", "/mangoman/agents/nothing-here", ""); w.Code != 404 {
+		t.Fatalf("remove missing: %d", w.Code)
+	}
+	if w = do("POST", "/mangoman/agents/install", `{}`); w.Code != 400 {
+		t.Fatalf("install without a name: %d", w.Code)
 	}
 }

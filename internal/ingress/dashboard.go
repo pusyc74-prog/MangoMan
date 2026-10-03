@@ -101,6 +101,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /mangoman/providers/{provider}/exclude", s.auth(http.HandlerFunc(s.setExcluded)))
 	s.myListRoutes(mux)
 	s.brainRoutes(mux)
+	s.agentRoutes(mux)
 }
 
 // securityHeaders lock the dashboard page down: own files only, no

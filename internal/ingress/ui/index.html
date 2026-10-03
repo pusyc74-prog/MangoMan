@@ -73,6 +73,30 @@
     </div>
   </section>
 
+  <section class="block" aria-labelledby="h-agents">
+    <div class="block-head">
+      <h2 id="h-agents">Advanced agents</h2>
+      <p class="sub">Specialists that do a whole job and beat the free skill pack on its test set. They run on this computer in a sandbox.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="grid" id="agents-installed">
+        <thead><tr><th scope="col">Agent</th><th scope="col">By</th><th scope="col">Can reach</th><th scope="col">Improves on</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="dim" id="agents-empty" hidden>No agents installed yet.</p>
+    <p><button type="button" class="ghost" id="agents-browse">Browse the marketplace</button></p>
+    <div id="market" hidden>
+      <p class="dim" id="market-msg"></p>
+      <div class="table-wrap">
+        <table class="grid" id="market-list">
+          <thead><tr><th scope="col">Agent</th><th scope="col">By</th><th scope="col">Price</th><th scope="col" class="r">Score (pack / agent)</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section class="block" aria-labelledby="h-traffic">
     <div class="block-head">
       <h2 id="h-traffic">Requests per hour</h2>

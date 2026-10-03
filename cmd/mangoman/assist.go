@@ -209,10 +209,23 @@ func cmdCode(args []string) error {
 
 	cmd := exec.Command(oc, fs.Args()...)
 	cmd.Stdin, cmd.Stdout, cmd.Stderr, cmd.Env = os.Stdin, os.Stdout, os.Stderr, env
-	// Ctrl-C belongs to OpenCode while it runs.
+	// Ctrl-C belongs to OpenCode while it runs. A terminate or hang-up
+	// (closing the terminal) is passed on, so OpenCode ends and the router
+	// started above is stopped by the deferred cleanup instead of lingering.
 	signal.Ignore(os.Interrupt)
 	defer signal.Reset(os.Interrupt)
-	err = cmd.Run()
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGTERM, syscall.SIGHUP)
+	defer signal.Stop(stop)
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	go func() {
+		if sig, ok := <-stop; ok {
+			_ = cmd.Process.Signal(sig)
+		}
+	}()
+	err = cmd.Wait()
 	var ee *exec.ExitError
 	if errors.As(err, &ee) {
 		return nil // OpenCode reported its own error
