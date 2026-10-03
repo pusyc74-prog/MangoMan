@@ -132,6 +132,33 @@ def render_frames(jobs):
     return None
 
 
+def inspect(html_path, js, widths=(390, 768, 1440), height=844, shots=None):
+    """Run a measuring script in a page at several viewport widths.
+
+    js is a JavaScript function source evaluated after load; returns
+    {width: result}. shots maps width -> PNG path for a full-page screenshot.
+    Returns None without Playwright (the caller then asks for a manual look).
+    """
+    if not _playwright():
+        return None
+    from playwright.sync_api import sync_playwright
+    out = {}
+    with sync_playwright() as p:
+        b = p.chromium.launch()
+        for w in widths:
+            page = b.new_page(viewport={"width": w, "height": height})
+            page.goto(_url(html_path), wait_until="networkidle")
+            out[w] = page.evaluate(js)
+            if shots and w in shots:
+                # scroll through once so lazy images load before the full-page shot
+                page.evaluate("async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo({top: y, behavior: 'instant'}); await new Promise(r => setTimeout(r, 60)); } window.scrollTo({top: 0, behavior: 'instant'}); await new Promise(r => setTimeout(r, 100)); }")
+                page.wait_for_load_state("networkidle")
+                page.screenshot(path=shots[w], full_page=True)
+            page.close()
+        b.close()
+    return out
+
+
 OVERFLOW_JS = """
 (sel) => {
   const out = [];
