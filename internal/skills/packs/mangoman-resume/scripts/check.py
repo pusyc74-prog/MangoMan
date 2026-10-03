@@ -12,6 +12,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import checks as C  # noqa: E402
 import render  # noqa: E402
 
 WEAK_STARTS = ("responsible for", "worked on", "helped", "assisted", "involved in", "tasked with", "duties included", "in charge of")
@@ -97,9 +98,35 @@ def main():
             "only %d%% of bullets show a number; ask the user for results (%%, ₹, time saved, users) rather than inventing them" % int(share * 100))
     styles = {date_style(x.get(k)) for x in r.get("experience", []) for k in ("start", "end")} - {None}
     res("PASS" if len(styles) <= 1 else "WARN", "dates use one format" if len(styles) <= 1 else "dates mix formats: %s" % ", ".join(sorted(styles)))
+    if r.get("cover_letter"):
+        check_letter(r, pdf.replace(".pdf", "-letter.pdf"), res)
     for level, msg in rs:
         print("%s  %s" % (level, msg))
     sys.exit(1 if any(l == "FAIL" for l, _ in rs) else 0)
+
+
+def check_letter(r, pdf, res):
+    """Cover letter: one page, short, about this job, every number from the resume."""
+    c = r["cover_letter"]
+    text = " ".join(c.get("paragraphs", []))
+    n = len(text.split())
+    res("PASS" if c.get("company") and c.get("role") else "FAIL", "letter names the company and role" if c.get("company") and c.get("role") else
+        "cover_letter needs company and role")
+    if c.get("company") and c["company"].lower() not in text.lower():
+        res("WARN", "the letter never mentions %s; say why this company" % c["company"])
+    res("PASS" if 150 <= n <= 400 else ("FAIL" if n > 450 else "WARN"), "letter is %d words" % n if 150 <= n <= 400 else
+        "letter is %d words; aim for 200 to 400" % n)
+    pool = C.fact_pool({k: v for k, v in r.items() if k != "cover_letter"}, c.get("facts", {}))
+    bad = sorted({u for p in c.get("paragraphs", []) for u in C.untraced(p, pool)})
+    res("PASS" if not bad else "FAIL", "every number in the letter is in the resume" if not bad else
+        "numbers in the letter that the resume does not support: " + ", ".join(bad))
+    if re.match(r"\s*(i am writing to|to whom it may concern)", text, re.I) or re.search(r"to whom it may concern", c.get("greeting", ""), re.I):
+        res("WARN", "open with why you fit this role, not 'I am writing to apply' or 'To whom it may concern'")
+    ph = C.first_match(C.PLACEHOLDER, c.get("paragraphs", []) + [c.get("greeting", "")])
+    res("PASS" if not ph else "FAIL", "no placeholder text in the letter" if not ph else "placeholder text in the letter: " + ", ".join(ph))
+    if os.path.exists(pdf):
+        pages = render.pdf_pages(pdf)
+        res("PASS" if pages == 1 else "FAIL", "letter fits one page" if pages == 1 else "letter runs to %d pages; cut it to one" % pages)
 
 
 if __name__ == "__main__":

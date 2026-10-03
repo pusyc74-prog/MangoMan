@@ -124,6 +124,8 @@ def validate(spec, bdir="."):
                     probs.append("%s slide %d: needs a headline" % (tag, j))
         if not p.get("alt"):
             probs.append("%s: needs alt text (what the image shows, for screen readers)" % tag)
+        if p.get("date") and not re.match(r"^\d{4}-\d{2}-\d{2}$", str(p["date"])) or p.get("time") and not re.match(r"^\d{2}:\d{2}$", str(p["time"])):
+            probs.append("%s: date is YYYY-MM-DD and time HH:MM (24-hour)" % tag)
         if not p.get("caption"):
             probs.append("%s: needs a caption" % tag)
     return probs
@@ -417,6 +419,32 @@ def captions_md(spec):
     return "\n".join(lines)
 
 
+def calendar(spec, out):
+    """calendar.csv (one row per post and platform) and calendar.md, in date order."""
+    import csv
+    rows = []
+    for p in spec["posts"]:
+        if not p.get("date"):
+            continue
+        for pl in spec.get("platforms", ["instagram"]):
+            fm = platform_format(spec, p, pl)
+            files = [frame_name(p["id"], fm, j) for j in range(1, len(p["slides"]) + 1)] if p["layout"] == "carousel" else [frame_name(p["id"], fm, 0)]
+            rows.append({"Date": p["date"], "Time": p.get("time", ""), "Platform": pl, "Post": p.get("title") or p["id"],
+                         "Images": " ".join(files), "Caption": full_caption(p, pl, spec)})
+    if not rows:
+        return []
+    rows.sort(key=lambda r: (r["Date"], r["Time"], r["Platform"]))
+    with open(os.path.join(out, "calendar.csv"), "w", newline="", encoding="utf-8-sig") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    md = ["# Posting calendar (%s)" % spec.get("timezone", "Asia/Kolkata"), "", "| Date | Time | Platform | Post | Images |", "| --- | --- | --- | --- | --- |"]
+    md += ["| %s | %s | %s | %s | %s |" % (r["Date"], r["Time"], r["Platform"], r["Post"].replace("|", "/"), r["Images"]) for r in rows]
+    with open(os.path.join(out, "calendar.md"), "w", encoding="utf-8") as f:
+        f.write("\n".join(md) + "\n")
+    return ["calendar.csv", "calendar.md"]
+
+
 def contact_sheet(paths, out, cols=4, cell=360):
     from PIL import Image
     ims = []
@@ -454,6 +482,7 @@ def main():
         json.dump(spec, f, indent=2, ensure_ascii=False)
     with open(os.path.join(out, "captions.md"), "w", encoding="utf-8") as f:
         f.write(captions_md(spec))
+    cal = calendar(spec, out)
     fr = frames(spec, T, bdir)
     hdir = os.path.join(out, "html")
     os.makedirs(hdir, exist_ok=True)
@@ -464,7 +493,7 @@ def main():
             f.write(doc)
         w, h = FORMATS[fm]
         jobs.append((hp, os.path.join(out, frame_name(pid, fm, j)), w, h))
-    made = ["captions.md"]
+    made = ["captions.md"] + cal
     if "--no-render" not in a:
         res = render.render_frames(jobs)
         if res is None:

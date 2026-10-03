@@ -1,10 +1,10 @@
 ---
 name: mangoman-resume
-description: Write or redesign a polished resume or CV and deliver it as a checked PDF (plus HTML) in an ATS-safe or modern design. Use when the user asks for a resume, CV, biodata for a job, to update or improve their resume, or to tailor it to a job description.
+description: Write or redesign a polished resume or CV, and a matching cover letter, delivered as checked PDFs in an ATS-safe or modern design. Use when the user asks for a resume, CV, biodata for a job, a cover letter, to update or improve their resume, or to tailor it to a job description.
 license: Apache-2.0
 metadata:
   pack: mangoman
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Resume
@@ -81,6 +81,22 @@ Fix every FAIL and rebuild. If it runs over a page, tighten wording first, then
 drop the oldest or least relevant bullets; never shrink the font below the
 design. Then look at the PDF or `resume.png`: nothing cut off, the most
 important role and result visible at a glance.
+
+## Cover letter
+
+When asked (or offered and accepted), add `cover_letter` to `resume.json`:
+
+```json
+"cover_letter": {"company": "Paybright", "role": "Group Product Manager", "hiring_manager": "Ms Kavya Menon",
+                 "location": "Bengaluru", "date": "3 October 2026", "paragraphs": ["...", "...", "..."]}
+```
+
+Three or four paragraphs, 200 to 400 words: why this company and role, the two
+or three strongest results from the resume that match the job, how you work,
+and a short close. Every number must come from the resume (the checker fails
+others); never open with "I am writing to apply" or "To whom it may concern".
+The build writes `<out>-letter.pdf` in the same look; the checker adds the
+letter checks.
 
 ## 5. Deliver
 

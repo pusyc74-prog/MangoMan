@@ -178,6 +178,18 @@ def main():
                     counts.append('%s says "%s" but has %d' % (p["id"], m.group(0), have))
     r("PASS" if not counts else "FAIL", "promised counts match the content" if not counts else "; ".join(sorted(set(counts))))
 
+    dated = [p for p in posts if p.get("date")]
+    if dated:
+        undated = [p["id"] for p in posts if not p.get("date")]
+        days = {}
+        for p in dated:
+            days.setdefault(p["date"], []).append(p["id"])
+        busy = ["%s (%s)" % (d, ", ".join(ids)) for d, ids in sorted(days.items()) if len(ids) > 1]
+        r("PASS" if not undated else "WARN", "every post has a date in the calendar" if not undated else "posts without a date: " + ", ".join(undated))
+        r("PASS" if not busy else "WARN", "one post a day per platform" if not busy else "more than one post on the same day: " + "; ".join(busy))
+        if not os.path.exists(os.path.join(out, "calendar.csv")):
+            r("FAIL", "calendar.csv not built")
+
     alt_long = [p["id"] for p in posts if len(p.get("alt", "")) > 1000]
     r("PASS" if not alt_long else "WARN", "alt text on every post" if not alt_long else "alt text over 1,000 characters (X's limit): " + ", ".join(alt_long))
     has_logo = bool((spec.get("brand") or {}).get("logo") or (spec.get("brand") or {}).get("name"))

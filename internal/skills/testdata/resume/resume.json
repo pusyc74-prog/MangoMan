@@ -1,28 +1,117 @@
 {
-  "name": "Ananya Rao",
-  "headline": "Senior Product Manager, B2B SaaS",
-  "contact": {"email": "ananya.rao@example.com", "phone": "+91 98xxx 12345", "location": "Bengaluru, India",
-              "links": [{"label": "linkedin.com/in/ananyarao", "url": "https://linkedin.com/in/ananyarao"}]},
-  "summary": "Product manager with 7 years building B2B SaaS for finance and operations teams. Took two products from zero to ₹40 Cr ARR by pairing customer research with fast, measured experiments.",
-  "experience": [
-    {"role": "Senior Product Manager", "company": "Ledgerly", "location": "Bengaluru", "start": "Mar 2022", "end": "Present",
-     "bullets": ["Led the invoicing product from beta to 2,300 paying businesses, growing ARR from ₹6 Cr to ₹24 Cr in 2 years",
-                 "Cut onboarding time from 9 days to 2 by redesigning setup around bank-feed imports",
-                 "Built a pricing experiment framework; 3 tests lifted average contract value by 18%",
-                 "Hired and coached a team of 4 PMs and 2 designers"]},
-    {"role": "Product Manager", "company": "Shipwise", "location": "Pune", "start": "Jul 2019", "end": "Feb 2022",
-     "bullets": ["Launched a carrier-rate API used by 400 merchants within 6 months",
-                 "Reduced failed deliveries by 22% with address validation at checkout",
-                 "Ran 60+ customer interviews to shape the roadmap for the SMB segment"]},
-    {"role": "Business Analyst", "company": "Northbay Consulting", "location": "Mumbai", "start": "Jun 2017", "end": "Jun 2019",
-     "bullets": ["Modelled working-capital savings of ₹12 Cr for a retail client's supply chain",
-                 "Automated weekly reporting in SQL and Python, saving 15 analyst hours a week"]}
-  ],
-  "education": [{"degree": "MBA, Operations", "school": "IIM Indore", "year": "2017"},
-                {"degree": "B.Tech, Computer Science", "school": "NIT Surathkal", "year": "2015"}],
-  "skills": [{"group": "Product", "items": ["Discovery", "Pricing", "Roadmaps", "A/B testing", "PRDs"]},
-             {"group": "Data", "items": ["SQL", "Python", "Amplitude", "Looker"]},
-             {"group": "Domain", "items": ["Invoicing", "Payments", "Logistics", "B2B SaaS"]}],
-  "certifications": ["Pragmatic Institute PMC-III"],
-  "languages": ["English", "Hindi", "Kannada"]
+ "name": "Ananya Rao",
+ "headline": "Senior Product Manager, B2B SaaS",
+ "contact": {
+  "email": "ananya.rao@example.com",
+  "phone": "+91 98xxx 12345",
+  "location": "Bengaluru, India",
+  "links": [
+   {
+    "label": "linkedin.com/in/ananyarao",
+    "url": "https://linkedin.com/in/ananyarao"
+   }
+  ]
+ },
+ "summary": "Product manager with 7 years building B2B SaaS for finance and operations teams. Took two products from zero to ₹40 Cr ARR by pairing customer research with fast, measured experiments.",
+ "experience": [
+  {
+   "role": "Senior Product Manager",
+   "company": "Ledgerly",
+   "location": "Bengaluru",
+   "start": "Mar 2022",
+   "end": "Present",
+   "bullets": [
+    "Led the invoicing product from beta to 2,300 paying businesses, growing ARR from ₹6 Cr to ₹24 Cr in 2 years",
+    "Cut onboarding time from 9 days to 2 by redesigning setup around bank-feed imports",
+    "Built a pricing experiment framework; 3 tests lifted average contract value by 18%",
+    "Hired and coached a team of 4 PMs and 2 designers"
+   ]
+  },
+  {
+   "role": "Product Manager",
+   "company": "Shipwise",
+   "location": "Pune",
+   "start": "Jul 2019",
+   "end": "Feb 2022",
+   "bullets": [
+    "Launched a carrier-rate API used by 400 merchants within 6 months",
+    "Reduced failed deliveries by 22% with address validation at checkout",
+    "Ran 60+ customer interviews to shape the roadmap for the SMB segment"
+   ]
+  },
+  {
+   "role": "Business Analyst",
+   "company": "Northbay Consulting",
+   "location": "Mumbai",
+   "start": "Jun 2017",
+   "end": "Jun 2019",
+   "bullets": [
+    "Modelled working-capital savings of ₹12 Cr for a retail client's supply chain",
+    "Automated weekly reporting in SQL and Python, saving 15 analyst hours a week"
+   ]
+  }
+ ],
+ "education": [
+  {
+   "degree": "MBA, Operations",
+   "school": "IIM Indore",
+   "year": "2017"
+  },
+  {
+   "degree": "B.Tech, Computer Science",
+   "school": "NIT Surathkal",
+   "year": "2015"
+  }
+ ],
+ "skills": [
+  {
+   "group": "Product",
+   "items": [
+    "Discovery",
+    "Pricing",
+    "Roadmaps",
+    "A/B testing",
+    "PRDs"
+   ]
+  },
+  {
+   "group": "Data",
+   "items": [
+    "SQL",
+    "Python",
+    "Amplitude",
+    "Looker"
+   ]
+  },
+  {
+   "group": "Domain",
+   "items": [
+    "Invoicing",
+    "Payments",
+    "Logistics",
+    "B2B SaaS"
+   ]
+  }
+ ],
+ "certifications": [
+  "Pragmatic Institute PMC-III"
+ ],
+ "languages": [
+  "English",
+  "Hindi",
+  "Kannada"
+ ],
+ "cover_letter": {
+  "company": "Paybright",
+  "role": "Group Product Manager, Payments",
+  "hiring_manager": "Ms Kavya Menon",
+  "location": "Bengaluru",
+  "date": "3 October 2026",
+  "paragraphs": [
+   "Paybright is building the payments layer Indian SMBs have been missing, and the Group Product Manager role sits exactly where my last seven years have been: invoicing, payments and the operations teams who use them.",
+   "At Ledgerly I took our invoicing product from beta to 2,300 paying businesses and grew ARR from ₹6 Cr to ₹24 Cr in two years. The biggest lever was onboarding: by rebuilding setup around bank-feed imports we cut it from 9 days to 2, which mattered more than any feature we shipped that year.",
+   "I also built the pricing experiment framework behind an 18% lift in average contract value, and I coach a team of 4 PMs and 2 designers. At Shipwise I learned how merchants judge payment and delivery reliability, launching a carrier-rate API used by 400 merchants.",
+   "I would like to bring that mix of customer research, measured experiments and team building to Paybright's SMB payments roadmap. I would welcome a conversation about where the team is headed next."
+  ]
+ }
 }

@@ -1,6 +1,7 @@
 """Build a resume (HTML and PDF) from resume.json.
 
 Usage: python3 build.py resume.json --template classic|modern --out resume
+With a cover_letter in resume.json, also writes <out>-letter.html and .pdf.
   classic: single column, ATS-safe (job portals, recruiters' systems)
   modern:  accent colour and a side column (direct sharing, design roles)
 """
@@ -138,6 +139,30 @@ def build(r, template="classic"):
         e(r.get("name")), css, body)
 
 
+LETTER = """
+.letter { font-size: 10.8pt; line-height: 1.55; }
+.letter .contact span { display: inline; } .letter .contact span + span::before { content: "  |  "; color: #999; }
+.letter .to { margin: 10pt 0 14pt; } .letter p { margin: 0 0 10pt; } .letter .date { color: #555; margin-top: 14pt; }
+"""
+
+
+def letter(r, template="classic"):
+    """The cover letter in the same look as the resume."""
+    c = r["cover_letter"]
+    size, width, height = SIZES.get(r.get("page_size", "A4"), SIZES["A4"])
+    margin = r.get("margin", "18mm")
+    css = (CLASSIC if template == "classic" else MODERN.replace("grid-template-columns: 1fr 34%%;", "")) % {
+        "size": size, "width": width, "height": height, "margin": margin, "accent": e(r.get("accent", "#1f5fa8"))} + LETTER
+    head = '<header><h1>%s</h1>%s<div class="contact">%s</div></header>' % (
+        e(r.get("name")), '<div class="title">%s</div>' % e(r["headline"]) if r.get("headline") else "", "".join("<span>%s</span>" % i for i in contact_items(r)))
+    to = "<br>".join(e(x) for x in (c.get("hiring_manager"), c.get("company"), c.get("location")) if x)
+    body = "".join("<p>%s</p>" % e(x) for x in c["paragraphs"])
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>%s, cover letter</title><style>%s</style></head>'
+            '<body><div class="page letter">%s<div class="date">%s</div><div class="to">%s</div><p>%s</p>%s<p>%s<br><br>%s</p></div></body></html>') % (
+        e(r.get("name")), css, head, e(c.get("date", "")), to, e(c.get("greeting", "Dear %s," % (c.get("hiring_manager") or "Hiring Manager"))),
+        body, e(c.get("closing", "Sincerely,")), e(r.get("name")))
+
+
 def main():
     a = sys.argv[1:]
     if not a:
@@ -159,6 +184,15 @@ def main():
     if render.engine() == "playwright":
         render.screenshot(out + ".html", out + ".png", 900, 1200)
         made.append(out + ".png")
+    if r.get("cover_letter"):
+        with open(out + "-letter.html", "w", encoding="utf-8") as f:
+            f.write(letter(r, tpl))
+        made.append(out + "-letter.html")
+        try:
+            render.html_to_pdf(out + "-letter.html", out + "-letter.pdf")
+            made.append(out + "-letter.pdf")
+        except Exception as ex:  # noqa: BLE001
+            print("letter PDF skipped: %s" % ex)
     print("built " + ", ".join(made))
 
 

@@ -4,7 +4,7 @@ description: Create a branded set of social media posts (images in the right siz
 license: Apache-2.0
 metadata:
   pack: mangoman
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Social media posts
@@ -85,6 +85,13 @@ Write `posts.json`:
   ]
 }
 ```
+
+For a content calendar, give each post a `date` (YYYY-MM-DD) and `time`
+(HH:MM, 24-hour; set `timezone`, default Asia/Kolkata): the build writes
+`calendar.csv` (one row per post and platform with the image files and the
+caption, ready for a scheduler or a sheet) and `calendar.md`. Spread posts
+over the period, at most one a day per platform, and plan around the user's
+launches, festivals and paydays.
 
 `caption` is one string for every platform or an object with `default` and
 per-platform entries. `brand` fields are all optional: with only a logo,
