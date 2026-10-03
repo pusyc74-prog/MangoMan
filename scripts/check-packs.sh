@@ -27,4 +27,5 @@ run email     "python3 $P/mangoman-email-campaign/scripts/build_emails.py campai
 run listing   "python3 $P/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing" "python3 $P/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing"
 run invoice   "python3 $P/mangoman-invoice/scripts/build_invoice.py invoice.json --out invoice"    "python3 $P/mangoman-invoice/scripts/check_invoice.py invoice.json invoice"
 run ads       "python3 $P/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads"                "python3 $P/mangoman-ad-copy/scripts/check_ads.py ads.json ads"
+run seo       "python3 $P/mangoman-seo-article/scripts/build_article.py article.json --out article" "python3 $P/mangoman-seo-article/scripts/check_article.py article.json article"
 exit $fail

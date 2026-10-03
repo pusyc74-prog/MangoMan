@@ -1,0 +1,32 @@
+{
+  "keyword": "real alphonso mango",
+  "secondary_keywords": ["hapus mango", "alphonso vs other mangoes", "carbide ripened mango"],
+  "author": "Kesari Foods team",
+  "date": "2027-02-10",
+  "target_words": 400,
+  "meta": {"title": "How to Spot a Real Alphonso Mango: 5 Simple Checks",
+           "description": "Smell, shape, skin, the press test and the label: five quick checks to tell a real Alphonso mango from look-alikes before you buy.",
+           "slug": "real-alphonso-mango-checks", "url": "https://kesarifoods.in/blog"},
+  "facts": {"checks": "five checks", "ripening": "ripens in 7 to 10 days in hay", "price_gap": "look-alikes often sell for 30% less"},
+  "sources": [{"id": 1, "title": "Alphonso (mango)", "url": "https://en.wikipedia.org/wiki/Alphonso_(mango)", "publisher": "Wikipedia"}],
+  "article": {
+    "h1": "How to spot a real Alphonso mango",
+    "intro": ["Every summer, markets fill with mangoes sold as Alphonso. Some are the real thing, many are not. A real Alphonso mango has a smell, shape and texture you can learn to recognise in a minute.",
+              "Here are five checks we use at our packhouse, written so you can use them at any shop or market."],
+    "sections": [
+      {"h2": "1. Smell the stem end", "paragraphs": ["A ripe Alphonso smells sweet and floral at the stem, even through the skin. If you have to press your nose against it to smell anything, it is either unripe or another variety.",
+                                                     "Look-alikes often sell for 30% less, and the weak smell is usually the first sign."]},
+      {"h2": "2. Check the shape and size", "paragraphs": ["Alphonso is medium sized, slightly oval, with a small beak near the stem. Very large or very round fruit is usually a different variety such as Kesar or Badami."]},
+      {"h2": "3. Look at the skin", "paragraphs": ["The skin turns golden yellow from the bottom up, often with a little green near the stem. Uniform bright yellow with green patches inside can mean the fruit was ripened with chemicals."],
+       "subsections": [{"h3": "Signs of carbide ripening", "bullets": ["Patchy colour: yellow outside, green or hard inside", "A burnt or chemical smell", "Fruit that spoils in two or three days"]}]},
+      {"h2": "4. Press gently", "paragraphs": ["A ripe Alphonso gives a little when pressed, like a ripe peach. Naturally ripened fruit from Ratnagiri ripens in 7 to 10 days in hay, so a firm mango today will be ready within the week."]},
+      {"h2": "5. Read the label and the seller", "paragraphs": ["Alphonso from Ratnagiri and nearby districts carries a geographical indication tag, and genuine sellers say where the fruit was grown [1]. Ask which farm or district it came from; a seller who cannot say is a warning sign.",
+                                                              "If you order online, [read how we pack and ship](/how-we-ship) and [see this season's boxes](/preorder)."]}
+    ],
+    "faq": [{"q": "Is Hapus the same as Alphonso?", "a": "Yes. Hapus is the Marathi name for the Alphonso mango."},
+            {"q": "How long does an Alphonso take to ripen at home?", "a": "Kept in hay or a closed box at room temperature, a firm Alphonso ripens in 7 to 10 days."},
+            {"q": "Should I refrigerate Alphonso mangoes?", "a": "Only once they are ripe. Cold stops unripe mangoes from ripening properly."}],
+    "conclusion": ["With these five checks you can buy with confidence. When in doubt, trust your nose: a real Alphonso mango tells you it is ripe before you cut it."],
+    "cta": {"label": "See this season's Alphonso boxes", "href": "https://kesarifoods.in/preorder"}
+  }
+}
