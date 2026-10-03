@@ -16,7 +16,8 @@ import (
 
 const agentsUsage = `Usage:
   mangoman agents                       list installed advanced agents
-  mangoman agents install FILE.mmagent  check the creator's signature and install
+  mangoman agents search [WORDS]        agents in the marketplace
+  mangoman agents install NAME|FILE.mmagent  check signatures and install
   mangoman agents remove NAME           remove an agent
   mangoman agents exec NAME SCRIPT [ARGS]  run an agent's script in the sandbox
   mangoman agents eval NAME [--cases DIR] [--runner CMD]  score it against its free pack
@@ -25,6 +26,10 @@ For creators:
   mangoman agents new NAME              start an agent folder from a template
   mangoman agents keygen                make your signing key (keep it safe)
   mangoman agents pack DIR [--out FILE] sign the folder into FILE.mmagent
+  mangoman agents review FILE.mmagent|DIR  the marketplace's safety review
+
+For the marketplace:
+  mangoman agents index DIR --key FILE  review DIR's packages and write the signed index
 `
 
 func agentsDir() (string, error) { return config.Path("agents") }
@@ -69,8 +74,14 @@ func cmdAgents(args []string) error {
 		if err := need(1); err != nil {
 			return err
 		}
-		m, err := agents.Install(args[0], dir)
-		if err != nil {
+		var m agents.Manifest
+		if _, statErr := os.Stat(args[0]); statErr != nil && !strings.HasSuffix(args[0], ".mmagent") {
+			l, err := agents.DefaultRegistry().InstallListed(args[0], dir)
+			if err != nil {
+				return err
+			}
+			m = l.Manifest
+		} else if m, err = agents.Install(args[0], dir); err != nil {
 			return err
 		}
 		fmt.Printf("Installed %s %s by %s (%s).\n", m.Name, m.Version, m.Author.Name, m.Author.Contact)
@@ -157,6 +168,49 @@ func cmdAgents(args []string) error {
 		}
 		fmt.Println("Wrote", out)
 		return nil
+	case "search":
+		ix, err := agents.DefaultRegistry().Fetch()
+		if err != nil {
+			return err
+		}
+		q := strings.ToLower(strings.Join(args, " "))
+		tw := tabwriter.NewWriter(os.Stdout, 0, 2, 2, ' ', 0)
+		fmt.Fprintln(tw, "AGENT\tVERSION\tBY\tPRICE\tSCORE (PACK / AGENT)\tWHAT IT DOES")
+		for _, l := range ix.Agents {
+			if q != "" && !strings.Contains(strings.ToLower(l.Name+" "+l.Title+" "+l.Description+" "+l.Skill), q) {
+				continue
+			}
+			price, score := "free", "not scored"
+			if l.PriceINR > 0 {
+				price = fmt.Sprintf("Rs %d a month", l.PriceINR)
+			}
+			if l.Score != nil {
+				score = fmt.Sprintf("%.0f / %.0f", l.Score.Pack, l.Score.Agent)
+			}
+			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", l.Name, l.Version, l.Author.Name, price, score, l.Title)
+		}
+		return tw.Flush()
+	case "index":
+		if err := need(1); err != nil {
+			return err
+		}
+		index, sig, err := agents.BuildIndex(args[0], flagValue(args, "--key"))
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(args[0], "..", "index.json"), index, 0o644); err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(args[0], "..", "index.json.sig"), append(sig, '\n'), 0o644); err != nil {
+			return err
+		}
+		fmt.Println("Wrote index.json and index.json.sig next to", args[0])
+		return nil
+	case "review":
+		if err := need(1); err != nil {
+			return err
+		}
+		return cmdReview(args[0])
 	case "help", "-h", "--help":
 		fmt.Print(agentsUsage)
 		return nil
@@ -253,4 +307,37 @@ func exitCode(err error) int {
 	}
 	fmt.Fprintln(os.Stderr, "Error:", err)
 	return 1
+}
+
+// cmdReview runs the marketplace's safety review on a package or folder.
+func cmdReview(src string) error {
+	if st, err := os.Stat(src); err == nil && !st.IsDir() {
+		tmp, err := os.MkdirTemp("", "mangoman-review-")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(tmp)
+		pub, err := agents.Unpack(src, tmp)
+		if err != nil {
+			return err
+		}
+		fmt.Println("Signed by", pub)
+		src = tmp
+	}
+	m, findings, err := agents.Review(src)
+	if err != nil {
+		return err
+	}
+	blocked := 0
+	for _, f := range findings {
+		fmt.Printf("%s  %s:%d  %s\n", strings.ToUpper(f.Level), f.File, f.Line, f.Reason)
+		if f.Level == "block" {
+			blocked++
+		}
+	}
+	if blocked > 0 {
+		return fmt.Errorf("%s %s cannot list: %d blocking finding(s)", m.Name, m.Version, blocked)
+	}
+	fmt.Printf("%s %s passes the safety review (%d point(s) for a reviewer to look at).\n", m.Name, m.Version, len(findings))
+	return nil
 }

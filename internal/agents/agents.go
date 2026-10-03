@@ -286,63 +286,6 @@ func Pack(src, keyPath, out string) (Manifest, error) {
 // An installed agent is only replaced by a package signed with the same key.
 func Install(pkg, agentsDir string) (Manifest, error) {
 	var m Manifest
-	zr, err := zip.OpenReader(pkg)
-	if err != nil {
-		return m, fmt.Errorf("%s is not an agent package: %w", pkg, err)
-	}
-	defer zr.Close()
-	if len(zr.File) > maxFiles {
-		return m, errors.New("package has too many files")
-	}
-	contents := map[string][]byte{}
-	var total int64
-	for _, f := range zr.File {
-		n := f.Name
-		if n != path.Clean(n) || path.IsAbs(n) || strings.HasPrefix(n, "../") || strings.Contains(n, `\`) || n == ".." {
-			return m, fmt.Errorf("unsafe path %q in package", n)
-		}
-		if f.FileInfo().IsDir() {
-			continue
-		}
-		if !f.Mode().IsRegular() {
-			return m, fmt.Errorf("%s: only plain files are allowed", n)
-		}
-		rc, err := f.Open()
-		if err != nil {
-			return m, err
-		}
-		data, err := io.ReadAll(io.LimitReader(rc, maxBytes-total+1))
-		rc.Close()
-		if err != nil {
-			return m, err
-		}
-		if total += int64(len(data)); total > maxBytes {
-			return m, errors.New("package is larger than 50 MB")
-		}
-		contents[n] = data
-	}
-	var sig signature
-	if err := json.Unmarshal(contents[sigFile], &sig); err != nil {
-		return m, errors.New("package is not signed")
-	}
-	delete(contents, sigFile)
-	pub, err := base64.StdEncoding.DecodeString(sig.Publisher)
-	if err != nil || len(pub) != ed25519.PublicKeySize {
-		return m, errors.New("package has a bad publisher key")
-	}
-	sb, _ := base64.StdEncoding.DecodeString(sig.Sig)
-	if !ed25519.Verify(pub, signedBytes(sig.Files), sb) {
-		return m, errors.New("signature check failed: the package was changed after signing")
-	}
-	if len(sig.Files) != len(contents) {
-		return m, errors.New("package files do not match its signature")
-	}
-	for n, data := range contents {
-		sum := sha256.Sum256(data)
-		if sig.Files[n] != hex.EncodeToString(sum[:]) {
-			return m, fmt.Errorf("%s does not match its signature", n)
-		}
-	}
 	if err := os.MkdirAll(agentsDir, 0o755); err != nil {
 		return m, err
 	}
@@ -351,20 +294,15 @@ func Install(pkg, agentsDir string) (Manifest, error) {
 		return m, err
 	}
 	defer os.RemoveAll(tmp)
-	for n, data := range contents {
-		target := filepath.Join(tmp, filepath.FromSlash(n))
-		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-			return m, err
-		}
-		if err := os.WriteFile(target, data, 0o644); err != nil {
-			return m, err
-		}
+	publisher, err := Unpack(pkg, tmp)
+	if err != nil {
+		return m, err
 	}
 	if m, err = Load(tmp); err != nil {
 		return m, err
 	}
 	dest := filepath.Join(agentsDir, m.Name)
-	if old, err := os.ReadFile(filepath.Join(dest, pubFile)); err == nil && strings.TrimSpace(string(old)) != sig.Publisher {
+	if old, err := os.ReadFile(filepath.Join(dest, pubFile)); err == nil && strings.TrimSpace(string(old)) != publisher {
 		return m, fmt.Errorf("%s is installed from a different creator key; remove it first if you trust the new one", m.Name)
 	}
 	if err := skills.CopyShared(filepath.Join(tmp, "scripts")); err != nil {
@@ -373,13 +311,83 @@ func Install(pkg, agentsDir string) (Manifest, error) {
 	if err := skills.CopyScripts(m.Skill, filepath.Join(tmp, "scripts")); err != nil {
 		return m, err
 	}
-	if err := os.WriteFile(filepath.Join(tmp, pubFile), []byte(sig.Publisher+"\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmp, pubFile), []byte(publisher+"\n"), 0o644); err != nil {
 		return m, err
 	}
 	if err := os.RemoveAll(dest); err != nil {
 		return m, err
 	}
 	return m, os.Rename(tmp, dest)
+}
+
+// Unpack checks the package's signature and every file, then writes the
+// files into dir. It returns the creator's public key.
+func Unpack(pkg, dir string) (string, error) {
+	zr, err := zip.OpenReader(pkg)
+	if err != nil {
+		return "", fmt.Errorf("%s is not an agent package: %w", pkg, err)
+	}
+	defer zr.Close()
+	if len(zr.File) > maxFiles {
+		return "", errors.New("package has too many files")
+	}
+	contents := map[string][]byte{}
+	var total int64
+	for _, f := range zr.File {
+		n := f.Name
+		if n != path.Clean(n) || path.IsAbs(n) || strings.HasPrefix(n, "../") || strings.Contains(n, `\`) || n == ".." {
+			return "", fmt.Errorf("unsafe path %q in package", n)
+		}
+		if f.FileInfo().IsDir() {
+			continue
+		}
+		if !f.Mode().IsRegular() {
+			return "", fmt.Errorf("%s: only plain files are allowed", n)
+		}
+		rc, err := f.Open()
+		if err != nil {
+			return "", err
+		}
+		data, err := io.ReadAll(io.LimitReader(rc, maxBytes-total+1))
+		rc.Close()
+		if err != nil {
+			return "", err
+		}
+		if total += int64(len(data)); total > maxBytes {
+			return "", errors.New("package is larger than 50 MB")
+		}
+		contents[n] = data
+	}
+	var sig signature
+	if err := json.Unmarshal(contents[sigFile], &sig); err != nil {
+		return "", errors.New("package is not signed")
+	}
+	delete(contents, sigFile)
+	pub, err := base64.StdEncoding.DecodeString(sig.Publisher)
+	if err != nil || len(pub) != ed25519.PublicKeySize {
+		return "", errors.New("package has a bad publisher key")
+	}
+	sb, _ := base64.StdEncoding.DecodeString(sig.Sig)
+	if !ed25519.Verify(pub, signedBytes(sig.Files), sb) {
+		return "", errors.New("signature check failed: the package was changed after signing")
+	}
+	if len(sig.Files) != len(contents) {
+		return "", errors.New("package files do not match its signature")
+	}
+	for n, data := range contents {
+		sum := sha256.Sum256(data)
+		if sig.Files[n] != hex.EncodeToString(sum[:]) {
+			return "", fmt.Errorf("%s does not match its signature", n)
+		}
+		target := filepath.Join(dir, filepath.FromSlash(n))
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			return "", err
+		}
+		if err := os.WriteFile(target, data, 0o644); err != nil {
+			return "", err
+		}
+	}
+	return sig.Publisher, nil
 }
 
 // List returns the installed agents, sorted by name.
