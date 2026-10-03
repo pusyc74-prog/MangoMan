@@ -104,6 +104,17 @@ func (s *Set) Failure(k string) {
 	}
 }
 
+// Release ends a half-open probe that proved nothing either way (a rate
+// limit, a client error, the client hanging up), so the next request may
+// probe again. It does nothing after Success or Failure.
+func (s *Set) Release(k string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if e, ok := s.m[k]; ok {
+		e.probing = false
+	}
+}
+
 // StateOf returns the current state of a target.
 func (s *Set) StateOf(k string) State {
 	s.mu.Lock()

@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import vizlib as V  # noqa: E402
 import render  # noqa: E402
 import brandkit as BK  # noqa: E402
+import tracenum  # noqa: E402
 
 SLIDE_TYPES = ("title", "answer", "kpis", "stat", "chart", "bullets", "table", "next_steps", "section")
 W, H, M = 13.333, 7.5, 0.75  # canvas and side margin, inches
@@ -38,6 +39,10 @@ def point_text(p):
     return p.get("text", "") if isinstance(p, dict) else str(p)
 
 
+def num(v):
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
 def validate(spec):
     p = []
     slides = spec.get("slides", [])
@@ -50,21 +55,7 @@ def validate(spec):
     for key, allowed in (("motif", BK.MOTIFS), ("mode", BK.MODES), ("type", tuple(BK.TYPES))):
         if spec.get(key) is not None and spec[key] not in allowed:
             p.append("%s must be one of %s" % (key, ", ".join(allowed)))
-    b = spec.get("brand")
-    if b is not None:
-        if not isinstance(b, dict):
-            p.append("brand must be an object: primary, accent, logo")
-        else:
-            for key in ("primary", "accent"):
-                if b.get(key):
-                    try:
-                        BK.hexc(b[key])
-                    except ValueError:
-                        p.append("brand %s must be a hex colour like #1F5FA8" % key)
-            if b.get("logo"):
-                prob = BK.logo_check(logo_path(b["logo"]))
-                if prob:
-                    p.append(prob)
+    p += BK.brand_problems(spec, BASE_DIR)
     for i, s in enumerate(slides, 1):
         t = s.get("type")
         if t not in SLIDE_TYPES:
@@ -79,24 +70,26 @@ def validate(spec):
                 p.append("slide %d: callout needs a numeric value" % i)
         if t == "kpis" and not (1 <= len(s.get("kpis", [])) <= 4):
             p.append("slide %d: 1 to 4 KPIs per slide" % i)
-        if t == "stat" and not isinstance(s.get("value"), (int, float)):
+        if t == "kpis" and not all(num(k.get("value")) for k in s.get("kpis", [])):
+            p.append("slide %d: every KPI needs a numeric value (computed in the script)" % i)
+        if t == "stat" and not num(s.get("value")):
             p.append("slide %d: a stat slide needs a numeric value (computed in the script)" % i)
         if t == "answer" and not (1 <= len(s.get("points", [])) <= 3):
             p.append("slide %d: the answer has 1 to 3 points" % i)
         if t == "next_steps" and not (1 <= len(s.get("items", [])) <= 4):
             p.append("slide %d: 1 to 4 next steps" % i)
-        if t == "table" and not s.get("table", {}).get("rows"):
-            p.append("slide %d: table has no rows" % i)
+        if t == "table":
+            tb = s.get("table", {})
+            if not tb.get("rows"):
+                p.append("slide %d: table has no rows" % i)
+            elif any(not isinstance(r, list) or len(r) != len(tb.get("columns", [])) for r in tb["rows"]):
+                p.append("slide %d: every table row needs one value per column" % i)
     return p
 
 
 # ---------- scene helpers ----------
 
 blend = BK.mix  # fg at opacity a over bg, as an opaque hex colour (same in both outputs)
-
-
-def logo_path(p):
-    return p if os.path.isabs(p) else os.path.join(BASE_DIR, p)
 
 
 def run(t, size, color, bold=False):
@@ -138,14 +131,12 @@ def vline(x, y, h, color):
     return rect(x, y, 0.014, h, color)
 
 
-NUM_RX = re.compile(r"(?<![A-Za-z\d])[−+-]?[₹$€£]?\s?\d[\d,]*(?:\.\d+)?(?:\s?(?:%|pp|Cr|crore|lakh|L|K|M|B|bn|x)(?![A-Za-z]))?")
-
-
 def lead_stat(point):
+    """The point's own stat, else its first number that is data (not a year or a small count)."""
     if isinstance(point, dict) and point.get("stat"):
         return str(point["stat"])
-    m = NUM_RX.search(point_text(point))
-    return m.group(0).strip() if m else ""
+    found = tracenum.mentions(point_text(point))
+    return found[0][0] if found else ""
 
 
 def auto_highlight(headline, xs):
@@ -183,8 +174,8 @@ def footer(spec, n, total, T, dark=False, bg=None):
     c = T["on_dark_muted"] if dark else T["muted"]
     lg, lw = logo(T, bg or (T["dark"] if dark else T["bg"]), W - M, 6.99, 1.3, 0.3, right=True)
     nx = W - M - (lw + 0.25 if lw else 0)
-    return lg + [text(M, 7.0, 8.5, 0.3, [run(spec.get("source", spec.get("title", "")), 10, c)], valign="m"),
-                 text(nx - 1.5, 7.0, 1.5, 0.3, [run("%d / %d" % (n, total), 10, c)], align="r", valign="m")]
+    return lg + [text(M, 7.0, 8.5, 0.3, [run(spec.get("source", spec.get("title", "")), 10, c)], valign="m", check="source-%d" % n),
+                 text(nx - 1.5, 7.0, 1.5, 0.3, [run("%d / %d" % (n, total), 10, c)], align="r", valign="m", check="page-%d" % n)]
 
 
 def motif(T, base, big=(8.4, -1.7, 7.6), small=None, a=0.06):
@@ -297,7 +288,7 @@ def scene_kpis(s, spec, n, total, T):
     return {"bg": T["bg"], "els": els + footer(spec, n, total, T)}
 
 
-def chart_view(s, T):
+def chart_view(s):
     """The chart spec as drawn on a slide, plus the side-panel callout."""
     c = dict(s["chart"])
     kind = c.get("type", "line")
@@ -325,11 +316,11 @@ def chart_view(s, T):
 
 def scene_chart(s, spec, n, total, T):
     els = [headline_top(s, n, T)]
-    c, callout = chart_view(s, T)
+    c, callout = chart_view(s)
     side = callout or s.get("takeaway")
     cy, ch = 1.95, 4.75
     cwid = 8.35 if side else CW
-    els.append({"k": "chart", "x": M, "y": cy, "w": cwid, "h": ch, "chart": c})
+    els.append({"k": "chart", "x": M, "y": cy, "w": cwid, "h": ch, "chart": c, "check": "chart-%d" % n})
     if side:
         px = M + cwid + 0.35
         pw = W - M - px
@@ -391,7 +382,7 @@ def scene_table(s, spec, n, total, T):
     th = rh * rows
     if split:
         ty = 1.15 + (5.2 - th) / 2
-    els.append({"k": "table", "x": tx, "y": ty, "w": tw, "h": th, "rh": rh, "table": t, "hl": hl})
+    els.append({"k": "table", "x": tx, "y": ty, "w": tw, "h": th, "rh": rh, "table": t, "hl": hl, "check": "table-%d" % n})
     return {"bg": T["bg"], "els": els + footer(spec, n, total, T)}
 
 
@@ -410,9 +401,9 @@ def scene_next(s, spec, n, total, T):
         els.append(text(x + 0.35, y + 0.4, 0.62, 0.62, [run(i + 1, 18, num, True)], align="c", valign="m"))
         els.append(text(x + 0.35, y + 1.3, cw - 0.7, 1.75, [run(it.get("action", ""), 19, T["on_dark"], True)], check="step-%d-%d" % (n, i), lh=1.15))
         if it.get("owner"):
-            els.append(text(x + 0.35, y + h - 0.95, cw - 0.7, 0.35, [run(it["owner"], 13, T["on_dark_muted"])], valign="m"))
+            els.append(text(x + 0.35, y + h - 0.95, cw - 0.7, 0.35, [run(it["owner"], 13, T["on_dark_muted"])], valign="m", check="owner-%d-%d" % (n, i)))
         if it.get("date"):
-            els.append(text(x + 0.35, y + h - 0.6, cw - 0.7, 0.35, [run(it["date"], 13, T["accent"], True)], valign="m"))
+            els.append(text(x + 0.35, y + h - 0.6, cw - 0.7, 0.35, [run(it["date"], 13, T["accent"], True)], valign="m", check="date-%d-%d" % (n, i)))
     return {"bg": T["dark"], "els": els + footer(spec, n, total, T, True)}
 
 
@@ -452,7 +443,11 @@ def box(el):
     return "left:%.1fpx;top:%.1fpx;width:%.1fpx;height:%.1fpx" % (el["x"] * PX, el["y"] * PX, el["w"] * PX, el["h"] * PX)
 
 
-def html_el(el, T, bg):
+def chk(el):
+    return ' data-check="%s"' % e(el["check"]) if el.get("check") else ""
+
+
+def html_el(el, T):
     k = el["k"]
     if k == "rect":
         return '<div class="el" style="%s;background:#%s;border-radius:%.1fpx"></div>' % (box(el), el["fill"], el["r"] * PX)
@@ -471,7 +466,7 @@ def html_el(el, T, bg):
             data = base64.b64encode(f.read()).decode()
         return '<img class="el" alt="logo" style="%s" src="data:image/%s;base64,%s">' % (box(el), ext, data)
     if k == "text":
-        jc = {"t": "flex-start", "m": "center", "b": "flex-end"}[el["valign"]]
+        jc = {"t": "flex-start", "m": "safe center", "b": "safe flex-end"}[el["valign"]]  # safe: overflow runs down, where it is measured
         ta = {"l": "left", "r": "right", "c": "center"}[el["align"]]
         ps = []
         for p in el["paras"]:
@@ -479,8 +474,7 @@ def html_el(el, T, bg):
                 r["size"], r["color"], 700 if r["bold"] else 400, e(T["html_head"] if is_head(r) else T["html_body"]), e(r["t"])) for r in p["runs"])
             mx = max(r["size"] for r in p["runs"])
             ps.append('<p style="line-height:%.2fpt;margin-bottom:%gpt">%s</p>' % (mx * el["lh"] * 1.2, p.get("after", 0), runs))
-        chk = ' data-check="%s"' % e(el["check"]) if el.get("check") else ""
-        return '<div class="el tx"%s style="%s;justify-content:%s;text-align:%s">%s</div>' % (chk, box(el), jc, ta, "".join(ps))
+        return '<div class="el tx"%s style="%s;justify-content:%s;text-align:%s">%s</div>' % (chk(el), box(el), jc, ta, "".join(ps))
     if k == "chart":
         c = el["chart"]
         cls = "chart deckchart"
@@ -489,7 +483,7 @@ def html_el(el, T, bg):
         leg = V.legend(c)
         h = el["h"] * PX - (30 if leg else 0)
         c2 = dict(c, bar_max=64, bar_radius=6)
-        return '<div class="el %s" style="%s">%s%s</div>' % (cls, box(el), leg, V.svg_chart(c2, int(el["w"] * PX), int(h)))
+        return '<div class="el %s"%s style="%s">%s%s</div>' % (cls, chk(el), box(el), leg, V.svg_chart(c2, int(el["w"] * PX), int(h)))
     if k == "table":
         t = el["table"]
         cols, body, isnum = table_rows(t)
@@ -498,7 +492,7 @@ def html_el(el, T, bg):
         rows = "".join('<tr class="%s">%s</tr>' % ("hl" if el["hl"] == ri else "", "".join(
             '<td class="%s">%s</td>' % ("n" if isnum[i] else "", e(v)) for i, v in enumerate(r))) for ri, r in enumerate(body))
         cg = "<colgroup>%s</colgroup>" % "".join('<col style="width:%.2f%%">' % (wf * 100) for wf in col_widths(len(cols)))
-        return '<div class="el" style="%s"><table class="dt" style="--rh:%.1fpx">%s%s%s</table></div>' % (box(el), rh, cg, "<tr>%s</tr>" % head, rows)
+        return '<div class="el"%s style="%s"><table class="dt" style="--rh:%.1fpx">%s%s%s</table></div>' % (chk(el), box(el), rh, cg, "<tr>%s</tr>" % head, rows)
     return ""
 
 
@@ -534,7 +528,7 @@ table.dt tr.hl td { color: #%(text)s; font-weight: 700; }
 table.dt tr.hl td:first-child { color: #%(accent_dark)s; }
 """ % dict(T, font=T["html_body"], accent=T["accent_fill"])
     slides = "".join('<section class="slide" id="s%d" style="background:#%s">%s</section>' % (
-        i + 1, s["bg"], "".join(html_el(x, T, s["bg"]) for x in s["els"])) for i, s in enumerate(sc))
+        i + 1, s["bg"], "".join(html_el(x, T) for x in s["els"])) for i, s in enumerate(sc))
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>%s</title><style>%s%s</style></head><body>%s<script>%s</script></body></html>' % (
         e(spec["title"]), V.CHART_CSS, css, slides, V.TIP_JS)
 
@@ -616,7 +610,9 @@ def build_pptx(spec, path):
         if ch.has_legend:
             ch.legend.position, ch.legend.include_in_layout = XL_LEGEND_POSITION.TOP, False
             ch.legend.font.size = Pt(12)
-        numfmt = {"percent": '0.0%', "currency": ('"₹"#,##,##0' if c.get("currency") == "INR" else '"$"#,##0')}.get(c.get("format"), '#,##0')
+        cur = c.get("currency") or "USD"
+        sym = V.SYMBOL.get(cur, cur + " ")
+        numfmt = {"percent": '0.0%', "currency": ('"₹"#,##,##0' if cur == "INR" else '"%s"#,##0' % sym)}.get(c.get("format"), '#,##0')
         ca, va = ch.category_axis, ch.value_axis
         ca.tick_label_position = XL_TICK_LABEL_POSITION.LOW
         ca.format.line.color.rgb = rgb(T["dim"])

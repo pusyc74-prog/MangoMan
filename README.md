@@ -45,7 +45,7 @@ It also runs daily at 08:00 IST in quick mode, which catches provider changes ea
 | Area | Done in M1 |
 | --- | --- |
 | Endpoint | `POST /v1/chat/completions` (streaming and non-streaming), `GET /v1/models`, `GET /mangoman/status`, `GET /healthz` |
-| Local security | Binds 127.0.0.1 only; local bearer token (or `x-api-key`); Host check against DNS rebinding; browser Origin allow-list |
+| Local security | Binds 127.0.0.1 only; local bearer token (or `x-api-key`); Host check against DNS rebinding; browser calls refused unless they come from the dashboard |
 | Providers | One OpenAI-compatible adapter covering Groq, Cerebras, OpenRouter (free), NVIDIA, Ollama (auto-discovered) |
 | Routing | Free-first scoring (quality, quota left, health, speed) per task class; same model on another provider first; local Ollama as last-resort backstop |
 | Failover | 429 (bucket blocked until reset), 5xx and timeouts (circuit breaker), 401/403 (key disabled), 404 (model avoided), unreachable provider (skip its other models), client errors (one retry, then return) |
@@ -59,7 +59,7 @@ It also runs daily at 08:00 IST in quick mode, which catches provider changes ea
 
 ## Setup wizard and dashboard
 
-`mangoman setup` walks through each free provider in turn: it opens the sign-up page, you paste the key, it is checked with the provider and stored in the OS keychain. Skip any provider; one is enough. It also detects Ollama and offers to download a small local model.
+`mangoman setup` walks through each free provider in turn: it opens the sign-up page, you paste the key, it is checked with the provider and stored in the OS keychain, or in an encrypted file when there is no keychain. Skip any provider; one is enough. It also detects Ollama and offers to download a small local model.
 
 `mangoman dashboard` opens a local page (served by the router, nothing loaded from the internet) that shows:
 

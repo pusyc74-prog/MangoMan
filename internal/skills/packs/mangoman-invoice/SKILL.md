@@ -25,7 +25,9 @@ GST basics, so your job is to collect the right details.
 Tax type is automatic: same state as the supplier means CGST and SGST (half
 each); a different state means IGST. The state comes from the GSTIN's first
 two digits, or `state_code` / `place_of_supply` (27 Maharashtra, 29 Karnataka,
-07 Delhi, 33 Tamil Nadu, 24 Gujarat and so on).
+07 Delhi, 33 Tamil Nadu, 24 Gujarat and so on). With a `ship_to`, the place
+of supply is the buyer's state when the buyer has a GSTIN, else the delivery
+state. Quantities must be above 0: credit notes are not supported.
 
 ## 2. Write `invoice.json`
 

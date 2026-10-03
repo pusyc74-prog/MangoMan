@@ -40,6 +40,7 @@ type fake struct {
 	handler http.HandlerFunc
 	quirks  catalogue.Quirks
 	account catalogue.Limits
+	local   bool
 	calls   atomic.Int32
 	srv     *httptest.Server
 }
@@ -102,7 +103,7 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 		cat.Providers = append(cat.Providers, catalogue.Provider{
 			ID: f.id, Name: f.id, BaseURL: f.srv.URL, Kind: "openai", NeedsKey: true, Speed: speed,
 			Policy: catalogue.DataPolicy{Retention: "none", TrainsOnData: "no", Jurisdiction: "US"},
-			Quirks: f.quirks, AccountLimits: f.account,
+			Quirks: f.quirks, AccountLimits: f.account, Local: f.local,
 		})
 		cat.Models = append(cat.Models, catalogue.Model{
 			Canonical: f.model, Provider: f.id, Upstream: f.model + "-up", Free: true, Context: 32000,
@@ -751,5 +752,45 @@ func TestInternalCallSkipsBrainAndMyList(t *testing.T) {
 	}
 	if fb.choose.Load() != 0 || fav.calls.Load() != 0 {
 		t.Fatalf("internal call used the brain (%d) or My list (%d)", fb.choose.Load(), fav.calls.Load())
+	}
+}
+
+func TestHalfOpenProbeReleasedAfter429(t *testing.T) {
+	var mode atomic.Int32 // 0: 503, 1: 429, 2: ok
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: func(w http.ResponseWriter, r *http.Request) {
+		switch mode.Load() {
+		case 0:
+			status(503, nil)(w, r)
+		case 1:
+			status(429, map[string]string{"Retry-After": "1"})(w, r)
+		default:
+			okJSON("from a")(w, r)
+		}
+	}}
+	rt := setup(t, a)
+	now := time.Now()
+	rt.Breakers.SetClock(func() time.Time { return now })
+	rt.Quota.SetClock(func() time.Time { return now })
+	for i := 0; i < 3; i++ {
+		do(t, rt, hello)
+	}
+	now = now.Add(time.Hour) // half-open
+	mode.Store(1)
+	do(t, rt, hello) // the probe gets a 429
+	now = now.Add(time.Hour)
+	mode.Store(2)
+	if w := do(t, rt, hello); w.Code != 200 {
+		t.Fatalf("target stuck half-open: %d %s", w.Code, w.Body)
+	}
+}
+
+func TestLocalContextTooSmallSaysHowToFix(t *testing.T) {
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: okJSON("x"), local: true}
+	rt := setup(t, a)
+	long := strings.Repeat("word ", 40000)
+	body, _ := json.Marshal(map[string]any{"model": "free/auto", "messages": []map[string]string{{"role": "user", "content": long}}})
+	w := do(t, rt, string(body))
+	if w.Code != 400 || !strings.Contains(w.Body.String(), "OLLAMA_CONTEXT_LENGTH=65536") {
+		t.Fatalf("got %d %s", w.Code, w.Body)
 	}
 }

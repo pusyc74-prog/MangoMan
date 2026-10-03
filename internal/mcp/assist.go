@@ -302,6 +302,9 @@ func (a *Assist) freeStatus(ctx context.Context, _ json.RawMessage) (string, err
 		return "", errors.New("MangoMan is not running on this computer: ask the user to run `mangoman serve`")
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("MangoMan refused the status request (HTTP %d): if the router was started before `mangoman init` changed the token, restart it", resp.StatusCode)
+	}
 	var ov struct {
 		Providers []struct {
 			Name   string `json:"name"`

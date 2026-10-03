@@ -1,5 +1,6 @@
 {
   "brand": "Kesari",
+  "allowed_caps": ["UPI"],
   "facts": {"price": "boxes from ₹749", "delivery": "delivered in 48 hours", "discount": "10% off pre-orders", "origin": "Ratnagiri Alphonso", "cities": "Pune, Mumbai and Bengaluru", "boxes": "boxes of 6, 12 and 24"},
   "google": {
     "campaign": "Alphonso pre-orders 2027",

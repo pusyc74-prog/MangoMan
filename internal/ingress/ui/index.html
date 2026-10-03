@@ -15,6 +15,9 @@
   </div>
   <p class="runline" id="runline">Connecting to the router…</p>
   <button type="button" class="ghost" id="refresh">Refresh</button>
+  <button type="button" class="fab" id="fab" hidden aria-controls="drawer" aria-expanded="false">
+    <span class="fab-dot" aria-hidden="true"></span><span id="fab-text">New models</span>
+  </button>
 </header>
 
 <main id="app" hidden>
@@ -125,10 +128,6 @@
   <p>This page needs the router's local token. Run this and it opens with access:</p>
   <pre><code>mangoman dashboard</code></pre>
 </section>
-
-<button type="button" class="fab" id="fab" hidden aria-controls="drawer" aria-expanded="false">
-  <span class="fab-dot" aria-hidden="true"></span><span id="fab-text">New models</span>
-</button>
 
 <aside class="drawer" id="drawer" role="dialog" aria-labelledby="h-drawer" hidden>
   <div class="drawer-head">

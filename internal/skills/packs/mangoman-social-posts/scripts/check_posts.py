@@ -11,17 +11,23 @@ import json
 import os
 import re
 import sys
+import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_posts as B  # noqa: E402
 import checks as C  # noqa: E402
 
 URL = re.compile(r"https?://\S+|www\.\S+")
-TAG = re.compile(r"^#[^\W_][\w]*$", re.UNICODE)
-RISKY = re.compile(r"\b(guaranteed?|100% (?:safe|natural|pure|effective)|cures?|risk[- ]free|no side effects|#1|number one|best in (?:india|the world|town)|cheapest|lowest price ever|miracle|clinically proven)\b", re.I)
 SCALE_WARN = 0.78
 WORDNUM = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
 COUNTED = re.compile(r"\b(\d+|two|three|four|five|six|seven|eight|nine|ten)\s+(?:\w+\s+)?(checks|tips|steps|ways|reasons|mistakes|ideas|signs|rules|things|questions|lessons|hacks|facts)\b", re.I)
+
+
+def tag_ok(t):
+    """One word: letters (with their vowel signs and accents), digits or _, not all digits."""
+    w = t[1:]
+    return bool(w) and w[0].isalnum() and not w.isdigit() and all(
+        ch.isalnum() or ch == "_" or unicodedata.category(ch).startswith("M") for ch in w)
 
 
 def promised_count(p):
@@ -116,7 +122,7 @@ def main():
     cap, tags_bad, tags_many, links = [], [], [], []
     for p in posts:
         for pl in spec.get("platforms", ["instagram"]):
-            c = B.full_caption(p, pl, spec)
+            c = B.full_caption(p, pl)
             n = x_length(c) if pl == "x" else len(c)
             if n > B.PLATFORMS[pl][1]:
                 cap.append("%s on %s is %d characters, limit %d" % (p["id"], pl, n, B.PLATFORMS[pl][1]))
@@ -125,7 +131,7 @@ def main():
             if pl == "instagram" and len(caption_text(p, pl).split("\n")[0]) > 125:
                 cap.append("WARN:%s: Instagram shows about 125 characters before 'more'; put the hook first" % p["id"])
         tags = [t if t.startswith("#") else "#" + t for t in p.get("hashtags", [])]
-        bad = [t for t in tags if not TAG.match(t) or t[1:].isdigit()]
+        bad = [t for t in tags if not tag_ok(t)]
         if bad:
             tags_bad.append("%s: %s" % (p["id"], ", ".join(bad)))
         if len({t.lower() for t in tags}) != len(tags):
@@ -155,7 +161,7 @@ def main():
             u = C.untraced(t, pool)
             if u:
                 untr.append("%s: %s" % (p["id"], ", ".join(u)))
-            m = RISKY.search(t)
+            m = C.RISKY.search(t)
             if m:
                 risky.append('%s: "%s"' % (p["id"], m.group(0)))
     untr = sorted(set(untr))

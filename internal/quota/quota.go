@@ -335,10 +335,13 @@ type Status struct {
 func (t *Tracker) Snapshot() []Status {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+	now := t.now()
 	out := make([]Status, 0, len(t.buckets))
 	for s, b := range t.buckets {
+		roll(&b.ReqDay, 24*time.Hour, now)
+		roll(&b.TokDay, 24*time.Hour, now)
 		st := Status{Key: t.keys[s], ReqToday: b.ReqDay.Used, TokToday: b.TokDay.Used}
-		if t.now().Before(b.BlockedUntil) {
+		if now.Before(b.BlockedUntil) {
 			st.BlockedUntil = b.BlockedUntil
 		}
 		out = append(out, st)

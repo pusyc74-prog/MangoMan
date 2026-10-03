@@ -11,6 +11,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_report as B  # noqa: E402
@@ -28,7 +29,7 @@ def main():
     rep = C.Report()
     spec = json.load(open(out + ".spec.json", encoding="utf-8"))
     rep.check([] if B.run_analysis(script) == spec else ["rebuild"], "analysis reproduces the report's numbers", "re-running the analysis gives different numbers")
-    probs = B.validate(spec)
+    probs = B.validate(spec, os.path.dirname(os.path.abspath(script)))
     rep.check(probs, "spec is valid", "spec problems")
     heads = [s["headline"] for s in spec.get("sections", [])]
     rep.check([h for h in heads if len(h.split()) > 16], "headlines are short", "headlines over 16 words")
@@ -54,8 +55,13 @@ def main():
     rep.check(C.first_match(C.PLACEHOLDER, allt), "no placeholder text", "placeholder text left in")
     pdf = out + ".pdf"
     if os.path.exists(pdf):
-        txt = re.sub(r"\s+", "", render.pdf_text(pdf)).lower()  # PDF text can split words, so compare without spaces
-        rep.check([h for h in heads if re.sub(r"\s+", "", h).lower()[:30] not in txt], "every section is in the PDF", "sections missing from the PDF")
+        flat = lambda s: re.sub(r"\s+", "", unicodedata.normalize("NFKC", s)).lower()  # PDF text splits words and uses ligatures
+        txt = flat(render.pdf_text(pdf))
+        missing = [h for h in heads if flat(h)[:30] not in txt]
+        latin = [h for h in missing if all(unicodedata.name(ch, "").startswith("LATIN") for ch in h if ch.isalpha())]
+        rep.check(latin, "every section is in the PDF", "sections missing from the PDF")
+        if missing != latin:  # extraction of complex scripts is unreliable, so only ask for a look
+            rep.add("WARN", "could not confirm these sections in the PDF text; look at the PDF: " + "; ".join(h for h in missing if h not in latin))
         n = render.pdf_pages(pdf)
         rep.check([] if n <= 6 else ["%d pages" % n], "%d pages" % n, "long for a monthly report; move detail to an appendix", "WARN")
     else:

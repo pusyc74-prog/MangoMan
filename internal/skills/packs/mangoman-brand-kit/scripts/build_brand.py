@@ -51,6 +51,8 @@ def validate(spec, bdir="."):
         pr = BK.logo_check(os.path.join(bdir, spec["logo"]))
         if pr:
             p.append(pr)
+    if spec.get("theme") and spec["theme"] not in BK.CURATED:
+        p.append("theme must be one of %s" % ", ".join(BK.CURATED))
     if spec.get("type") and spec["type"] not in BK.TYPES:
         p.append("type must be one of %s" % ", ".join(BK.TYPES))
     return p
@@ -59,6 +61,8 @@ def validate(spec, bdir="."):
 def tokens(spec, bdir):
     brand = {k: spec[k] for k in ("primary", "accent", "logo") if spec.get(k)}
     T, note = BK.resolve_spec({"brand": brand, "theme": spec.get("theme", "ink"), "type": spec.get("type", "modern")}, bdir)
+    a = T["accent_fill"]  # a vivid accent can be too light for button text: deepen it until white reads on it
+    T["button"] = a if max(BK.contrast("FFFFFF", a), BK.contrast(T["text"], a)) >= 4.5 else BK._toward(a, "000000", "FFFFFF", 4.5)
     return T, note
 
 
@@ -67,7 +71,7 @@ def pairs(T):
     return [("Text on white", T["text"], "FFFFFF", 4.5), ("Secondary text on white", T["body"], "FFFFFF", 4.5),
             ("Muted text on white (captions)", T["muted"], "FFFFFF", 4.5), ("White on base", "FFFFFF", T["dark"], 4.5),
             ("Accent text on white", T["accent_dark"], "FFFFFF", 3.0), ("Accent on base", T["accent"], T["dark"], 3.0),
-            ("Button text on accent", max(("FFFFFF", T["text"]), key=lambda c: BK.contrast(c, T["accent_fill"])), T["accent_fill"], 4.5)]
+            ("Button text on button colour", max(("FFFFFF", T["text"]), key=lambda c: BK.contrast(c, T["button"])), T["button"], 4.5)]
 
 
 def swatch(hexv, name, use):
@@ -83,18 +87,19 @@ def build_html(spec, T):
     chip = "#FFFFFF" if T.get("logo") and BK.logo_hidden_share(T["logo"], T["dark"]) > 0.15 else "transparent"
     cover = '<section class="cover"><div class="lg" style="background:%s">%s</div><h1>%s</h1><p>%s</p><span>Brand guidelines</span></section>' % (
         chip, logo, e(name), e(spec.get("tagline", "")))
-    logo_page = ('<section><h2>Logo</h2><div class="three"><div class="on" style="background:#fff">%s</div><div class="on" style="background:#%s">%s</div>'
+    logo_page = ('<section id="logo"><h2>Logo</h2><div class="three"><div class="on" style="background:#fff">%s</div><div class="on" style="background:#%s">%s</div>'
                  '<div class="on" style="background:#%s">%s</div></div><ul><li>Keep clear space around the logo of at least the height of its mark.</li>'
                  '<li>Use it at least %s wide on screen and 25 mm in print.</li><li>On dark or busy backgrounds, place it on a white rounded panel, as above.</li>'
                  '<li>Do not stretch, recolour, outline or add effects.</li></ul></section>') % (
         logo, T["tint"], logo, T["dark"], '<div class="panel">%s</div>' % logo if chip != "transparent" else logo, spec.get("logo_min", "120 px"))
-    sw = "".join(swatch(T[k], n, u) for k, n, u in ROLES) + "".join(swatch(BK.hexc(c["hex"]), c["name"], c.get("use", "")) for c in spec.get("extra_colors", []))
+    roles = ROLES if T["button"] == T["accent_fill"] else ROLES[:1] + [("accent_fill", "Accent", "Highlights, charts"), ("button", "Button", "Buttons (a deeper accent, so button text reads)")] + ROLES[2:]
+    sw = "".join(swatch(T[k], n, u) for k, n, u in roles) + "".join(swatch(BK.hexc(c["hex"]), c["name"], c.get("use", "")) for c in spec.get("extra_colors", []))
     rows = "".join('<tr><td>%s</td><td><span class="pv" style="color:#%s;background:#%s">Aa 123</span></td><td>%.1f : 1</td><td class="%s">%s (needs %.1f)</td></tr>' % (
         e(lab), fg, bg, BK.contrast(fg, bg), "ok" if BK.contrast(fg, bg) >= need else "no", "Pass" if BK.contrast(fg, bg) >= need else "Fails", need)
         for lab, fg, bg, need in pairs(T))
-    colours = '<section><h2>Colour</h2><div class="sws">%s</div><h3>Readable combinations</h3><table><tr><th>Use</th><th>Sample</th><th>Contrast</th><th>WCAG AA</th></tr>%s</table></section>' % (sw, rows)
+    colours = '<section id="colour"><h2>Colour</h2><div class="sws">%s</div><h3>Readable combinations</h3><table><tr><th>Use</th><th>Sample</th><th>Contrast</th><th>WCAG AA</th></tr>%s</table></section>' % (sw, rows)
     head, body = T["html_head"], T["html_body"]
-    typo = ('<section><h2>Type</h2><p class="tf" style="font-family:%s;font-size:30pt;font-weight:700">%s for headlines</p>'
+    typo = ('<section id="type"><h2>Type</h2><p class="tf" style="font-family:%s;font-size:30pt;font-weight:700">%s for headlines</p>'
             '<p class="tf" style="font-family:%s;font-size:12pt">%s for text. Body copy is set at 10 to 12 points on paper and 16 to 18 pixels on screen, with headlines two to three times larger.</p>'
             '<table><tr><th>Use</th><th>Font</th><th>Size</th></tr><tr><td>Slide and page titles</td><td>%s bold</td><td>36 to 46 pt</td></tr>'
             '<tr><td>Section headings</td><td>%s bold</td><td>20 to 28 pt</td></tr><tr><td>Body</td><td>%s</td><td>10.5 to 12 pt, 16 to 18 px</td></tr>'
@@ -102,7 +107,7 @@ def build_html(spec, T):
         e(head), T["font_head"], e(body), T["font_body"], T["font_head"], T["font_head"], T["font_body"], T["font_body"])
     v = spec.get("voice", {})
     lst = lambda xs: "<ul>%s</ul>" % "".join("<li>%s</li>" % e(x) for x in xs)
-    voice = '<section><h2>Voice</h2>'
+    voice = '<section id="voice"><h2>Voice</h2>'
     if v.get("personality"):
         voice += '<p class="pers">%s</p>' % " · ".join(e(x) for x in v["personality"])
     voice += '<div class="two"><div><h3>We are</h3>%s</div><div><h3>We are not</h3>%s</div><div><h3>Do</h3>%s</div><div><h3>Don\'t</h3>%s</div></div>' % (
@@ -124,7 +129,7 @@ h2 { font: 700 26pt %(head)s; margin: 0 0 8mm; } h3 { font: 700 13pt %(head)s; m
 .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
 .on { height: 60mm; border-radius: 4mm; display: flex; align-items: center; justify-content: center; border: 1px solid #%(grid)s; }
 .on img { max-width: 70%%; max-height: 22mm; } .panel { background: #fff; border-radius: 3mm; padding: 3mm 5mm; display: flex; } .panel img { height: 14mm; }
-.sws { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4mm 5mm; }
+.sws { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4mm 4mm; }
 .sw .chip { height: 17mm; border-radius: 3mm; display: flex; align-items: flex-end; padding: 2mm; font-size: 8pt; border: 1px solid #%(grid)s; }
 .sw b { display: block; margin-top: 1.5mm; font-size: 10pt; } .sw span { display: block; font-size: 8.5pt; color: #%(muted)s; } .sw .u { color: #%(body)s; }
 table { border-collapse: collapse; width: 100%%; font-size: 9.5pt; } th { text-align: left; color: #%(muted)s; border-bottom: 1.5px solid #%(text)s; padding: 1.5mm 2mm; }
@@ -149,7 +154,7 @@ def main():
     if probs:
         sys.exit("spec problems:\n- " + "\n- ".join(probs))
     T, note = tokens(spec, bdir)
-    keep = ("dark", "dark2", "accent", "accent_fill", "accent_dark", "text", "body", "muted", "tint", "grid", "dim", "good", "bad")
+    keep = ("dark", "dark2", "accent", "accent_fill", "accent_dark", "button", "text", "body", "muted", "tint", "grid", "dim", "good", "bad")
     block = {"brand": {"name": spec["name"], "primary": "#" + T["dark"], "accent": "#" + T["accent_fill"], **({"logo": spec["logo"]} if spec.get("logo") else {})},
              "type": spec.get("type", "modern")}
     with open(out + "-tokens.json", "w", encoding="utf-8") as f:

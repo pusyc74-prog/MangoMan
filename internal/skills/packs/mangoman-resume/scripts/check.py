@@ -1,6 +1,6 @@
 """Check a built resume before delivering it.
 
-Usage: python3 check.py resume.json resume.pdf [--pages 1] [--template classic]
+Usage: python3 check.py resume.json resume.pdf [--pages 1]
 Checks: page count; the page is well filled (not half empty); text in the
 PDF is selectable (applicant tracking systems read it); required sections are
 filled; bullets start with an action, carry results and avoid "I"; dates use
@@ -18,11 +18,12 @@ import render  # noqa: E402
 WEAK_STARTS = ("responsible for", "worked on", "helped", "assisted", "involved in", "tasked with", "duties included", "in charge of")
 DATE_STYLES = [("Mon YYYY", re.compile(r"^[A-Z][a-z]{2} \d{4}$")), ("Month YYYY", re.compile(r"^[A-Z][a-z]{3,8} \d{4}$")),
                ("MM/YYYY", re.compile(r"^\d{2}/\d{4}$")), ("YYYY", re.compile(r"^\d{4}$")), ("YYYY-MM", re.compile(r"^\d{4}-\d{2}$"))]
+FIRST_PERSON = re.compile(r"\bI\b|\b(?i:my|me|mine|myself)\b")
 PRESENT = {"present", "current", "now", "today"}
 
 
 def date_style(s):
-    s = (s or "").strip()
+    s = str(s or "").strip()
     if s.lower() in PRESENT or not s:
         return None
     for name, rx in DATE_STYLES:
@@ -85,7 +86,7 @@ def main():
 
     bl = [b for x in r.get("experience", []) for b in x.get("bullets", [])]
     weak = [b for b in bl if b.lower().startswith(WEAK_STARTS)]
-    first = [b for b in bl + [r.get("summary", "")] if re.search(r"(^|\s)(I|my|me)\s", b or "")]
+    first = [b for b in bl + [r.get("summary", "")] if FIRST_PERSON.search(b or "")]
     longb = [b for b in bl if len(b.split()) > 30]
     nums = [b for b in bl if re.search(r"\d", b)]
     res("PASS" if not weak else "FAIL", "bullets start with an action" if not weak else

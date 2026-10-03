@@ -68,9 +68,11 @@ def main():
         sys.exit(__doc__)
     spec = json.load(open(a[0], encoding="utf-8"))
     out = a[a.index("--out") + 1] if "--out" in a else "app"
-    if not spec.get("title"):
-        sys.exit("spec problems:\n- title is required")
-    T, note = BK.resolve_spec(spec, os.path.dirname(os.path.abspath(a[0])))
+    bdir = os.path.dirname(os.path.abspath(a[0]))
+    probs = ([] if spec.get("title") else ["title is required"]) + BK.brand_problems(spec, bdir)
+    if probs:
+        sys.exit("spec problems:\n- " + "\n- ".join(probs))
+    T, note = BK.resolve_spec(spec, bdir)
     btn = T["accent_fill"] if BK.contrast(T["accent_fill"], "FFFFFF") >= 3 else T["dark"]
     os.makedirs(out, exist_ok=True)
     path = os.path.join(out, "index.html")

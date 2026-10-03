@@ -97,7 +97,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 	}
 	logClass := class
 	if req.Internal {
-		logClass = "brain"
+		logClass = store.BrainClass
 	}
 	cands, info := rt.plan(req, class)
 	if len(cands) == 0 {
@@ -123,15 +123,16 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		if unreachable[c.Provider.ID] {
 			continue
 		}
-		if !rt.Breakers.Allow(c.Target()) {
+		if ok, _ := rt.allow(c, req.EstTokens); !ok {
 			continue
 		}
-		if ok, _ := rt.allow(c, req.EstTokens); !ok {
+		if !rt.Breakers.Allow(c.Target()) {
 			continue
 		}
 		attempts++
 		start := time.Now()
 		res := rt.attempt(w, r, req, c, class, id, attempts)
+		rt.Breakers.Release(c.Target())
 		if res.outcome != "client_gone" {
 			lat := res.firstOut
 			if lat == 0 {
@@ -213,6 +214,13 @@ func (rt *Router) writeNoCandidate(w http.ResponseWriter, info planInfo) {
 		core.WriteExhausted(w, info.EarliestReset, "free capacity is used up on every connected provider; it returns at the next reset")
 	case info.Considered > 0 && info.NoKey == info.Considered:
 		core.WriteError(w, http.StatusServiceUnavailable, "no_providers_connected", "no provider keys found: run `mangoman keys add groq` (or another provider)")
+	case info.DoesNotFit > 0 && info.DoesNotFit == info.LocalTooSmall && info.BreakerOpen == 0 && info.QuotaBlocked == 0:
+		n := 32768
+		for n < info.Need {
+			n *= 2
+		}
+		core.WriteError(w, http.StatusBadRequest, "no_model_fits", fmt.Sprintf(
+			"your local models' context is too small for this request: set OLLAMA_CONTEXT_LENGTH=%d, then restart `ollama serve` and MangoMan, or connect a cloud provider", n))
 	case info.DoesNotFit > 0 && info.BreakerOpen == 0 && info.QuotaBlocked == 0:
 		core.WriteError(w, http.StatusBadRequest, "no_model_fits", "no connected free model supports this request (context size, tools, JSON mode or images)")
 	default:
@@ -241,13 +249,18 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 	}
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
-	if !req.Stream {
+	// A non-streaming answer gets NonStreamTimeout in all; a stream must
+	// start (send headers) within StreamIdle, then the idle reader takes over.
+	var headers *time.Timer
+	if req.Stream {
+		headers = time.AfterFunc(rt.StreamIdle, cancel)
+	} else {
 		var tcancel context.CancelFunc
 		ctx, tcancel = context.WithTimeout(ctx, rt.NonStreamTimeout)
 		defer tcancel()
 	}
-
 	resp, err := rt.Client.Chat(ctx, c.Provider, c.Key, body, req.Stream)
+	timedOut := headers != nil && !headers.Stop()
 	if err != nil {
 		if r.Context().Err() != nil {
 			return attemptResult{done: true, outcome: "client_gone"}
@@ -255,7 +268,7 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 		rt.Breakers.Failure(c.Target())
 		out := "network_error"
 		var ne net.Error
-		if errors.Is(err, context.DeadlineExceeded) || errors.As(err, &ne) && ne.Timeout() {
+		if timedOut || errors.Is(err, context.DeadlineExceeded) || errors.As(err, &ne) && ne.Timeout() {
 			out = "timeout"
 		}
 		return attemptResult{outcome: out, errMsg: err.Error()}
@@ -293,7 +306,7 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 	tokens := usageTokens(data, req.EstTokens, len(ans.Content))
 	rt.record(c, tokens)
 	why := guard.Check(req, ans)
-	if why == "" && rt.Brain != nil && !req.Internal && suspicious(req, ans) && rt.nonAnswer(r.Context(), req, ans) {
+	if why == "" && rt.Brain != nil && !req.Internal && suspicious(ans) && rt.nonAnswer(r.Context(), req, ans) {
 		why = NonAnswer
 	}
 	if why != "" {

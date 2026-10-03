@@ -32,7 +32,7 @@ func server(t *testing.T) http.Handler {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg := &config.Config{Port: 4141, Token: "tok", AllowedOrigins: []string{"http://localhost:5173"}}
+	cfg := &config.Config{Port: 4141, Token: "tok"}
 	rt := router.New(cat, keys.NewResolver(mem{"groq": "k"}, nil), cfg)
 	return (&Server{Router: rt, Cfg: cfg, Version: "test", Started: time.Now()}).Handler()
 }
@@ -63,7 +63,7 @@ func TestSecurityChecks(t *testing.T) {
 		{"ok x-api-key", "localhost:4141", map[string]string{"x-api-key": "tok"}, 200},
 		{"dns rebinding", "evil.example:4141", auth, 403},
 		{"foreign origin", "127.0.0.1:4141", map[string]string{"Authorization": "Bearer tok", "Origin": "https://evil.example"}, 403},
-		{"allowed origin", "127.0.0.1:4141", map[string]string{"Authorization": "Bearer tok", "Origin": "http://localhost:5173"}, 200},
+		{"dashboard origin", "127.0.0.1:4141", map[string]string{"Authorization": "Bearer tok", "Origin": "http://localhost:4141"}, 200},
 	}
 	for _, c := range cases {
 		if w := call(h, "GET", "/v1/models", c.host, c.hdr, ""); w.Code != c.want {

@@ -45,6 +45,8 @@ type planInfo struct {
 	QuotaBlocked  int
 	BreakerOpen   int
 	DoesNotFit    int
+	LocalTooSmall int // local models that fit except for their context size
+	Need          int // tokens the request needs (input plus output)
 }
 
 // plan returns ranked candidates for a request.
@@ -67,6 +69,7 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 	if req.MaxTokens > 0 {
 		need = req.EstTokens + req.MaxTokens
 	}
+	info.Need = need
 
 	split := rt.splitFavorites
 	if req.Internal {
@@ -91,11 +94,14 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			}
 			key = k
 		}
-		if m.Context > 0 && need > m.Context ||
-			req.HasTools() && !m.Has("tools") ||
+		capsOK := !(req.HasTools() && !m.Has("tools") ||
 			req.WantsJSON && !m.Has("json") ||
-			req.HasImages && !m.Has("vision") {
+			req.HasImages && !m.Has("vision"))
+		if !capsOK || m.Context > 0 && need > m.Context {
 			info.DoesNotFit++
+			if capsOK && p.Local {
+				info.LocalTooSmall++
+			}
 			continue
 		}
 		c := Candidate{Model: m, Provider: p, Key: key, QKey: quota.Key{Provider: p.ID, Account: "default", Model: m.Canonical}}

@@ -42,7 +42,7 @@ survives reloads in this browser), `inr(n)` (Indian rupee format).
 
 - Markup in `<main>`: sections with `class="card"`, every field inside a `<label>` with visible text, buttons that say what they do, results in elements with an `id`.
 - Logic at the marked place in the script: plain JavaScript, no libraries unless the user asks.
-- Validate input and show a clear message (`class="error"`); never show `NaN` or `undefined`.
+- Validate input and show a clear message (`class="error"`); never show `NaN` or `undefined`. Add `novalidate` to forms so your message shows, not the browser's.
 - Round money to two decimals; use the user's rules exactly.
 
 ## 4. Write `tests.json` and run it
@@ -52,7 +52,8 @@ One scenario per feature and per important mistake a user can make:
 ```json
 {"scenarios": [
   {"name": "adds 18% GST", "steps": [{"fill": "#amount", "value": "1000"}, {"click": "#calc"}, {"expect_text": "#total", "contains": "1,180.00"}]},
-  {"name": "history survives a reload", "steps": [{"fill": "#amount", "value": "100"}, {"click": "#calc"}, {"reload": true}, {"expect_count": "#history li", "count": 1}]}
+  {"name": "history survives a reload", "steps": [{"fill": "#amount", "value": "100"}, {"click": "#calc"}, {"reload": true}, {"expect_count": "#history li", "count": 1}]},
+  {"name": "rejects a negative amount", "steps": [{"fill": "#amount", "value": "-5"}, {"click": "#calc"}, {"expect_visible": "#error"}]}
 ]}
 ```
 

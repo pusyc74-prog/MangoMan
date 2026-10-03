@@ -17,6 +17,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"runtime"
+	"sort"
 	"strings"
 	"syscall"
 	"text/tabwriter"
@@ -41,7 +42,7 @@ Usage:
   mangoman setup                guided setup: connect free providers step by step
   mangoman init                 create config and local token, print tool setup
   mangoman serve [--port N]     run the local endpoint on 127.0.0.1
-  mangoman keys add <provider>  store a provider key (OS keychain)
+  mangoman keys add <provider>  store a provider key on this computer
   mangoman keys list            show providers and which keys are present
   mangoman keys rm <provider>   remove a stored key
   mangoman dashboard            open the dashboard in your browser
@@ -132,9 +133,9 @@ func cmdInit() error {
 		return err
 	}
 	dir, _ := config.Dir()
-	store := "OS keychain"
-	if !keys.KeychainAvailable() || os.Getenv("MANGOMAN_KEYSTORE") == "file" {
-		store = "encrypted file (no OS keychain found)"
+	st, err := openStore()
+	if err != nil {
+		return err
 	}
 	if created {
 		fmt.Println("Created", dir)
@@ -143,7 +144,7 @@ func cmdInit() error {
 	}
 	base := fmt.Sprintf("http://127.0.0.1:%d/v1", cfg.Port)
 	fmt.Printf(`
-Keys are stored in: %s
+Keys are stored in %s.
 Every free provider is on by default; each model shows its data policy (mangoman models).
 
 Next:
@@ -205,7 +206,7 @@ Next:
 
   Same model every time (workflows): use "strict/<model>", or create a group
   with "mangoman group set <name> <model>..." and use "group/<name>".
-`, store, base, cfg.Token, cfg.Port, cfg.Token, base, cfg.Token, base)
+`, keys.Where(st), base, cfg.Token, cfg.Port, cfg.Token, base, cfg.Token, base)
 	return nil
 }
 
@@ -213,7 +214,12 @@ func passphrase() (string, error) {
 	if p := os.Getenv("MANGOMAN_PASSPHRASE"); p != "" {
 		return p, nil
 	}
-	return readSecret("Key file passphrase: ")
+	p, err := readSecret("Key file passphrase: ")
+	if err == nil && p == "" {
+		// Also what a run with no terminal reads: say what to do.
+		return "", errors.New("no key file passphrase given: type it, or set MANGOMAN_PASSPHRASE")
+	}
+	return p, err
 }
 
 func openStore() (keys.Store, error) {
@@ -244,9 +250,6 @@ func cmdServe(args []string) error {
 	if err != nil {
 		return err
 	}
-	if *port != 0 {
-		cfg.Port = *port
-	}
 	cat, err := catalogue.Seed()
 	if err != nil {
 		return err
@@ -270,12 +273,16 @@ func cmdServe(args []string) error {
 		defer ul.Close()
 	}
 
-	// Warm the key cache now, so a passphrase prompt (file store) happens at
-	// startup rather than on the first request.
+	// Unlock the key store and warm the key cache now, so a passphrase
+	// prompt (file store) happens at startup, and a store that cannot be
+	// read stops serve instead of leaving it running with no keys.
 	connected := 0
 	for _, p := range cat.AllProviders() {
 		if !p.NeedsKey {
 			continue
+		}
+		if _, err := st.Get(p.ID); err != nil && !errors.Is(err, keys.ErrNotFound) {
+			return fmt.Errorf("cannot read keys (%s): %w", st.Name(), err)
 		}
 		if k, _ := rt.Keys.Get(p.ID); k != "" {
 			connected++
@@ -305,7 +312,7 @@ func cmdServe(args []string) error {
 	br := ingress.BrainFromConfig(cfg, rt.InternalCall)
 	rt.Brain = br
 
-	srv := &ingress.Server{Router: rt, Cfg: cfg, Version: version, Started: time.Now(),
+	srv := &ingress.Server{Router: rt, Cfg: cfg, Port: *port, Version: version, Started: time.Now(),
 		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl", Radar: rd, Brain: br}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
@@ -404,7 +411,7 @@ func cmdKeys(args []string) error {
 		}
 		var key string
 		if fromStdin {
-			line, err := bufio.NewReader(os.Stdin).ReadString('\n')
+			line, err := stdin.ReadString('\n')
 			if err != nil && err != io.EOF {
 				return err
 			}
@@ -436,7 +443,7 @@ func cmdKeys(args []string) error {
 		if err := st.Set(p.ID, key); err != nil {
 			return fmt.Errorf("could not store key: %w", err)
 		}
-		fmt.Printf("Stored %s key in %s. Restart `mangoman serve` to use it.\n", p.Name, st.Name())
+		fmt.Printf("Stored %s key in %s. Restart `mangoman serve` to use it.\n", p.Name, keys.Where(st))
 		return nil
 
 	case "rm", "remove":
@@ -476,6 +483,10 @@ func cmdStatus() error {
 		return nil
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		data, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
+		return fmt.Errorf("router answered HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(data)))
+	}
 	var st struct {
 		Version   string                   `json:"version"`
 		Uptime    int                      `json:"uptime_s"`
@@ -509,11 +520,25 @@ func cmdStatus() error {
 		fmt.Fprintf(tw, "%s\t%s\t%d\t%d\t%s\n", p.ID, c, p.Models, p.OpenModels, p.Policy)
 	}
 	_ = tw.Flush()
-	if len(st.Quota) > 0 {
+	connected := map[string]bool{}
+	for _, p := range st.Providers {
+		connected[p.ID] = p.Connected && !p.Excluded
+	}
+	quota := st.Quota[:0]
+	for _, q := range st.Quota {
+		if connected[q.Key.Provider] {
+			quota = append(quota, q)
+		}
+	}
+	sort.Slice(quota, func(i, j int) bool {
+		a, b := quota[i].Key, quota[j].Key
+		return a.Provider < b.Provider || a.Provider == b.Provider && a.Model < b.Model
+	})
+	if len(quota) > 0 {
 		fmt.Println()
 		tw = tabwriter.NewWriter(os.Stdout, 0, 2, 2, ' ', 0)
 		fmt.Fprintln(tw, "PROVIDER\tMODEL\tREQUESTS (24H)\tTOKENS (24H)\tBLOCKED UNTIL")
-		for _, q := range st.Quota {
+		for _, q := range quota {
 			b := ""
 			if !q.BlockedUntil.IsZero() {
 				b = q.BlockedUntil.Local().Format("15:04:05")
@@ -596,18 +621,25 @@ func atoi(s string) int {
 	return n
 }
 
+// stdin is the one buffered reader on standard input. A second reader
+// would lose lines the first one buffered (key, then passphrase, piped).
+var stdin = bufio.NewReader(os.Stdin)
+
+func stdinIsTerminal() bool {
+	fi, _ := os.Stdin.Stat()
+	return fi != nil && fi.Mode()&os.ModeCharDevice != 0
+}
+
 // readSecret reads a line without echo where the terminal allows it.
 func readSecret(prompt string) (string, error) {
 	fmt.Fprint(os.Stderr, prompt)
-	fi, _ := os.Stdin.Stat()
-	tty := fi != nil && fi.Mode()&os.ModeCharDevice != 0
 	echoOff := false
-	if tty && runtime.GOOS != "windows" {
+	if stdinIsTerminal() && runtime.GOOS != "windows" {
 		cmd := exec.Command("stty", "-echo")
 		cmd.Stdin = os.Stdin
 		echoOff = cmd.Run() == nil
 	}
-	line, err := bufio.NewReader(os.Stdin).ReadString('\n')
+	line, err := stdin.ReadString('\n')
 	if echoOff {
 		cmd := exec.Command("stty", "echo")
 		cmd.Stdin = os.Stdin

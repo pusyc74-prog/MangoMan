@@ -22,12 +22,12 @@ func TestClassify(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got := Classify(r); got != want {
+		if got, _ := ClassifySure(r); got != want {
 			t.Errorf("%s: got %s want %s", body, got, want)
 		}
 	}
 	long, _ := core.ParseChat([]byte(`{"messages":[{"role":"user","content":"` + strings.Repeat("a ", 60000) + `"}]}`))
-	if Classify(long) != LongContext {
+	if c, _ := ClassifySure(long); c != LongContext {
 		t.Error("long input should be long-context")
 	}
 }

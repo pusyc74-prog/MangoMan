@@ -3,5 +3,6 @@
   {"name": "other rates", "steps": [{"fill": "#amount", "value": "200"}, {"select": "#rate", "value": "0.05"}, {"click": "#calc"}, {"expect_text": "#total", "contains": "210.00"}]},
   {"name": "history survives a reload and can be cleared", "steps": [{"fill": "#amount", "value": "100"}, {"click": "#calc"}, {"fill": "#amount", "value": "50"}, {"press": "#amount", "key": "Enter"},
      {"reload": true}, {"expect_count": "#history li", "count": 2}, {"click": "#clear"}, {"expect_count": "#history li", "count": 0}]},
-  {"name": "rejects a negative amount", "steps": [{"fill": "#amount", "value": "-5"}, {"click": "#calc"}, {"expect_text": "#total", "equals": "₹0.00"}]}
+  {"name": "rejects a negative amount", "steps": [{"expect_hidden": "#error"}, {"fill": "#amount", "value": "-5"}, {"click": "#calc"},
+     {"expect_visible": "#error"}, {"expect_count": "#history li", "count": 0}]}
 ]}

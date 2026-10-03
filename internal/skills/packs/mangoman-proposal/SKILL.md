@@ -44,7 +44,7 @@ heard), `scope`, `timeline`, `pricing`, `proof`, `team`, `terms`,
 | `understanding` | `goals`, `challenges`, optional `body` |
 | `scope` | `deliverables` [{name, description}], `included`, `excluded` |
 | `timeline` | `phases` [{name, start, end (YYYY-MM-DD), outcome}] or [{name, weeks: [first, last], outcome}] |
-| `pricing` | `items` [{item, description, qty, unit, rate, billing: one-time / monthly / yearly, optional: true}], `discount` {label, percent or amount}, `tax` {label, rate}, `payments` [{milestone, percent, due}], `notes` |
+| `pricing` | `items` [{item, description, qty, unit, rate, billing: one-time / monthly / yearly, optional: true}], `discount` {label, percent or amount} and `payments` [{milestone, percent, due}] (both apply to the one-time items), `tax` {label, rate}, `notes` |
 | `proof` | `items` [{result, client}] |
 | `team` | `people` [{name, role, bio}] |
 | `terms` | `items` (numbered) |

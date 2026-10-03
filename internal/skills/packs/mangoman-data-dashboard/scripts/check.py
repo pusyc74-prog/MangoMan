@@ -3,7 +3,7 @@
 Usage: python3 check.py analysis.py dashboard
   (dashboard = the --out name used with build_dashboard.py)
 Checks: the analysis reproduces the same numbers; the spec is valid; every
-number written in the headline, titles and notes traces back to a computed
+number written in the headline, subtitle, period, titles, labels and notes traces back to a computed
 value; the page renders. Prints PASS or FAIL lines; exits 1 on any FAIL.
 """
 import json
@@ -34,7 +34,10 @@ def main():
     probs = B.validate(spec)
     res(not probs, "spec is valid" if not probs else "spec problems: " + "; ".join(probs))
     computed = V.numbers_in({k: v for k, v in spec.items() if k not in ("title", "subtitle", "headline", "notes", "period", "source")})
-    texts = [("headline", spec.get("headline", ""))] + [("chart title", c.get("title", "")) for c in spec.get("charts", [])] + \
+    texts = [(k, spec.get(k) or "") for k in ("headline", "subtitle", "period")] + \
+        [("table title", (spec.get("table") or {}).get("title", ""))] + \
+        [("KPI delta label", k.get("delta_label", "")) for k in spec.get("kpis", [])] + \
+        [("chart title", c.get("title", "")) for c in spec.get("charts", [])] + \
         [("note", n) for n in spec.get("notes", [])] + [("chart note", c.get("note", "")) for c in spec.get("charts", [])]
     bad = [(w, t, trace.untraced(t, computed)) for w, t in texts]
     bad = [b for b in bad if b[2]]

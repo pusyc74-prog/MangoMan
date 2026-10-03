@@ -53,6 +53,11 @@ def main():
     if os.path.exists(out + "-tokens.json"):
         blk = json.load(open(out + "-tokens.json", encoding="utf-8")).get("use_in_packs", {})
         rep.check([] if blk.get("brand", {}).get("primary") else ["missing"], "brand block ready for every pack", "tokens file has no use_in_packs block")
+    if os.path.exists(out + "-guide.html"):
+        over = render.overflow(out + "-guide.html", "section", 1123, 794)  # A4 landscape at 96 dpi
+        if over is not None:
+            rep.check(["%s page, %d px" % (o["id"], o["extra_px"]) for o in over], "every page fits on A4",
+                      "pages cut off at the A4 edge (shorten the text)")
     pdf = out + "-guide.pdf"
     if os.path.exists(pdf):
         n = render.pdf_pages(pdf)

@@ -19,8 +19,7 @@ import build_page as B  # noqa: E402
 import render  # noqa: E402
 import checks as C  # noqa: E402
 
-PLACEHOLDER = re.compile(r"lorem ipsum|\bTBD\b|\bTODO\b|\[(?:your|company|name|insert)[^\]]*\]|xxx+|example\.com|placeholder", re.I)
-RISKY = re.compile(r"\b(guaranteed?|100% (?:safe|natural|pure|effective|results)|cures?|risk[- ]free|no side effects|#1|number one|best in (?:india|the world|town|class)|cheapest|lowest price ever|miracle|clinically proven)\b", re.I)
+PLACEHOLDER = re.compile(C.PLACEHOLDER.pattern + r"|example\.com|placeholder", re.I)
 
 PAGE_JS = r"""
 () => {
@@ -74,7 +73,7 @@ def visible_text(spec):
             for v in o:
                 walk(v, key)
     walk({k: v for k, v in spec.items() if k not in ("facts", "brand", "contact", "social")})
-    return out
+    return out + [(spec.get("brand") or {}).get("tagline") or ""]
 
 
 
@@ -151,7 +150,7 @@ def main():
       "numbers not in facts (ask the user, or remove them): " + ", ".join(bad[:8]))
     ph_ = sorted({mm.group(0) for tx in texts for mm in [PLACEHOLDER.search(tx)] if mm})
     r("PASS" if not ph_ else "FAIL", "no placeholder text" if not ph_ else "placeholder text left in: " + ", ".join(ph_))
-    risky = sorted({mm.group(0) for tx in texts for mm in [RISKY.search(tx)] if mm})
+    risky = sorted({mm.group(0) for tx in texts for mm in [C.RISKY.search(tx)] if mm})
     r("PASS" if not risky else "WARN", "no risky claims" if not risky else "claims that need proof or may break consumer rules: " + ", ".join(risky))
     has_form = any(s.get("form") for s in spec.get("sections", []))
     c = spec.get("contact", {})

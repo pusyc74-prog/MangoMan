@@ -86,3 +86,27 @@ func TestPassphraseAskedOnce(t *testing.T) {
 		t.Fatalf("asked %d times, got %q", asked, v)
 	}
 }
+
+func TestMissingKeyAndWrongPassphraseAskOnce(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "k")
+	if err := NewFileStore(p, func() (string, error) { return "correct horse", nil }).Set("groq", "k1"); err != nil {
+		t.Fatal(err)
+	}
+	asks := 0
+	r := NewResolver(NewFileStore(p, func() (string, error) { asks++; return "correct horse", nil }), nil)
+	for i := 0; i < 5; i++ {
+		if v, src := r.Get("cerebras"); v != "" || src != NoKey {
+			t.Fatalf("got %q %q", v, src)
+		}
+	}
+	if v, _ := r.Get("groq"); v != "k1" || asks != 1 {
+		t.Fatalf("got %q, asked %d times", v, asks)
+	}
+	asks = 0
+	bad := NewResolver(NewFileStore(p, func() (string, error) { asks++; return "wrong passphrase", nil }), nil)
+	bad.Get("groq")
+	bad.Get("cerebras")
+	if asks != 1 {
+		t.Fatalf("wrong passphrase asked %d times", asks)
+	}
+}

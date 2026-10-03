@@ -23,7 +23,7 @@ func TestParseChat(t *testing.T) {
 	if r.LastUserText() != "what is this\n" {
 		t.Fatalf("last user text %q", r.LastUserText())
 	}
-	out, _ := r.BodyFor("upstream-x")
+	out, _, _ := r.BodyWith("upstream-x", Upstream{})
 	var m map[string]any
 	_ = json.Unmarshal(out, &m)
 	if m["model"] != "upstream-x" || m["x_custom"] != float64(1) || m["temperature"] != 0.2 {

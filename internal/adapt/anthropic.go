@@ -22,17 +22,19 @@ func bad(format string, a ...any) error {
 // pass through.
 func mapClientModel(m string) string {
 	low := strings.ToLower(strings.TrimSpace(m))
+	vendor := false
+	for _, p := range []string{"claude", "gpt-", "o1", "o3", "o4-"} {
+		vendor = vendor || strings.HasPrefix(low, p)
+	}
 	switch {
 	case low == "":
 		return "free/auto"
+	case !vendor || strings.HasPrefix(low, "gpt-oss"): // gpt-oss is an open model in the catalogue
+		return m
 	case strings.Contains(low, "haiku"), strings.Contains(low, "mini"), strings.Contains(low, "nano"):
-		if strings.HasPrefix(low, "claude") || strings.HasPrefix(low, "gpt-") || strings.HasPrefix(low, "o4-") {
-			return "free/fast"
-		}
-	case strings.HasPrefix(low, "claude"), strings.HasPrefix(low, "gpt-"), strings.HasPrefix(low, "o1"), strings.HasPrefix(low, "o3"):
-		return "free/coder"
+		return "free/fast"
 	}
-	return m
+	return "free/coder"
 }
 
 // ---------- Anthropic Messages request -> Chat Completions ----------
@@ -298,9 +300,10 @@ type AnthropicCodec struct {
 	Req       AnthropicRequest
 	EstInput  int // input token estimate, until the provider reports usage
 	started   bool
-	block     int    // index of the open content block, -1 none
-	blockType string // "text" or "tool_use"
-	toolIdx   map[int]int
+	block     int           // index of the open content block, -1 none
+	blockType string        // "text" or "tool_use"
+	tools     []*streamTool // tool calls, sent as blocks when the stream ends
+	toolIdx   map[int]*streamTool
 	stop      string
 	usage     chatUsage
 	outChars  int
@@ -308,7 +311,15 @@ type AnthropicCodec struct {
 
 // NewAnthropicCodec returns a codec for one request.
 func NewAnthropicCodec(req AnthropicRequest, estInput int) *AnthropicCodec {
-	return &AnthropicCodec{Req: req, EstInput: estInput, block: -1, toolIdx: map[int]int{}}
+	return &AnthropicCodec{Req: req, EstInput: estInput, block: -1, toolIdx: map[int]*streamTool{}}
+}
+
+// streamTool collects one streamed tool call. Providers may interleave the
+// arguments of parallel calls, while Anthropic blocks must not overlap, so
+// calls are buffered and sent whole at the end.
+type streamTool struct {
+	id, name string
+	args     strings.Builder
 }
 
 func anthErrorType(status int) string {
@@ -454,18 +465,17 @@ func (c *AnthropicCodec) Chunk(data []byte) []Event {
 				"index": c.block, "delta": map[string]any{"type": "text_delta", "text": *d.Content}}})
 		}
 		for _, tc := range d.ToolCalls {
-			idx, seen := c.toolIdx[tc.Index]
-			if !seen {
-				evs = append(evs, c.open("tool_use", map[string]any{"type": "tool_use", "id": toolID(tc.ID),
-					"name": tc.Function.Name, "input": map[string]any{}})...)
-				idx = c.block
-				c.toolIdx[tc.Index] = idx
+			t := c.toolIdx[tc.Index]
+			if t == nil {
+				t = &streamTool{id: toolID(tc.ID)}
+				c.toolIdx[tc.Index] = t
+				c.tools = append(c.tools, t)
 			}
+			if t.name == "" {
+				t.name = tc.Function.Name
+			}
+			t.args.WriteString(tc.Function.Arguments)
 			c.outChars += len(tc.Function.Arguments)
-			if tc.Function.Arguments != "" && idx == c.block {
-				evs = append(evs, Event{Name: "content_block_delta", Data: map[string]any{"type": "content_block_delta",
-					"index": idx, "delta": map[string]any{"type": "input_json_delta", "partial_json": tc.Function.Arguments}}})
-			}
 		}
 		if choice.FinishReason != nil && *choice.FinishReason != "" {
 			c.stop = stopReason(*choice.FinishReason)
@@ -477,6 +487,13 @@ func (c *AnthropicCodec) Chunk(data []byte) []Event {
 // Done implements Codec.
 func (c *AnthropicCodec) Done() []Event {
 	evs := c.start("")
+	for _, t := range c.tools {
+		evs = append(evs, c.open("tool_use", map[string]any{"type": "tool_use", "id": t.id, "name": t.name, "input": map[string]any{}})...)
+		if t.args.Len() > 0 {
+			evs = append(evs, Event{Name: "content_block_delta", Data: map[string]any{"type": "content_block_delta",
+				"index": c.block, "delta": map[string]any{"type": "input_json_delta", "partial_json": t.args.String()}}})
+		}
+	}
 	if c.block < 0 {
 		// Always send at least one block, as Anthropic does.
 		evs = append(evs, c.open("text", map[string]any{"type": "text", "text": ""})...)
@@ -486,7 +503,7 @@ func (c *AnthropicCodec) Done() []Event {
 	if stop == "" {
 		stop = "end_turn"
 	}
-	if len(c.toolIdx) > 0 {
+	if len(c.tools) > 0 {
 		stop = "tool_use"
 	}
 	outTok := c.usage.Completion

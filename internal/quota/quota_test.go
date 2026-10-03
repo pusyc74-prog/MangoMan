@@ -134,3 +134,14 @@ func TestLearnFromHeaders(t *testing.T) {
 		t.Fatalf("got ok=%v reset=%v", ok, reset)
 	}
 }
+
+func TestSnapshotDropsLastDaysCounts(t *testing.T) {
+	now := time.Date(2026, 10, 1, 10, 0, 0, 0, time.UTC)
+	tr := New()
+	tr.SetClock(func() time.Time { return now })
+	tr.Record(Key{Provider: "groq", Account: "default", Model: "m"}, 100)
+	now = now.Add(25 * time.Hour)
+	if s := tr.Snapshot()[0]; s.ReqToday != 0 || s.TokToday != 0 {
+		t.Fatalf("stale counts: %+v", s)
+	}
+}

@@ -63,6 +63,14 @@ func Open(filePath string, passphrase func() (string, error)) (Store, error) {
 	return NewFileStore(filePath, passphrase), nil
 }
 
+// Where says in plain words where a store keeps keys.
+func Where(s Store) string {
+	if _, ok := s.(Keychain); ok {
+		return "this computer's keychain"
+	}
+	return "an encrypted file on this computer"
+}
+
 // Source says where a resolved key came from.
 type Source string
 
@@ -73,7 +81,8 @@ const (
 )
 
 // Resolver finds a key for a provider: an environment variable override
-// first, then the store. Resolved keys are cached in process memory.
+// first, then the store. Results, including "no key", are cached in process
+// memory until Forget.
 type Resolver struct {
 	store    Store
 	env      map[string]string // provider -> env var name
@@ -96,17 +105,16 @@ func (r *Resolver) Get(provider string) (string, Source) {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if v, ok := r.cache[provider]; ok {
-		return v, FromStore
+	v, ok := r.cache[provider]
+	if !ok && r.store != nil {
+		if k, err := r.store.Get(provider); err == nil {
+			v = k
+		}
+		r.cache[provider] = v
 	}
-	if r.store == nil {
+	if v == "" {
 		return "", NoKey
 	}
-	v, err := r.store.Get(provider)
-	if err != nil || v == "" {
-		return "", NoKey
-	}
-	r.cache[provider] = v
 	return v, FromStore
 }
 

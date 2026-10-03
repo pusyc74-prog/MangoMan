@@ -62,6 +62,9 @@ func TestDoctor(t *testing.T) {
 	if plan := d.Plan(Options{}); plan["openrouter"] != 8+4+1 {
 		t.Fatalf("plan %v", plan)
 	}
+	if plan := d.Plan(Options{Excluded: func(p string) bool { return p == "openrouter" }}); plan["openrouter"] != 0 {
+		t.Fatalf("excluded provider planned: %v", plan)
+	}
 
 	var progress bytes.Buffer
 	rep := d.Run(context.Background(), Options{Spacing: func(catalogue.Model) time.Duration { return 0 }, Progress: &progress})

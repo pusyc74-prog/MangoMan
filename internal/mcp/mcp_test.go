@@ -221,3 +221,11 @@ func TestFreeReview(t *testing.T) {
 		t.Fatalf("option injection %q", text)
 	}
 }
+
+func TestFreeStatusWrongTokenIsAnError(t *testing.T) {
+	srv, _ := fakeRouter(t, 200)
+	a := &Assist{BaseURL: srv.URL, Token: "wrong"}
+	if _, err := a.freeStatus(context.Background(), nil); err == nil || !strings.Contains(err.Error(), "HTTP 401") {
+		t.Fatalf("got %v", err)
+	}
+}

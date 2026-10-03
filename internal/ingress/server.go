@@ -1,7 +1,7 @@
 // Package ingress is the local HTTP endpoint clients talk to. It binds to
 // 127.0.0.1 only and rejects requests without the local token, with a
-// foreign Host header (DNS rebinding) or from a browser origin that is not
-// allow-listed (CSRF).
+// foreign Host header (DNS rebinding) or from a browser origin other than
+// the dashboard's own (CSRF).
 package ingress
 
 import (
@@ -30,8 +30,10 @@ const maxRequestBody = 32 << 20
 
 // Server is the local endpoint.
 type Server struct {
-	Router  *router.Router
-	Cfg     *config.Config
+	Router *router.Router
+	Cfg    *config.Config
+	// Port overrides Cfg.Port for this run only (serve --port); 0 = Cfg.Port.
+	Port    int
 	Version string
 	Started time.Time
 	// UsagePath is the usage log the dashboard reads.
@@ -63,7 +65,14 @@ func (s *Server) Handler() http.Handler {
 
 // Addr is the loopback address to listen on.
 func (s *Server) Addr() string {
-	return net.JoinHostPort("127.0.0.1", strconv.Itoa(s.Cfg.Port))
+	return net.JoinHostPort("127.0.0.1", strconv.Itoa(s.port()))
+}
+
+func (s *Server) port() int {
+	if s.Port != 0 {
+		return s.Port
+	}
+	return s.Cfg.Port
 }
 
 // guardHost blocks DNS rebinding and cross-site browser requests.
@@ -77,24 +86,12 @@ func (s *Server) guardHost(next http.Handler) http.Handler {
 			core.WriteError(w, http.StatusForbidden, "bad_host", "requests must use 127.0.0.1 or localhost")
 			return
 		}
-		if o := r.Header.Get("Origin"); o != "" && !s.originAllowed(o) {
-			core.WriteError(w, http.StatusForbidden, "origin_not_allowed", "browser origin not allowed: add it to allowed_origins in config.json")
+		if o := r.Header.Get("Origin"); o != "" && !s.ownOrigin(o) {
+			core.WriteError(w, http.StatusForbidden, "origin_not_allowed", "only the MangoMan dashboard may call the router from a browser")
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func (s *Server) originAllowed(o string) bool {
-	if s.ownOrigin(o) {
-		return true
-	}
-	for _, a := range s.Cfg.AllowedOrigins {
-		if strings.EqualFold(a, o) {
-			return true
-		}
-	}
-	return false
 }
 
 // auth accepts the local token as a bearer token or x-api-key header (the

@@ -139,9 +139,6 @@ func (b *Brain) YesNo(ctx context.Context, kind, key, question string) (yes bool
 // SetEnabled turns decisions on or off at runtime.
 func (b *Brain) SetEnabled(on bool) { b.off.Store(!on) }
 
-// Enabled reports whether the brain makes decisions.
-func (b *Brain) Enabled() bool { return b != nil && !b.off.Load() }
-
 // SetModel changes the engine at runtime and forgets cached decisions.
 func (b *Brain) SetModel(m string) {
 	b.mu.Lock()

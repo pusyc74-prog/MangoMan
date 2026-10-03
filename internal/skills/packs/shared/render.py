@@ -159,8 +159,14 @@ OVERFLOW_JS = """
 (sel) => {
   const out = [];
   for (const el of document.querySelectorAll(sel)) {
-    const over = el.scrollHeight - el.clientHeight > 1 || el.scrollWidth - el.clientWidth > 1;
-    if (over) out.push({id: el.id || el.dataset.check || el.className, extra_px: Math.max(el.scrollHeight - el.clientHeight, el.scrollWidth - el.clientWidth)});
+    // scroll size misses content pushed above or left of the box (centred or end-aligned), so compare child boxes too
+    const b = el.getBoundingClientRect();
+    let extra = Math.max(el.scrollHeight - el.clientHeight, el.scrollWidth - el.clientWidth);
+    for (const c of el.children) {
+      const r = c.getBoundingClientRect();
+      extra = Math.max(extra, b.top - r.top, r.bottom - b.bottom, b.left - r.left, r.right - b.right);
+    }
+    if (extra > 1) out.push({id: el.id || el.dataset.check || el.className, extra_px: Math.round(extra)});
   }
   return out;
 }

@@ -108,7 +108,7 @@ func ResponsesToChat(body []byte) ([]byte, ResponsesRequest, error) {
 		return nil, info, bad("input must be a string or an array of items")
 	}
 
-	// Consecutive function calls belong to one assistant turn.
+	// Assistant text and the function calls that follow it are one turn.
 	var pending map[string]any
 	flush := func() {
 		if pending != nil {
@@ -118,7 +118,12 @@ func ResponsesToChat(body []byte) ([]byte, ResponsesRequest, error) {
 	}
 	addCall := func(id, name, args string) {
 		if pending == nil {
-			pending = map[string]any{"role": "assistant", "content": nil, "tool_calls": []map[string]any{}}
+			if n := len(msgs); n > 0 && msgs[n-1]["role"] == "assistant" && msgs[n-1]["tool_calls"] == nil {
+				pending, msgs = msgs[n-1], msgs[:n-1]
+				pending["tool_calls"] = []map[string]any{}
+			} else {
+				pending = map[string]any{"role": "assistant", "content": nil, "tool_calls": []map[string]any{}}
+			}
 		}
 		pending["tool_calls"] = append(pending["tool_calls"].([]map[string]any), map[string]any{
 			"id": id, "type": "function", "function": map[string]any{"name": name, "arguments": args}})
@@ -165,6 +170,9 @@ func ResponsesToChat(body []byte) ([]byte, ResponsesRequest, error) {
 			if role == "assistant" && pending != nil && !images {
 				// Text after the calls in the same turn.
 				if t := strings.Join(text, ""); t != "" {
+					if before, _ := pending["content"].(string); before != "" {
+						t = before + "\n" + t
+					}
 					pending["content"] = t
 				}
 				flush()

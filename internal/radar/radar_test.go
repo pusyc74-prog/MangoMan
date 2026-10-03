@@ -107,3 +107,27 @@ func TestScanOfferAndPersist(t *testing.T) {
 		}
 	}
 }
+
+func TestProviderConnectedLaterGetsItsOwnBaseline(t *testing.T) {
+	now := time.Date(2026, 10, 1, 10, 0, 0, 0, time.UTC)
+	store := mem{"or": "k"}
+	r := &Radar{Cat: testCat(t), Keys: keys.NewResolver(store, nil), Now: func() time.Time { return now },
+		List: func(_ context.Context, p catalogue.Provider, _ string) ([]string, error) {
+			if p.ID == "nv" {
+				return []string{"nv/a", "nv/b"}, nil
+			}
+			return []string{"acme/x:free"}, nil
+		}}
+	_ = r.Load()
+	r.Scan(context.Background())
+	store["nv"] = "k" // connected later
+	r.Keys.Forget("nv")
+	now = now.Add(6 * time.Hour)
+	r.Scan(context.Background())
+	items, _ := r.Offer()
+	for _, it := range items {
+		if it.Provider == "nv" && it.New {
+			t.Fatalf("%s flagged new", it.Upstream)
+		}
+	}
+}

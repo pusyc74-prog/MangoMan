@@ -21,7 +21,8 @@ SENT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])")
 
 
 def words(t):
-    return re.findall(r"[a-z0-9]+", t.lower())
+    """Words in any script (Indic vowel signs are not \\w, so they are added)."""
+    return re.findall(r"[\w\u0900-\u0dff]+", t.lower())
 
 
 def has_phrase(text, phrase):
@@ -46,8 +47,10 @@ def main():
     n = len(text.split())
 
     pool = C.fact_pool(spec.get("facts", {}))
+    extras = [("image " + k, im[k]) for im in spec.get("images", []) for k in ("alt", "caption") if im.get(k)]
+    extras += [("cta", a["cta"]["label"])] if (a.get("cta") or {}).get("label") else []
     bad = []
-    short = [("title", m["title"]), ("description", m["description"])] + [("heading", h) for h in B.headings(spec)] + [("faq", f["q"]) for f in a.get("faq", [])]
+    short = [("title", m["title"]), ("description", m["description"])] + [("heading", h) for h in B.headings(spec)] + [("faq", f["q"]) for f in a.get("faq", [])] + extras
     for place, t in bl + short:
         for s in SENT.split(B.LINK.sub(r"\1", t)):
             u = C.untraced(B.CITE.sub("", s), pool)
@@ -105,7 +108,7 @@ def main():
     if faq:
         longa = [f["q"] for f in faq if len(B.plain(f["a"]).split()) > 60]
         rep.check(longa, "FAQ answers are short (fit a search snippet)", "FAQ answers over 60 words", "WARN")
-    texts = [B.plain(t) for _, t in bl] + B.headings(spec) + [m["title"], m["description"]]
+    texts = [B.plain(t) for _, t in bl] + B.headings(spec) + [m["title"], m["description"]] + [t for _, t in extras]
     rep.check(C.first_match(C.PLACEHOLDER, texts), "no placeholder text", "placeholder text left in")
     rep.check(C.first_match(C.RISKY, texts), "no risky claims", "claims that need proof", "WARN")
     for f in ("article.html", "article.md"):

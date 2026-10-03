@@ -90,11 +90,24 @@ def state_code(party):
 
 
 def buyer_state(spec):
-    """Place of supply: given, else the delivery address's state, else the buyer's."""
+    """Place of supply: given; else a registered buyer's state (IGST Act s.10(1)(b),
+    goods shipped on a buyer's order); else the delivery state; else the buyer's."""
     if spec.get("place_of_supply"):
         return str(spec["place_of_supply"]).zfill(2)
     ship = spec.get("ship_to") or {}
-    return state_code(ship) if ship.get("gstin") or ship.get("state_code") else state_code(spec["bill_to"])
+    if spec["bill_to"].get("gstin") or not (ship.get("gstin") or ship.get("state_code")):
+        return state_code(spec["bill_to"])
+    return state_code(ship)
+
+
+def terms(spec):
+    """Terms as a list (one string is one term)."""
+    t = spec.get("terms") or []
+    return [t] if isinstance(t, str) else list(t)
+
+
+def qty_text(q):
+    return ("%.3f" % q).rstrip("0").rstrip(".")
 
 
 def compute(spec):
@@ -174,29 +187,24 @@ def validate(spec, bdir="."):
     if not spec.get("items"):
         p.append("items are required")
     for i, it in enumerate(spec.get("items", []), 1):
-        if not it.get("description") or not isinstance(it.get("rate"), (int, float)):
-            p.append("item %d: needs description and a numeric rate" % i)
+        rate, qty = it.get("rate"), it.get("qty", 1)
+        if not it.get("description") or not isinstance(rate, (int, float)) or rate < 0:
+            p.append("item %d: needs description and a rate of 0 or more" % i)
+            rate = None
+        if not isinstance(qty, (int, float)) or qty <= 0:
+            p.append("item %d: qty must be a number above 0%s" % (i, " (credit notes are not supported)" if isinstance(qty, (int, float)) else ""))
+            qty = None
         code = str(it.get("hsn", ""))
         if kind == "invoice" and not re.match(r"^\d{4}(\d{2}){0,2}$", code):
             p.append("item %d: hsn must be 4, 6 or 8 digits (SAC for services is 6 digits starting 99)" % i)
         dp, d = it.get("discount_percent", 0), it.get("discount", 0)
         if not (isinstance(dp, (int, float)) and 0 <= dp < 1) or not isinstance(d, (int, float)) or d < 0 or \
-                isinstance(it.get("rate"), (int, float)) and d > float(it.get("qty", 1)) * it["rate"]:
+                rate is not None and qty is not None and d > qty * rate:
             p.append("item %d: discount_percent is a fraction below 1 (0.1 for 10%%) and discount cannot exceed the line value" % i)
         r = it.get("gst_rate", spec.get("gst_rate", 0.18))
         if not (isinstance(r, (int, float)) and 0 <= r < 1):
             p.append("item %d: gst_rate is a fraction, e.g. 0.18" % i)
-    for key in ("primary", "accent"):
-        if (spec.get("brand") or {}).get(key):
-            try:
-                BK.hexc(spec["brand"][key])
-            except ValueError:
-                p.append("brand %s must be a hex colour" % key)
-    if (spec.get("brand") or {}).get("logo"):
-        pr = BK.logo_check(os.path.join(bdir, spec["brand"]["logo"]))
-        if pr:
-            p.append(pr)
-    return p
+    return p + BK.brand_problems(spec, bdir)
 
 
 CSS = """
@@ -266,7 +274,7 @@ def build_html(spec, T, n):
         "<th class='n'>IGST</th>" if inter else "<th class='n'>CGST</th><th class='n'>SGST</th>")
     rows = "".join("<tr><td>%d</td><td>%s%s</td><td>%s</td><td class='n'>%s %s</td><td class='n'>%s</td>%s<td class='n'>%s</td><td class='n'>%s%%</td>%s<td class='n'>%s</td></tr>" % (
         i, e(l["description"]), "<div class='d'>%s</div>" % e(l["details"]) if l.get("details") else "", e(l.get("hsn", "")),
-        ("%g" % l["qty"]), e(l.get("unit", "")), inr(l["rate"]), "<td class='n'>%s</td>" % inr(l["discount"]) if any(x["discount"] for x in n["lines"]) else "",
+        qty_text(l["qty"]), e(l.get("unit", "")), inr(l["rate"]), "<td class='n'>%s</td>" % inr(l["discount"]) if any(x["discount"] for x in n["lines"]) else "",
         inr(l["taxable"]), "%g" % (l["gst_rate"] * 100), "<td class='n'>%s</td>" % inr(l["igst"]) if inter else "<td class='n'>%s</td><td class='n'>%s</td>" % (inr(l["cgst"]), inr(l["sgst"])),
         inr(l["total"])) for i, l in enumerate(n["lines"], 1))
     br = "".join("<tr><td>%g%%</td><td class='n'>%s</td>%s</tr>" % (g["rate"] * 100, inr(g["taxable"]),
@@ -286,8 +294,8 @@ def build_html(spec, T, n):
     pay_lines = [("Bank", pay.get("bank")), ("Account name", pay.get("account_name")), ("Account number", pay.get("account")),
                  ("IFSC", pay.get("ifsc")), ("UPI", pay.get("upi"))]
     pay_html = "<div class='box'><h3>Payment details</h3>%s</div>" % "<br>".join("%s: <b>%s</b>" % (e(a), e(b)) for a, b in pay_lines if b) if any(b for _, b in pay_lines) else ""
-    terms = "<div class='box'><h3>Terms</h3>%s</div>" % "<br>".join(e(t) for t in spec["terms"]) if spec.get("terms") else ""
-    left = breakup + pay_html + terms
+    tm = "<div class='box'><h3>Terms</h3>%s</div>" % "<br>".join(e(t) for t in terms(spec)) if terms(spec) else ""
+    left = breakup + pay_html + tm
     right = "<table class='totals'>%s</table><div class='words'>%s</div>" % (tot, e(n["in_words"]))
     sign = "<div class='sign'>For %s<br><span class='line'>Authorised signatory</span></div>" % e(sup["name"]) if kind != "quote" else ""
     note = "<p class='small'>%s</p>" % e(spec["note"]) if spec.get("note") else ""

@@ -74,3 +74,13 @@ func TestReplaceProviderModels(t *testing.T) {
 		t.Fatal("ollama models not removed")
 	}
 }
+
+func TestDiscoveredModelKeepsNamesApart(t *testing.T) {
+	c := &Catalogue{Models: []Model{{Canonical: "llama-3.3-70b", Provider: "nv", Upstream: "meta/llama-3.3-70b"}}}
+	if m := c.DiscoveredModel("nv", "acme/llama-3.3-70b"); m.Canonical != "acme/llama-3.3-70b" {
+		t.Fatalf("name %q clashes with the catalogue model", m.Canonical)
+	}
+	if m := c.DiscoveredModel("nv", "acme/fresh:free"); m.Canonical != "fresh" {
+		t.Fatalf("name %q", m.Canonical)
+	}
+}

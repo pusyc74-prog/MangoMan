@@ -6,6 +6,7 @@ Usage: python3 build_dashboard.py analysis.py --out dashboard [--no-shot]
 Writes <out>.html, <out>.spec.json and, when a browser engine exists, <out>.png.
 """
 import json
+import math
 import os
 import sys
 
@@ -24,7 +25,8 @@ def validate(spec):
     if not spec.get("headline"):
         p.append("spec needs a headline: the one finding, with its number")
     for k in spec.get("kpis", []):
-        if "label" not in k or not isinstance(k.get("value"), (int, float)):
+        v = k.get("value")
+        if "label" not in k or isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
             p.append("every KPI needs a label and a numeric value: %r" % k)
     if len(spec.get("kpis", [])) > 6:
         p.append("at most 6 KPIs; put the rest in the table")
@@ -100,7 +102,7 @@ def table_html(t):
 
 def build(spec):
     kpis = spec.get("kpis", [])
-    tiles = "".join(kpi_tile(k, hero=(i == 0 and spec.get("hero_first", True) and len(kpis) <= 4)) for i, k in enumerate(kpis))
+    tiles = "".join(kpi_tile(k, hero=(i == 0 and len(kpis) <= 4)) for i, k in enumerate(kpis))
     cards = []
     for c in spec.get("charts", []):
         wide = c.get("wide") or (c.get("type", "line") == "line" and len(c["x"]) > 14)

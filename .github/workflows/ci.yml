@@ -24,6 +24,7 @@ jobs:
         run: |
           go mod tidy
           git diff --quiet go.mod go.sum || echo "::warning::go.mod or go.sum changed after go mod tidy; commit them"
+          git checkout go.mod go.sum
         shell: bash
       - name: Vet
         run: go vet ./...
@@ -65,7 +66,6 @@ jobs:
           go-version-file: go.mod
       - name: Build
         run: |
-          go mod tidy
           GOOS=${TARGET%/*} GOARCH=${TARGET#*/}
           export GOOS GOARCH
           ext=""; [ "$GOOS" = windows ] && ext=".exe"

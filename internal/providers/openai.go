@@ -28,17 +28,17 @@ type Client struct {
 	HTTP *http.Client
 }
 
-// NewClient returns a client with sane timeouts. There is no overall timeout,
-// because streams can run for minutes; header and idle timeouts apply instead.
+// NewClient returns a client with dial and TLS timeouts. There is no overall
+// or header timeout, because answers can take minutes; callers bound each
+// call with a context (the router: NonStreamTimeout and StreamIdle).
 func NewClient() *Client {
 	tr := &http.Transport{
-		Proxy:                 http.ProxyFromEnvironment,
-		DialContext:           (&net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ResponseHeaderTimeout: 120 * time.Second,
-		IdleConnTimeout:       90 * time.Second,
-		MaxIdleConnsPerHost:   8,
-		ForceAttemptHTTP2:     true,
+		Proxy:               http.ProxyFromEnvironment,
+		DialContext:         (&net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
+		TLSHandshakeTimeout: 10 * time.Second,
+		IdleConnTimeout:     90 * time.Second,
+		MaxIdleConnsPerHost: 8,
+		ForceAttemptHTTP2:   true,
 	}
 	return &Client{HTTP: &http.Client{Transport: tr}}
 }

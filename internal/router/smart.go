@@ -52,7 +52,7 @@ var refusalHints = regexp.MustCompile(`(?i)\b(i can(?:'|no)t|i cannot|i'?m (?:no
 
 // suspicious picks the answers worth checking: short, no tool calls, and
 // sounding like a refusal. Everything else skips the brain entirely.
-func suspicious(req *core.Request, a guard.Answer) bool {
+func suspicious(a guard.Answer) bool {
 	if len(a.ToolCalls) > 0 {
 		return false
 	}

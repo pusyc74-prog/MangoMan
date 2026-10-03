@@ -37,14 +37,9 @@ var (
 	reasonHints = regexp.MustCompile(`(?i)\bprove\b|step by step|\bwhy\b|\bcalculate\b|\bsolve\b|\bplan\b|trade-?off|\banaly[sz]e\b|\bcompare\b`)
 )
 
-// Classify returns the class for a request. A virtual model wins over rules.
-func Classify(r *core.Request) string {
-	c, _ := ClassifySure(r)
-	return c
-}
-
-// ClassifySure also reports whether the rules are confident. Unsure results
-// (only weak hints, or nothing matched) are where the decision brain helps.
+// ClassifySure returns the class for a request (a virtual model wins over
+// rules) and whether the rules are confident. Unsure results (only weak
+// hints, or nothing matched) are where the decision brain helps.
 func ClassifySure(r *core.Request) (string, bool) {
 	if c, ok := Virtual[strings.ToLower(r.Model)]; ok && c != "" {
 		return c, true

@@ -64,19 +64,9 @@ def validate(spec, bdir="."):
     for key, allowed in (("theme", tuple(BK.CURATED)), ("motif", BK.MOTIFS), ("mode", BK.MODES), ("type", tuple(WEB_TYPES))):
         if spec.get(key) is not None and spec[key] not in allowed:
             p.append("%s must be one of %s" % (key, ", ".join(allowed)))
-    b = spec.get("brand") or {}
-    if not b.get("name"):
+    if not (spec.get("brand") or {}).get("name"):
         p.append("brand.name is required")
-    for key in ("primary", "accent"):
-        if b.get(key):
-            try:
-                BK.hexc(b[key])
-            except ValueError:
-                p.append("brand %s must be a hex colour like #1F5FA8" % key)
-    if b.get("logo"):
-        pr = BK.logo_check(path_in(bdir, b["logo"]))
-        if pr:
-            p.append(pr)
+    p += BK.brand_problems(spec, bdir)
     secs = spec.get("sections", [])
     if not secs or secs[0].get("type") != "hero":
         p.append("the first section must be the hero")
@@ -158,11 +148,11 @@ def path_in(bdir, p):
 
 def web_image(src, out_dir, name):
     """Resize to at most MAX_IMG wide; JPEG for photos, PNG when transparent."""
-    from PIL import Image
+    from PIL import Image, ImageOps
     Image.init()
     os.makedirs(out_dir, exist_ok=True)
     with Image.open(src) as im:
-        im.load()
+        im = ImageOps.exif_transpose(im)  # phone photos store their rotation in EXIF
         alpha = im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info)
         if im.width > MAX_IMG:
             im = im.resize((MAX_IMG, round(im.height * MAX_IMG / im.width)))
@@ -175,7 +165,7 @@ def web_image(src, out_dir, name):
         return os.path.relpath(dst, os.path.dirname(out_dir)), im.size
 
 
-def favicon(logo, out_dir, T):
+def favicon(logo, out_dir):
     from PIL import Image
     Image.init()
     with Image.open(logo) as im:
@@ -384,7 +374,7 @@ def sec_head(s, level="h2"):
     return '<div class="sec-head"><%s data-check>%s</%s>%s</div>' % (level, e(s["headline"]), level, sub)
 
 
-def tone(s, i, mode):
+def tone(s, mode):
     if s.get("tone") in ("light", "tint", "dark"):
         return {"light": "", "tint": "t-tint", "dark": "t-dark"}[s["tone"]]
     if s["type"] == "hero":
@@ -409,7 +399,7 @@ def motif_html(T, bg):
 
 def render_section(s, i, spec, T, imgs, mode):
     t = s["type"]
-    cls = tone(s, i, mode)
+    cls = tone(s, mode)
     sid = section_id(s, i)
     bg = {"t-dark": T["dark"], "t-tint": T["tint"]}.get(cls, "FFFFFF")
     if t == "hero":
@@ -514,7 +504,7 @@ def form_html(f, T):
         attrs, "".join(rows), e(f.get("submit", "Send")), '<p class="note">%s</p>' % e(note) if note else "")
 
 
-def nav_html(spec, T, logo_rel):
+def nav_html(spec, logo_rel):
     b = spec["brand"]
     links = [(section_id(s, i), s["nav"]) for i, s in enumerate(spec["sections"], 1) if s.get("nav")][:4]
     brand = '<a class="brand" href="#top">%s</a>' % ('<img src="%s" alt="%s">' % (e(logo_rel), e(b["name"])) if logo_rel else e(b["name"]))
@@ -523,7 +513,7 @@ def nav_html(spec, T, logo_rel):
         brand, "".join('<li><a href="#%s">%s</a></li>' % (e(i), e(l)) for i, l in links), button(cta) if cta else "")
 
 
-def footer_html(spec, T, logo_rel):
+def footer_html(spec):
     b = spec["brand"]
     c = spec.get("contact", {})
     contact = []
@@ -562,7 +552,7 @@ def build(spec, bdir, out):
     logo_rel = fav = None
     if T.get("logo"):
         logo_rel = web_image(T["logo"], adir, "logo")[0]
-        fav = favicon(T["logo"], adir, T)
+        fav = favicon(T["logo"], adir)
     meta = spec["meta"]
     mode = spec.get("mode", "contrast")
     dot_ink = BK.mix("FFFFFF", T["dark"], 0.22) if mode == "contrast" else BK.mix(T["dark"], T["tint"], 0.22)
@@ -593,8 +583,8 @@ def build(spec, bdir, out):
         org["address"] = c["address"]
     head.append('<script type="application/ld+json">%s</script>' % json.dumps(org, ensure_ascii=False).replace("</", "<\\/"))
     head.append("<style>%s</style>" % css)
-    body = nav_html(spec, T, logo_rel) + "<main>" + "".join(render_section(s, i, spec, T, imgs, mode) for i, s in enumerate(spec["sections"], 1)) + \
-        "</main>" + footer_html(spec, T, logo_rel)
+    body = nav_html(spec, logo_rel) + "<main>" + "".join(render_section(s, i, spec, T, imgs, mode) for i, s in enumerate(spec["sections"], 1)) + \
+        "</main>" + footer_html(spec)
     doc = '<!doctype html>\n<html lang="%s">\n<head>\n%s\n</head>\n<body>\n%s\n<script>%s</script>\n</body>\n</html>\n' % (
         e(spec.get("language", "en")), "\n".join(head), body, FORM_JS)
     with open(os.path.join(out, "index.html"), "w", encoding="utf-8") as f:

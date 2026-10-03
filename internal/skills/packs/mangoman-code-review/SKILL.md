@@ -20,10 +20,12 @@ matches those facts.
 python3 <skill dir>/scripts/collect.py <repo> [--base main] --out facts.json
 ```
 
-Without `--base` it reviews uncommitted changes, or the last commit if there
-are none. It runs the project's own checks when it finds them (Go vet and
-tests, npm test, pytest, pyflakes, cargo test), finds secrets, debug code,
-TODOs and large files in the added lines, and prints a one-line summary.
+Without `--base` it reviews uncommitted changes and new files, or the last
+commit if there are none. It runs the project's own checks when it finds them
+(Go vet and tests, npm test, pytest, pyflakes on the changed files, cargo
+test), finds secrets, debug code, TODOs and large files in the added lines
+(TODOs and large files are listed in `review.md`), and prints a one-line
+summary.
 
 ## 2. Read the change
 
@@ -45,7 +47,8 @@ the tests meaningful? Is anything left behind (debug code, dead code)?
 }
 ```
 
-Severities: `blocker` (wrong results, security, failing checks, data loss),
+`line` is one line number, or left out for a whole-file finding (a deleted
+file, say). Severities: `blocker` (wrong results, security, failing checks, data loss),
 `major` (likely bugs, missing tests for risky logic), `minor` (clarity,
 naming, small refactors), `nit` (style). Every failing check and every leaked
 secret is a blocker. Do not approve with blockers or majors. Be specific and

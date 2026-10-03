@@ -226,7 +226,7 @@ def svg_chart(chart, width=640, height=280):
     """Draw a chart spec: type line | bar | hbar | stacked."""
     t = chart.get("type", "line")
     if t == "hbar":
-        return _hbar(chart, width)
+        return _hbar(chart, width, height)
     return _xy(chart, width, height, t)
 
 
@@ -327,13 +327,14 @@ def _xy(chart, W, H, kind):
     return "".join(out)
 
 
-def _hbar(chart, W):
+def _hbar(chart, W, height):
     k, cur = chart.get("format", "number"), chart.get("currency")
     s = chart["series"][0]
     cats = chart["x"]
     label_w = min(220, 12 + 7 * max(len(str(c)) for c in cats))
-    row, bh = 32, 18
-    H = row * len(cats) + 8
+    row = max(14, min(32, (height - 8) / len(cats)))  # fit the height while rows stay readable
+    bh = min(18, row * 0.6)
+    H = round(row * len(cats) + 8)
     vmax = max(v for v in s["values"] if v is not None) or 1
     pw = W - label_w - 90
     out = ['<svg viewBox="0 0 %d %d" role="img" aria-label="%s">' % (W, H, esc(chart.get("title", "")))]
@@ -372,10 +373,15 @@ def validate_chart(c):
     if not xs or not ser:
         p.append("%s: needs x values and at least one series" % cid)
     for s in ser:
-        if len(s.get("values", [])) != len(xs):
-            p.append("%s: series %r has %d values for %d x values" % (cid, s.get("name"), len(s.get("values", [])), len(xs)))
-    if len(ser) > 8:
-        p.append("%s: %d series; fold the smallest into 'Other' (8 at most, ideally 4)" % (cid, len(ser)))
+        vals = s.get("values", [])
+        if len(vals) != len(xs):
+            p.append("%s: series %r has %d values for %d x values" % (cid, s.get("name"), len(vals), len(xs)))
+        if any(v is not None and not (isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)) for v in vals):
+            p.append("%s: series %r has values that are not finite numbers (use null for a gap)" % (cid, s.get("name")))
+        elif vals and all(v is None for v in vals):
+            p.append("%s: series %r has no values" % (cid, s.get("name")))
+    if len(ser) > 4:
+        p.append("%s: %d series; fold the smallest into 'Other' (4 at most)" % (cid, len(ser)))
     if c.get("type") == "hbar" and len(ser) != 1:
         p.append("%s: hbar takes exactly one series" % cid)
     return p

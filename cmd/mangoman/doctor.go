@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"flag"
@@ -93,12 +92,13 @@ func cmdDoctor(args []string) error {
 		}
 		fmt.Printf("  %-11s up to %d requests%s\n", p, plan[p], note)
 	}
-	if total == 0 {
+	if total == 0 && !d.ChecksLocal(o) {
 		fmt.Println("  nothing to check: add a key with `mangoman keys add groq`, or start Ollama")
+		return nil
 	}
 	if !*yes && total > 0 {
 		fmt.Printf("\nThis uses up to %d requests of free quota. Continue? [y/N] ", total)
-		line, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+		line, _ := stdin.ReadString('\n')
 		if a := strings.ToLower(strings.TrimSpace(line)); a != "y" && a != "yes" {
 			fmt.Println("Cancelled.")
 			return nil
@@ -254,8 +254,12 @@ func cmdUsage(args []string) error {
 		}
 		return fmt.Sprintf("%d%%", a*100/b)
 	}
-	fmt.Printf("Last %d day(s): %d requests, %d served (%s), %d needed a failover.\n\n",
+	fmt.Printf("Last %d day(s): %d requests, %d served (%s), %d needed a failover.\n",
 		*days, s.Requests, s.Served, rate(s.Served, s.Requests), s.FailedOver)
+	if s.BrainCalls > 0 {
+		fmt.Printf("The decision brain made %d calls of its own; they show in the table, not in the counts above.\n", s.BrainCalls)
+	}
+	fmt.Println()
 	tw := tabwriter.NewWriter(os.Stdout, 0, 2, 2, ' ', 0)
 	fmt.Fprintln(tw, "PROVIDER\tMODEL\tATTEMPTS\tOK\tRATE LIMITED\tERRORS\tBAD ANSWERS\tTOKENS\tP50 MS")
 	for _, r := range s.Rows {

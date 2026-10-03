@@ -20,12 +20,14 @@ type Event struct {
 	Outcome   string    `json:"outcome"` // ok, rate_limited, error, timeout, quality:<reason>, ...
 	Status    int       `json:"status,omitempty"`
 	LatencyMS int64     `json:"latency_ms"`
-	PromptTok int       `json:"prompt_tokens,omitempty"`
-	OutputTok int       `json:"completion_tokens,omitempty"`
 	Tokens    int       `json:"tokens,omitempty"` // total, from usage or estimated
 	Attempt   int       `json:"attempt"`
 	Stream    bool      `json:"stream"`
 }
+
+// BrainClass marks the decision brain's own calls. They use free quota, so
+// they count per model, but they are not user requests.
+const BrainClass = "brain"
 
 // Log appends events to a file. A nil *Log discards events.
 type Log struct {

@@ -17,7 +17,7 @@ e = lambda s: html.escape(str(s or ""), quote=True)
 
 
 def dates(x):
-    s, t = x.get("start", ""), x.get("end", "")
+    s, t = str(x.get("start") or ""), str(x.get("end") or "")  # a year may come as a number
     return e(s + (" – " + t if t else "")) if s or t else ""
 
 

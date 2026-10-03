@@ -174,12 +174,6 @@ func (r *Request) LastUserText() string {
 	return ""
 }
 
-// BodyFor returns the request body to send upstream, with the model replaced.
-func (r *Request) BodyFor(upstreamModel string) ([]byte, error) {
-	b, _, err := r.BodyWith(upstreamModel, Upstream{})
-	return b, err
-}
-
 // Upstream holds per-provider request adjustments.
 type Upstream struct {
 	Drop           []string // top-level fields to remove

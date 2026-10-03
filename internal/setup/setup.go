@@ -121,7 +121,7 @@ func (w *Wizard) Run(ctx context.Context) Result {
 	w.say("MangoMan setup\n\n")
 	w.say("Each provider gives you free AI models with its own free key. One key is\n")
 	w.say("enough to start; each extra one adds more free capacity and fallbacks.\n")
-	w.say("Keys are checked with the provider and stored in this computer's keychain.\n")
+	w.say("Keys are checked with the provider and stored in %s.\n", keys.Where(w.Store))
 	w.say("They never go anywhere else.\n")
 
 	quit := false

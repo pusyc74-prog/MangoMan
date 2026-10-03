@@ -137,7 +137,8 @@ func (d *Doctor) Plan(o Options) map[string]int {
 	cases := d.cases(o)
 	out := map[string]int{}
 	for _, m := range d.Cat.AllModels() {
-		if !in(o.Providers, m.Provider) || !(in(o.Models, m.Canonical) || in(o.Models, m.Upstream)) {
+		p, _ := d.Cat.Provider(m.Provider)
+		if skipped(p, o) || !(in(o.Models, m.Canonical) || in(o.Models, m.Upstream)) {
 			continue
 		}
 		for _, c := range cases {
@@ -153,6 +154,24 @@ func (d *Doctor) Plan(o Options) map[string]int {
 		}
 	}
 	return out
+}
+
+// ChecksLocal reports whether a run checks a local provider (Ollama), whose
+// models are found at run time and so are not in Plan.
+func (d *Doctor) ChecksLocal(o Options) bool {
+	for _, p := range d.Cat.AllProviders() {
+		if p.Local && !skipped(p, o) {
+			return true
+		}
+	}
+	return false
+}
+
+// skipped reports whether a run leaves a provider out or only marks it
+// excluded.
+func skipped(p catalogue.Provider, o Options) bool {
+	return !in(o.Providers, p.ID) || o.SkipLocal && p.Local && len(o.Providers) == 0 ||
+		o.Excluded != nil && o.Excluded(p.ID)
 }
 
 func (d *Doctor) cases(o Options) []conformance.Case {
@@ -189,7 +208,7 @@ func (d *Doctor) Run(ctx context.Context, o Options) Report {
 			continue
 		}
 		pr := ProviderReport{ID: p.ID, Name: p.Name}
-		if o.Excluded != nil && o.Excluded(p.ID) {
+		if skipped(p, o) {
 			pr.Status = StatusExcluded
 		}
 		rep.Providers = append(rep.Providers, pr)

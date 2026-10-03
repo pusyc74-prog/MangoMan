@@ -14,7 +14,6 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/brain"
 	"github.com/pusyc74-prog/mangoman/internal/breaker"
 	"github.com/pusyc74-prog/mangoman/internal/catalogue"
-	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/quota"
@@ -143,7 +142,7 @@ func (s *Server) providerStatus(p catalogue.Provider, modelCount int) DashProvid
 
 func (s *Server) overview(w http.ResponseWriter, _ *http.Request) {
 	rt := s.Router
-	ov := Overview{Version: s.Version, UptimeS: int(time.Since(s.Started).Seconds()), Catalogue: rt.Cat.Version, Port: s.Cfg.Port,
+	ov := Overview{Version: s.Version, UptimeS: int(time.Since(s.Started).Seconds()), Catalogue: rt.Cat.Version, Port: s.port(),
 		Favorites: nonNil(s.Cfg.GetFavorites()), NewModels: s.radarView().NewCount, Brain: s.brainStats()}
 	if st := rt.Keys.Store(); st != nil {
 		ov.KeyStore = st.Name()
@@ -316,11 +315,7 @@ func (s *Server) setExcluded(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.Cfg.SetExcluded(id, in.Excluded)
-	save := s.SaveConfig
-	if save == nil {
-		save = config.Save
-	}
-	if err := save(s.Cfg); err != nil {
+	if err := s.save(); err != nil {
 		core.WriteError(w, http.StatusInternalServerError, "config_not_saved", err.Error())
 		return
 	}
@@ -337,9 +332,9 @@ func (s *Server) modelCount(provider string) int {
 	return n
 }
 
-// ownOrigins are the browser origins of the dashboard itself.
+// ownOrigin reports whether o is the dashboard's own browser origin.
 func (s *Server) ownOrigin(o string) bool {
-	port := strconv.Itoa(s.Cfg.Port)
+	port := strconv.Itoa(s.port())
 	for _, h := range []string{"127.0.0.1", "localhost"} {
 		if strings.EqualFold(o, "http://"+h+":"+port) {
 			return true

@@ -55,6 +55,13 @@ def run_step(page, s):
     missing = [k for k in NEEDS[kind] if k not in s]
     if missing:
         return "%s step needs %s" % (kind, ", ".join(missing))
+    if kind == "expect_text" and s.get("contains") is None and s.get("equals") is None:
+        return "expect_text step needs contains or equals"
+    if kind == "expect_count":
+        try:
+            n = int(s["count"])
+        except (TypeError, ValueError):
+            return "expect_count step: count must be a whole number"
     t = 4000
     if "fill" in s:
         page.fill(s["fill"], str(s.get("value", "")), timeout=t)
@@ -73,14 +80,16 @@ def run_step(page, s):
         good = lambda: (s.get("contains") is None or str(s["contains"]) in page.inner_text(sel, timeout=t)) and \
             (s.get("equals") is None or page.inner_text(sel, timeout=t).strip() == str(s["equals"]))
         if not wait_for(page, good):
-            return "%s shows %r, expected %s %r" % (sel, page.inner_text(sel, timeout=t).strip()[:80],
-                                                   "it to contain" if s.get("contains") is not None else "", s.get("contains", s.get("equals")))
+            return "%s shows %r, expected %s" % (sel, page.inner_text(sel, timeout=t).strip()[:80],
+                                                "it to contain %r" % s["contains"] if s.get("contains") is not None else "%r" % s["equals"])
     elif kind == "expect_visible" and not wait_for(page, lambda: page.is_visible(s["expect_visible"])):
         return "%s is not visible" % s["expect_visible"]
+    elif kind == "expect_hidden" and not page.locator(s["expect_hidden"]).count():
+        return "%s not found (check the selector)" % s["expect_hidden"]
     elif kind == "expect_hidden" and not wait_for(page, lambda: not page.is_visible(s["expect_hidden"])):
         return "%s should be hidden" % s["expect_hidden"]
-    elif kind == "expect_count" and not wait_for(page, lambda: page.locator(s["expect_count"]).count() == s["count"]):
-        return "%s: %d found, expected %d" % (s["expect_count"], page.locator(s["expect_count"]).count(), s["count"])
+    elif kind == "expect_count" and not wait_for(page, lambda: page.locator(s["expect_count"]).count() == n):
+        return "%s: %d found, expected %d" % (s["expect_count"], page.locator(s["expect_count"]).count(), n)
     elif kind == "expect_value" and not wait_for(page, lambda: page.input_value(s["expect_value"], timeout=t) == str(s["value"])):
         return "%s has value %r, expected %r" % (s["expect_value"], page.input_value(s["expect_value"], timeout=t), s["value"])
     return ""

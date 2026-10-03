@@ -48,7 +48,14 @@ def nice_date(d):
 # ---------- arithmetic ----------
 
 def money(v, cur):
-    return V.fmt(v, "currency", cur, compact=False)
+    """Whole amounts as usual; a rate with paise or cents keeps them (₹0.50, not ₹0)."""
+    v = round(float(v), 2)
+    if v.is_integer():
+        return V.fmt(v, "currency", cur, compact=False)
+    s = "{:,.2f}".format(abs(v))
+    if cur == "INR":
+        s = V._indian(int(abs(v))) + s[-3:]
+    return ("-" if v < 0 else "") + V.SYMBOL.get(cur, cur + " ") + s
 
 
 def whole(x):
@@ -142,17 +149,7 @@ def validate(spec, bdir="."):
     for key, allowed in (("theme", tuple(BK.CURATED)), ("motif", BK.MOTIFS), ("type", tuple(WEB_TYPES))):
         if spec.get(key) is not None and spec[key] not in allowed:
             p.append("%s must be one of %s" % (key, ", ".join(allowed)))
-    b = spec.get("brand") or {}
-    for key in ("primary", "accent"):
-        if b.get(key):
-            try:
-                BK.hexc(b[key])
-            except ValueError:
-                p.append("brand %s must be a hex colour like #1F5FA8" % key)
-    if b.get("logo"):
-        pr = BK.logo_check(b["logo"] if os.path.isabs(b["logo"]) else os.path.join(bdir, b["logo"]))
-        if pr:
-            p.append(pr)
+    p += BK.brand_problems(spec, bdir)
     secs = spec.get("sections", [])
     types = [s.get("type") for s in secs]
     for i, s in enumerate(secs, 1):
@@ -167,12 +164,20 @@ def validate(spec, bdir="."):
             items = s.get("items", [])
             if not items:
                 p.append("%s: needs items (item, qty, rate)" % tag)
+            one_time = 0.0
             for it in items:
-                if not it.get("item") or not isinstance(it.get("rate"), (int, float)):
-                    p.append("%s: every item needs a name and a numeric rate" % tag)
-                if it.get("billing", "one-time") not in ("one-time", "monthly", "yearly"):
+                rate, qty = it.get("rate"), it.get("qty", 1)
+                if not it.get("item") or not isinstance(rate, (int, float)) or rate < 0:
+                    p.append("%s: every item needs a name and a rate of 0 or more" % tag)
+                elif not isinstance(qty, (int, float)) or qty <= 0:
+                    p.append("%s: item %r: qty must be a number above 0" % (tag, it["item"]))
+                elif it.get("billing", "one-time") not in ("one-time", "monthly", "yearly"):
                     p.append("%s: billing must be one-time, monthly or yearly" % tag)
+                elif it.get("billing", "one-time") == "one-time" and not it.get("optional"):
+                    one_time += whole(qty * rate)
             pays = s.get("payments", [])
+            if (pays or s.get("discount")) and not one_time:
+                p.append("%s: payments and discount apply to the one-time items; there are none" % tag)
             if pays:
                 tot = round(sum(float(m.get("percent", 0)) for m in pays), 6)
                 if abs(tot - 1) > 1e-6:
@@ -180,6 +185,8 @@ def validate(spec, bdir="."):
             d = s.get("discount") or {}
             if d.get("percent") and not (0 < float(d["percent"]) < 1):
                 p.append("%s: discount percent is a fraction, e.g. 0.1 for 10%%" % tag)
+            if d.get("amount") is not None and not (isinstance(d["amount"], (int, float)) and 0 <= d["amount"] <= one_time):
+                p.append("%s: discount amount must be between 0 and the one-time subtotal" % tag)
             if s.get("tax") and not (0 <= float(s["tax"].get("rate", -1)) < 1):
                 p.append("%s: tax rate is a fraction, e.g. 0.18 for GST 18%%" % tag)
         if t == "timeline":
@@ -307,7 +314,7 @@ def bullets(xs):
     return "<ul>%s</ul>" % "".join("<li>%s</li>" % e(x) for x in xs) if xs else ""
 
 
-def summary_keys(spec, nums):
+def summary_keys(nums):
     cur = nums["currency"]
     keys = []
     one = nums["groups"].get("one-time")
@@ -325,7 +332,7 @@ def summary_keys(spec, nums):
     return keys[:4]
 
 
-def gantt_svg(s, T, nums):
+def gantt_svg(s, T):
     ph = s["phases"]
     W, rowh, lw = 640, 26, 170
     dated = all("start" in p for p in ph)
@@ -360,7 +367,7 @@ def gantt_svg(s, T, nums):
     return "".join(out)
 
 
-def pricing_html(s, T, nums):
+def pricing_html(s, nums):
     cur = nums["currency"]
     out = []
     for billing, g in nums["groups"].items():
@@ -397,7 +404,7 @@ def section_html(s, spec, T, nums):
     t = s["type"]
     h = "<h2>%s</h2>" % e(s["headline"])
     if t == "summary":
-        keys = summary_keys(spec, nums)
+        keys = summary_keys(nums)
         kh = '<div class="keys" style="--n:%d">%s</div>' % (len(keys), "".join(
             '<div><div class="v">%s</div><div class="l">%s</div></div>' % (e(v), e(l)) for v, l in keys)) if keys else ""
         lede = '<p class="lede">%s</p>' % e(s["lede"]) if s.get("lede") else ""
@@ -416,9 +423,9 @@ def section_html(s, spec, T, nums):
         rows = "".join("<tr><td>%s</td><td>%s</td><td>%s</td></tr>" % (
             e(p["name"]), e("%s to %s" % (nice_date(parse_date(p["start"])), nice_date(parse_date(p["end"])))) if "start" in p else
             e("Week %d to %d" % tuple(p["weeks"]) if p["weeks"][0] != p["weeks"][1] else "Week %d" % p["weeks"][0]), e(p.get("outcome", ""))) for p in s["phases"])
-        body = paras(s.get("body")) + gantt_svg(s, T, nums) + "<table><tr><th>Phase</th><th>When</th><th>Outcome</th></tr>%s</table>" % rows
+        body = paras(s.get("body")) + gantt_svg(s, T) + "<table><tr><th>Phase</th><th>When</th><th>Outcome</th></tr>%s</table>" % rows
     elif t == "pricing":
-        body = paras(s.get("body")) + pricing_html(s, T, nums)
+        body = paras(s.get("body")) + pricing_html(s, nums)
     elif t == "team":
         body = paras(s.get("body")) + '<div class="people">%s</div>' % "".join(
             "<div><b>%s</b><div class='role'>%s</div><p class='body'>%s</p></div>" % (e(x["name"]), e(x.get("role", "")), e(x.get("bio", ""))) for x in s.get("people", []))
@@ -616,7 +623,7 @@ def build_docx(spec, T, nums, path):
         if t == "summary":
             if s.get("lede"):
                 para(s["lede"], 12)
-            keys = summary_keys(spec, nums)
+            keys = summary_keys(nums)
             if keys:
                 table([l for _, l in keys], [[(v, True) for v, _ in keys]], widths=[170 / len(keys)] * len(keys))
         if s.get("body"):

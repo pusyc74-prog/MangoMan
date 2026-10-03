@@ -24,12 +24,19 @@ def load(path):
 
 
 def transcript_text(path):
-    """Plain text of a .txt, .md, .vtt or .srt transcript, without timestamps or cue numbers."""
+    """Plain text of a .txt, .md, .vtt or .srt transcript, without timestamps, cue numbers or tags."""
     with open(path, encoding="utf-8", errors="ignore") as f:
         t = f.read()
-    t = re.sub(r"^WEBVTT.*$|^[\d:.,]+\s*-->\s*[\d:.,]+.*$", "", t, flags=re.M)
     if path.lower().endswith((".srt", ".vtt")):
-        t = re.sub(r"^\d+\s*$", "", t, flags=re.M)  # cue numbers
+        t = re.sub(r"^.*\n(?=[\d:.,]+\s*-->)", "", t, flags=re.M)  # cue numbers and ids: the line before the timing
+        last = [None]
+
+        def voice(m):  # Teams speaker tags: name the speaker when it changes, so a sentence split over cues stays whole
+            said, last[0] = m.group(1) != last[0], m.group(1)
+            return m.group(1) + ": " if said else ""
+        t = re.sub(r"<v(?:\.[^ >]*)? ([^>]+)>", voice, t)
+        t = re.sub(r"<[^>\n]*>", "", t)
+    t = re.sub(r"^WEBVTT.*$|^[\d:.,]+\s*-->\s*[\d:.,]+.*$", "", t, flags=re.M)
     t = re.sub(r"\[\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d+)?\]|^\(?\d{1,2}:\d{2}(?::\d{2})?\)?\s+(?=\S)", "", t, flags=re.M)  # [00:41], line-start 00:41
     return re.sub(r"\n{2,}", "\n", t)
 
@@ -81,11 +88,22 @@ ul { margin: 1mm 0; padding-left: 5mm; } li { margin: 0 0 1.2mm; } h3 { font-siz
 """
 
 
+def meta_line(spec):
+    return " · ".join(x for x in (nice(spec["date"]), spec.get("time"), spec.get("location")) if x)
+
+
+def attendees(spec):
+    return ", ".join("%s%s" % (n["name"], " (%s)" % n["role"] if n.get("role") else "") if isinstance(n, dict) else str(n) for n in spec["attendees"])
+
+
+def next_line(spec):
+    nm = spec.get("next_meeting") or {}
+    return " · ".join(x for x in (nice(nm.get("date")), nm.get("time"), nm.get("agenda")) if x)
+
+
 def build_html(spec):
-    meta = " · ".join(x for x in (nice(spec["date"]), spec.get("time"), spec.get("location")) if x)
-    att = ", ".join("%s%s" % (n["name"], " (%s)" % n["role"] if n.get("role") else "") if isinstance(n, dict) else str(n) for n in spec["attendees"])
     out = ["<h1>%s</h1><div class='meta'>%s</div><div class='meta'>Attendees: %s%s</div>" % (
-        e(spec["title"]), e(meta), e(att), "<br>Absent: %s" % e(", ".join(spec["absent"])) if spec.get("absent") else ""),
+        e(spec["title"]), e(meta_line(spec)), e(attendees(spec)), "<br>Absent: %s" % e(", ".join(spec["absent"])) if spec.get("absent") else ""),
         "<p class='summary'>%s</p>" % e(spec["summary"])]
     if spec.get("decisions"):
         out.append("<h2>Decisions</h2><ul>%s</ul>" % "".join("<li>%s</li>" % e(d["text"] if isinstance(d, dict) else d) for d in spec["decisions"]))
@@ -97,24 +115,28 @@ def build_html(spec):
                                                     for t in spec["topics"]))
     if spec.get("open_questions"):
         out.append("<h2>Open questions</h2><ul>%s</ul>" % "".join("<li>%s</li>" % e(q) for q in spec["open_questions"]))
-    nm = spec.get("next_meeting")
-    if nm:
-        out.append("<h2>Next meeting</h2><p>%s</p>" % e(" · ".join(x for x in (nice(nm.get("date")), nm.get("time"), nm.get("agenda")) if x)))
+    if next_line(spec):
+        out.append("<h2>Next meeting</h2><p>%s</p>" % e(next_line(spec)))
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>%s</title><style>%s</style></head><body>%s</body></html>' % (
         e(spec["title"]), CSS, "".join(out))
 
 
 def build_md(spec):
-    out = ["# %s" % spec["title"], "", "%s%s" % (nice(spec["date"]), " · " + spec["time"] if spec.get("time") else ""),
-           "Attendees: " + ", ".join(names(spec)), "", spec["summary"], ""]
+    out = ["# %s" % spec["title"], "", meta_line(spec), "", "Attendees: " + attendees(spec)]
+    out += ["", "Absent: " + ", ".join(spec["absent"])] if spec.get("absent") else []
+    out += ["", spec["summary"], ""]
     if spec.get("decisions"):
         out += ["## Decisions", ""] + ["- " + (d["text"] if isinstance(d, dict) else d) for d in spec["decisions"]] + [""]
     if spec.get("actions"):
         out += ["## Actions", ""] + ["- [ ] %s (%s%s)" % (a["action"], a.get("owner", "no owner"), ", by " + nice(a["due"]) if a.get("due") else "") for a in spec["actions"]] + [""]
+    if spec.get("topics"):
+        out += ["## Discussion", ""]
     for t in spec.get("topics", []):
         out += ["### " + t["title"], ""] + ["- " + x for x in t.get("points", [])] + [""]
     if spec.get("open_questions"):
         out += ["## Open questions", ""] + ["- " + q for q in spec["open_questions"]] + [""]
+    if next_line(spec):
+        out += ["## Next meeting", "", next_line(spec), ""]
     return "\n".join(out)
 
 

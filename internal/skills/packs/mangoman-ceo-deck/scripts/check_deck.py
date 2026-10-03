@@ -85,7 +85,7 @@ def main():
         if ov is None:
             r("WARN", "overflow not measured (no Playwright); look at every slide in the PDF")
         else:
-            r("PASS" if not ov else "FAIL", "no text overflows its slide" if not ov else
+            r("PASS" if not ov else "FAIL", "nothing overflows its box" if not ov else
               "content overflows: " + ", ".join("%s (+%dpx)" % (o["id"], o["extra_px"]) for o in ov))
     if os.path.exists(out + ".pdf"):
         pages = render.pdf_pages(out + ".pdf")

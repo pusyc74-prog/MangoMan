@@ -13,13 +13,14 @@ Prints PASS, WARN or FAIL; exits 1 on any FAIL.
 import os
 import re
 import sys
+import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_ads as B  # noqa: E402
 import checks as C  # noqa: E402
 
-PHONE = re.compile(r"(?:\+?\d[\s-]?){10,}")
-CAPS = re.compile(r"\b[A-Z]{4,}\b")
+PHONE = re.compile(r"\+?\(?\d(?:[\s().-]*\d){9,}")
+CAPS = re.compile(r"\b[A-Z]{2,}\b")
 _ATTR = r"(?:diabetic|overweight|obese|fat|depressed|anxious|gay|lesbian|christian|muslim|hindu|sikh|jewish|in debt|broke|bankrupt|divorced|single|pregnant|disabled|sick|bald|infertile)"
 # "Are you diabetic?", "you're in debt", "other single parents", "fellow Muslims": statements about the reader
 ATTRIBUTE = re.compile(r"\b(?:are you|you're|you are)\s+(?:\w+\s+){0,2}%s\b|\b(?:other|fellow)\s+%ss?\b(?!\s*(?:-|estate|origin|variety|brands?))" % (_ATTR, _ATTR), re.I)
@@ -29,6 +30,11 @@ def blocks(neg, kw):
     """A phrase negative blocks a keyword when its words appear in it, in order."""
     n, k = neg.lower().split(), kw.lower().split()
     return any(k[i:i + len(n)] == n for i in range(len(k) - len(n) + 1))
+
+
+def symbols(t):
+    """Emoji and decorative symbols, which Google disapproves (trademark signs are allowed)."""
+    return sorted({c for c in t if unicodedata.category(c) == "So" and c not in "©®™"})
 
 
 def main():
@@ -56,9 +62,10 @@ def main():
             lo, hi = B.GOOGLE["descriptions"]
             if not lo <= len(ds) <= hi:
                 hard.append("%s: %d descriptions (2 to 4)" % (n, len(ds)))
-            hard += ["%s: headline %r is %d characters (30)" % (n, h, len(h)) for h in hs if len(h) > B.GOOGLE["headline"]]
-            hard += ["%s: description %d is %d characters (90)" % (n, i, len(d)) for i, d in enumerate(ds, 1) if len(d) > B.GOOGLE["description"]]
-            hard += ["%s: %s is %d characters (15)" % (n, k, len(ag[k])) for k in ("path1", "path2") if len(ag.get(k, "")) > B.GOOGLE["path"]]
+            hard += ["%s: headline %r is %d characters (30)" % (n, h, B.glen(h)) for h in hs if B.glen(h) > B.GOOGLE["headline"]]
+            hard += ["%s: description %d is %d characters (90)" % (n, i, B.glen(d)) for i, d in enumerate(ds, 1) if B.glen(d) > B.GOOGLE["description"]]
+            hard += ["%s: %s is %d characters (15)" % (n, k, B.glen(ag[k])) for k in ("path1", "path2") if B.glen(ag.get(k, "")) > B.GOOGLE["path"]]
+            hard += ["%s: emoji or symbols are not allowed (%s) in %r" % (n, " ".join(symbols(t)), t) for t in hs + ds if symbols(t)]
             hard += ["%s: no exclamation marks in headlines: %r" % (n, h) for h in hs if "!" in h]
             hard += ["%s: repeated punctuation in %r" % (n, t) for t in hs + ds if re.search(r"([!?.,])\1", t)]
             hard += ["%s: all-capital word %s in %r" % (n, w, t) for t in hs + ds for w in CAPS.findall(t) if w not in brand_caps]

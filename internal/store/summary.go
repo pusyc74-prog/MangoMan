@@ -29,6 +29,7 @@ type Summary struct {
 	Requests   int       `json:"requests"`    // distinct client requests
 	Served     int       `json:"served"`      // requests that ended in ok
 	FailedOver int       `json:"failed_over"` // served, but not on the first attempt
+	BrainCalls int       `json:"brain_calls"` // decision brain calls, not in the counts above
 	Rows       []Row     `json:"rows"`
 }
 
@@ -50,6 +51,7 @@ func Summarize(path string, since time.Time) (Summary, error) {
 		attempt int
 	}
 	reqs := map[string]*reqState{}
+	brain := map[string]bool{}
 	sc := bufio.NewScanner(f)
 	sc.Buffer(make([]byte, 64<<10), 1<<20)
 	for sc.Scan() {
@@ -64,12 +66,17 @@ func Summarize(path string, since time.Time) (Summary, error) {
 			rows[k] = r
 		}
 		r.Attempts++
-		r.Tokens += e.Tokens + e.PromptTok + e.OutputTok
+		r.Tokens += e.Tokens
 		r.lat = append(r.lat, e.LatencyMS)
 		rs, ok := reqs[e.RequestID]
 		if !ok {
 			rs = &reqState{}
-			reqs[e.RequestID] = rs
+			if e.Class != BrainClass {
+				reqs[e.RequestID] = rs
+			} else if !brain[e.RequestID] {
+				brain[e.RequestID] = true
+				s.BrainCalls++
+			}
 		}
 		switch {
 		case strings.HasPrefix(e.Outcome, "ok"):
@@ -121,7 +128,7 @@ type HourBucket struct {
 }
 
 // Activity is what the dashboard shows: totals, per-model rows, requests per
-// hour per provider, and the most recent attempts (never any content).
+// hour per provider, and the most recent user attempts (never any content).
 type Activity struct {
 	Summary
 	Hourly []HourBucket `json:"hourly"`
@@ -166,7 +173,7 @@ func Analyze(path string, since time.Time, recentN int) (Activity, error) {
 		if strings.HasPrefix(e.Outcome, "ok") {
 			b.OK++
 		}
-		if recentN > 0 {
+		if recentN > 0 && e.Class != BrainClass {
 			ring = append(ring, e)
 			if len(ring) > recentN {
 				ring = ring[1:]

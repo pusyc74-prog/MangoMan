@@ -48,20 +48,9 @@ def validate(spec, bdir="."):
         p.append("sender.address (a postal address) is required in every marketing email by anti-spam law")
     if spec.get("esp", "generic") not in ESP:
         p.append("esp must be one of %s" % ", ".join(ESP))
-    for key, allowed in (("theme", tuple(BK.CURATED)),):
-        if spec.get(key) is not None and spec[key] not in allowed:
-            p.append("%s must be one of %s" % (key, ", ".join(allowed)))
-    b = spec.get("brand") or {}
-    for key in ("primary", "accent"):
-        if b.get(key):
-            try:
-                BK.hexc(b[key])
-            except ValueError:
-                p.append("brand %s must be a hex colour like #1F5FA8" % key)
-    if b.get("logo"):
-        pr = BK.logo_check(path_in(bdir, b["logo"]))
-        if pr:
-            p.append(pr)
+    if spec.get("theme") is not None and spec["theme"] not in BK.CURATED:
+        p.append("theme must be one of %s" % ", ".join(BK.CURATED))
+    p += BK.brand_problems(spec, bdir)
     base = spec.get("assets_base_url", "")
     if base and not base.startswith("https://"):
         p.append("assets_base_url must start with https:// (where you uploaded the images)")
@@ -79,6 +68,9 @@ def validate(spec, bdir="."):
         for k in ("subject", "preview"):
             if not m.get(k):
                 p.append("%s: needs %s" % (tag, k))
+        alts = m.get("subject_alternatives", [])
+        if not (isinstance(alts, list) and all(isinstance(x, str) and x for x in alts)):
+            p.append("%s: subject_alternatives must be a list of subject lines" % tag)
         d = m.get("send_day")
         if d is not None:
             if not isinstance(d, (int, float)) or d < 0:
@@ -94,19 +86,34 @@ def validate(spec, bdir="."):
             if t not in BLOCKS:
                 p.append("%s block %d: type must be one of %s" % (tag, j, ", ".join(BLOCKS)))
                 continue
+            tx = bl.get("text")
+            if t in ("heading", "text", "quote") and not (tx and all(isinstance(x, str) and x for x in (tx if isinstance(tx, list) else [tx]))):
+                p.append("%s block %d: a %s needs text" % (tag, j, t))
+            if t == "heading" and bl.get("level", 1) not in (1, 2, 3):
+                p.append("%s block %d: heading level must be the number 1, 2 or 3" % (tag, j))
+            if t == "list" and not (isinstance(bl.get("items"), list) and bl["items"] and all(isinstance(x, str) for x in bl["items"])):
+                p.append("%s block %d: a list needs items (a list of text)" % (tag, j))
+            if t == "spacer" and not isinstance(bl.get("height", 16), int):
+                p.append("%s block %d: spacer height must be a whole number of pixels" % (tag, j))
             if t == "button" and not (bl.get("label") and bl.get("href")):
                 p.append("%s block %d: a button needs label and href" % (tag, j))
             if t == "image":
                 if not bl.get("src") or not bl.get("alt"):
                     p.append("%s block %d: an image needs src and alt" % (tag, j))
-                elif not bl["src"].startswith("https://") and not os.path.exists(path_in(bdir, bl["src"])):
+                elif missing(bdir, bl["src"]):
                     p.append("%s block %d: image not found: %s" % (tag, j, bl["src"]))
             if t == "products":
-                for pr in bl.get("items", []):
+                items = bl.get("items")
+                if not (isinstance(items, list) and items and all(isinstance(x, dict) for x in items)):
+                    p.append("%s block %d: products needs items (a list of products)" % (tag, j))
+                    continue
+                for pr in items:
                     if not pr.get("name") or not pr.get("href"):
                         p.append("%s block %d: every product needs name and href" % (tag, j))
                     if pr.get("image") and not pr.get("alt", pr.get("name")):
                         p.append("%s block %d: product images need alt text" % (tag, j))
+                    if pr.get("image") and missing(bdir, pr["image"]):
+                        p.append("%s block %d: image not found: %s" % (tag, j, pr["image"]))
             if t == "coupon" and not bl.get("code"):
                 p.append("%s block %d: a coupon needs a code" % (tag, j))
     return p
@@ -114,6 +121,10 @@ def validate(spec, bdir="."):
 
 def path_in(bdir, p):
     return p if os.path.isabs(p) or p.startswith("https://") else os.path.join(bdir, p)
+
+
+def missing(bdir, src):
+    return not src.startswith("https://") and not os.path.exists(path_in(bdir, src))
 
 
 # ---------- rendering ----------
@@ -249,7 +260,7 @@ def email_html(spec, m, T, imgs, logo, sample):
             '%s'
             '<tr><td class="px" style="padding:12px 32px 28px"><div style="height:1px;background:#%s;line-height:1px;font-size:1px;margin-bottom:18px">&nbsp;</div>%s</td></tr>'
             '</table></td></tr></table></body></html>') % (
-        e(spec.get("language", "en")), e(m["subject"]), css, T["tint"], T["tint"], pre, filler, T["tint"], head_logo, rows, T["grid"], footer)
+        e(spec.get("language", "en")), merge(e(m["subject"]), sample, esp), css, T["tint"], T["tint"], pre, filler, T["tint"], head_logo, rows, T["grid"], footer)
 
 
 def email_text(spec, m):
@@ -288,9 +299,17 @@ def tokens(spec, bdir):
     return dict(T, head=head, btn_bg=btn_bg, btn_fg=max((W, T["text"]), key=lambda c: BK.contrast(c, btn_bg))), note
 
 
+def on_white(im):
+    """The image flattened onto white (transparent parts would turn black as JPEG, and dark mode shows them badly)."""
+    from PIL import Image
+    im = im.convert("RGBA")
+    bg = Image.new("RGB", im.size, (255, 255, 255))
+    bg.paste(im, mask=im)
+    return bg
+
+
 def prepare_images(spec, bdir, out):
     from PIL import Image
-    Image.init()
     adir = os.path.join(out, "assets")
     if os.path.isdir(adir):
         shutil.rmtree(adir)
@@ -313,21 +332,20 @@ def prepare_images(spec, bdir, out):
             if im.width > 1200:  # twice the email width is enough for sharp phones
                 im = im.resize((1200, round(im.height * 1200 / im.width)))
             name = "img-%02d.jpg" % k
-            im.convert("RGB").save(os.path.join(adir, name), quality=80, optimize=True, progressive=True)
+            on_white(im).save(os.path.join(adir, name), quality=80, optimize=True, progressive=True)
         imgs[src] = ((base + "/" if base else "assets/") + name, im.width)
     logo = None
     if spec.get("_logo"):
         with Image.open(spec["_logo"]) as im:
-            im = im.convert("RGBA")
+            im = on_white(im)
             im.thumbnail((480, 144))
-            bg = Image.new("RGB", im.size, (255, 255, 255))  # email clients do not all show transparency well on dark mode
-            bg.paste(im, mask=im)
-            bg.save(os.path.join(adir, "logo.png"))
+            im.save(os.path.join(adir, "logo.png"))
         logo = ((base + "/" if base else "assets/") + "logo.png", None)
     return imgs, logo
 
 
 def sequence_md(spec):
+    esp = spec.get("esp", "generic")
     lines = ["# %s" % spec.get("name", "Email campaign"), ""]
     if spec.get("goal"):
         lines += ["Goal: %s" % spec["goal"]]
@@ -338,11 +356,12 @@ def sequence_md(spec):
     for i, m in enumerate(spec["emails"], 1):
         d = m.get("send_day")
         when = m.get("send_note") or ("Day %d" % (d + 1) if isinstance(d, (int, float)) else "")
-        lines.append("| %d | %s | %s.html | %s | %s |" % (i, when, m["id"], m["subject"].replace("|", "/"), m["preview"].replace("|", "/")))
+        lines.append("| %d | %s | %s.html | %s | %s |" % (i, when, m["id"], merge(m["subject"], False, esp).replace("|", "\\|"),
+                                                         merge(m["preview"], False, esp).replace("|", "\\|")))
     lines.append("")
     for m in spec["emails"]:
         if m.get("subject_alternatives"):
-            lines += ["**%s**: subject lines to A/B test: %s" % (m["id"], "; ".join(m["subject_alternatives"])), ""]
+            lines += ["**%s**: subject lines to A/B test: %s" % (m["id"], "; ".join(merge(x, False, esp) for x in m["subject_alternatives"])), ""]
     if spec.get("assets_base_url"):
         lines += ["Images: upload the assets folder to %s before sending." % spec["assets_base_url"]]
     else:

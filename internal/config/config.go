@@ -27,8 +27,6 @@ type Config struct {
 	ExcludedProviders []string `json:"excluded_providers,omitempty"`
 	// PaidFallback stays false unless the user opts in.
 	PaidFallback bool `json:"paid_fallback"`
-	// AllowedOrigins lists browser origins allowed to call the endpoint.
-	AllowedOrigins []string `json:"allowed_origins,omitempty"`
 	// MaxAttempts caps candidates tried per request.
 	MaxAttempts int `json:"max_attempts,omitempty"`
 	// Favorites is "My list": models tried first, in this order, before the
@@ -74,7 +72,10 @@ type CustomModel struct {
 	Added    string `json:"added,omitempty"`
 }
 
-var mu sync.RWMutex // guards fields changed live from the dashboard
+var (
+	mu     sync.RWMutex // guards fields changed live from the dashboard
+	saveMu sync.Mutex   // one Save at a time
+)
 
 // GetFavorites returns a copy of My list.
 func (c *Config) GetFavorites() []string {
@@ -254,8 +255,11 @@ func Load() (*Config, error) {
 	return c, nil
 }
 
-// Save writes config.json with owner-only permissions.
+// Save writes config.json with owner-only permissions. It writes a temp
+// file and renames it, so a reader never sees a half-written file.
 func Save(c *Config) error {
+	saveMu.Lock()
+	defer saveMu.Unlock()
 	d, err := Dir()
 	if err != nil {
 		return err
@@ -269,5 +273,9 @@ func Save(c *Config) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(d, "config.json"), data, 0o600)
+	p := filepath.Join(d, "config.json")
+	if err := os.WriteFile(p+".tmp", data, 0o600); err != nil {
+		return err
+	}
+	return os.Rename(p+".tmp", p)
 }

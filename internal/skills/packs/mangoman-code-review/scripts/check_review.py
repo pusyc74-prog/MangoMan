@@ -27,11 +27,15 @@ def review_md(rv, facts):
         fs = [f for f in rv["findings"] if f["severity"] == sev]
         if fs:
             out += ["## %s (%d)" % ({"blocker": "Blockers", "major": "Major", "minor": "Minor", "nit": "Nits"}[sev], len(fs)), ""]
-            for f in sorted(fs, key=lambda x: (x["file"], x.get("line", 0))):
-                out += ["- **%s:%s** %s" % (f["file"], f.get("line", ""), f["title"]), "  " + f.get("detail", "")]
+            for f in sorted(fs, key=lambda x: (x["file"], x.get("line") or 0)):
+                out += ["- **%s%s** %s" % (f["file"], ":%d" % f["line"] if f.get("line") else "", f["title"]), "  " + f.get("detail", "")]
                 if f.get("suggestion"):
                     out += ["  Suggestion: " + f["suggestion"]]
             out.append("")
+    notes = ["%s:%s adds %s" % (t["file"], t["line"], t["text"]) for t in facts.get("todos", [])]
+    notes += ["%s is %s MB; large files bloat the repository (consider Git LFS or leaving it out)" % (b["file"], b["mb"]) for b in facts.get("large_files", [])]
+    if notes:
+        out += ["## Also in the change", ""] + ["- " + n for n in notes] + [""]
     if rv.get("praise"):
         out += ["## Done well", ""] + ["- " + p for p in rv["praise"]] + [""]
     return "\n".join(out)
@@ -56,6 +60,8 @@ def main():
             prob.append("finding %d: severity must be blocker, major, minor or nit" % i)
         if not f.get("file") or not f.get("title"):
             prob.append("finding %d: needs file and title" % i)
+        if f.get("line") is not None and (not isinstance(f["line"], int) or isinstance(f["line"], bool) or f["line"] < 1):
+            prob.append("finding %d: line must be one line number (for a range, give the first line)" % i)
     rep.check(prob, "review is complete", "review problems")
     if prob:
         rep.finish()

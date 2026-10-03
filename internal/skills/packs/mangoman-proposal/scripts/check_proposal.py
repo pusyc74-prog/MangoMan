@@ -18,8 +18,8 @@ import build_proposal as B  # noqa: E402
 import render  # noqa: E402
 import checks as C  # noqa: E402
 
-PLACEHOLDER = re.compile(r"lorem ipsum|\bTBD\b|\bTODO\b|\[(?:client|company|name|insert|date|amount)[^\]]*\]|xxx+|<[A-Z ]+>|\{\{.*?\}\}", re.I)
-RISKY = re.compile(r"\b(guaranteed?|we guarantee|100% (?:success|results|uptime)|risk[- ]free|unlimited revisions|no hidden costs ever|best in (?:india|the world|class)|number one|#1|double your|triple your)\b", re.I)
+PLACEHOLDER = re.compile(C.PLACEHOLDER.pattern + r"|<[A-Z ]+>|\{\{.*?\}\}", re.I)
+RISKY = re.compile(C.RISKY.pattern + r"|\b(?:100% uptime|unlimited revisions|no hidden costs ever|double your|triple your)\b", re.I)
 TEXT_KEYS = ("headline", "lede", "body", "points", "goals", "challenges", "included", "excluded", "items", "notes",
              "description", "name", "outcome", "bio", "result", "client", "role", "title", "subtitle", "milestone", "due", "item")
 

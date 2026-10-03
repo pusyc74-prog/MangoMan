@@ -143,6 +143,28 @@ def logo_check(path):
     return ""
 
 
+def brand_problems(spec, base_dir="."):
+    """Problems with a spec's brand {primary, accent, logo}: colours must be
+    hex and the logo a PNG or JPG that exists (relative to base_dir)."""
+    b = spec.get("brand")
+    if b is None:
+        return []
+    if not isinstance(b, dict):
+        return ["brand must be an object: primary, accent, logo"]
+    p = []
+    for key in ("primary", "accent"):
+        if b.get(key):
+            try:
+                hexc(str(b[key]))
+            except ValueError:
+                p.append("brand %s must be a hex colour like #1F5FA8, not %r" % (key, b[key]))
+    if b.get("logo"):
+        pr = logo_check(os.path.join(base_dir, str(b["logo"])))
+        if pr:
+            p.append(pr)
+    return p
+
+
 def prepare_logo(path):
     """A copy of the logo with empty margins trimmed (transparent or white),
     so it sits exactly where it is placed. Returns the original on failure."""
@@ -194,18 +216,6 @@ def _pixels(path):
         im = im.convert("RGBA")
         im.thumbnail((96, 96))
         return [p[:3] for p in im.getdata() if p[3] > 200]
-
-
-def logo_tone(path):
-    """Average colour of the logo's visible pixels (hex), or None."""
-    try:
-        px = _pixels(path)
-    except Exception:
-        return None
-    if not px:
-        return None
-    n = len(px)
-    return "".join("%02X" % round(sum(p[i] for p in px) / n) for i in range(3))
 
 
 def logo_hidden_share(path, bg):

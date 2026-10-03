@@ -79,8 +79,9 @@ Write `listing.json`:
 ```
 
 `images[].file` is optional: when given, the checker measures it (at least
-1,000 px, main image white at the corners). `images[].url` (a hosted image)
-goes into the Shopify import file.
+1,000 px, main image white at the corners). Each `images[].url` (a hosted
+image) goes into the Shopify import file, one row per image. Give
+`shopify.handle` when the title is not in English letters.
 
 ## 3. Build
 

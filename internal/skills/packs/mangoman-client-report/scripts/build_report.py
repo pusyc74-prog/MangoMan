@@ -20,13 +20,15 @@ e = lambda s: html.escape(str(s if s is not None else ""), quote=True)
 run_analysis = V.run_analysis
 
 
-def validate(spec):
+def validate(spec, base_dir="."):
     p = []
     for k in ("title", "client", "period", "summary"):
         if not spec.get(k):
             p.append("%s is required" % k)
     if not (1 <= len(spec.get("kpis", [])) <= 6):
         p.append("give 1 to 6 kpis")
+    if any(isinstance(k.get("value"), bool) or not isinstance(k.get("value"), (int, float)) for k in spec.get("kpis", [])):
+        p.append("every KPI needs a numeric value")
     for i, s in enumerate(spec.get("sections", []), 1):
         if not s.get("headline"):
             p.append("section %d needs a headline (the takeaway)" % i)
@@ -36,7 +38,15 @@ def validate(spec):
         p.append("give at least one section")
     if spec.get("theme") and spec["theme"] not in BK.CURATED:
         p.append("theme must be one of %s" % ", ".join(BK.CURATED))
-    return p
+    for i, s in enumerate(spec.get("sections", []), 1):
+        t = s.get("table")
+        if t:
+            fm = t.get("formats") or ["text"] * len(t.get("columns", []))
+            if len(fm) != len(t.get("columns", [])) or any(not isinstance(r, list) or len(r) != len(fm) for r in t.get("rows", [])):
+                p.append("section %d: table needs one format and one value per column in every row" % i)
+            elif any(f != "text" and v is not None and (isinstance(v, bool) or not isinstance(v, (int, float))) for r in t["rows"] for f, v in zip(fm, r)):
+                p.append("section %d: number columns take numbers or null (use format text for words like n/a)" % i)
+    return p + BK.brand_problems(spec, base_dir)
 
 
 CSS = """
@@ -128,10 +138,11 @@ def main():
         sys.exit(__doc__)
     out = a[a.index("--out") + 1] if "--out" in a else "report"
     spec = run_analysis(a[0])
-    probs = validate(spec)
+    base = os.path.dirname(os.path.abspath(a[0]))
+    probs = validate(spec, base)
     if probs:
         sys.exit("spec problems:\n- " + "\n- ".join(probs))
-    T, note = BK.resolve_spec(spec, os.path.dirname(os.path.abspath(a[0])))
+    T, note = BK.resolve_spec(spec, base)
     with open(out + ".spec.json", "w", encoding="utf-8") as f:
         json.dump(spec, f, indent=2, ensure_ascii=False)
     with open(out + ".html", "w", encoding="utf-8") as f:

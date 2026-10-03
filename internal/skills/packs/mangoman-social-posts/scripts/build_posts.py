@@ -86,17 +86,7 @@ def validate(spec, bdir="."):
     for key, allowed in (("theme", tuple(BK.CURATED)), ("motif", BK.MOTIFS), ("type", tuple(BK.TYPES))):
         if spec.get(key) is not None and spec[key] not in allowed:
             probs.append("%s must be one of %s" % (key, ", ".join(allowed)))
-    b = spec.get("brand") or {}
-    for key in ("primary", "accent"):
-        if b.get(key):
-            try:
-                BK.hexc(b[key])
-            except ValueError:
-                probs.append("brand %s must be a hex colour like #1F5FA8" % key)
-    if b.get("logo"):
-        pr = BK.logo_check(os.path.join(bdir, b["logo"]) if not os.path.isabs(b["logo"]) else b["logo"])
-        if pr:
-            probs.append(pr)
+    probs += BK.brand_problems(spec, bdir)
     ids = set()
     for i, p in enumerate(posts, 1):
         tag = "post %d (%s)" % (i, p.get("id", "?"))
@@ -151,7 +141,7 @@ body { --u: %(u).3fpx; --k: 1; font-family: %(body)s; -webkit-font-smoothing: an
 .frame { position: absolute; inset: calc(7 * var(--u)); display: flex; flex-direction: column; }
 .story .frame { top: 250px; bottom: 250px; } /* the app's own bars cover the top and bottom 250 px of a story */
 .fit { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
-.end { justify-content: flex-end; } .mid { justify-content: center; }
+.end { justify-content: safe flex-end; } .mid { justify-content: safe center; }
 .h { font-family: %(head)s; font-weight: 700; line-height: 1.06; letter-spacing: -0.01em; overflow-wrap: break-word; }
 .foot { display: flex; align-items: center; justify-content: space-between; gap: calc(3 * var(--u)); margin-top: calc(4 * var(--u)); min-height: calc(5.5 * var(--u)); }
 .foot img { height: calc(5 * var(--u)); width: auto; display: block; }
@@ -273,7 +263,7 @@ def layout_html(spec, p, T, w, h, slide=None, idx=0, total=0, bdir="."):
             return bg, inner.replace("<!--after-->", cta)
         bg = "FFFFFF"
         body = '<div class="h" style="font-size:calc(17*var(--u)*var(--k));color:#%s;line-height:1;margin-bottom:calc(2*var(--u)*var(--k))">%02d</div>' % (
-            BK.mix(T["accent_fill"], bg, 0.28), idx - 1)
+            BK.mix(T["accent_fill"], bg, 0.28), sum(s.get("kind", "content") == "content" for s in p["slides"][:idx]))
         body += sz(slide["headline"], 7.4 * hs, T["text"], "h")
         if slide.get("body"):
             body += sz(slide["body"], 4.2, T["body"], extra="margin-top:calc(3*var(--u)*var(--k));line-height:1.38")
@@ -392,7 +382,7 @@ def caption_for(p, platform):
     return c
 
 
-def hashtags_for(p, platform, spec):
+def hashtags_for(p, platform):
     tags = [t if t.startswith("#") else "#" + t for t in p.get("hashtags", [])]
     limit = PLATFORMS[platform][2]
     if platform == "whatsapp":
@@ -400,9 +390,9 @@ def hashtags_for(p, platform, spec):
     return tags[:max(limit, 1)] if platform in ("x", "threads") else tags
 
 
-def full_caption(p, platform, spec):
+def full_caption(p, platform):
     c = caption_for(p, platform).strip()
-    tags = hashtags_for(p, platform, spec)
+    tags = hashtags_for(p, platform)
     if tags and not all(t.lower() in c.lower() for t in tags):
         c = c + ("\n\n" if platform in ("instagram", "linkedin", "facebook") else " ") + " ".join(t for t in tags if t.lower() not in c.lower())
     return c
@@ -419,7 +409,7 @@ def captions_md(spec):
             if p["layout"] == "carousel" and pl == "linkedin":
                 files = "%s-carousel.pdf (upload as a document)" % p["id"]
             name = {"x": "X", "linkedin": "LinkedIn", "whatsapp": "WhatsApp status"}.get(pl, pl.title())
-            lines += ["**%s** (%s)" % (name, files), "", "```", full_caption(p, pl, spec), "```", ""]
+            lines += ["**%s** (%s)" % (name, files), "", "```", full_caption(p, pl), "```", ""]
             if pl in STORY_PLATFORMS and "story" in post_formats(spec, p) and PLATFORMS[pl][0] != "story":
                 lines += ["%s story: %s (stories carry no caption; add a link sticker if needed)" % (name, frame_name(p["id"], "story", 0)), ""]
         lines += ["Alt text: %s" % p.get("alt", ""), ""]
@@ -439,7 +429,7 @@ def calendar(spec, out):
             fm = platform_format(spec, p, pl)
             files = [frame_name(p["id"], fm, j) for j in range(1, len(p["slides"]) + 1)] if p["layout"] == "carousel" else [frame_name(p["id"], fm, 0)]
             rows.append({"Date": p["date"], "Time": p.get("time", ""), "Platform": pl, "Post": p.get("title") or p["id"],
-                         "Images": " ".join(files), "Caption": full_caption(p, pl, spec)})
+                         "Images": " ".join(files), "Caption": full_caption(p, pl)})
     if not rows:
         return []
     rows.sort(key=lambda r: (r["Date"], r["Time"], r["Platform"]))

@@ -1,9 +1,10 @@
 """Collect the facts a code review needs: the diff, test and lint results, secrets.
 
 Usage: python3 collect.py <repo> [--base main] [--no-tests] --out facts.json
-Without --base, reviews uncommitted changes, or the last commit when there are
-none. Runs the project's own checks when it finds them (Go vet and tests,
-npm test, pytest, pyflakes, cargo test), with a time limit.
+Without --base, reviews uncommitted changes and new files, or the last commit
+when there are none. Runs the project's own checks when it finds them (Go vet
+and tests, npm test, pytest, pyflakes on the changed files, cargo test), with
+a time limit.
 """
 import json
 import os
@@ -21,17 +22,16 @@ DEBUG = r"\bconsole\.log\(|\bdebugger;|\bpdb\.set_trace\(|\bbreakpoint\(\)|\bfmt
 
 
 def git(repo, *args):
-    return subprocess.run(["git", "-C", repo, "-c", "core.quotePath=false", *args], capture_output=True, text=True).stdout
+    return subprocess.run(["git", "-C", repo, "-c", "core.quotePath=false", *args], capture_output=True, encoding="utf-8", errors="replace").stdout
 
 
-def diff_range(repo, base):
-    """What to compare: base...HEAD, else uncommitted work, else the last commit."""
-    has_head = bool(git(repo, "rev-parse", "--verify", "-q", "HEAD").strip())
+def diff_range(repo, base, new):
+    """What to compare: base...HEAD, else uncommitted work and new files, else the last commit."""
     if base:
         return [base + "...HEAD"]
-    if not has_head:
-        return None  # no commits yet: only untracked files
-    if git(repo, "status", "--porcelain", "--untracked-files=no").strip():
+    if not git(repo, "rev-parse", "--verify", "-q", "HEAD").strip():
+        return [EMPTY_TREE]  # no commits yet: everything tracked is new
+    if new or git(repo, "status", "--porcelain", "--untracked-files=no").strip():
         return ["HEAD"]
     parent = git(repo, "rev-parse", "--verify", "-q", "HEAD~1").strip()
     return [parent or EMPTY_TREE, "HEAD"]
@@ -45,19 +45,22 @@ def name_of(path):
 
 
 def parse_diff(text):
-    """{file: {"added": [(line, text)], "removed": n}} from a unified diff with zero context."""
-    files, cur, line, header = {}, None, 0, False
+    """{file: {"added": [(line, text)], "removed": n, "deleted": bool}} from a unified diff with zero context."""
+    files, cur, old, line, header = {}, None, None, 0, False
     for raw in text.splitlines():
         if raw.startswith("diff --git "):
             cur, header = None, True
+        elif header and raw.startswith("--- "):
+            old = name_of(raw[4:])
         elif header and raw.startswith("+++ "):
-            cur = None if raw[4:].startswith("/dev/null") else name_of(raw[4:])
-            if cur:
-                files[cur] = {"added": [], "removed": 0}
+            gone = raw[4:].startswith("/dev/null")
+            cur = old if gone else name_of(raw[4:])
+            files[cur] = {"added": [], "removed": 0, "deleted": gone}
         elif header and raw.startswith("Binary files "):
-            m = re.search(r" and (.+) differ$", raw)
-            if m and not m.group(1).startswith("/dev/null"):
-                files[name_of(m.group(1))] = {"added": [], "removed": 0}
+            m = re.match(r'Binary files (.+?) and ("?b/.+|/dev/null) differ$', raw)
+            if m:
+                gone = m.group(2) == "/dev/null"
+                files[name_of(m.group(1 if gone else 2))] = {"added": [], "removed": 0, "deleted": gone}
         elif raw.startswith("@@") and cur:
             header = False
             line = int(re.search(r"\+(\d+)", raw).group(1))
@@ -69,23 +72,23 @@ def parse_diff(text):
     return files
 
 
-def untracked(repo):
-    """New files git does not track yet, as if every line were added."""
+def untracked(repo, skip):
+    """New files git does not track yet (except skip, the facts file), as if every line were added."""
     out = {}
     for f in git(repo, "ls-files", "--others", "--exclude-standard", "-z").split("\0"):
         p = os.path.join(repo, f)
-        if not f or not os.path.isfile(p):
+        if not f or not os.path.isfile(p) or os.path.abspath(p) == skip:
             continue
         try:
             with open(p, encoding="utf-8") as fh:
-                out[f] = {"added": list(enumerate(fh.read().splitlines(), 1)), "removed": 0}
+                out[f] = {"added": list(enumerate(fh.read().splitlines(), 1)), "removed": 0, "deleted": False}
         except (UnicodeDecodeError, OSError):
-            out[f] = {"added": [], "removed": 0}  # binary
+            out[f] = {"added": [], "removed": 0, "deleted": False}  # binary
     return out
 
 
-def checks_for(repo):
-    """The project's own check commands, by what files it has."""
+def checks_for(repo, changed):
+    """The project's own check commands, by what files it has; pyflakes only on the changed Python files."""
     has = lambda p: os.path.exists(os.path.join(repo, p))
     cmds = []
     if has("go.mod") and shutil.which("go"):
@@ -96,8 +99,9 @@ def checks_for(repo):
             cmds.append(("npm test", ["npm", "test", "--silent"]))
     py = any(f.endswith(".py") for f in os.listdir(repo))
     if py or has("pyproject.toml") or has("setup.py"):
-        if subprocess.run([sys.executable, "-m", "pyflakes", "--version"], capture_output=True).returncode == 0:
-            cmds.append(("pyflakes", [sys.executable, "-m", "pyflakes", "."]))
+        pys = sorted(f for f in changed if f.endswith(".py") and has(f))
+        if pys and subprocess.run([sys.executable, "-m", "pyflakes", "--version"], capture_output=True).returncode == 0:
+            cmds.append(("pyflakes", [sys.executable, "-m", "pyflakes", *pys]))
         if (has("tests") or has("pytest.ini") or any(f.startswith("test_") for f in os.listdir(repo))) and \
                 subprocess.run([sys.executable, "-m", "pytest", "--version"], capture_output=True).returncode == 0:
             cmds.append(("pytest", [sys.executable, "-m", "pytest", "-q"]))
@@ -115,18 +119,18 @@ def main():
     out = a[a.index("--out") + 1] if "--out" in a else "facts.json"
     if not git(repo, "rev-parse", "--git-dir").strip():
         sys.exit("%s is not a git repository" % repo)
-    rng = diff_range(repo, base)
-    files = parse_diff(git(repo, "diff", "--unified=0", "--no-color", *rng)) if rng else {}
-    if not base:
-        files.update(untracked(repo))
+    new = {} if base else untracked(repo, os.path.abspath(out))
+    rng = diff_range(repo, base, new)
+    files = parse_diff(git(repo, "diff", "--unified=0", "--no-color", *rng))
+    files.update(new)
     if not files:
         sys.exit("no changes to review: make changes, or pass --base <branch> to review a branch")
     secrets, debug, todos, big = [], [], [], []
     for f, d in files.items():
         for ln, t in d["added"]:
-            for name, rx in SECRETS:
-                if re.search(rx, t):
-                    secrets.append({"file": f, "line": ln, "kind": name})
+            kind = next((name for name, rx in SECRETS if re.search(rx, t)), None)  # one report per line
+            if kind:
+                secrets.append({"file": f, "line": ln, "kind": kind})
             if re.search(DEBUG, t):
                 debug.append({"file": f, "line": ln, "text": t.strip()[:80]})
             if re.search(r"\b(TODO|FIXME|HACK)\b", t):
@@ -136,16 +140,17 @@ def main():
             big.append({"file": f, "mb": round(os.path.getsize(p) / 1e6, 1)})
     tools = []
     if "--no-tests" not in a:
-        for name, cmd in checks_for(repo):
+        for name, cmd in checks_for(repo, [f for f, d in files.items() if not d["deleted"]]):
             try:
                 # no keyboard input and breakpoints off, so a stray breakpoint() cannot hang the review
-                r = subprocess.run(cmd, cwd=repo, capture_output=True, text=True, timeout=600, stdin=subprocess.DEVNULL,
+                r = subprocess.run(cmd, cwd=repo, capture_output=True, encoding="utf-8", errors="replace", timeout=600, stdin=subprocess.DEVNULL,
                                    env=dict(os.environ, PYTHONBREAKPOINT="0", CI="1"))
                 tools.append({"name": name, "ok": r.returncode == 0, "output": "\n".join((r.stdout + r.stderr).strip().splitlines()[-25:])})
             except subprocess.TimeoutExpired:
                 tools.append({"name": name, "ok": False, "output": "timed out after 10 minutes"})
-    facts = {"repo": os.path.basename(repo), "range": " ".join(rng or ["new files"]),
-             "files": {f: {"added_lines": [ln for ln, _ in d["added"]], "added": len(d["added"]), "removed": d["removed"]} for f, d in files.items()},
+    facts = {"repo": os.path.basename(repo), "range": " ".join(rng).replace(EMPTY_TREE + " HEAD", "HEAD (the first commit)").replace(EMPTY_TREE, "new repository"),
+             "files": {f: {"added_lines": [ln for ln, _ in d["added"]], "added": len(d["added"]), "removed": d["removed"],
+                           **({"deleted": True} if d["deleted"] else {})} for f, d in files.items()},
              "tools": tools, "secrets": secrets, "debug": debug, "todos": todos, "large_files": big}
     with open(out, "w", encoding="utf-8") as f:
         json.dump(facts, f, indent=1)

@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/config"
+	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/mcp"
 	"github.com/pusyc74-prog/mangoman/internal/skills"
 )
@@ -78,6 +79,35 @@ func openCodeConfig(cfg *config.Config, model string) string {
 	return string(b)
 }
 
+// serveEnv is the environment for a router started in the background. It has
+// no terminal, so a key file passphrase is asked for here and passed on.
+func serveEnv() ([]string, error) {
+	env := os.Environ()
+	st, err := openStore()
+	if err != nil {
+		return nil, err
+	}
+	path, err := config.Path("keys.enc")
+	if err != nil {
+		return nil, err
+	}
+	if _, isFile := st.(*keys.FileStore); !isFile || os.Getenv("MANGOMAN_PASSPHRASE") != "" {
+		return env, nil
+	}
+	if _, err := os.Stat(path); err != nil {
+		return env, nil // no key file yet: nothing to unlock
+	}
+	pass, err := readSecret("Key file passphrase: ")
+	if err != nil {
+		return nil, err
+	}
+	check := keys.NewFileStore(path, func() (string, error) { return pass, nil })
+	if _, err := check.Get(""); err != nil && !errors.Is(err, keys.ErrNotFound) {
+		return nil, err
+	}
+	return append(env, "MANGOMAN_PASSPHRASE="+pass), nil
+}
+
 const openCodeInstall = `OpenCode is not installed. Install it with one of:
   curl -fsSL https://opencode.ai/install | bash
   npm install -g opencode-ai
@@ -115,8 +145,13 @@ func cmdCode(args []string) error {
 			return err
 		}
 		defer logf.Close()
+		env, err := serveEnv()
+		if err != nil {
+			return err
+		}
 		router = exec.Command(self, "serve")
-		router.Stdout, router.Stderr = logf, logf
+		router.Stdout, router.Stderr, router.Env = logf, logf, env
+		detach(router)
 		if err := router.Start(); err != nil {
 			return fmt.Errorf("could not start the router: %w", err)
 		}

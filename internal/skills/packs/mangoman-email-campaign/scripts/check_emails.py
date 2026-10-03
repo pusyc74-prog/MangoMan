@@ -18,9 +18,8 @@ import build_emails as B  # noqa: E402
 import render  # noqa: E402
 import checks as C  # noqa: E402
 
-SPAMMY = re.compile(r"\b(free money|100% free|act now|buy now!|click here|cash bonus|double your|earn \$|extra cash|get paid|guaranteed?|winner|you(?:'ve| have) won|risk[- ]free|no obligation|urgent|limited time only|once in a lifetime|congratulations|dear friend|miracle|lowest price|cheap|\$\$\$|₹₹₹)\b", re.I)
+SPAMMY = re.compile(r"(?<!\w)(free money|100% free|act now|buy now!|click here|cash bonus|double your|earn \$|extra cash|get paid|guaranteed?|winner|you(?:'ve| have) won|risk[- ]free|no obligation|urgent|limited time only|once in a lifetime|congratulations|dear friend|miracle|lowest price|cheap|\$\$\$|₹₹₹)(?!\w)", re.I)
 PLACEHOLDER = re.compile(r"lorem ipsum|\bTBD\b|\bTODO\b|\[(?:name|company|link|insert|date)[^\]]*\]|xxx+|example\.com", re.I)
-RISKY = re.compile(r"\b(guaranteed?|cures?|100% (?:safe|natural|pure)|best in (?:india|the world)|clinically proven|no side effects)\b", re.I)
 EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿]")
 MOBILE_JS = r"""
 () => ({
@@ -33,9 +32,10 @@ MOBILE_JS = r"""
 
 
 def email_texts(m):
-    out = [m["subject"], m["preview"]]
+    """Text shown in the email body (alt text included: it shows when images are off)."""
+    out = []
     for b in m["blocks"]:
-        for k in ("text", "label", "author", "note"):
+        for k in ("text", "label", "author", "note", "alt"):
             v = b.get(k)
             if isinstance(v, list):
                 out += v
@@ -44,7 +44,7 @@ def email_texts(m):
         out += [x for x in b.get("items", []) if isinstance(x, str)]
         for p in b.get("items", []):
             if isinstance(p, dict):
-                out += [str(p.get(k, "")) for k in ("name", "price", "cta")]
+                out += [str(p.get(k, "")) for k in ("name", "price", "cta", "alt")]
     return out
 
 
@@ -62,26 +62,22 @@ def links(m):
     return hs
 
 
-
-
 def main():
     if len(sys.argv) < 3:
         sys.exit(__doc__)
     src, out = sys.argv[1], sys.argv[2]
     spec = B.load(src)
     bdir = os.path.dirname(os.path.abspath(src))
-    rs = []
-
-    def r(level, msg):
-        rs.append((level, msg))
-
+    rep = C.Report()
     probs = B.validate(spec, bdir)
-    r("PASS" if not probs else "FAIL", "spec is valid" if not probs else "; ".join(probs))
+    rep.check(probs, "spec is valid", "spec problems")
     if probs:
-        return finish(rs)
+        return rep.finish()
     esp = spec.get("esp", "generic")
     unsub_tag = B.ESP[esp][1]
     pool = C.fact_pool(spec.get("facts", {}))
+    brand = {spec["sender"]["name"], (spec.get("brand") or {}).get("name", "")}
+    allowed = {w for n in brand for w in re.findall(r"\w+", n.upper())} | set(spec.get("allowed_caps", []))
     hard = {k: [] for k in ("missing", "unsub", "address", "size", "links", "numbers", "placeholder", "text", "subject_long")}
     soft = {k: [] for k in ("subject", "preview", "spam", "shout", "excl", "emoji", "risky", "ctas", "imgheavy", "size_near")}
     for m in spec["emails"]:
@@ -104,18 +100,21 @@ def main():
         if not os.path.exists(tp) or unsub_tag not in open(tp, encoding="utf-8").read():
             hard["text"].append(mid)
         sj, pv = m["subject"], m["preview"]
-        if len(sj) > 90:
-            hard["subject_long"].append("%s (%d)" % (mid, len(sj)))
-        elif len(sj) > 60 or len(sj) < 15:
-            soft["subject"].append("%s (%d characters)" % (mid, len(sj)))
+        subjects = [sj] + m.get("subject_alternatives", [])
+        for t in subjects:
+            if len(t) > 90:
+                hard["subject_long"].append("%s (%d)" % (mid, len(t)))
+            elif len(t) > 60 or len(t) < 15:
+                soft["subject"].append("%s (%d characters)" % (mid, len(t)))
         if not (35 <= len(pv) <= 140) or pv.strip().lower() == sj.strip().lower():
             soft["preview"].append("%s (%d characters%s)" % (mid, len(pv), ", same as the subject" if pv.strip().lower() == sj.strip().lower() else ""))
-        texts = email_texts(m)
+        body = email_texts(m)
+        texts = subjects + [pv] + body
         for t in texts:
             mm = SPAMMY.search(t)
             if mm:
                 soft["spam"].append('%s: "%s"' % (mid, mm.group(0)))
-            mm = RISKY.search(t)
+            mm = C.RISKY.search(t)
             if mm:
                 soft["risky"].append('%s: "%s"' % (mid, mm.group(0)))
             mm = PLACEHOLDER.search(t)
@@ -123,12 +122,12 @@ def main():
                 hard["placeholder"].append('%s: "%s"' % (mid, mm.group(0)))
             for u in C.untraced(t, pool):
                 hard["numbers"].append("%s: %s" % (mid, u))
-        caps = [w for w in re.findall(r"\b[A-Z]{5,}\b", sj)]
+        caps = sorted({w for t in subjects for w in re.findall(r"\b[A-Z]{2,}\b", t) if w not in allowed})
         if caps:
             soft["shout"].append("%s: %s" % (mid, ", ".join(caps)))
-        if sj.count("!") > 1 or sum(t.count("!") for t in texts) > 4:
+        if any(t.count("!") > 1 for t in subjects) or sum(t.count("!") for t in texts) > 4:
             soft["excl"].append(mid)
-        if len(EMOJI.findall(sj)) > 1:
+        if any(len(EMOJI.findall(t)) > 1 for t in subjects):
             soft["emoji"].append(mid)
         for h in links(m):
             if not re.match(r"^(https://\S+|mailto:\S+@\S+|tel:\+?[\d\s-]+)$", h) or "example.com" in h:
@@ -136,13 +135,13 @@ def main():
         targets = {b["href"] for b in m["blocks"] if b["type"] == "button"}
         if len(targets) > 2:
             soft["ctas"].append(mid)
-        words = sum(len(t.split()) for t in texts[2:])
+        words = sum(len(t.split()) for t in body)
         nimg = sum(1 for b in m["blocks"] if b["type"] == "image") + sum(1 for b in m["blocks"] if b["type"] == "products" for p in b["items"] if p.get("image"))
         if nimg >= 2 and words < 30:
             soft["imgheavy"].append(mid)
 
     def say(lst, ok, bad, level="FAIL"):
-        r("PASS" if not lst else level, ok if not lst else bad + ": " + "; ".join(sorted(set(lst))[:6]))
+        rep.check(lst, ok, bad, level, limit=6)
 
     say(hard["missing"], "every email built", "emails not built")
     say(hard["unsub"], "every email has an unsubscribe link (%s)" % esp, "no unsubscribe link (required by law and by Gmail and Yahoo)")
@@ -163,13 +162,13 @@ def main():
     say(soft["ctas"], "one clear action per email", "more than two different button destinations", "WARN")
     say(soft["imgheavy"], "text-to-image balance is healthy", "mostly images, little text (spam filters and image-off readers)", "WARN")
     if soft["size_near"]:
-        r("WARN", "close to Gmail's clipping size: " + "; ".join(soft["size_near"]))
+        rep.add("WARN", "close to Gmail's clipping size: " + "; ".join(soft["size_near"]))
     has_local = any(b["type"] == "image" and not b["src"].startswith("https://") for m in spec["emails"] for b in m["blocks"]) or \
         any(p.get("image") and not p["image"].startswith("https://") for m in spec["emails"] for b in m["blocks"] if b["type"] == "products" for p in b["items"])
     if (has_local or (spec.get("brand") or {}).get("logo")) and not spec.get("assets_base_url"):
-        r("WARN", "images point to the local assets/ folder: upload them (your email tool's file manager or your site) and set assets_base_url, or replace the paths, before sending")
+        rep.add("WARN", "images point to the local assets/ folder: upload them (your email tool's file manager or your site) and set assets_base_url, or replace the paths, before sending")
     else:
-        r("PASS", "images are hosted (assets_base_url set)" if has_local else "no local images")
+        rep.add("PASS", "images are hosted (assets_base_url set)" if has_local else "no local images")
 
     hscroll, small, tiny, broken = [], [], [], []
     measured = False
@@ -189,18 +188,12 @@ def main():
             tiny.append("%s (%.0f px)" % (m["id"], x["min_font"]))
         broken += ["%s: %s" % (m["id"], s) for s in x["broken"]]
     if not measured:
-        r("WARN", "phone layout not measured (no Playwright): send yourself a test email and open it on a phone")
+        rep.add("WARN", "phone layout not measured (no Playwright): send yourself a test email and open it on a phone")
     else:
         say(hscroll, "no sideways scrolling on a phone", "emails scroll sideways on a phone")
         say(broken, "every image loads in the preview", "images that do not load")
         say(small, "buttons are easy to tap", "small buttons on a phone", "WARN")
         say(tiny, "text is readable on a phone", "text smaller than 13 px on a phone", "WARN")
-    return finish(rs)
-
-
-def finish(rs):
-    rep = C.Report()
-    rep.rows = rs
     rep.finish()
 
 

@@ -126,7 +126,6 @@ type Model struct {
 	Upstream  string             `json:"upstream"` // provider's own model id
 	Free      bool               `json:"free"`
 	Context   int                `json:"context"`
-	MaxOutput int                `json:"max_output,omitempty"`
 	Caps      []string           `json:"caps"` // tools, json, vision, streaming, reasoning
 	Limits    Limits             `json:"limits"`
 	Quality   map[string]float64 `json:"quality"`          // per task class, 0..1
@@ -292,10 +291,18 @@ func (c *Catalogue) DiscoveredModel(provider, upstream string) Model {
 		Caps: []string{"tools", "json", "streaming"}, Quality: map[string]float64{"default": 0.6}}
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+	limits := false
 	for _, x := range c.Models {
-		if x.Provider == provider {
-			m.Limits = x.Limits
-			break
+		if x.Provider != provider {
+			continue
+		}
+		if !limits {
+			m.Limits, limits = x.Limits, true
+		}
+		if x.Canonical == m.Canonical && x.Upstream != upstream {
+			// Another model of this provider has the short name: keep the
+			// full id, so the two never share a breaker or a list entry.
+			m.Canonical = strings.TrimSuffix(upstream, ":free")
 		}
 	}
 	return m

@@ -59,15 +59,16 @@ def validate(spec):
         p.append("meta.slug: lowercase words joined by dashes")
     if not spec.get("keyword"):
         p.append("keyword (the main search phrase) is required")
-    a = spec.get("article") or {}
-    if not a.get("h1") or not a.get("sections"):
-        p.append("article needs h1 and sections")
-    for s in a.get("sections", []):
-        if not s.get("h2"):
+    a = spec.get("article")
+    if not isinstance(a, dict) or not a.get("h1") or not isinstance(a.get("sections"), list) or not a["sections"]:
+        return p + ["article needs h1 and sections"]
+    for s in a["sections"]:
+        if not isinstance(s, dict) or not s.get("h2"):
             p.append("every section needs an h2")
-        for sub in s.get("subsections", []):
-            if not sub.get("h3"):
-                p.append("every subsection needs an h3")
+        elif any(not isinstance(sub, dict) or not sub.get("h3") for sub in s.get("subsections", [])):
+            p.append("every subsection needs an h3")
+    if p:
+        return p  # the checks below walk the article
     ids = {str(x.get("id")) for x in spec.get("sources", [])}
     for x in spec.get("sources", []):
         if not str(x.get("url", "")).startswith("https://") or not x.get("title"):

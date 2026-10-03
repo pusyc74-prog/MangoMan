@@ -226,7 +226,7 @@ function connectPanel(p) {
   return el("div", { class: "connect" },
     el("p", {}, "Get a free key from ",
       el("a", { class: "link", href: p.signup_url, target: "_blank", rel: "noopener noreferrer" }, p.name),
-      `, then paste it here. It is checked with ${p.name} and saved in this computer's keychain.`),
+      `, then paste it here. It is checked with ${p.name} and saved in ${state.overview.key_store === "os-keychain" ? "this computer's keychain" : "an encrypted file on this computer"}.`),
     form, msg);
 }
 

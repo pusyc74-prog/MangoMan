@@ -50,7 +50,7 @@ to A/B test.
 
 - **Never invent facts.** Every price, discount, date, number and quote comes from the user. Put them in `facts`; the checker fails numbers that are not there.
 - Short paragraphs, plain words, the reader's benefit first. Use `{first_name}` for personalisation; a fallback ("there") is added where the tool supports it.
-- No spammy wording ("act now", "FREE!!!", "you have won"), no all-caps words in subjects, at most one exclamation mark and one emoji in a subject.
+- No spammy wording ("act now", "FREE!!!", "you have won"), no all-caps words in subjects (list real acronyms like GST in `allowed_caps`), at most one exclamation mark and one emoji in a subject.
 - Every link is a real https address; `**bold**` and `[link text](https://...)` work inside text.
 - Every image needs alt text (many readers have images off); keep a healthy amount of text.
 

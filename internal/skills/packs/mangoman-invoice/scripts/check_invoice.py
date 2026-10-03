@@ -70,7 +70,7 @@ def main():
             rep.add("WARN", "no payment details: add bank account, IFSC or UPI so the buyer can pay")
         if not spec.get("due_date"):
             rep.add("WARN", "no due date")
-    texts = [l.get("details", "") for l in lines] + spec.get("terms", []) + [spec.get("note", "")]
+    texts = [l.get("details", "") for l in lines] + B.terms(spec) + [spec.get("note", "")]
     rep.check(C.first_match(C.PLACEHOLDER, texts + [spec["bill_to"]["name"], spec["supplier"]["name"]]), "no placeholder text", "placeholder text left in")
     pdf = out + ".pdf"
     if os.path.exists(pdf):

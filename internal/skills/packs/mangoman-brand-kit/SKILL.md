@@ -48,7 +48,9 @@ python3 <skill dir>/scripts/check_brand.py brand.json brand
 Writes `brand-guide.pdf` (cover, logo, colour with contrast results, type,
 voice), `brand-tokens.json` (colours, fonts, and a `use_in_packs` block to
 paste into any other MangoMan pack's spec) and `brand.css` (CSS variables for
-websites). Fix every FAIL and rebuild.
+websites). When the accent is too light for button text, the guide adds a
+deeper Button colour; tell the user to use it for buttons. A page cut off at
+the A4 edge fails: shorten the voice lines. Fix every FAIL and rebuild.
 
 ## 4. Deliver
 

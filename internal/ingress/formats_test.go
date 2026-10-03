@@ -254,7 +254,7 @@ func TestMessagesStreamTextThenTool(t *testing.T) {
 	}
 	evs := readSSE(t, w.Body.String())
 	want := "message_start,content_block_start,content_block_delta,content_block_delta,content_block_stop," +
-		"content_block_start,content_block_delta,content_block_delta,content_block_stop,message_delta,message_stop"
+		"content_block_start,content_block_delta,content_block_stop,message_delta,message_stop"
 	if got := strings.Join(names(evs), ","); got != want {
 		t.Fatalf("events\n got %s\nwant %s", got, want)
 	}
@@ -275,7 +275,7 @@ func TestMessagesStreamTextThenTool(t *testing.T) {
 	if tool["type"] != "tool_use" || tool["id"] != "call_9" || evs[5].Data["index"].(float64) != 1 {
 		t.Fatalf("tool block %v", evs[5].Data)
 	}
-	md := evs[9].Data
+	md := evs[8].Data
 	if md["delta"].(map[string]any)["stop_reason"] != "tool_use" || md["usage"].(map[string]any)["output_tokens"].(float64) != 7 {
 		t.Fatalf("message_delta %v", md)
 	}
@@ -482,7 +482,7 @@ func TestBrainAPI(t *testing.T) {
 		t.Fatal("brain should ask for JSON")
 	}
 	w = call(h, "PUT", "/mangoman/brain", "127.0.0.1:4141", bearer, `{"enabled":false}`)
-	if w.Code != 200 || !srv.Cfg.GetBrain().Off || br.Enabled() {
+	if w.Code != 200 || !srv.Cfg.GetBrain().Off || br.Snapshot().Enabled {
 		t.Fatalf("off %d %s", w.Code, w.Body)
 	}
 	if w := call(h, "PUT", "/mangoman/brain", "127.0.0.1:4141", bearer, `{"model":"group/missing"}`); w.Code != 422 {

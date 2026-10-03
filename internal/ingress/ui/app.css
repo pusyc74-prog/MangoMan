@@ -239,7 +239,8 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
 .star:hover { color: var(--mango); }
 .star.on { color: var(--mango); }
 
-/* Floating new-models button and drawer */
+/* New-models button (floating on wide screens, in the header on narrow
+   ones so it never covers a button) and drawer */
 .fab {
   position: fixed; right: 20px; bottom: 20px; z-index: 20;
   display: inline-flex; align-items: center; gap: 8px;
@@ -256,7 +257,7 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
   box-shadow: -12px 0 32px rgba(0, 0, 0, 0.14);
   display: flex; flex-direction: column; gap: 10px; padding: 20px;
 }
-.drawer[hidden] { display: none; }
+.fab[hidden], .drawer[hidden] { display: none; }
 .drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .drawer-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .radar { list-style: none; margin: 0 -20px; padding: 0; overflow-y: auto; flex: 1; border-top: 1px solid var(--hair); }
@@ -278,7 +279,7 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
   .fav .actions { grid-column: 2; grid-row: 3; flex-direction: row; justify-content: flex-start; padding-top: 4px; }
   #mylist-new { margin-left: 0; }
   .ritem { flex-wrap: wrap; }
-  .fab { right: 16px; bottom: 16px; }
+  .fab { position: static; box-shadow: none; padding: 6px 12px; }
 }
 
 /* Decision brain */

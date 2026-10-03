@@ -8,6 +8,7 @@ import csv
 import json
 import os
 import sys
+import unicodedata
 
 GOOGLE = {"headline": 30, "description": 90, "path": 15, "headlines": (3, 15), "descriptions": (2, 4)}
 META = {"primary_text": 125, "headline": 40, "description": 30}  # where text is cut off on phones
@@ -19,6 +20,15 @@ MATCH = ("broad", "phrase", "exact")
 def load(path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
+
+
+def texts_ok(v):
+    return isinstance(v, list) and all(isinstance(x, str) and x for x in v)
+
+
+def glen(text):
+    """Length as Google Ads counts it: wide East Asian characters count twice."""
+    return sum(2 if unicodedata.east_asian_width(c) in "WF" else 1 for c in text)
 
 
 def validate(spec):
@@ -33,9 +43,19 @@ def validate(spec):
         for k in ("name", "final_url", "headlines", "descriptions"):
             if not ag.get(k):
                 p.append("%s: needs %s" % (tag, k))
-        for kw in ag.get("keywords", []):
-            if not kw.get("text") or kw.get("match", "phrase") not in MATCH:
-                p.append("%s: every keyword needs text and match broad, phrase or exact" % tag)
+        for k in ("headlines", "descriptions", "negatives"):
+            if ag.get(k) and not texts_ok(ag[k]):
+                p.append("%s: %s must be a list of text" % (tag, k))
+        for k in ("path1", "path2"):
+            if not isinstance(ag.get(k, ""), str):
+                p.append("%s: %s must be text" % (tag, k))
+        kws = ag.get("keywords", [])
+        if not (isinstance(kws, list) and all(isinstance(kw, dict) and isinstance(kw.get("text"), str) and kw["text"]
+                                              and kw.get("match", "phrase") in MATCH for kw in kws)):
+            p.append('%s: keywords must be a list like {"text": "buy alphonso mangoes", "match": "phrase"} (match broad, phrase or exact)' % tag)
+        pins, n = ag.get("pins", {}), len(ag.get("headlines") or [])
+        if not (isinstance(pins, dict) and all(k in [str(i) for i in range(1, n + 1)] and v in ("1", "2", "3") for k, v in pins.items())):
+            p.append('%s: pins maps a headline number (1 to %d) to a position "1", "2" or "3"' % (tag, n))
     if g is not None and not g.get("ad_groups"):
         p.append("google needs ad_groups")
     for i, ad in enumerate((m or {}).get("ads", []), 1):
@@ -43,6 +63,9 @@ def validate(spec):
         for k in ("name", "primary_text", "headline", "url"):
             if not ad.get(k):
                 p.append("%s: needs %s" % (tag, k))
+        for k in ("name", "primary_text", "headline", "url", "description", "image_brief"):
+            if not isinstance(ad.get(k, ""), str):
+                p.append("%s: %s must be text" % (tag, k))
         if ad.get("cta") and ad["cta"] not in META_CTAS:
             p.append("%s: cta must be one of %s" % (tag, ", ".join(META_CTAS)))
     if m is not None and not m.get("ads"):
@@ -50,8 +73,8 @@ def validate(spec):
     return p
 
 
-def counted(text, limit):
-    return "%s  (%d/%d)" % (text, len(text), limit)
+def counted(text, limit, n=len):
+    return "%s  (%d/%d)" % (text, n(text), limit)
 
 
 def ads_md(spec):
@@ -62,9 +85,9 @@ def ads_md(spec):
         for ag in g["ad_groups"]:
             out += ["### Ad group: %s" % ag["name"], "", "Final URL: %s" % ag["final_url"],
                     "Display path: /%s" % "/".join(x for x in (ag.get("path1"), ag.get("path2")) if x), "", "Headlines:", ""]
-            out += ["%d. %s%s" % (i, counted(h, GOOGLE["headline"]), "  [pinned to position %s]" % ag["pins"][str(i)] if str(i) in ag.get("pins", {}) else "")
+            out += ["%d. %s%s" % (i, counted(h, GOOGLE["headline"], glen), "  [pinned to position %s]" % ag["pins"][str(i)] if str(i) in ag.get("pins", {}) else "")
                     for i, h in enumerate(ag["headlines"], 1)]
-            out += ["", "Descriptions:", ""] + ["%d. %s" % (i, counted(d, GOOGLE["description"])) for i, d in enumerate(ag["descriptions"], 1)]
+            out += ["", "Descriptions:", ""] + ["%d. %s" % (i, counted(d, GOOGLE["description"], glen)) for i, d in enumerate(ag["descriptions"], 1)]
             if ag.get("keywords"):
                 fmt = {"broad": "%s", "phrase": '"%s"', "exact": "[%s]"}
                 out += ["", "Keywords: " + ", ".join(fmt[k.get("match", "phrase")] % k["text"] for k in ag["keywords"])]

@@ -20,7 +20,9 @@ type FileStore struct {
 	path       string
 	passphrase func() (string, error)
 	mu         sync.Mutex
-	pass       string // remembered after the first successful use
+	pass       string            // remembered after the first successful use
+	keys       map[string]string // decrypted once, then kept in memory
+	err        error             // a failed unlock, returned without asking again
 }
 
 const pbkdf2Iter = 600_000
@@ -47,6 +49,7 @@ func (f *FileStore) derive(salt []byte) (cipher.AEAD, error) {
 	if pass == "" {
 		p, err := f.passphrase()
 		if err != nil {
+			f.err = err
 			return nil, err
 		}
 		pass = p
@@ -66,10 +69,16 @@ func (f *FileStore) derive(salt []byte) (cipher.AEAD, error) {
 	return cipher.NewGCM(block)
 }
 
+// load returns the decrypted keys. The file is decrypted once; a wrong
+// passphrase fails every later call at once instead of asking again.
 func (f *FileStore) load() (map[string]string, error) {
+	if f.keys != nil || f.err != nil {
+		return f.keys, f.err
+	}
 	data, err := os.ReadFile(f.path)
 	if os.IsNotExist(err) {
-		return map[string]string{}, nil
+		f.keys = map[string]string{}
+		return f.keys, nil
 	}
 	if err != nil {
 		return nil, err
@@ -85,12 +94,17 @@ func (f *FileStore) load() (map[string]string, error) {
 	plain, err := aead.Open(nil, env.Nonce, env.Data, nil)
 	if err != nil {
 		f.pass = ""
-		return nil, errors.New("wrong passphrase or tampered key file")
+		f.err = errors.New("wrong passphrase or tampered key file")
+		return nil, f.err
 	}
 	m := map[string]string{}
 	err = json.Unmarshal(plain, &m)
 	clear(plain)
-	return m, err
+	if err != nil {
+		return nil, err
+	}
+	f.keys = m
+	return m, nil
 }
 
 func (f *FileStore) save(m map[string]string) error {
@@ -144,8 +158,17 @@ func (f *FileStore) Set(p, k string) error {
 	if err != nil {
 		return err
 	}
+	old, had := m[p]
 	m[p] = k
-	return f.save(m)
+	if err := f.save(m); err != nil {
+		if had {
+			m[p] = old
+		} else {
+			delete(m, p)
+		}
+		return err
+	}
+	return nil
 }
 
 func (f *FileStore) Delete(p string) error {
@@ -158,6 +181,11 @@ func (f *FileStore) Delete(p string) error {
 	if _, ok := m[p]; !ok {
 		return ErrNotFound
 	}
+	old := m[p]
 	delete(m, p)
-	return f.save(m)
+	if err := f.save(m); err != nil {
+		m[p] = old
+		return err
+	}
+	return nil
 }

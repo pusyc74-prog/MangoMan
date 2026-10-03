@@ -76,6 +76,8 @@ def validate(spec, bdir="."):
         for k in ("price", "compare_at_price"):
             if s.get(k) is not None and not isinstance(s[k], (int, float)):
                 p.append("shopify.%s must be a number" % k)
+        if not handle(spec):
+            p.append("shopify.handle is required when the title, product name, SKU and brand have no Latin letters")
     for i, im in enumerate(spec.get("images", []), 1):
         if not im.get("slot") or not im.get("brief"):
             p.append("image %d: needs slot and brief" % i)
@@ -85,8 +87,10 @@ def validate(spec, bdir="."):
 
 
 def handle(spec):
+    """The Shopify handle, or the first of title, product name, SKU and brand that has Latin letters."""
     s = spec.get("shopify") or {}
-    return s.get("handle") or re.sub(r"[^a-z0-9]+", "-", s.get("title", spec["product"]["name"]).lower()).strip("-")
+    tries = [s.get("title"), (spec.get("product") or {}).get("name"), s.get("sku"), spec.get("brand")]
+    return s.get("handle") or next((h for h in (re.sub(r"[^a-z0-9]+", "-", str(t or "").lower()).strip("-") for t in tries) if re.search("[a-z]{2}", h)), "")
 
 
 def paragraphs(x):
@@ -202,18 +206,21 @@ def write_csvs(spec, out):
         body = "".join("<p>%s</p>" % e(x) for x in paragraphs(s["description"]))
         if s.get("features"):
             body += "<ul>%s</ul>" % "".join("<li>%s</li>" % e(x) for x in s["features"])
-        img = next((im for im in spec.get("images", []) if im.get("url")), None)
+        imgs = [im for im in spec.get("images", []) if im.get("url")]
+        img = imgs[0] if imgs else None
         row = {"Handle": handle(spec), "Title": s["title"], "Body (HTML)": body, "Vendor": s.get("vendor", spec["brand"]),
                "Type": s.get("product_type", ""), "Tags": ", ".join(s.get("tags", [])), "Published": "TRUE",
                "Option1 Name": "Title", "Option1 Value": "Default Title", "Variant SKU": s.get("sku", ""),
                "Variant Price": s["price"], "Variant Compare At Price": s.get("compare_at_price", ""),
                "Variant Requires Shipping": "TRUE", "Variant Taxable": "TRUE",
-               "Image Src": img["url"] if img else "", "Image Alt Text": img.get("alt", "") if img else "",
+               "Image Src": img["url"] if img else "", "Image Position": 1 if img else "", "Image Alt Text": img.get("alt", "") if img else "",
                "SEO Title": s.get("seo_title", ""), "SEO Description": s.get("seo_description", ""), "Status": s.get("status", "draft")}
         with open(os.path.join(out, "shopify_products.csv"), "w", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=list(row))
             w.writeheader()
             w.writerow(row)
+            for i, im in enumerate(imgs[1:], 2):
+                w.writerow({"Handle": row["Handle"], "Image Src": im["url"], "Image Position": i, "Image Alt Text": im.get("alt", "")})
         made.append("shopify_products.csv")
     return made
 
@@ -237,7 +244,7 @@ ul{padding-left:18px;margin:0}li{margin:0 0 8px}
 
 
 def preview_html(spec, bdir):
-    a = spec.get("amazon")
+    a = spec.get("amazon") if any(m.startswith("amazon") for m in spec["marketplaces"]) else None
     s = spec.get("shopify") or {}
     title = amazon_title(a) if a else (s.get("title") or (spec.get("flipkart") or {}).get("title", ""))
     bullets = a["bullets"] if a else (spec.get("flipkart") or {}).get("key_features", s.get("features", []))

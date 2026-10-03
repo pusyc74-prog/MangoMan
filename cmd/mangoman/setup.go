@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -23,7 +22,7 @@ func cmdSetup() error {
 	} else if err != nil {
 		return err
 	}
-	if fi, _ := os.Stdin.Stat(); fi == nil || fi.Mode()&os.ModeCharDevice == 0 {
+	if !stdinIsTerminal() {
 		return errors.New("setup is interactive: run it in a terminal (or use `mangoman keys add <provider> --stdin`)")
 	}
 	cat, err := catalogue.Seed()
@@ -38,7 +37,7 @@ func cmdSetup() error {
 	w := &setup.Wizard{
 		Cat: cat, Store: st, Resolver: keys.NewResolver(st, envMap(cat)),
 		Validate:   client.ValidateKey,
-		In:         bufio.NewReader(os.Stdin),
+		In:         stdin,
 		Out:        os.Stdout,
 		ReadSecret: readSecret,
 		OpenURL:    setup.OpenURL,

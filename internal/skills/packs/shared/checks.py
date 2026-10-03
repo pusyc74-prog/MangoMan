@@ -6,7 +6,7 @@ import tracenum
 import vizlib as V
 
 PLACEHOLDER = re.compile(r"lorem ipsum|\bTBD\b|\bTODO\b|xxx+|\[(?:your|client|company|brand|product|name|insert|date|amount|link|size)[^\]]*\]|\{\{\s*\w+\s*\}\}", re.I)
-RISKY = re.compile(r"\b(guaranteed?|we guarantee|cures?|risk[- ]free|100% (?:safe|natural|pure|effective|organic|results|success)|best in (?:india|the world|town|class)|number one|#1|miracle|clinically proven|no side effects)\b", re.I)
+RISKY = re.compile(r"\b(guaranteed?|we guarantee|cures?|risk[- ]free|100% (?:safe|natural|pure|effective|organic|results|success)|best in (?:india|the world|town|class)|number one|cheapest|lowest price ever|miracle|clinically proven|no side effects)\b|(?<!\w)#1\b", re.I)
 
 
 def strings(o):
@@ -28,7 +28,7 @@ def fact_pool(*sources):
         pool += V.numbers_in(src)
         for s in strings(src):
             for _, c in tracenum.mentions(s):
-                pool += c
+                pool += [v for v, _ in c]
     return pool
 
 

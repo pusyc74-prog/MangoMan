@@ -1,18 +1,23 @@
 """Trace numbers written in text back to numbers the analysis computed.
 
 A headline such as "Revenue up 18% to ₹4.2 Cr" must only use numbers that
-exist in the computed spec (allowing for rounding, percent and unit
-suffixes). Untraceable numbers are reported so they can be fixed.
+exist in the computed spec, rounded to the precision the text shows (4.2 Cr
+means a value that rounds to 4.2 crore). Untraceable numbers are reported so
+they can be fixed.
 """
 import re
 
-TOKEN = re.compile(r"(?<![\w.])([₹$€£]?\s?[-+−]?\d(?:[\d,]*\d)?(?:\.\d+)?)\s*(%|pp|Cr|cr|L|lakh|K|k|M|B|bn|mn)?(?![\w])")
-MULT = {"cr": 1e7, "l": 1e5, "lakh": 1e5, "k": 1e3, "m": 1e6, "mn": 1e6, "b": 1e9, "bn": 1e9}
+UNIT = r"%|(?i:pp|crores?|cr|lakhs?|lacs?|thousand|k|millions?|mn|billions?|bn)|L|M|B|x|×"
+TOKEN = re.compile(r"(?<![\w.])([₹$€£]?\s?[-+−]?\d(?:[\d,]*\d)?(?:\.\d+)?)(?![\d.,]*\d)\s*(" + UNIT + r")?(?!\w)")
+MULT = {"cr": 1e7, "crore": 1e7, "crores": 1e7, "l": 1e5, "lakh": 1e5, "lakhs": 1e5, "lac": 1e5, "lacs": 1e5,
+        "k": 1e3, "thousand": 1e3, "m": 1e6, "mn": 1e6, "million": 1e6, "millions": 1e6,
+        "b": 1e9, "bn": 1e9, "billion": 1e9, "billions": 1e9}
 YEARS = range(1990, 2101)
 
 
 def mentions(text):
-    """(raw token, candidate values) for each number in a text."""
+    """(raw token, [(value, step)]) for each number in a text: the values it
+    may stand for, each with the rounding step its written precision implies."""
     out = []
     for m in TOKEN.finditer(text or ""):
         raw, unit = m.group(1), (m.group(2) or "")
@@ -26,31 +31,20 @@ def mentions(text):
             continue  # a year, not a measurement
         if not unit and abs(v) <= 10 and "." not in num and not raw.strip()[0] in "₹$€£":
             continue  # small counts ("3 regions", "top 5") are wording, not data
-        cands = []
+        step = 10.0 ** -len(num.partition(".")[2])
         if u in ("%", "pp"):
-            cands = [v / 100, v]
+            cands = [(v / 100, step / 100), (v, step)]
         elif u in MULT:
-            cands = [v * MULT[u]]
+            cands = [(v * MULT[u], step * MULT[u])]
         else:
-            cands = [v]
+            cands = [(v, step)]
         out.append((m.group(0).strip(), cands))
     return out
 
 
-def close(a, b):
-    if b == 0:
-        return abs(a) < 1e-9
-    return abs(a - b) <= max(abs(b) * 0.006, 0.0006)
-
-
 def untraced(text, computed):
-    """Number mentions in text that match nothing computed."""
-    bad = []
+    """Number mentions in text that match nothing computed at the precision shown."""
     pool = [float(x) for x in computed]
-    derived = pool + [abs(x) for x in pool]
-    for raw, cands in mentions(text):
-        if not any(close(c, p) or close(c, round(p, 2)) or close(c, round(p, 1)) for c in cands for p in derived):
-            # allow a rounded display: 4.2 Cr for 41,987,000
-            if not any(abs(c - p) <= abs(p) * 0.03 for c in cands for p in derived if p):
-                bad.append(raw)
-    return bad
+    pool += [abs(x) for x in pool]
+    return [raw for raw, cands in mentions(text)
+            if not any(abs(c - p) <= s / 2 + 1e-9 * max(abs(c), 1) for c, s in cands for p in pool)]

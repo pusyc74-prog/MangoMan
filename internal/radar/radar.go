@@ -26,8 +26,8 @@ type Entry struct {
 	Upstream  string    `json:"upstream"`
 	FirstSeen time.Time `json:"first_seen"`
 	LastSeen  time.Time `json:"last_seen"`
-	// Baseline marks models already listed on the very first scan: they are
-	// available, but not news.
+	// Baseline marks models already listed on the first scan of their
+	// provider: they are available, but not news.
 	Baseline bool `json:"baseline"`
 }
 
@@ -43,7 +43,6 @@ type Radar struct {
 	mu       sync.Mutex
 	entries  map[string]*Entry
 	lastScan time.Time
-	scanned  bool
 }
 
 type state struct {
@@ -82,7 +81,7 @@ func (r *Radar) Load() error {
 	for _, e := range st.Entries {
 		r.entries[key(e.Provider, e.Upstream)] = e
 	}
-	r.lastScan, r.scanned = st.LastScan, !st.LastScan.IsZero()
+	r.lastScan = st.LastScan
 	return nil
 }
 
@@ -148,9 +147,13 @@ func (r *Radar) Scan(ctx context.Context) (int, error) {
 		r.entries = map[string]*Entry{}
 	}
 	now := r.now()
-	first := !r.scanned
+	known := map[string]bool{} // providers scanned before
+	for _, e := range r.entries {
+		known[e.Provider] = true
+	}
 	added := 0
 	for _, f := range results {
+		first := !known[f.p]
 		for _, id := range f.ids {
 			k := key(f.p, id)
 			if e, ok := r.entries[k]; ok {
@@ -164,7 +167,7 @@ func (r *Radar) Scan(ctx context.Context) (int, error) {
 		}
 	}
 	if len(results) > 0 {
-		r.lastScan, r.scanned = now, true
+		r.lastScan = now
 	}
 	if err := r.saveLocked(); err != nil && firstErr == nil {
 		firstErr = err
@@ -178,7 +181,7 @@ type Item struct {
 	Upstream  string    `json:"upstream"`
 	Name      string    `json:"name"`
 	FirstSeen time.Time `json:"first_seen"`
-	New       bool      `json:"new"` // appeared after the first scan, within the last 14 days
+	New       bool      `json:"new"` // appeared after its provider's first scan, within the last 14 days
 	Policy    string    `json:"data_policy"`
 	Trains    string    `json:"trains_on_data"`
 }
