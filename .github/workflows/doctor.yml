@@ -19,7 +19,7 @@ on:
         required: false
         default: ""
   schedule:
-    - cron: "30 2 * * *" # daily, 08:00 IST, quick mode
+    - cron: "30 2 * * 1" # weekly (Monday 08:00 IST), quick mode: a daily run used most of OpenRouter's 50 free requests a day
   push:
     branches: [main]
     paths:

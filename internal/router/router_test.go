@@ -40,6 +40,7 @@ type fake struct {
 	handler http.HandlerFunc
 	quirks  catalogue.Quirks
 	account catalogue.Limits
+	limits  catalogue.Limits
 	local   bool
 	calls   atomic.Int32
 	srv     *httptest.Server
@@ -107,7 +108,7 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 		})
 		cat.Models = append(cat.Models, catalogue.Model{
 			Canonical: f.model, Provider: f.id, Upstream: f.model + "-up", Free: true, Context: 32000,
-			Caps: []string{"tools", "json", "streaming"}, Limits: catalogue.Limits{RPM: 100},
+			Caps: []string{"tools", "json", "streaming"}, Limits: limitsOr(f.limits),
 			Quality: map[string]float64{"default": f.quality},
 		})
 		store[f.id] = "key-" + f.id
@@ -791,6 +792,28 @@ func TestLocalContextTooSmallSaysHowToFix(t *testing.T) {
 	body, _ := json.Marshal(map[string]any{"model": "free/auto", "messages": []map[string]string{{"role": "user", "content": long}}})
 	w := do(t, rt, string(body))
 	if w.Code != 400 || !strings.Contains(w.Body.String(), "OLLAMA_CONTEXT_LENGTH=65536") {
+		t.Fatalf("got %d %s", w.Code, w.Body)
+	}
+}
+
+func limitsOr(l catalogue.Limits) catalogue.Limits {
+	if l == (catalogue.Limits{}) {
+		return catalogue.Limits{RPM: 100}
+	}
+	return l
+}
+
+func TestRequestBiggerThanMinuteCapSkipsModelAndSaysWhatToConnect(t *testing.T) {
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: okJSON("x"), limits: catalogue.Limits{RPM: 30, TPM: 8000}}
+	b := &fake{id: "b", model: "m2", quality: 0.5, handler: okJSON("from b"), limits: catalogue.Limits{RPM: 30, TPM: 60000}}
+	long := strings.Repeat("word ", 9000)
+	body, _ := json.Marshal(map[string]any{"model": "free/auto", "messages": []map[string]string{{"role": "user", "content": long}}})
+	rt := setup(t, a, b)
+	if w := do(t, rt, string(body)); w.Code != 200 || a.calls.Load() != 0 || !strings.Contains(w.Body.String(), "from b") {
+		t.Fatalf("got %d %s; small-cap model called %d times", w.Code, w.Body, a.calls.Load())
+	}
+	only := setup(t, &fake{id: "c", model: "m3", quality: 0.9, handler: okJSON("x"), limits: catalogue.Limits{RPM: 30, TPM: 8000}})
+	if w := do(t, only, string(body)); w.Code != 400 || !strings.Contains(w.Body.String(), "Cerebras") {
 		t.Fatalf("got %d %s", w.Code, w.Body)
 	}
 }

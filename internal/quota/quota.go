@@ -54,6 +54,17 @@ func (b *bucket) effective(l catalogue.Limits) catalogue.Limits {
 	return l
 }
 
+// Effective returns the limits in force for k: what the provider's headers
+// taught, over the catalogue seed.
+func (t *Tracker) Effective(k Key, seed catalogue.Limits) catalogue.Limits {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if b, ok := t.buckets[k.String()]; ok {
+		return b.effective(seed)
+	}
+	return seed
+}
+
 // Tracker holds all buckets. Safe for concurrent use.
 type Tracker struct {
 	mu      sync.Mutex

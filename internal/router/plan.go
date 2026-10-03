@@ -46,6 +46,8 @@ type planInfo struct {
 	BreakerOpen   int
 	DoesNotFit    int
 	LocalTooSmall int // local models that fit except for their context size
+	OverMinute    int // models whose free tier takes fewer tokens a minute than the request needs
+	MinuteCap     int // the largest such per-minute cap
 	Need          int // tokens the request needs (input plus output)
 }
 
@@ -105,6 +107,14 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			continue
 		}
 		c := Candidate{Model: m, Provider: p, Key: key, QKey: quota.Key{Provider: p.ID, Account: "default", Model: m.Canonical}}
+		// A request bigger than a whole minute's token allowance is always
+		// refused (Groq's free tier: 8,000), so do not spend an attempt on it.
+		if l := rt.Quota.Effective(c.QKey, m.Limits); l.TPM > 0 && need > l.TPM {
+			info.DoesNotFit++
+			info.OverMinute++
+			info.MinuteCap = max(info.MinuteCap, l.TPM)
+			continue
+		}
 		state := rt.Breakers.StateOf(c.Target())
 		if state == breaker.Open {
 			info.BreakerOpen++

@@ -221,6 +221,9 @@ func (rt *Router) writeNoCandidate(w http.ResponseWriter, info planInfo) {
 		}
 		core.WriteError(w, http.StatusBadRequest, "no_model_fits", fmt.Sprintf(
 			"your local models' context is too small for this request: set OLLAMA_CONTEXT_LENGTH=%d, then restart `ollama serve` and MangoMan, or connect a cloud provider", n))
+	case info.OverMinute > 0 && info.DoesNotFit == info.OverMinute+info.LocalTooSmall:
+		core.WriteError(w, http.StatusBadRequest, "no_model_fits", fmt.Sprintf(
+			"this request needs about %d tokens, more than the connected free models take in a minute (at most %d). Connect Cerebras or NVIDIA, both free with larger limits: mangoman keys add cerebras", info.Need, info.MinuteCap))
 	case info.DoesNotFit > 0 && info.BreakerOpen == 0 && info.QuotaBlocked == 0:
 		core.WriteError(w, http.StatusBadRequest, "no_model_fits", "no connected free model supports this request (context size, tools, JSON mode or images)")
 	default:
