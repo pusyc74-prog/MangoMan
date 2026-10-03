@@ -88,3 +88,10 @@ func TestPythonScriptsCompile(t *testing.T) {
 		t.Fatalf("profile: %v\n%s", err, out)
 	}
 }
+
+func TestParseSkillAcceptsWindowsLineEndings(t *testing.T) {
+	p, err := ParseSkill([]byte("---\r\nname: demo-skill\r\ndescription: A demo.\r\nmetadata:\r\n  version: \"1.0\"\r\n---\r\n# Demo\r\n"))
+	if err != nil || p.Name != "demo-skill" || p.Version != "1.0" {
+		t.Fatalf("got %+v, %v", p, err)
+	}
+}

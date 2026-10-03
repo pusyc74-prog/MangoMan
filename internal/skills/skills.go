@@ -68,6 +68,7 @@ func List() ([]Pack, error) {
 // frontmatter, checking the Agent Skills rules.
 func ParseSkill(data []byte) (Pack, error) {
 	var p Pack
+	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")) // files saved on Windows
 	if !bytes.HasPrefix(data, []byte("---\n")) {
 		return p, errors.New("SKILL.md must start with --- frontmatter")
 	}

@@ -120,7 +120,7 @@ def build_html(spec, T):
 * { box-sizing: border-box; } html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 body { margin: 0; font: 11pt/1.5 %(body)s; color: #%(text)s; }
 section { width: 297mm; height: 210mm; padding: 16mm 20mm; break-after: page; overflow: hidden; position: relative; }
-h2 { font: 700 26pt %(head)s; margin: 0 0 8mm; } h3 { font: 700 13pt %(head)s; margin: 6mm 0 2mm; }
+h2 { font: 700 26pt %(head)s; margin: 0 0 6mm; } h3 { font: 700 13pt %(head)s; margin: 4mm 0 2mm; }
 .cover { background: #%(dark)s; color: #fff; display: flex; flex-direction: column; justify-content: center; }
 .cover .lg { align-self: flex-start; border-radius: 4mm; padding: 4mm 6mm; } .cover img { height: 22mm; display: block; }
 .cover h1 { font: 700 40pt %(head)s; margin: 10mm 0 2mm; } .cover p { font-size: 15pt; color: #%(on_dark2)s; margin: 0; }
@@ -130,10 +130,10 @@ h2 { font: 700 26pt %(head)s; margin: 0 0 8mm; } h3 { font: 700 13pt %(head)s; m
 .on { height: 60mm; border-radius: 4mm; display: flex; align-items: center; justify-content: center; border: 1px solid #%(grid)s; }
 .on img { max-width: 70%%; max-height: 22mm; } .panel { background: #fff; border-radius: 3mm; padding: 3mm 5mm; display: flex; } .panel img { height: 14mm; }
 .sws { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4mm 4mm; }
-.sw .chip { height: 17mm; border-radius: 3mm; display: flex; align-items: flex-end; padding: 2mm; font-size: 8pt; border: 1px solid #%(grid)s; }
+.sw .chip { height: 13mm; border-radius: 3mm; display: flex; align-items: flex-end; padding: 2mm; font-size: 8pt; border: 1px solid #%(grid)s; }
 .sw b { display: block; margin-top: 1.5mm; font-size: 10pt; } .sw span { display: block; font-size: 8.5pt; color: #%(muted)s; } .sw .u { color: #%(body)s; }
-table { border-collapse: collapse; width: 100%%; font-size: 9.5pt; } th { text-align: left; color: #%(muted)s; border-bottom: 1.5px solid #%(text)s; padding: 1.5mm 2mm; }
-td { padding: 1.5mm 2mm; border-bottom: 1px solid #%(grid)s; } .pv { padding: 1mm 3mm; border-radius: 2mm; font-weight: 700; border: 1px solid #%(grid)s; }
+table { border-collapse: collapse; width: 100%%; font-size: 9pt; } th { text-align: left; color: #%(muted)s; border-bottom: 1.5px solid #%(text)s; padding: 1.5mm 2mm; }
+td { padding: 1mm 2mm; border-bottom: 1px solid #%(grid)s; } .pv { padding: 1mm 3mm; border-radius: 2mm; font-weight: 700; border: 1px solid #%(grid)s; }
 .ok { color: #%(good)s; font-weight: 700; } .no { color: #%(bad)s; font-weight: 700; }
 .tf { margin: 0 0 4mm; } .pers { font: 700 16pt %(head)s; color: #%(accent_dark)s; }
 .two { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6mm; } ul { padding-left: 5mm; margin: 0; } li { margin-bottom: 1.5mm; }
