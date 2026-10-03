@@ -5,7 +5,9 @@ set -u
 cd "$(dirname "$0")/.."
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
-go run ./cmd/mangoman skills install --dir "$work/skills" > /dev/null || exit 1
+go build -o "$work/mm" ./cmd/mangoman || exit 1
+"$work/mm" skills install --dir "$work/skills" > /dev/null || exit 1
+export MANGOMAN_HOME="$work/home" M="$work/mm" AG="$PWD/agents"
 fail=0
 run() { # name, then the build and check commands (S = this pack's scripts folder)
   local name=$1 build=$2 check=$3 d="$work/$1"
@@ -33,4 +35,8 @@ run minutes   "python3 $P/mangoman-meeting-minutes/scripts/build_minutes.py minu
 run brand     "python3 $P/mangoman-brand-kit/scripts/build_brand.py brand.json --out brand"      "python3 $P/mangoman-brand-kit/scripts/check_brand.py brand.json brand"
 run review    "bash setup.sh && python3 $P/mangoman-code-review/scripts/collect.py repo --out facts.json" "python3 $P/mangoman-code-review/scripts/check_review.py review.json facts.json --out review.md"
 run webapp    "python3 $P/mangoman-web-app/scripts/scaffold.py app.json --out starter"         "python3 $P/mangoman-web-app/scripts/check_app.py app/index.html tests.json"
+# Advanced agents: sign, install and run through the sandbox, then score on the free pack's test set.
+L="$P/mangoman-ecommerce-listing"
+run listing-pro "cp $L/tests/cases/mango-pulp/* . && \$M agents keygen && \$M agents pack \$AG/amazon-listing-pro --out a.mmagent && \$M agents install a.mmagent && \$M agents exec amazon-listing-pro research.py --terms search_terms.csv --competitors competitors.md --current current_listing.md --brand Kesari --out research && \$M agents exec amazon-listing-pro optimise.py listing.json research.json --facts facts.md && \$M agents exec amazon-listing-pro build_listing.py listing.json --out listing" \
+  "\$M agents exec amazon-listing-pro check_listing.py listing.json listing && python3 $L/tests/score.py . | python3 -c 'import json,sys; s=json.load(sys.stdin); print(\"PASS  score %s: %s\" % (s[\"score\"], s[\"notes\"])); sys.exit(s[\"score\"] < 85)'"
 exit $fail

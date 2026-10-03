@@ -195,3 +195,51 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 }
 
 func quote(s string) string { return "r'" + s + "'" }
+
+func TestEvalAndVerdict(t *testing.T) {
+	if _, err := exec.LookPath("python3"); err != nil {
+		t.Skip("python3 not installed")
+	}
+	root := t.TempDir()
+	writeAgent(t, root, map[string]string{
+		"score.py":             "import json,sys; print(json.dumps({'score': float(open(sys.argv[1]+'/out.txt').read()), 'notes': 'ok'}))\n",
+		"cases/one/prompt.txt": "Make it.",
+		"cases/one/facts.md":   "facts",
+		"cases/two/prompt.txt": "Make it again.",
+	})
+	scores := map[string]string{"pack": "70", "agent": "85"}
+	results, err := Eval(root, []string{"pack", "agent"}, filepath.Join(root, "work"), func(c, dir, prompt string) error {
+		if !strings.HasPrefix(prompt, "Use the "+c+" skill.") {
+			t.Errorf("prompt %q does not name the skill", prompt)
+		}
+		if _, err := os.Stat(filepath.Join(dir, "prompt.txt")); err != nil {
+			t.Error("case files were not copied")
+		}
+		return os.WriteFile(filepath.Join(dir, "out.txt"), []byte(scores[c]), 0o644)
+	})
+	if err != nil || len(results) != 2 {
+		t.Fatalf("results %v %v", results, err)
+	}
+	if p, a, beats := Verdict(results, "pack", "agent"); !beats || p != 70 || a != 85 {
+		t.Fatalf("verdict %v %v %v", p, a, beats)
+	}
+	scores["agent"] = "60"
+	results, _ = Eval(root, []string{"pack", "agent"}, filepath.Join(root, "work"), func(c, dir, _ string) error {
+		return os.WriteFile(filepath.Join(dir, "out.txt"), []byte(scores[c]), 0o644)
+	})
+	if _, _, beats := Verdict(results, "pack", "agent"); beats {
+		t.Fatal("a weaker agent was said to beat the pack")
+	}
+}
+
+func TestInHouseAgentsAreValid(t *testing.T) {
+	dirs, _ := filepath.Glob("../../agents/*")
+	if len(dirs) == 0 {
+		t.Fatal("no in-house agents found")
+	}
+	for _, d := range dirs {
+		if _, err := Load(d); err != nil {
+			t.Errorf("%s: %v", d, err)
+		}
+	}
+}

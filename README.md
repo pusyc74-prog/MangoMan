@@ -313,8 +313,25 @@ mangoman code                         # OpenCode with the packs already loaded, 
 
 Requirements on the user's machine: Python 3; for PDFs, Chrome, Chromium or Playwright; for PowerPoint, `pip install python-pptx`; pandas optional.
 
+## Advanced agents
+
+An advanced agent improves on a free pack: it is a skill folder with an `agent.json` that says what it may do (network hosts, programs, models, price, data policy) and which free pack it must beat. Creators sign it with their own key; MangoMan checks the signature and every file before installing, and later versions must come from the same key.
+
+```sh
+mangoman agents new my-agent           # start a folder from a template
+mangoman agents keygen                 # your signing key (back it up)
+mangoman agents pack my-agent          # sign it into my-agent-1.0.0.mmagent
+mangoman agents install FILE.mmagent   # check and install
+mangoman agents exec NAME script.py    # run a script in the sandbox
+mangoman agents eval NAME              # score it against its free pack's test set
+```
+
+Scripts run in a sandbox: only the declared hosts and programs, writes only in the work folder and the agent's temp folder, no reading of SSH, cloud, browser or MangoMan secrets, no secret or proxy variables; on Linux, agents without network also run with no network at all. `mangoman code` loads installed agents and blocks running their scripts outside the sandbox. An agent's scripts can use its free pack's scripts and the shared helpers.
+
+Each free pack can carry a public test set (`tests/cases`, `tests/score.py`); `mangoman agents eval` runs the pack and the agent on every case through the same headless OpenCode and an agent lists as Advanced only when it scores higher. First in-house agent: `agents/amazon-listing-pro` (keyword research from the seller's search term report, competitor gaps, backend terms filled to 249 bytes, a before-and-after demand score).
+
 ## Next
 
-1. **More skill packs** (agency skills in waves: social media, email campaigns, e-commerce listings, SEO, ads, landing pages, proposals), then paid advanced agents and the marketplace (P3).
-2. **Output checks:** run code and tests, render pages and slides and check the screenshot, recompute numbers from the data.
-3. **MangoMan coding workspace (M5):** a coding screen in MangoMan with the OpenCode engine running underneath (credited under its MIT licence).
+1. **Marketplace:** listing page, creator portal and review pipeline, then payments (Razorpay Route, Stripe Connect) and payouts.
+2. **More advanced agents and test sets**, one per skill area.
+3. **MangoMan app for everyone (M5)** and the coding workspace (M6).

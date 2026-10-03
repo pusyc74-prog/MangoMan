@@ -1,0 +1,13 @@
+{
+  "name": "amazon-listing-pro",
+  "version": "1.0.0",
+  "title": "Amazon listing pro",
+  "description": "Rewrites an Amazon India or US listing from the seller's own search term report: keyword research by orders and clicks, competitor gaps, a title led by the top search, backend search terms filled to the 249-byte limit, and a before-and-after demand score.",
+  "skill": "mangoman-ecommerce-listing",
+  "author": {"name": "MangoMan", "contact": "agents@mangoman.app"},
+  "runs_on": "local",
+  "permissions": {"network": [], "commands": []},
+  "models": "free",
+  "price_inr_month": 0,
+  "data_policy": "Runs on your computer. Your reports and listing never leave it; only the copy you approve goes to your AI model through MangoMan."
+}

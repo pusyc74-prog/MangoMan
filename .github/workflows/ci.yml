@@ -30,6 +30,7 @@ jobs:
         run: go vet ./...
       - name: Test
         run: |
+          set +e
           go test -race -count=1 ./... 2>&1 | tee test.log
           status=${PIPESTATUS[0]}
           if [ "$status" != 0 ]; then
@@ -58,8 +59,13 @@ jobs:
           for d in internal/skills/packs/mangoman-*; do
             t=$(mktemp -d); cp internal/skills/packs/shared/*.py "$d"/scripts/*.py "$t"; python -m pyflakes "$t"/*.py || exit 1
           done
+          for d in agents/*; do
+            k=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['skill'])" "$d/agent.json")
+            t=$(mktemp -d); cp internal/skills/packs/shared/*.py internal/skills/packs/"$k"/scripts/*.py "$d"/scripts/*.py "$t"; python -m pyflakes "$t"/*.py || exit 1
+          done
       - name: Build and check every pack's sample
         run: |
+          set +e
           scripts/check-packs.sh 2>&1 | tee packs.log
           status=${PIPESTATUS[0]}
           if [ "$status" != 0 ]; then

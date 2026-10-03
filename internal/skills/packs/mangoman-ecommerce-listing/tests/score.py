@@ -6,7 +6,8 @@ listing is rebuilt here so every contender is judged the same way:
 - rules (40): the pack's checker; each FAIL costs 15, each WARN 3;
 - keywords (30): share of shopper demand covered, from search_terms.csv
   (weight = orders x 10 + clicks), counting a term when all its words are in
-  the title, bullets or backend search terms (what Amazon indexes);
+  the title, bullets or backend search terms (what Amazon indexes); searches
+  that need a claim the facts do not make ("sugar free") are left out;
 - title (15): the top search term in the first 80 characters (what phones
   show), and an item name of at least 40 characters;
 - complete (15): 5 bullets of 150 to 500 characters, backend terms of 150 to
@@ -56,7 +57,9 @@ def score(case):
     backend = a.get("search_terms", "") or ""
     indexed = terms(" ".join([title, backend] + bullets))
     rows = list(csv.DictReader(open(os.path.join(case, "search_terms.csv"), encoding="utf-8")))
-    weight = {r["search_term"]: int(r["orders"]) * 10 + int(r["clicks"]) for r in rows}
+    facts = terms(open(os.path.join(case, "facts.md"), encoding="utf-8").read())
+    weight = {r["search_term"]: int(r["orders"]) * 10 + int(r["clicks"]) for r in rows
+              if not any(w in K.CLAIMS and w not in facts for w in terms(r["search_term"]))}
     total = sum(weight.values()) or 1
     covered = sum(w for t, w in weight.items() if terms(t) <= indexed)
     keywords = 30 * covered / total

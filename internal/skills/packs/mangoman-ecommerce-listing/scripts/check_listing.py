@@ -23,6 +23,10 @@ import checks as C  # noqa: E402
 STOP = set("a an and as at by for from in into of on or the to with without per vs x".split())
 PROMO = re.compile(r"(?<!\w)(best[- ]?seller|best selling|top rated|free shipping|free delivery|sale|discount|offer|deal|cheapest|lowest price|hot item|limited (?:time|offer|stock)|buy now|#1|no\.? ?1|number one|100% (?:guaranteed|satisfaction)|guaranteed?)\b", re.I)
 HEALTH = re.compile(r"\b(cures?|(?:treats?|prevents?) (?:cancer|diabetes|covid|diseases?|infections?|acne|arthritis|asthma)|boosts? immunity|immunity booster|detox(?:ify|ifies)?|anti[- ]?cancer|weight loss|burns? fat|clinically proven|doctor recommended|fda approved|no side effects|chemical[- ]free|100% (?:natural|pure|safe|organic))\b", re.I)
+# Words that make a claim; a listing (or its search terms) may use them only
+# when the product facts do.
+CLAIMS = {"free", "natural", "organic", "pure", "original", "authentic", "genuine", "fresh", "healthy", "herbal", "ayurvedic",
+          "premium", "certified", "sugarless", "unsweetened", "vegan", "gluten", "keto", "diabetic", "medicinal"}
 ASIN = re.compile(r"\bB0[A-Z0-9]{8}\b")
 INDIA_FIELDS = {"net_quantity": "net quantity", "mrp": "MRP", "manufacturer": "maker or packer name and address",
                 "country_of_origin": "country of origin", "customer_care": "customer care contact"}
