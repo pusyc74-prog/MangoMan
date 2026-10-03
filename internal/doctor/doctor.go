@@ -30,6 +30,7 @@ type Options struct {
 	Models    []string // canonical or upstream ids; empty = all
 	Cases     []string // case ids; empty = all
 	Excluded  func(provider string) bool
+	SkipLocal bool // leave out local providers (Ollama), e.g. on a cloud CI runner
 	// Spacing between requests to one model. Default: from the seed RPM.
 	Spacing func(m catalogue.Model) time.Duration
 	// Timeout per check. Default 60s; a model that times out once has its
@@ -184,7 +185,7 @@ func (d *Doctor) Run(ctx context.Context, o Options) Report {
 		requests atomic.Int64
 	)
 	for _, p := range d.Cat.AllProviders() {
-		if !in(o.Providers, p.ID) {
+		if !in(o.Providers, p.ID) || (o.SkipLocal && p.Local && len(o.Providers) == 0) {
 			continue
 		}
 		pr := ProviderReport{ID: p.ID, Name: p.Name}

@@ -222,3 +222,26 @@ func TestCancelledRunReturnsPartialReport(t *testing.T) {
 		t.Fatalf("partial report: %+v", m.Results)
 	}
 }
+
+func TestSkipLocalLeavesOutOllama(t *testing.T) {
+	cat := catalogue.Catalogue{Version: "t", Providers: []catalogue.Provider{
+		{ID: "cloud", Name: "Cloud", BaseURL: "https://127.0.0.1:1", Kind: "openai", NeedsKey: true},
+		{ID: "ollama", Name: "Ollama", BaseURL: "http://127.0.0.1:1", Kind: "openai", Local: true},
+	}}
+	data, _ := json.Marshal(&cat)
+	parsed, _ := catalogue.Parse(data)
+	d := &Doctor{Cat: parsed, Keys: keys.NewResolver(mem{}, nil), Client: providers.NewClient()}
+	ids := func(o Options) []string {
+		var out []string
+		for _, p := range d.Run(context.Background(), o).Providers {
+			out = append(out, p.ID)
+		}
+		return out
+	}
+	if got := ids(Options{SkipLocal: true}); len(got) != 1 || got[0] != "cloud" {
+		t.Fatalf("SkipLocal should leave out ollama, got %v", got)
+	}
+	if got := ids(Options{SkipLocal: true, Providers: []string{"ollama"}}); len(got) != 1 || got[0] != "ollama" {
+		t.Fatalf("naming ollama should still check it, got %v", got)
+	}
+}

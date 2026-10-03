@@ -60,7 +60,9 @@ func cmdDoctor(args []string) error {
 		return err
 	}
 	d := &doctor.Doctor{Cat: cat, Keys: keys.NewResolver(st, envMap(cat)), Client: providers.NewClient(), Version: version}
-	o := doctor.Options{Providers: splitList(*prov), Models: splitList(*model), Cases: splitList(*cases), Excluded: cfg.Excluded, Progress: os.Stdout, Timeout: *timeout}
+	o := doctor.Options{Providers: splitList(*prov), Models: splitList(*model), Cases: splitList(*cases), Excluded: cfg.Excluded, Progress: os.Stdout, Timeout: *timeout,
+		// A cloud CI runner never has Ollama; name it with --provider to check it anyway.
+		SkipLocal: os.Getenv("GITHUB_ACTIONS") == "true"}
 	if *quick {
 		o.Cases = append(conformance.QuickIDs, "bad_model")
 	}
