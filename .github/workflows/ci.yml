@@ -30,6 +30,28 @@ jobs:
       - name: Test
         run: go test -race -count=1 ./...
 
+  packs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pack dependencies
+        run: |
+          pip install pandas pillow python-pptx python-docx pypdf playwright pyflakes
+          python -m playwright install --with-deps chromium
+      - name: Lint pack scripts
+        run: |
+          for d in internal/skills/packs/mangoman-*; do
+            t=$(mktemp -d); cp internal/skills/packs/shared/*.py "$d"/scripts/*.py "$t"; python -m pyflakes "$t"/*.py || exit 1
+          done
+      - name: Build and check every pack's sample
+        run: scripts/check-packs.sh
+
   build:
     needs: test
     runs-on: ubuntu-latest

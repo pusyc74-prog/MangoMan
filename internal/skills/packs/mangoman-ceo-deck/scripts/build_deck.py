@@ -438,24 +438,7 @@ DARK_SLIDES = ("title", "section", "stat", "next_steps")
 
 def resolve_theme(spec):
     """Tokens for the deck: brand colours (or colours read from the logo), else a curated theme."""
-    kw = dict(motif=spec.get("motif", "orb"), mode=spec.get("mode", "contrast"), type_=spec.get("type", "modern"))
-    b = spec.get("brand") or {}
-    lp = logo_path(b["logo"]) if b.get("logo") else None
-    primary, accent = b.get("primary"), b.get("accent")
-    note = ""
-    if lp and not primary:
-        lp_primary, lp_accent = BK.logo_colors(lp)
-        primary, accent = primary or lp_primary, accent or lp_accent
-        if primary:
-            note = "brand colours read from the logo: primary #%s%s" % (primary, ", accent #%s" % accent if accent else "")
-    if primary:
-        if not accent:  # brand gave one colour: pair it with the curated accent closest in spirit
-            accent = BK.CURATED.get(spec.get("theme", "ink"), BK.CURATED["ink"])[1]
-        T = BK.brand_theme(primary, accent, **kw)
-    else:
-        T = BK.theme(spec.get("theme", "ink"), **kw)
-    if lp:
-        T["logo"] = BK.prepare_logo(lp)
+    T, note = BK.resolve_spec(spec, BASE_DIR)
     T["note"] = note
     return T
 
@@ -580,7 +563,7 @@ def build_pptx(spec, path):
         from pptx.enum.shapes import MSO_SHAPE
         from pptx.enum.text import PP_ALIGN, MSO_ANCHOR, MSO_AUTO_SIZE
         from pptx.oxml.ns import qn
-        from pptx.util import Inches, Pt, Emu
+        from pptx.util import Inches, Pt
         from lxml import etree
     except ImportError:
         return False

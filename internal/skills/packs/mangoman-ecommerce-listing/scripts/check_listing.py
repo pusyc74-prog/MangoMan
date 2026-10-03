@@ -18,8 +18,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_listing as B  # noqa: E402
-import tracenum  # noqa: E402
-import vizlib as V  # noqa: E402
+import checks as C  # noqa: E402
 
 STOP = set("a an and as at by for from in into of on or the to with without per vs x".split())
 PROMO = re.compile(r"\b(best[- ]?seller|best selling|top rated|free shipping|free delivery|sale|discount|offer|deal|cheapest|lowest price|hot item|limited (?:time|offer|stock)|buy now|#1|no\.? ?1|number one|100% (?:guaranteed|satisfaction)|guaranteed?)\b", re.I)
@@ -41,23 +40,6 @@ def stem(w):
     return w
 
 
-def fact_pool(spec):
-    src = {"facts": spec.get("facts", {}), "product": spec.get("product", {}), "shopify": {k: v for k, v in (spec.get("shopify") or {}).items() if k in ("price", "compare_at_price")}}
-    pool = V.numbers_in(src)
-
-    def strings(o):
-        if isinstance(o, str):
-            yield o
-        elif isinstance(o, dict):
-            for v in o.values():
-                yield from strings(v)
-        elif isinstance(o, list):
-            for v in o:
-                yield from strings(v)
-    for s in strings(src):
-        for _, c in tracenum.mentions(s):
-            pool += c
-    return pool
 
 
 def copy_texts(spec):
@@ -209,8 +191,8 @@ def main():
             r("WARN", "Shopify: " + "; ".join(sw))
 
     texts = copy_texts(spec)
-    pool = fact_pool(spec)
-    untr = sorted({"%s: %s" % (k, u) for k, t in texts for u in tracenum.untraced(t, pool)})
+    pool = C.fact_pool(spec.get("facts", {}), spec.get("product", {}), {k: v for k, v in (spec.get("shopify") or {}).items() if k in ("price", "compare_at_price")})
+    untr = sorted({"%s: %s" % (k, u) for k, t in texts for u in C.untraced(t, pool)})
     r("PASS" if not untr else "FAIL", "every number in the copy comes from the product facts" if not untr else
       "numbers not in facts (ask the user, or remove them): " + "; ".join(untr[:8]))
     health = sorted({'%s: "%s"' % (k, mm.group(0)) for k, t in texts for mm in [HEALTH.search(t)] if mm})
@@ -278,9 +260,9 @@ def main():
 
 
 def finish(rs):
-    for level, msg in rs:
-        print("%s  %s" % (level, msg))
-    sys.exit(1 if any(l == "FAIL" for l, _ in rs) else 0)
+    rep = C.Report()
+    rep.rows = rs
+    rep.finish()
 
 
 if __name__ == "__main__":

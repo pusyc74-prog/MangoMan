@@ -16,8 +16,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_emails as B  # noqa: E402
 import render  # noqa: E402
-import tracenum  # noqa: E402
-import vizlib as V  # noqa: E402
+import checks as C  # noqa: E402
 
 SPAMMY = re.compile(r"\b(free money|100% free|act now|buy now!|click here|cash bonus|double your|earn \$|extra cash|get paid|guaranteed?|winner|you(?:'ve| have) won|risk[- ]free|no obligation|urgent|limited time only|once in a lifetime|congratulations|dear friend|miracle|lowest price|cheap|\$\$\$|₹₹₹)\b", re.I)
 PLACEHOLDER = re.compile(r"lorem ipsum|\bTBD\b|\bTODO\b|\[(?:name|company|link|insert|date)[^\]]*\]|xxx+|example\.com", re.I)
@@ -63,22 +62,6 @@ def links(m):
     return hs
 
 
-def fact_pool(spec):
-    pool = V.numbers_in(spec.get("facts", {}))
-
-    def strings(o):
-        if isinstance(o, str):
-            yield o
-        elif isinstance(o, dict):
-            for v in o.values():
-                yield from strings(v)
-        elif isinstance(o, list):
-            for v in o:
-                yield from strings(v)
-    for s in strings(spec.get("facts", {})):
-        for _, c in tracenum.mentions(s):
-            pool += c
-    return pool
 
 
 def main():
@@ -98,7 +81,7 @@ def main():
         return finish(rs)
     esp = spec.get("esp", "generic")
     unsub_tag = B.ESP[esp][1]
-    pool = fact_pool(spec)
+    pool = C.fact_pool(spec.get("facts", {}))
     hard = {k: [] for k in ("missing", "unsub", "address", "size", "links", "numbers", "placeholder", "text", "subject_long")}
     soft = {k: [] for k in ("subject", "preview", "spam", "shout", "excl", "emoji", "risky", "ctas", "imgheavy", "size_near")}
     for m in spec["emails"]:
@@ -138,7 +121,7 @@ def main():
             mm = PLACEHOLDER.search(t)
             if mm:
                 hard["placeholder"].append('%s: "%s"' % (mid, mm.group(0)))
-            for u in tracenum.untraced(re.sub(r"https?://\S+|mailto:\S+|tel:\S+", " ", B.LINK.sub(r"\1", t)), pool):
+            for u in C.untraced(t, pool):
                 hard["numbers"].append("%s: %s" % (mid, u))
         caps = [w for w in re.findall(r"\b[A-Z]{5,}\b", sj)]
         if caps:
@@ -216,9 +199,9 @@ def main():
 
 
 def finish(rs):
-    for level, msg in rs:
-        print("%s  %s" % (level, msg))
-    sys.exit(1 if any(l == "FAIL" for l, _ in rs) else 0)
+    rep = C.Report()
+    rep.rows = rs
+    rep.finish()
 
 
 if __name__ == "__main__":

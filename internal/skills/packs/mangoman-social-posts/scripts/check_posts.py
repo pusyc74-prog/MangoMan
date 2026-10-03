@@ -14,8 +14,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_posts as B  # noqa: E402
-import tracenum  # noqa: E402
-import vizlib as V  # noqa: E402
+import checks as C  # noqa: E402
 
 URL = re.compile(r"https?://\S+|www\.\S+")
 TAG = re.compile(r"^#[^\W_][\w]*$", re.UNICODE)
@@ -54,22 +53,6 @@ def texts(p):
     return out
 
 
-def fact_pool(spec):
-    pool = V.numbers_in(spec.get("facts", {}))
-
-    def strings(o):
-        if isinstance(o, str):
-            yield o
-        elif isinstance(o, dict):
-            for v in o.values():
-                yield from strings(v)
-        elif isinstance(o, list):
-            for v in o:
-                yield from strings(v)
-    for s in strings(spec.get("facts", {})):
-        for _, cands in tracenum.mentions(s):
-            pool += cands
-    return pool
 
 
 def main():
@@ -164,12 +147,12 @@ def main():
         r("WARN", "links in Instagram captions are not clickable (%s): say 'link in bio' instead" % ", ".join(links))
 
     # numbers and claims
-    pool = fact_pool(spec)
+    pool = C.fact_pool(spec.get("facts", {}))
     untr, risky = [], []
     for p in posts:
         allt = texts(p) + [caption_text(p, pl) for pl in spec.get("platforms", ["instagram"])]
         for t in allt:
-            u = tracenum.untraced(t, pool)
+            u = C.untraced(t, pool)
             if u:
                 untr.append("%s: %s" % (p["id"], ", ".join(u)))
             m = RISKY.search(t)
@@ -212,9 +195,9 @@ def _theme(spec, bdir):
 
 
 def finish(rs):
-    for level, msg in rs:
-        print("%s  %s" % (level, msg))
-    sys.exit(1 if any(l == "FAIL" for l, _ in rs) else 0)
+    rep = C.Report()
+    rep.rows = rs
+    rep.finish()
 
 
 if __name__ == "__main__":

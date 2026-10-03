@@ -16,8 +16,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_proposal as B  # noqa: E402
 import render  # noqa: E402
-import tracenum  # noqa: E402
-import vizlib as V  # noqa: E402
+import checks as C  # noqa: E402
 
 PLACEHOLDER = re.compile(r"lorem ipsum|\bTBD\b|\bTODO\b|\[(?:client|company|name|insert|date|amount)[^\]]*\]|xxx+|<[A-Z ]+>|\{\{.*?\}\}", re.I)
 RISKY = re.compile(r"\b(guaranteed?|we guarantee|100% (?:success|results|uptime)|risk[- ]free|unlimited revisions|no hidden costs ever|best in (?:india|the world|class)|number one|#1|double your|triple your)\b", re.I)
@@ -55,24 +54,6 @@ def writing(spec, claims=None):
     return out
 
 
-def fact_pool(spec, nums):
-    pool = V.numbers_in(spec.get("facts", {})) + B.figures(nums)
-
-    def strings(o):
-        if isinstance(o, str):
-            yield o
-        elif isinstance(o, dict):
-            for v in o.values():
-                yield from strings(v)
-        elif isinstance(o, list):
-            for v in o:
-                yield from strings(v)
-    for s in strings(spec.get("facts", {})):
-        for _, c in tracenum.mentions(s):
-            pool += c
-    for g in nums["groups"].values():  # totals may be quoted in lakh, crore or K
-        pool += [g["total"], g["taxable"]]
-    return pool
 
 
 def main():
@@ -113,11 +94,11 @@ def main():
         r("WARN", "no valid_until: prices without an expiry can be held against you")
 
     texts = writing(spec)
-    pool = fact_pool(spec, nums)
-    bad = sorted({u for t in writing(spec, True) for u in tracenum.untraced(t, pool)})
+    pool = C.fact_pool(spec.get("facts", {})) + B.figures(nums) + [g[k] for g in nums["groups"].values() for k in ("total", "taxable")]
+    bad = sorted({u for t in writing(spec, True) for u in C.untraced(t, pool)})
     r("PASS" if not bad else "FAIL", "every number in the summary, background and results comes from the facts or the pricing" if not bad else
       "numbers not in facts or pricing (ask the user, or remove them): " + ", ".join(bad[:8]))
-    soft = sorted({u for t in writing(spec, False) for u in tracenum.untraced(t, pool)})
+    soft = sorted({u for t in writing(spec, False) for u in C.untraced(t, pool)})
     if soft:
         r("WARN", "numbers in scope, timeline or terms the user should confirm (notice periods, counts, rounds): " + ", ".join(soft[:8]))
     ph = sorted({m.group(0) for t in texts + [spec.get("client", "")] for m in [PLACEHOLDER.search(t)] if m})
@@ -157,9 +138,9 @@ def main():
 
 
 def finish(rs):
-    for level, msg in rs:
-        print("%s  %s" % (level, msg))
-    sys.exit(1 if any(l == "FAIL" for l, _ in rs) else 0)
+    rep = C.Report()
+    rep.rows = rs
+    rep.finish()
 
 
 if __name__ == "__main__":

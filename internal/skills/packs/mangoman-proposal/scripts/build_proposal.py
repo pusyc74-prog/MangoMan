@@ -13,7 +13,6 @@ import datetime
 import html
 import json
 import os
-import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -551,7 +550,6 @@ def build_docx(spec, T, nums, path):
                 c.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
         for row in rows:
             cells = t.add_row().cells
-            bold = row and isinstance(row[0], tuple)
             for i, v in enumerate(row):
                 txt, b = (v if isinstance(v, tuple) else (v, False))
                 cells[i].text = ""
@@ -582,7 +580,7 @@ def build_docx(spec, T, nums, path):
     for _ in range(6):
         doc.add_paragraph()
     para(spec.get("kicker", "Proposal"), 12, T["accent_dark"], True, 4)
-    tp = doc.add_paragraph(spec["title"], style="Title")
+    doc.add_paragraph(spec["title"], style="Title")
     para(spec.get("subtitle", "For " + spec["client"]), 14, T["body"], after=30)
     meta = [("Prepared for", spec["client"]), ("Prepared by", fr["name"]), ("Date", nice_date(parse_date(spec["date"])))]
     if spec.get("valid_until"):

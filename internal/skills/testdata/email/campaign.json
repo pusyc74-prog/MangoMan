@@ -1,0 +1,39 @@
+{
+  "name": "2027 season pre-orders",
+  "goal": "Get past customers to pre-order before the season opens",
+  "audience": "Customers who ordered in the 2026 season",
+  "esp": "mailchimp",
+  "brand": {"name": "Kesari Foods", "logo": "logo.png"},
+  "theme": "clay",
+  "sender": {"name": "Kesari Foods", "legal_name": "Kesari Foods Pvt Ltd", "address": "12 Market Road, Ratnagiri, Maharashtra 415612, India"},
+  "facts": {"price12": "Box of 12 for ₹1,299", "price6": "Box of 6 for ₹749", "price24": "Box of 24 for ₹2,399", "discount": "10% off pre-orders", "date": "season opens 15 March 2027", "delivery": "delivered in 48 hours", "deadline": "pre-orders close 28 February 2027"},
+  "emails": [
+    {"id": "preorders-open", "send_day": 0, "subject": "Your Alphonso box, before anyone else", "preview": "Pre-orders for the 2027 season are open, with 10% off for returning customers.",
+     "subject_alternatives": ["Pre-orders are open, {first_name}", "The 2027 Alphonso season starts here"],
+     "blocks": [
+       {"type": "image", "src": "photo.jpg", "alt": "A crate of ripe Alphonso mangoes", "href": "https://kesarifoods.in/preorder", "full": true},
+       {"type": "heading", "text": "Hi {first_name}, the 2027 season is almost here"},
+       {"type": "text", "text": ["You ordered from us last season, so you get first pick. Pre-orders are open today with **10% off**, and your box ships the week the season opens on 15 March.", "Every box is hand-picked in Ratnagiri and delivered in 48 hours."]},
+       {"type": "button", "label": "Pre-order my box", "href": "https://kesarifoods.in/preorder"},
+       {"type": "text", "text": "Questions? Just reply to this email or [message us on WhatsApp](https://wa.me/919876543210)."}
+     ]},
+    {"id": "pick-your-box", "send_day": 4, "subject": "Which box is right for you?", "preview": "Three sizes, from a box of 6 for two people to 24 for the whole family.",
+     "blocks": [
+       {"type": "heading", "text": "Pick your box"},
+       {"type": "text", "text": "All three are the same hand-picked Alphonso. The only question is how many mango lovers you have at home."},
+       {"type": "products", "items": [
+         {"name": "Box of 6", "price": "₹749", "image": "photo.jpg", "alt": "Box of 6 mangoes", "href": "https://kesarifoods.in/preorder?box=6", "cta": "Pre-order"},
+         {"name": "Box of 12", "price": "₹1,299", "image": "photo.jpg", "alt": "Box of 12 mangoes", "href": "https://kesarifoods.in/preorder?box=12", "cta": "Pre-order"}]},
+       {"type": "quote", "text": "Arrived in two days, every single one perfect.", "author": "Rahul M., Bengaluru"},
+       {"type": "button", "label": "See all boxes", "href": "https://kesarifoods.in/preorder"}
+     ]},
+    {"id": "last-call", "send_day": 9, "send_note": "Day 10, two days before pre-orders close", "subject": "Pre-orders close on 28 February", "preview": "Your 10% returning-customer discount ends with them. Here is your code.",
+     "blocks": [
+       {"type": "heading", "text": "Last call, {first_name}"},
+       {"type": "text", "text": "Pre-orders close on 28 February. After that, boxes go on general sale at the full price."},
+       {"type": "coupon", "label": "Your returning-customer code", "code": "KESARI10", "note": "10% off any box until 28 February"},
+       {"type": "button", "label": "Use my code", "href": "https://kesarifoods.in/preorder?code=KESARI10"},
+       {"type": "list", "items": ["Hand-picked in Ratnagiri", "Delivered in 48 hours", "Pay by UPI or cash on delivery"]}
+     ]}
+  ]
+}

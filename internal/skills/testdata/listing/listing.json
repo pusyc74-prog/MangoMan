@@ -1,0 +1,48 @@
+{
+  "brand": "Kesari",
+  "product": {"name": "Alphonso mango pulp, 850 g", "category": "Grocery", "food": true, "apparel": false,
+              "net_quantity": "850 g", "mrp": "₹349", "manufacturer": "Kesari Foods Pvt Ltd, 12 Market Road, Ratnagiri 415612",
+              "country_of_origin": "India", "customer_care": "care@kesarifoods.in, +91 98765 43210",
+              "fssai_license": "11523999000123", "shelf_life": "18 months unopened"},
+  "currency": "INR",
+  "facts": {"origin": "Alphonso mangoes from Ratnagiri", "sugar": "no added sugar", "pack": "850 g can, about 3.5 cups", "preservatives": "no added preservatives",
+            "uses": "milkshakes, aamras, lassi, desserts", "storage": "refrigerate after opening and use within 3 days", "brix": "17 degrees Brix natural sweetness"},
+  "keywords": {"primary": ["alphonso mango pulp", "mango pulp"], "secondary": ["aamras", "hapus mango pulp", "mango pulp for milkshake", "ratnagiri alphonso"],
+               "source": "Amazon search box suggestions for 'mango pulp' and the user's past search report"},
+  "competitors": ["Kissan", "Dabur"],
+  "marketplaces": ["amazon_in", "flipkart", "shopify"],
+  "amazon": {
+    "item_name": "Kesari Alphonso Mango Pulp from Ratnagiri, No Added Sugar, 850 g",
+    "highlights": "Natural Sweetness, For Aamras, Milkshakes and Desserts",
+    "bullets": ["RATNAGIRI ALPHONSO: Made only from Alphonso (Hapus) mangoes grown in Ratnagiri, for the deep colour and aroma the variety is known for",
+                "NO ADDED SUGAR OR PRESERVATIVES: Sweetness comes from the fruit itself, about 17 degrees Brix, with no added sugar and no added preservatives",
+                "READY TO USE: Pour straight into aamras, lassi, milkshakes, ice cream and desserts; an 850 g can makes about 3.5 cups",
+                "STORE WELL: Keeps for 18 months unopened; refrigerate after opening and use within 3 days",
+                "FROM A FAMILY BUSINESS: Packed by Kesari Foods in Ratnagiri, who also deliver fresh Alphonso boxes in season"],
+    "description": "Kesari Alphonso mango pulp is made from Alphonso mangoes grown in Ratnagiri and nothing else.\n\nUse it for aamras with puris, mango lassi, milkshakes and desserts all year round. Refrigerate after opening and use within 3 days.",
+    "search_terms": "hapus aamras amras mangopulp keri pulp tin can puree milkshake lassi kesar dessert",
+    "aplus": [{"module": "image and text", "headline": "Only Ratnagiri Alphonso", "text": "One variety, one region: the mango pulp that tastes like the fruit.", "image_brief": "Orchard at harvest with crates of Alphonso"},
+              {"module": "three images", "headline": "Aamras, lassi, milkshake", "text": "Three ways families use our pulp.", "image_brief": "Three glasses and a bowl, styled on a light table"}]
+  },
+  "flipkart": {
+    "title": "Kesari Alphonso Mango Pulp, No Added Sugar (850 g)",
+    "key_features": ["Made from Ratnagiri Alphonso mangoes", "No added sugar, no added preservatives", "Ready to use for aamras, lassi and milkshakes", "850 g can, about 3.5 cups", "Shelf life 18 months unopened"],
+    "description": "Alphonso mango pulp from Ratnagiri with no added sugar. Use it for aamras, lassi, milkshakes and desserts. Refrigerate after opening and use within 3 days."
+  },
+  "shopify": {
+    "title": "Alphonso Mango Pulp, 850 g", "handle": "alphonso-mango-pulp-850g", "price": 299, "compare_at_price": 349, "sku": "KES-PULP-850",
+    "product_type": "Mango pulp", "tags": ["mango pulp", "alphonso", "no added sugar"],
+    "seo_title": "Alphonso Mango Pulp 850 g, No Added Sugar | Kesari",
+    "seo_description": "Ratnagiri Alphonso mango pulp with no added sugar or preservatives. Ready for aamras, lassi and milkshakes. 850 g can, ships across India.",
+    "description": ["Made only from Alphonso mangoes grown in Ratnagiri, with no added sugar and no added preservatives.", "Pour it into aamras, lassi, milkshakes and desserts all year round."],
+    "features": ["850 g can, about 3.5 cups", "Shelf life 18 months unopened", "Refrigerate after opening and use within 3 days"]
+  },
+  "images": [
+    {"slot": "main", "brief": "The can on a pure white background, front label facing, filling about 85% of the frame", "alt": "Kesari Alphonso mango pulp 850 g can", "file": "main.jpg"},
+    {"slot": "pour", "brief": "Pulp being poured into a glass, showing the colour and thickness", "alt": "Mango pulp pouring into a glass"},
+    {"slot": "uses", "brief": "Aamras, lassi and milkshake made with the pulp, labelled", "alt": "Aamras, lassi and milkshake"},
+    {"slot": "ingredients", "brief": "Back label: ingredients, nutrition per 100 g, FSSAI number", "alt": "Ingredients and nutrition label"},
+    {"slot": "origin", "brief": "Ratnagiri orchard with the text Only Ratnagiri Alphonso", "alt": "Alphonso orchard in Ratnagiri", "file": "photo.jpg"},
+    {"slot": "size", "brief": "Can next to a glass and a hand for scale, with 850 g and about 3.5 cups", "alt": "Can size compared with a glass"}
+  ]
+}

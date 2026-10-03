@@ -17,8 +17,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_page as B  # noqa: E402
 import render  # noqa: E402
-import tracenum  # noqa: E402
-import vizlib as V  # noqa: E402
+import checks as C  # noqa: E402
 
 PLACEHOLDER = re.compile(r"lorem ipsum|\bTBD\b|\bTODO\b|\[(?:your|company|name|insert)[^\]]*\]|xxx+|example\.com|placeholder", re.I)
 RISKY = re.compile(r"\b(guaranteed?|100% (?:safe|natural|pure|effective|results)|cures?|risk[- ]free|no side effects|#1|number one|best in (?:india|the world|town|class)|cheapest|lowest price ever|miracle|clinically proven)\b", re.I)
@@ -78,22 +77,6 @@ def visible_text(spec):
     return out
 
 
-def fact_pool(spec):
-    pool = V.numbers_in(spec.get("facts", {}))
-
-    def strings(o):
-        if isinstance(o, str):
-            yield o
-        elif isinstance(o, dict):
-            for v in o.values():
-                yield from strings(v)
-        elif isinstance(o, list):
-            for v in o:
-                yield from strings(v)
-    for s in strings(spec.get("facts", {})):
-        for _, c in tracenum.mentions(s):
-            pool += c
-    return pool
 
 
 def folder_size(d):
@@ -162,8 +145,8 @@ def main():
       "page weight %.1f MB: use fewer or smaller images (phones on mobile data load it slowly)" % mb)
 
     texts = visible_text(spec)
-    pool = fact_pool(spec)
-    bad = sorted({u for tx in texts for u in tracenum.untraced(tx, pool)})
+    pool = C.fact_pool(spec.get("facts", {}))
+    bad = sorted({u for tx in texts for u in C.untraced(tx, pool)})
     r("PASS" if not bad else "FAIL", "every number comes from the facts the user gave" if not bad else
       "numbers not in facts (ask the user, or remove them): " + ", ".join(bad[:8]))
     ph_ = sorted({mm.group(0) for tx in texts for mm in [PLACEHOLDER.search(tx)] if mm})
@@ -178,9 +161,9 @@ def main():
 
 
 def finish(rs):
-    for level, msg in rs:
-        print("%s  %s" % (level, msg))
-    sys.exit(1 if any(l == "FAIL" for l, _ in rs) else 0)
+    rep = C.Report()
+    rep.rows = rs
+    rep.finish()
 
 
 if __name__ == "__main__":

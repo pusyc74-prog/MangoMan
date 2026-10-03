@@ -3,11 +3,11 @@
 Order: Playwright (Python) with its Chromium, then a Chrome or Chromium binary
 in headless mode. Only the standard library is required to import this file.
 """
+import importlib.util
 import os
 import shutil
 import subprocess
 import sys
-import tempfile
 
 CHROME_NAMES = ["chromium", "chromium-browser", "google-chrome", "google-chrome-stable", "chrome", "msedge"]
 MAC_PATHS = [
@@ -27,11 +27,7 @@ INSTALL_HINT = ("No browser engine found to render PDF. Install one of: "
 
 
 def _playwright():
-    try:
-        from playwright.sync_api import sync_playwright  # noqa: F401
-        return True
-    except Exception:
-        return False
+    return importlib.util.find_spec("playwright") is not None
 
 
 def _chrome():
