@@ -24,10 +24,13 @@ def load(path):
 
 
 def transcript_text(path):
-    """Plain text of a .txt, .md, .vtt or .srt transcript (timestamps removed)."""
+    """Plain text of a .txt, .md, .vtt or .srt transcript, without timestamps or cue numbers."""
     with open(path, encoding="utf-8", errors="ignore") as f:
         t = f.read()
-    t = re.sub(r"^\d+\s*$|^WEBVTT.*$|^[\d:.,]+\s*-->\s*[\d:.,]+.*$", "", t, flags=re.M)
+    t = re.sub(r"^WEBVTT.*$|^[\d:.,]+\s*-->\s*[\d:.,]+.*$", "", t, flags=re.M)
+    if path.lower().endswith((".srt", ".vtt")):
+        t = re.sub(r"^\d+\s*$", "", t, flags=re.M)  # cue numbers
+    t = re.sub(r"\[\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d+)?\]|^\(?\d{1,2}:\d{2}(?::\d{2})?\)?\s+(?=\S)", "", t, flags=re.M)  # [00:41], line-start 00:41
     return re.sub(r"\n{2,}", "\n", t)
 
 

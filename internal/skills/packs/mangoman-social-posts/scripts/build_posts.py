@@ -66,6 +66,15 @@ def platform_format(spec, p, platform):
     return want if want in fm else fm[0]
 
 
+def real_time(value, fmt):
+    import datetime
+    try:
+        datetime.datetime.strptime(str(value), fmt)
+        return True
+    except ValueError:
+        return False
+
+
 def validate(spec, bdir="."):
     probs = []
     posts = spec.get("posts", [])
@@ -124,7 +133,7 @@ def validate(spec, bdir="."):
                     probs.append("%s slide %d: needs a headline" % (tag, j))
         if not p.get("alt"):
             probs.append("%s: needs alt text (what the image shows, for screen readers)" % tag)
-        if p.get("date") and not re.match(r"^\d{4}-\d{2}-\d{2}$", str(p["date"])) or p.get("time") and not re.match(r"^\d{2}:\d{2}$", str(p["time"])):
+        if p.get("date") and not real_time(p["date"], "%Y-%m-%d") or p.get("time") and not real_time(p["time"], "%H:%M"):
             probs.append("%s: date is YYYY-MM-DD and time HH:MM (24-hour)" % tag)
         if not p.get("caption"):
             probs.append("%s: needs a caption" % tag)

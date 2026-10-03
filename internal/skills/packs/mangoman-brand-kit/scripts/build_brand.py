@@ -38,7 +38,11 @@ def validate(spec, bdir="."):
                 BK.hexc(spec[k])
             except ValueError:
                 p.append("%s must be a hex colour like #1F5FA8" % k)
+    if len(spec.get("extra_colors", [])) > 4:
+        p.append("at most 4 extra colours (a palette people can remember)")
     for c in spec.get("extra_colors", []):
+        if not c.get("name"):
+            p.append("every extra colour needs a name")
         try:
             BK.hexc(c.get("hex", ""))
         except ValueError:
@@ -61,7 +65,7 @@ def tokens(spec, bdir):
 def pairs(T):
     """The text and background pairs the packs use, with the contrast each needs."""
     return [("Text on white", T["text"], "FFFFFF", 4.5), ("Secondary text on white", T["body"], "FFFFFF", 4.5),
-            ("Muted text on white", T["muted"], "FFFFFF", 3.0), ("White on base", "FFFFFF", T["dark"], 4.5),
+            ("Muted text on white (captions)", T["muted"], "FFFFFF", 4.5), ("White on base", "FFFFFF", T["dark"], 4.5),
             ("Accent text on white", T["accent_dark"], "FFFFFF", 3.0), ("Accent on base", T["accent"], T["dark"], 3.0),
             ("Button text on accent", max(("FFFFFF", T["text"]), key=lambda c: BK.contrast(c, T["accent_fill"])), T["accent_fill"], 4.5)]
 

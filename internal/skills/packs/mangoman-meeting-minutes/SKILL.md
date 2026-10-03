@@ -37,7 +37,7 @@ and check them against the transcript, so nothing is added that was not said.
 ```
 
 Rules:
-- **Only what was said.** Numbers, names and quotes must appear in the transcript (the checker fails others). Write numbers the way they were said with digits ("2,000 boxes").
+- **Only what was said.** Numbers, names and quotes must appear in the transcript (the checker fails others). Write numbers the way they were said with digits ("2,000 boxes"), and put quotes in double quotes so they are checked.
 - **Decisions are decisions**, not discussion: what was agreed, in one sentence each.
 - **Every action has one owner and a due date**, and starts with a verb ("Send", "Confirm"). If the meeting gave no date, ask the user or write the date they suggest and say so.
 - Summary first: the outcome in two or three sentences, for people who read nothing else.

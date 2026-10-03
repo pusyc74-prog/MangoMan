@@ -76,9 +76,9 @@ def main():
     path = os.path.join(out, "index.html")
     if os.path.exists(path) and "--force" not in a:
         sys.exit("%s exists; edit it, or pass --force to start again" % path)
-    ns = json.dumps(spec.get("id", "app") + ":")
+    ns = json.dumps(spec.get("id", "app") + ":").replace("</", "<\\/")
     with open(path, "w", encoding="utf-8") as f:
-        f.write(TEMPLATE % dict(T, title=html.escape(spec["title"]), lang=spec.get("language", "en"), btn=btn, ns=ns,
+        f.write(TEMPLATE % dict(T, title=html.escape(spec["title"]), lang=html.escape(spec.get("language", "en")), btn=btn, ns=ns,
                                 on_btn=max(("FFFFFF", T["text"]), key=lambda c: BK.contrast(c, btn))))
     if note:
         print(note)

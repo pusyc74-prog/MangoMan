@@ -114,9 +114,9 @@ def check_letter(r, pdf, res):
         "cover_letter needs company and role")
     if c.get("company") and c["company"].lower() not in text.lower():
         res("WARN", "the letter never mentions %s; say why this company" % c["company"])
-    res("PASS" if 150 <= n <= 400 else ("FAIL" if n > 450 else "WARN"), "letter is %d words" % n if 150 <= n <= 400 else
+    res("PASS" if 200 <= n <= 400 else ("FAIL" if n > 450 else "WARN"), "letter is %d words" % n if 200 <= n <= 400 else
         "letter is %d words; aim for 200 to 400" % n)
-    pool = C.fact_pool({k: v for k, v in r.items() if k != "cover_letter"}, c.get("facts", {}))
+    pool = C.fact_pool({k: v for k, v in r.items() if k != "cover_letter"})
     bad = sorted({u for p in c.get("paragraphs", []) for u in C.untraced(p, pool)})
     res("PASS" if not bad else "FAIL", "every number in the letter is in the resume" if not bad else
         "numbers in the letter that the resume does not support: " + ", ".join(bad))
@@ -124,7 +124,9 @@ def check_letter(r, pdf, res):
         res("WARN", "open with why you fit this role, not 'I am writing to apply' or 'To whom it may concern'")
     ph = C.first_match(C.PLACEHOLDER, c.get("paragraphs", []) + [c.get("greeting", "")])
     res("PASS" if not ph else "FAIL", "no placeholder text in the letter" if not ph else "placeholder text in the letter: " + ", ".join(ph))
-    if os.path.exists(pdf):
+    if not os.path.exists(pdf):
+        res("WARN", "no letter PDF to measure (no browser engine)")
+    else:
         pages = render.pdf_pages(pdf)
         res("PASS" if pages == 1 else "FAIL", "letter fits one page" if pages == 1 else "letter runs to %d pages; cut it to one" % pages)
 

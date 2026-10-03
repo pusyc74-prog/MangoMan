@@ -95,7 +95,7 @@ def derive(dark, accent, motif="orb", mode="contrast", type_="modern"):
     fh, fb, hh, hb = TYPES.get(type_, TYPES["modern"])
     return dict(
         dark=dark, dark2=mix(W, dark, 0.08), bg=W, tint=mix(dark, W, 0.06), text=text,
-        body=mix(text, W, 0.82), muted=_toward(mix(text, W, 0.5), text, W, 3.6),
+        body=mix(text, W, 0.82), muted=_toward(mix(text, W, 0.5), text, W, 4.5),
         accent=acc_on_dark, accent_dark=accent_dark, accent_fill=accent,
         good=GOOD, bad=BAD, grid=mix(dark, W, 0.11), dim=mix(dark, W, 0.28),
         on_dark=W, on_dark2=mix(W, dark, 0.85), on_dark_muted=mix(W, dark, 0.62),
@@ -262,13 +262,14 @@ def resolve_spec(spec, base_dir="."):
     lp = None
     if b.get("logo"):
         lp = b["logo"] if os.path.isabs(b["logo"]) else os.path.join(base_dir, b["logo"])
-    primary, accent = b.get("primary"), b.get("accent")
+    primary, accent = (hexc(b[k]) if b.get(k) else None for k in ("primary", "accent"))
     note = ""
     if lp and not primary and os.path.exists(lp):
         p2, a2 = logo_colors(lp)
-        primary, accent = primary or p2, accent or a2
+        read = [("primary", p2)] + ([("accent", a2)] if a2 and not accent else [])
+        primary, accent = p2, accent or a2
         if primary:
-            note = "brand colours read from the logo: primary #%s%s" % (primary, ", accent #%s" % accent if accent else "")
+            note = "brand colours read from the logo: " + ", ".join("%s #%s" % kv for kv in read)
     if primary:
         accent = accent or CURATED.get(spec.get("theme", "ink"), CURATED["ink"])[1]
         T = brand_theme(primary, accent, **kw)

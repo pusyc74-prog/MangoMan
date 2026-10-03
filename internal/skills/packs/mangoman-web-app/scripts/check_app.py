@@ -24,18 +24,37 @@ import checks as C  # noqa: E402
 AUDIT_JS = r"""
 () => ({
   hscroll: Math.max(0, document.documentElement.scrollWidth - innerWidth),
-  unlabelled: [...document.querySelectorAll('input:not([type=hidden]),select,textarea')].filter(el =>
+  unlabelled: [...document.querySelectorAll('input:not([type=hidden]):not([type=submit]):not([type=button]):not([type=reset]):not([type=image]),select,textarea')].filter(el =>
       !(el.labels && el.labels.length) && !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby')).map(el => el.id || el.name || el.tagName),
-  nameless: [...document.querySelectorAll('button,a[href],[role=button]')].filter(el =>
-      !(el.innerText || '').trim() && !el.getAttribute('aria-label') && !el.title).map(el => el.id || el.outerHTML.slice(0, 40)),
+  nameless: [...document.querySelectorAll('button,a[href],[role=button],input[type=submit],input[type=button]')].filter(el =>
+      !(el.innerText || el.value || '').trim() && !el.getAttribute('aria-label') && !el.title && !el.querySelector('img[alt]:not([alt=""])')).map(el => el.id || el.outerHTML.slice(0, 40)),
   noalt: [...document.querySelectorAll('img')].filter(i => !i.hasAttribute('alt')).length,
-  small: [...document.querySelectorAll('button,input,select,a[href]')].filter(el => { const r = el.getBoundingClientRect(); return r.width && r.height < 36; }).length,
+  small: [...document.querySelectorAll('button,input:not([type=checkbox]):not([type=radio]),select,a[href]')].filter(el => { const r = el.getBoundingClientRect(); return r.width && r.height < 36; }).length,
 })
 """
 
 
+NEEDS = {"fill": [], "select": ["value"], "click": [], "check": [], "press": [], "reload": [], "expect_text": [],
+         "expect_visible": [], "expect_hidden": [], "expect_count": ["count"], "expect_value": ["value"]}
+
+
+def wait_for(page, ok, timeout=3000):
+    """Poll until ok() is true (results often appear a moment after a click)."""
+    for _ in range(timeout // 100):
+        if ok():
+            return True
+        page.wait_for_timeout(100)
+    return ok()
+
+
 def run_step(page, s):
     """Do one step; return an error message or ''."""
+    kind = next((k for k in NEEDS if k in s), None)
+    if not kind:
+        return "unknown step %s" % json.dumps(s)
+    missing = [k for k in NEEDS[kind] if k not in s]
+    if missing:
+        return "%s step needs %s" % (kind, ", ".join(missing))
     t = 4000
     if "fill" in s:
         page.fill(s["fill"], str(s.get("value", "")), timeout=t)
@@ -49,28 +68,21 @@ def run_step(page, s):
         page.press(s["press"], s.get("key", "Enter"), timeout=t)
     elif "reload" in s:
         page.reload()
-    elif "expect_text" in s:
-        got = page.inner_text(s["expect_text"], timeout=t)
-        if s.get("contains") is not None and str(s["contains"]) not in got:
-            return "%s shows %r, expected it to contain %r" % (s["expect_text"], got.strip()[:80], s["contains"])
-        if s.get("equals") is not None and got.strip() != str(s["equals"]):
-            return "%s shows %r, expected %r" % (s["expect_text"], got.strip()[:80], s["equals"])
-    elif "expect_visible" in s:
-        if not page.is_visible(s["expect_visible"]):
-            return "%s is not visible" % s["expect_visible"]
-    elif "expect_hidden" in s:
-        if page.is_visible(s["expect_hidden"]):
-            return "%s should be hidden" % s["expect_hidden"]
-    elif "expect_count" in s:
-        n = page.locator(s["expect_count"]).count()
-        if n != s["count"]:
-            return "%s: %d found, expected %d" % (s["expect_count"], n, s["count"])
-    elif "expect_value" in s:
-        got = page.input_value(s["expect_value"], timeout=t)
-        if got != str(s["value"]):
-            return "%s has value %r, expected %r" % (s["expect_value"], got, s["value"])
-    else:
-        return "unknown step %s" % json.dumps(s)
+    elif kind == "expect_text":
+        sel = s["expect_text"]
+        good = lambda: (s.get("contains") is None or str(s["contains"]) in page.inner_text(sel, timeout=t)) and \
+            (s.get("equals") is None or page.inner_text(sel, timeout=t).strip() == str(s["equals"]))
+        if not wait_for(page, good):
+            return "%s shows %r, expected %s %r" % (sel, page.inner_text(sel, timeout=t).strip()[:80],
+                                                   "it to contain" if s.get("contains") is not None else "", s.get("contains", s.get("equals")))
+    elif kind == "expect_visible" and not wait_for(page, lambda: page.is_visible(s["expect_visible"])):
+        return "%s is not visible" % s["expect_visible"]
+    elif kind == "expect_hidden" and not wait_for(page, lambda: not page.is_visible(s["expect_hidden"])):
+        return "%s should be hidden" % s["expect_hidden"]
+    elif kind == "expect_count" and not wait_for(page, lambda: page.locator(s["expect_count"]).count() == s["count"]):
+        return "%s: %d found, expected %d" % (s["expect_count"], page.locator(s["expect_count"]).count(), s["count"])
+    elif kind == "expect_value" and not wait_for(page, lambda: page.input_value(s["expect_value"], timeout=t) == str(s["value"])):
+        return "%s has value %r, expected %r" % (s["expect_value"], page.input_value(s["expect_value"], timeout=t), s["value"])
     return ""
 
 

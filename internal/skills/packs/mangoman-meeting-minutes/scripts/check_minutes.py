@@ -17,6 +17,11 @@ import checks as C  # noqa: E402
 QUOTE = re.compile(r"[\"“]([^\"”]{8,})[\"”]")
 
 
+def norm(t):
+    """Lower case, one space, straight quotes: so typography does not fail a true quote."""
+    return re.sub(r"\s+", " ", t.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')).lower().strip()
+
+
 def written(spec):
     """Everything the minutes state, with where it is."""
     out = [("summary", spec["summary"])]
@@ -40,7 +45,9 @@ def main():
         rep.finish()
     when = B.day(spec["date"])
     acts = spec.get("actions", [])
-    rep.check([a["action"][:50] for a in acts if not a.get("owner")], "every action has an owner", "actions without an owner")
+    for a in acts:
+        a["owner"] = (a.get("owner") or "").strip()
+    rep.check([a["action"][:50] for a in acts if not a["owner"]], "every action has an owner", "actions without an owner")
     rep.check([a["action"][:50] for a in acts if not a.get("due")], "every action has a due date", "actions without a due date", "WARN")
     rep.check([a["action"][:50] for a in acts if a.get("due") and B.day(a["due"]) < when], "due dates are after the meeting", "due dates before the meeting")
     people = {n.lower() for n in B.names(spec)} | {x.lower() for x in spec.get("external", [])}
@@ -50,11 +57,11 @@ def main():
     texts = written(spec)
     if spec.get("transcript"):
         src_text = B.transcript_text(os.path.join(bdir, spec["transcript"]))
-        flat = re.sub(r"\s+", " ", src_text).lower()
+        flat = norm(src_text)
         pool = C.fact_pool(src_text)
         rep.check(sorted({"%s: %s" % (w, u) for w, t in texts for u in C.untraced(t, pool)}), "every number appears in the transcript",
                   "numbers not in the transcript (check them or remove them)")
-        rep.check(sorted({q for _, t in texts for q in QUOTE.findall(t) if re.sub(r"\s+", " ", q).lower() not in flat}),
+        rep.check(sorted({q for _, t in texts for q in QUOTE.findall(t) if norm(q) not in flat}),
                   "every quote appears word for word in the transcript", "quotes not found in the transcript")
         rep.check(sorted({a["owner"] for a in acts if a.get("owner") and a["owner"].split()[0].lower() not in flat}),
                   "every action owner is named in the transcript", "owners never mentioned in the transcript", "WARN", ", ")

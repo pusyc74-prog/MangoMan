@@ -32,7 +32,9 @@ def main():
     bad = ["%s %.1f:1 (needs %.1f)" % (lab, BK.contrast(fg, bg), need) for lab, fg, bg, need in B.pairs(T) if BK.contrast(fg, bg) < need]
     rep.check(bad, "every text and background pair is readable (WCAG AA)", "combinations that are hard to read")
     core = [T[k] for k in ("dark", "accent_fill", "text", "tint")]
-    close = [c["name"] for c in spec.get("extra_colors", []) if any(BK.contrast(BK.hexc(c["hex"]), k) < 1.15 for k in core)]
+    rgb = lambda h: [int(BK.hexc(h)[i:i + 2], 16) for i in (0, 2, 4)]
+    near = lambda x, y: sum((p - q) ** 2 for p, q in zip(rgb(x), rgb(y))) ** 0.5 < 40  # close in colour, not just in lightness
+    close = [c["name"] for c in spec.get("extra_colors", []) if any(near(c["hex"], k) for k in core)]
     rep.check(close, "extra colours are distinct from the core palette", "extra colours almost identical to a core colour", "WARN", ", ")
     if spec.get("logo"):
         w, h = BK.logo_size(os.path.join(bdir, spec["logo"]))
