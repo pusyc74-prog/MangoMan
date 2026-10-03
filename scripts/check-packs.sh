@@ -31,4 +31,5 @@ run seo       "python3 $P/mangoman-seo-article/scripts/build_article.py article.
 run report    "python3 $P/mangoman-client-report/scripts/build_report.py analysis.py --out report" "python3 $P/mangoman-client-report/scripts/check_report.py analysis.py report"
 run minutes   "python3 $P/mangoman-meeting-minutes/scripts/build_minutes.py minutes.json --out minutes" "python3 $P/mangoman-meeting-minutes/scripts/check_minutes.py minutes.json minutes"
 run brand     "python3 $P/mangoman-brand-kit/scripts/build_brand.py brand.json --out brand"      "python3 $P/mangoman-brand-kit/scripts/check_brand.py brand.json brand"
+run review    "bash setup.sh && python3 $P/mangoman-code-review/scripts/collect.py repo --out facts.json" "python3 $P/mangoman-code-review/scripts/check_review.py review.json facts.json --out review.md"
 exit $fail

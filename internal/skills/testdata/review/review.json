@@ -1,0 +1,10 @@
+{
+  "verdict": "blocked",
+  "summary": "The change adds a GST helper but it returns only the tax, not the amount with tax, so the test fails. It also commits an API key and leaves a breakpoint in.",
+  "findings": [
+    {"file": "pricing.py", "line": 1, "severity": "blocker", "title": "API key committed in code", "detail": "A live-looking key is hard-coded. Anyone with the repository can use it.", "suggestion": "Remove it, rotate the key, and read it from an environment variable."},
+    {"file": "pricing.py", "line": 11, "severity": "blocker", "title": "with_gst returns the tax, not the total", "detail": "amount * rate gives 180 for 1000; the test expects 1180.", "suggestion": "return round(amount * (1 + rate), 2)"},
+    {"file": "pricing.py", "line": 10, "severity": "major", "title": "breakpoint() left in", "detail": "Any call to with_gst stops the program in production.", "suggestion": "Delete the line."}
+  ],
+  "praise": ["Default GST rate as a parameter makes other rates easy to support."]
+}

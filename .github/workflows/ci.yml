@@ -42,7 +42,7 @@ jobs:
           python-version: "3.12"
       - name: Install pack dependencies
         run: |
-          pip install pandas pillow python-pptx python-docx pypdf playwright pyflakes
+          pip install pandas pillow python-pptx python-docx pypdf playwright pyflakes pytest
           python -m playwright install --with-deps chromium
       - name: Lint pack scripts
         run: |
