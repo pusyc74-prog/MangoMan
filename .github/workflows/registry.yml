@@ -1,0 +1,60 @@
+name: registry
+
+# Pull requests: the safety review runs on every new or changed package.
+# Pushes to this branch: the index is rebuilt and signed (needs the
+# MARKETPLACE_KEY secret, made once with `mangoman agents keygen`).
+
+on:
+  pull_request:
+    branches: [registry]
+    paths: ["packages/**"]
+  push:
+    branches: [registry]
+    paths: ["packages/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: mangoman-src
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: mangoman-src/go.mod
+      - name: Build MangoMan
+        run: cd mangoman-src && go build -o "$RUNNER_TEMP/mangoman" ./cmd/mangoman
+      - name: Review packages
+        run: |
+          set +e
+          fail=0
+          for f in packages/*.mmagent; do
+            [ -f "$f" ] || continue
+            out=$("$RUNNER_TEMP/mangoman" agents review "$f" 2>&1); rc=$?
+            msg=$(printf '%s\n' "$out" | awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}')
+            if [ $rc -ne 0 ]; then echo "::error file=$f::$msg"; fail=1; else echo "::notice file=$f::$msg"; fi
+          done
+          exit $fail
+      - name: Sign and publish the index
+        if: github.event_name != 'pull_request'
+        env:
+          MARKETPLACE_KEY: ${{ secrets.MARKETPLACE_KEY }}
+        run: |
+          if [ -z "$MARKETPLACE_KEY" ]; then
+            echo "::error::Add the MARKETPLACE_KEY secret (the private key from mangoman agents keygen) to sign the index."
+            exit 1
+          fi
+          printf '%s\n' "$MARKETPLACE_KEY" > "$RUNNER_TEMP/market.key"
+          "$RUNNER_TEMP/mangoman" agents index packages --key "$RUNNER_TEMP/market.key"
+          rm -f "$RUNNER_TEMP/market.key"
+          git config user.name "mangoman-registry"
+          git config user.email "registry@users.noreply.github.com"
+          git add index.json index.json.sig
+          git commit -q -m "index: $(date -u +%Y-%m-%dT%H:%MZ)" || exit 0
+          git push
