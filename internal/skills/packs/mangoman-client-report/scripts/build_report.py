@@ -97,9 +97,7 @@ def table_html(t):
 def build_html(spec, T):
     logo = ""
     if T.get("logo"):
-        import base64
-        with open(T["logo"], "rb") as f:
-            logo = '<img src="data:image/png;base64,%s" alt="">' % base64.b64encode(f.read()).decode()
+        logo = '<img src="%s" alt="">' % BK.data_uri(T["logo"])
     head = '<header><div class="row"><b>%s</b>%s</div><div class="k">%s</div><h1>%s</h1><div class="sub">%s, %s</div></header>' % (
         e(spec.get("prepared_by", "")), logo, e(spec.get("kicker", "Monthly report")), e(spec["title"]), e(spec["client"]), e(spec["period"]))
     body = ['<p class="summary">%s</p>' % e(spec["summary"]), '<div class="kpis" style="--n:%d">%s</div>' % (len(spec["kpis"]), "".join(kpi(k) for k in spec["kpis"]))]

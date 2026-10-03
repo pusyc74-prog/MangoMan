@@ -20,7 +20,15 @@ import checks as C  # noqa: E402
 
 PHONE = re.compile(r"(?:\+?\d[\s-]?){10,}")
 CAPS = re.compile(r"\b[A-Z]{4,}\b")
-ATTRIBUTE = re.compile(r"\b(?:are you|you're|you are|other|fellow)\b[^.?!]{0,30}\b(diabetic|overweight|obese|fat|depressed|anxious|gay|lesbian|christian|muslim|hindu|sikh|jewish|in debt|broke|bankrupt|divorced|single|pregnant|disabled|sick|ill|bald|infertile)\b", re.I)
+_ATTR = r"(?:diabetic|overweight|obese|fat|depressed|anxious|gay|lesbian|christian|muslim|hindu|sikh|jewish|in debt|broke|bankrupt|divorced|single|pregnant|disabled|sick|bald|infertile)"
+# "Are you diabetic?", "you're in debt", "other single parents", "fellow Muslims": statements about the reader
+ATTRIBUTE = re.compile(r"\b(?:are you|you're|you are)\s+(?:\w+\s+){0,2}%s\b|\b(?:other|fellow)\s+%ss?\b(?!\s*(?:-|estate|origin|variety|brands?))" % (_ATTR, _ATTR), re.I)
+
+
+def blocks(neg, kw):
+    """A phrase negative blocks a keyword when its words appear in it, in order."""
+    n, k = neg.lower().split(), kw.lower().split()
+    return any(k[i:i + len(n)] == n for i in range(len(k) - len(n) + 1))
 
 
 def main():
@@ -62,7 +70,7 @@ def main():
             kws = [k["text"].lower() for k in ag.get("keywords", [])]
             if kws and sum(1 for h in hs if any(k in h.lower() for k in kws)) < 2:
                 soft.append("%s: fewer than 2 headlines contain a keyword; ads match searches better when they do" % n)
-            clash = sorted({x for x in ag.get("negatives", []) for k in kws if x.lower() in k})
+            clash = sorted({x for x in ag.get("negatives", []) for k in kws if blocks(x, k)})
             if clash:
                 hard.append("%s: negative keywords block your own keywords: %s" % (n, ", ".join(clash)))
             if not kws:

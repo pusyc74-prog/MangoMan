@@ -403,11 +403,13 @@ def run_analysis(script):
                          cwd=os.path.dirname(os.path.abspath(script)) or ".")
     if res.returncode != 0:
         sys.exit("analysis failed:\n" + res.stderr[-4000:])
-    out = res.stdout.strip()
-    start = out.find("{")
-    if start < 0:
-        sys.exit("analysis printed no JSON object")
-    try:
-        return json.loads(out[start:])
-    except json.JSONDecodeError as e:
-        sys.exit("analysis output is not valid JSON: %s" % e)
+    out, dec = res.stdout, json.JSONDecoder()
+    for i, ch in enumerate(out):  # the first complete JSON object, ignoring other prints
+        if ch == "{":
+            try:
+                obj = dec.raw_decode(out, i)[0]
+            except json.JSONDecodeError:
+                continue
+            if isinstance(obj, dict):
+                return obj
+    sys.exit("analysis printed no JSON object")

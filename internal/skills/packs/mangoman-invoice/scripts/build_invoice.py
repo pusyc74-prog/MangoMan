@@ -89,9 +89,17 @@ def state_code(party):
     return g[:2] if len(g) >= 2 and g[:2].isdigit() else str(party.get("state_code", "")).zfill(2)
 
 
+def buyer_state(spec):
+    """Place of supply: given, else the delivery address's state, else the buyer's."""
+    if spec.get("place_of_supply"):
+        return str(spec["place_of_supply"]).zfill(2)
+    ship = spec.get("ship_to") or {}
+    return state_code(ship) if ship.get("gstin") or ship.get("state_code") else state_code(spec["bill_to"])
+
+
 def compute(spec):
-    sup, to = spec["supplier"], spec["bill_to"]
-    pos = str(spec.get("place_of_supply") or state_code(spec.get("ship_to") or to)).zfill(2)
+    sup = spec["supplier"]
+    pos = buyer_state(spec)
     inter = state_code(sup) != pos
     lines, by_rate = [], {}
     for it in spec["items"]:
@@ -143,6 +151,8 @@ def validate(spec, bdir="."):
             p.append("supplier.%s is required" % k)
     if kind == "invoice" and not sup.get("gstin"):
         p.append("supplier.gstin is required on a tax invoice")
+    if not (sup.get("gstin") or sup.get("state_code")):
+        p.append("supplier needs gstin or state_code (it decides CGST and SGST or IGST)")
     for who in ("supplier", "bill_to", "ship_to"):
         g = (spec.get(who) or {}).get("gstin")
         if g and not gstin_ok(g):
@@ -150,6 +160,12 @@ def validate(spec, bdir="."):
     to = spec.get("bill_to") or {}
     if not to.get("name"):
         p.append("bill_to.name is required")
+    if spec.get("ship_to") and not spec["ship_to"].get("name"):
+        p.append("ship_to.name is required")
+    for who in ("supplier", "bill_to", "ship_to"):
+        sc = (spec.get(who) or {}).get("state_code")
+        if sc and str(sc).zfill(2) not in STATES:
+            p.append("%s.state_code %s is not a state code" % (who, sc))
     if not (to.get("gstin") or to.get("state_code")) and not spec.get("place_of_supply"):
         p.append("give bill_to.gstin, bill_to.state_code or place_of_supply (it decides CGST and SGST or IGST)")
     pos = spec.get("place_of_supply")
@@ -163,6 +179,10 @@ def validate(spec, bdir="."):
         code = str(it.get("hsn", ""))
         if kind == "invoice" and not re.match(r"^\d{4}(\d{2}){0,2}$", code):
             p.append("item %d: hsn must be 4, 6 or 8 digits (SAC for services is 6 digits starting 99)" % i)
+        dp, d = it.get("discount_percent", 0), it.get("discount", 0)
+        if not (isinstance(dp, (int, float)) and 0 <= dp < 1) or not isinstance(d, (int, float)) or d < 0 or \
+                isinstance(it.get("rate"), (int, float)) and d > float(it.get("qty", 1)) * it["rate"]:
+            p.append("item %d: discount_percent is a fraction below 1 (0.1 for 10%%) and discount cannot exceed the line value" % i)
         r = it.get("gst_rate", spec.get("gst_rate", 0.18))
         if not (isinstance(r, (int, float)) and 0 <= r < 1):
             p.append("item %d: gst_rate is a fraction, e.g. 0.18" % i)
@@ -210,13 +230,13 @@ td .d { color: #%(muted)s; font-size: 8.5pt; }
 """
 
 
-def party_html(title, p, st=None):
+def party_html(title, p):
     if not p:
         return ""
     lines = [e(p.get("address", ""))]
     if p.get("gstin"):
         lines.append("GSTIN %s" % e(p["gstin"]))
-    sc = st or (p.get("gstin", "")[:2] if p.get("gstin") else str(p.get("state_code", "")).zfill(2) if p.get("state_code") else "")
+    sc = state_code(p)
     if sc in STATES:
         lines.append("State: %s (%s)" % (STATES[sc], sc))
     for k in ("phone", "email"):
@@ -230,9 +250,7 @@ def build_html(spec, T, n):
     sup = spec["supplier"]
     logo = ""
     if T.get("logo"):
-        import base64
-        with open(T["logo"], "rb") as f:
-            logo = '<img src="data:image/png;base64,%s" alt="%s">' % (base64.b64encode(f.read()).decode(), e(sup["name"]))
+        logo = '<img src="%s" alt="%s">' % (BK.data_uri(T["logo"]), e(sup["name"]))
     day = lambda k: datetime.date.fromisoformat(spec[k]).strftime("%d %b %Y").lstrip("0")
     meta = [("Number", spec["number"]), ("Date", day("date"))]
     meta += [(label, day(k)) for k, label in (("due_date", "Due"), ("valid_until", "Valid until")) if spec.get(k)]

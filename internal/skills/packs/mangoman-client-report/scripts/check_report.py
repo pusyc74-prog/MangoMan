@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_report as B  # noqa: E402
 import checks as C  # noqa: E402
 import render  # noqa: E402
+import vizlib as V  # noqa: E402
 
 TEXT_KEYS = ("summary", "headline", "body", "wins", "issues", "title", "action")
 
@@ -41,11 +42,14 @@ def main():
         if isinstance(o, list):
             return [t for v in o for t in texts(v, key)]
         return []
-    numeric = {k: v for k, v in spec.items() if k not in TEXT_KEYS}
-    pool = C.fact_pool(spec.get("facts", {}), numeric, [{k: v for k, v in s.items() if k not in TEXT_KEYS} for s in spec.get("sections", [])])
+    # allowed numbers: facts, computed values, and numbers inside the data's own labels (table rows, chart categories)
+    data_labels = [(s.get("table") or {}).get("rows", []) for s in spec.get("sections", [])] + [(s.get("chart") or {}).get("x", []) for s in spec.get("sections", [])]
+    pool = C.fact_pool(spec.get("facts", {}), data_labels) + V.numbers_in({k: v for k, v in spec.items() if k not in TEXT_KEYS})
     allt = texts(spec)
     rep.check(sorted({u for t in allt for u in C.untraced(t, pool)}), "every number in the writing traces to computed data or facts",
               "numbers not in the computed data (add them to facts or fix the text)")
+    ns = len(spec.get("sections", []))
+    rep.check([] if 3 <= ns <= 6 else ["%d sections" % ns], "%d sections" % ns, "aim for 3 to 6 sections", "WARN")
     rep.check([] if spec.get("next") else ["none"], "plan for next month included", "no plan for next month: say what happens now", "WARN")
     rep.check(C.first_match(C.PLACEHOLDER, allt), "no placeholder text", "placeholder text left in")
     pdf = out + ".pdf"

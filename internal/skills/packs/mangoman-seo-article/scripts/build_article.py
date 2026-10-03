@@ -18,7 +18,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import render  # noqa: E402
 
-LINK = re.compile(r"\[([^\]]+)\]\(((?:https?://|/)[^)\s]+)\)")
+LINK = re.compile(r"\[([^\]]+)\]\(((?:https?://|/(?!/))[^)\s]+)\)")
 CITE = re.compile(r"\[(\d{1,2})\](?!\()")
 e = lambda s: html.escape(str(s if s is not None else ""), quote=True)
 
@@ -76,9 +76,12 @@ def validate(spec):
         for n in CITE.findall(t):
             if n not in ids:
                 p.append("%s cites [%s], which is not in sources" % (place, n))
+    places = {"intro"} | {s.get("h2") for s in a.get("sections", [])}
     for im in spec.get("images", []):
         if not im.get("alt") or not im.get("src"):
             p.append("every image needs src and alt")
+        if im.get("after", "intro") not in places:
+            p.append("image %s: after must be intro or a section's h2" % im.get("src"))
     return p
 
 
@@ -100,7 +103,7 @@ def article_html(spec):
     body += ["<p>%s</p>" % inline(t) for t in a.get("intro", [])]
     imgs = {}
     for im in spec.get("images", []):
-        imgs.setdefault(im.get("after", ""), []).append(im)
+        imgs.setdefault(im.get("after", "intro"), []).append(im)
 
     def figs(key):
         return "".join('<figure><img src="%s" alt="%s" loading="lazy">%s</figure>' % (e(i["src"]), e(i["alt"]), "<figcaption>%s</figcaption>" % e(i["caption"]) if i.get("caption") else "")
@@ -150,15 +153,17 @@ def article_html(spec):
 
 def article_md(spec):
     a = spec["article"]
-    md = lambda t: CITE.sub(r"[\1]", t)
-    out = ["# " + a["h1"], ""] + [md(t) + "\n" for t in a.get("intro", [])]
+    imgs = lambda key: ["![%s](%s)\n" % (i["alt"], i["src"]) for i in spec.get("images", []) if i.get("after", "intro") == key]
+    paras = lambda x: [t + "\n" for t in x.get("paragraphs", [])] + ["- " + b for b in x.get("bullets", [])] + ([""] if x.get("bullets") else [])
+    out = ["# " + a["h1"], ""] + [t + "\n" for t in a.get("intro", [])] + imgs("intro")
     for s in a["sections"]:
-        out += ["## " + s["h2"], ""] + [md(t) + "\n" for t in s.get("paragraphs", [])] + ["- " + md(b) for b in s.get("bullets", [])] + ([""] if s.get("bullets") else [])
+        out += ["## " + s["h2"], ""] + paras(s)
         for sub in s.get("subsections", []):
-            out += ["### " + sub["h3"], ""] + [md(t) + "\n" for t in sub.get("paragraphs", [])] + ["- " + md(b) for b in sub.get("bullets", [])] + ([""] if sub.get("bullets") else [])
+            out += ["### " + sub["h3"], ""] + paras(sub)
+        out += imgs(s["h2"])
     if a.get("faq"):
-        out += ["## Frequently asked questions", ""] + [x for f in a["faq"] for x in ("### " + f["q"], "", md(f["a"]), "")]
-    out += [md(t) + "\n" for t in a.get("conclusion", [])]
+        out += ["## Frequently asked questions", ""] + [x for f in a["faq"] for x in ("### " + f["q"], "", f["a"], "")]
+    out += [t + "\n" for t in a.get("conclusion", [])]
     if spec.get("sources"):
         out += ["## Sources", ""] + ["%s. [%s](%s)" % (x["id"], x["title"], x["url"]) for x in spec["sources"]]
     return "\n".join(out) + "\n"

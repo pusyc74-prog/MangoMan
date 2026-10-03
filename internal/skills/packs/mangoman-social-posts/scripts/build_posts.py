@@ -186,10 +186,7 @@ def text_on(bg, T):
 def logo_html(T, bg, size_u=5):
     if not T.get("logo"):
         return ""
-    import base64
-    with open(T["logo"], "rb") as f:
-        data = base64.b64encode(f.read()).decode()
-    img = '<img alt="" src="data:image/png;base64,%s" style="height:calc(%s * var(--u))">' % (data, size_u)
+    img = '<img alt="" src="%s" style="height:calc(%s * var(--u))">' % (BK.data_uri(T["logo"]), size_u)
     if BK.logo_hidden_share(T["logo"], bg) > 0.15:
         chip = "FFFFFF" if BK.luminance(bg) < 0.4 else T["dark"]
         return '<span class="chip" style="background:#%s">%s</span>' % (chip, img)

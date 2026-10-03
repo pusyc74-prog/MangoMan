@@ -441,10 +441,7 @@ def cover_html(spec, T):
     fr = spec["from"]
     logo = ""
     if T.get("logo"):
-        import base64
-        with open(T["logo"], "rb") as f:
-            data = base64.b64encode(f.read()).decode()
-        img = '<img src="data:image/png;base64,%s" alt="%s">' % (data, e(fr["name"]))
+        img = '<img src="%s" alt="%s">' % (BK.data_uri(T["logo"]), e(fr["name"]))
         logo = '<div class="chip">%s</div>' % img if BK.logo_hidden_share(T["logo"], T["dark"]) > 0.15 else img.replace("<img", '<img class="logo"')
     else:
         logo = '<div style="font-weight:700;font-size:14pt">%s</div>' % e(fr["name"])

@@ -47,7 +47,8 @@ def main():
 
     pool = C.fact_pool(spec.get("facts", {}))
     bad = []
-    for place, t in bl:
+    short = [("title", m["title"]), ("description", m["description"])] + [("heading", h) for h in B.headings(spec)] + [("faq", f["q"]) for f in a.get("faq", [])]
+    for place, t in bl + short:
         for s in SENT.split(B.LINK.sub(r"\1", t)):
             u = C.untraced(B.CITE.sub("", s), pool)
             if u and not B.CITE.search(s):
@@ -68,8 +69,9 @@ def main():
         rep.add("FAIL", 'the keyword "%s" is in neither the title nor the h1' % kw)
     else:
         rep.check(miss, 'keyword "%s" in title, h1, opening, description, a subheading and address' % kw, 'keyword "%s" missing from' % kw, "WARN", ", ")
-    hits = sum(1 for i in range(len(words(text))) if words(text)[i:i + len(words(kw))] == words(kw))
-    density = hits * len(words(kw)) / max(1, n)
+    tw, kw_w = words(text), words(kw)
+    hits = sum(1 for i in range(len(tw)) if tw[i:i + len(kw_w)] == kw_w)
+    density = hits * len(kw_w) / max(1, n)
     rep.check([] if density <= 0.025 else ["%.1f%%" % (density * 100)], "keyword used naturally (%.1f%% of words)" % (density * 100),
               "keyword stuffing", "WARN")
 

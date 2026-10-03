@@ -53,7 +53,7 @@ def main():
         "IGST, different states" if n["inter_state"] else "CGST and SGST, same state", B.STATES.get(sup_state, sup_state), B.STATES.get(n["place_of_supply"], n["place_of_supply"])))
     to = spec["bill_to"]
     if spec.get("kind", "invoice") == "invoice" and not to.get("gstin") and n["total"] > 50000:
-        miss = [k for k in ("address", "state_code") if not to.get(k)]
+        miss = [k for k, ok in (("address", to.get("address")), ("state", to.get("state_code") or spec.get("place_of_supply"))) if not ok]
         rep.check(miss, "unregistered buyer over ₹50,000: name, address and state given", "unregistered buyer over ₹50,000 needs (rule 46)")
     d = datetime.date.fromisoformat(spec["date"])
     if d >= datetime.date(2025, 9, 22):
@@ -75,7 +75,7 @@ def main():
     pdf = out + ".pdf"
     if os.path.exists(pdf):
         txt = render.pdf_text(pdf).replace(" ", "")
-        miss = [x for x in (B.inr(n["total"]), spec["number"]) if x.replace(" ", "") not in txt]
+        miss = [x for x in (B.inr(n["total"]), str(spec["number"])) if x.replace(" ", "") not in txt]
         rep.check(miss, "number and total appear in the PDF", "missing from the PDF")
         pages = render.pdf_pages(pdf)
         if pages > 2:

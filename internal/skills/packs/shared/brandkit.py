@@ -164,6 +164,14 @@ def prepare_logo(path):
         return path
 
 
+def data_uri(path):
+    """A file as a data: URI with the right image type."""
+    import base64
+    ext = os.path.splitext(path)[1].lower().lstrip(".").replace("jpg", "jpeg") or "png"
+    with open(path, "rb") as f:
+        return "data:image/%s;base64,%s" % (ext, base64.b64encode(f.read()).decode())
+
+
 def logo_size(path):
     try:
         from PIL import Image
