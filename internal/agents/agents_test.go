@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -188,6 +189,9 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 	os.MkdirAll(work, 0o755)
 	t.Setenv("GROQ_API_KEY", "secret-value")
 	t.Setenv("DATABASE_URL", "postgres://u:p@h/db")
+	if runtime.GOOS == "windows" {
+		delete(cases, "unix socket") // no AF_UNIX in Windows Python
+	}
 	for name := range cases {
 		cmd, err := Command(dir, "demo-agent", work, strings.ReplaceAll(name, " ", "_")+".py", nil)
 		if err != nil {

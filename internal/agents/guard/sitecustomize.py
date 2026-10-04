@@ -84,6 +84,16 @@ def _program_ok(exe, argv=None, env=None):
     return name in CMDS or "playwright" + os.sep + "driver" in _real(exe)
 
 
+def _split(line):
+    """Split a Windows command line: the program (maybe quoted), then words."""
+    line = line.strip()
+    if line.startswith('"'):
+        prog, _, rest = line[1:].partition('"')
+    else:
+        prog, _, rest = line.partition(" ")
+    return [prog] + rest.split()
+
+
 def _deny(what):
     raise PermissionError("this agent is not allowed to %s (not declared in its agent.json)" % what)
 
@@ -124,7 +134,8 @@ def _hook(event, args):
     elif event == "subprocess.Popen":
         exe, argv, env = args[0], args[1], args[3]
         if isinstance(argv, (str, bytes)):
-            argv = [argv]
+            # Windows passes one command line; elsewhere a string is a program name.
+            argv = _split(os.fsdecode(argv)) if os.name == "nt" else [argv]
         if exe is None:
             exe = (list(argv) or [None])[0]
         if not _program_ok(exe, argv, env):
