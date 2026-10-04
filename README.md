@@ -330,6 +330,36 @@ Agent scripts run only through `mangoman agents exec`, in layers: every package 
 
 Each free pack can carry a public test set (`tests/cases`, `tests/score.py`); `mangoman agents eval` runs the pack and the agent on every case through the same headless OpenCode and an agent lists as Advanced only when it scores higher. In-house agents: `agents/amazon-listing-pro` (keyword research from the seller's search term report, competitor gaps, backend terms filled to 249 bytes, a before-and-after demand score) and `agents/google-ads-pro` (converting searches and wasted spend mined from the search term report, keyword groups and negatives that never block a converting search). Creators: see [CREATORS.md](CREATORS.md).
 
+## QA agent and Guardian
+
+`mangoman qa` tests a project: it runs the project's own tests (Go, npm,
+pytest, Rust or `make test`) and, with `--url`, clicks through the running
+web app in a browser. It writes `qa-report.md` with each bug and the steps
+to reproduce it. A free model adds likely causes, marked as a guess.
+
+```sh
+mangoman qa ./my-shop --url http://localhost:3000/
+```
+
+`mangoman guardian` watches a running app. Its watchdog checks, from
+`guardian.json`, whether the site is up and fast, whether new error lines
+appear in a log, and whether a jobs script passes. When a check fails,
+Guardian asks a free model for the likely cause, runs only the fixes you
+listed for that check (restart, retry, roll back), checks again and sends a
+message to your Slack or Discord webhook. It never changes code.
+
+```sh
+mangoman guardian init                   # writes guardian.json to edit
+mangoman guardian run --every 5m         # keep watching
+mangoman guardian report --send          # the last day, for a morning summary
+```
+
+To watch MangoMan itself, point a check at `http://127.0.0.1:4141/healthz`
+with the fix `mangoman serve` started in the background. MangoMan's own
+nightly QA (`.github/workflows/qa.yml`) runs every test with the race
+detector, clicks through the dashboard and has Guardian watch the router,
+then opens an issue when anything fails.
+
 ## Privacy
 
 MangoMan runs on your computer and never receives your prompts or keys.

@@ -2,3 +2,6 @@ bin/
 dist/
 *.test
 __pycache__/
+router.log
+qa-out/
+.github/qa/guardian-*

@@ -1,0 +1,9 @@
+{
+  "app": "MangoMan router (CI)",
+  "repo": ".",
+  "checks": [
+    { "name": "router", "url": "http://127.0.0.1:4141/healthz", "max_ms": 1000 },
+    { "name": "dashboard", "url": "http://127.0.0.1:4141/ui/", "max_ms": 1000 },
+    { "name": "router-log", "log": "router.log", "pattern": "(?i)panic|fatal|data race" }
+  ]
+}

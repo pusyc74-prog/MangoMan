@@ -57,6 +57,8 @@ Usage:
   mangoman models               list the free model catalogue with data policies
   mangoman test [prompt]        send a test request through the running router
   mangoman doctor [flags]       live-check every connected provider and model
+  mangoman qa [DIR] [--url URL] test a project: its tests, and its web app in a browser
+  mangoman guardian [init|run|report]  watch an app, fix it from your list, report daily
   mangoman usage [--days N]     summarise requests, failovers and tokens
   mangoman version
 
@@ -107,6 +109,10 @@ func main() {
 		err = cmdTest(os.Args[2:])
 	case "doctor":
 		err = cmdDoctor(os.Args[2:])
+	case "qa":
+		err = cmdQA(os.Args[2:])
+	case "guardian", "watch":
+		err = cmdGuardian(os.Args[2:])
 	case "usage":
 		err = cmdUsage(os.Args[2:])
 	case "version", "--version", "-v":
@@ -575,13 +581,28 @@ func cmdModels() error {
 }
 
 func cmdTest(args []string) error {
-	cfg, err := config.Load()
-	if err != nil {
-		return err
-	}
 	prompt := strings.Join(args, " ")
 	if prompt == "" {
 		prompt = "Reply with one short sentence confirming you are working."
+	}
+	start := time.Now()
+	answer, h, err := askRouter(prompt)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s/%s, %d attempt(s), %s, class %s\nData policy: %s\n\n",
+		h.Get("X-MangoMan-Provider"), h.Get("X-MangoMan-Model"), atoi(h.Get("X-MangoMan-Attempts")),
+		time.Since(start).Round(time.Millisecond), h.Get("X-MangoMan-Class"), h.Get("X-MangoMan-Data-Policy"))
+	fmt.Println(answer)
+	return nil
+}
+
+// askRouter sends one question through the running router and returns the
+// answer and the response headers (which model answered).
+func askRouter(prompt string) (string, http.Header, error) {
+	cfg, err := config.Load()
+	if err != nil {
+		return "", nil, err
 	}
 	body, _ := json.Marshal(map[string]any{
 		"model":    "free/auto",
@@ -590,15 +611,14 @@ func cmdTest(args []string) error {
 	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("http://127.0.0.1:%d/v1/chat/completions", cfg.Port), bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+cfg.Token)
 	req.Header.Set("Content-Type", "application/json")
-	start := time.Now()
 	resp, err := (&http.Client{Timeout: 3 * time.Minute}).Do(req)
 	if err != nil {
-		return fmt.Errorf("router not reachable (is `mangoman serve` running?): %w", err)
+		return "", nil, fmt.Errorf("router not reachable (is `mangoman serve` running?): %w", err)
 	}
 	defer resp.Body.Close()
 	data, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(data)))
+		return "", nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(data)))
 	}
 	var out struct {
 		Choices []struct {
@@ -608,14 +628,10 @@ func cmdTest(args []string) error {
 		} `json:"choices"`
 	}
 	_ = json.Unmarshal(data, &out)
-	h := resp.Header
-	fmt.Printf("%s/%s, %d attempt(s), %s, class %s\nData policy: %s\n\n",
-		h.Get("X-MangoMan-Provider"), h.Get("X-MangoMan-Model"), atoi(h.Get("X-MangoMan-Attempts")),
-		time.Since(start).Round(time.Millisecond), h.Get("X-MangoMan-Class"), h.Get("X-MangoMan-Data-Policy"))
-	if len(out.Choices) > 0 {
-		fmt.Println(strings.TrimSpace(out.Choices[0].Message.Content))
+	if len(out.Choices) == 0 {
+		return "", resp.Header, errors.New("the router returned no answer")
 	}
-	return nil
+	return strings.TrimSpace(out.Choices[0].Message.Content), resp.Header, nil
 }
 
 func atoi(s string) int {

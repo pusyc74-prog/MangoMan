@@ -1,0 +1,87 @@
+name: qa
+
+# MangoMan's own QA: all tests (with the race detector), then a live router
+# whose dashboard is clicked through in a browser while Guardian watches the
+# router. Runs nightly and on every push to main. On failure, the report is
+# attached to the run and an issue is opened (or updated).
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "45 20 * * *" # 02:15 IST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: qa
+  cancel-in-progress: true
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MANGOMAN_KEYSTORE: file
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install browser
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Build
+        run: go build -o bin/mangoman ./cmd/mangoman
+      - name: Tests (race detector)
+        run: go test -race ./...
+      - name: Start router and Guardian
+        run: |
+          export MANGOMAN_HOME="$RUNNER_TEMP/mangoman"
+          bin/mangoman init > /dev/null
+          bin/mangoman serve > router.log 2>&1 &
+          for i in $(seq 30); do curl -sf http://127.0.0.1:4141/healthz > /dev/null && break; sleep 1; done
+          bin/mangoman guardian run --config .github/qa/guardian.json
+      - name: Click through the dashboard
+        run: |
+          export MANGOMAN_HOME="$RUNNER_TEMP/mangoman"
+          token=$(python -c "import json,os;print(json.load(open(os.environ['MANGOMAN_HOME']+'/config.json'))['token'])")
+          mkdir -p qa-out
+          bin/mangoman qa qa-out --no-ai --url "http://127.0.0.1:4141/ui/#token=$token"
+      - name: Guardian check after the browser run
+        if: always()
+        run: |
+          bin/mangoman guardian run --config .github/qa/guardian.json
+          bin/mangoman guardian report --config .github/qa/guardian.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-report
+          path: |
+            qa-out
+            router.log
+          if-no-files-found: ignore
+      - name: Open or update an issue
+        if: failure() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          body="QA failed on $(git rev-parse --short HEAD). Run: $RUN"
+          [ -f qa-out/qa-report.md ] && body="$body"$'\n\n'"$(head -c 60000 qa-out/qa-report.md)"
+          api=https://api.github.com/repos/${{ github.repository }}/issues
+          num=$(curl -sf -H "Authorization: Bearer $GH_TOKEN" "$api?state=open&labels=qa" | python -c "import json,sys;d=json.load(sys.stdin);print(d[0]['number'] if d else '')")
+          payload=$(python -c "import json,sys;print(json.dumps({'title':'QA failing','labels':['qa'],'body':sys.argv[1]}))" "$body")
+          if [ -n "$num" ]; then
+            curl -sf -X POST -H "Authorization: Bearer $GH_TOKEN" "$api/$num/comments" -d "$(python -c "import json,sys;print(json.dumps({'body':sys.argv[1]}))" "$body")" > /dev/null
+          else
+            curl -sf -X POST -H "Authorization: Bearer $GH_TOKEN" "$api" -d "$payload" > /dev/null
+          fi
