@@ -67,7 +67,7 @@ func formatServer(t *testing.T, ups ...*upstream) http.Handler {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg := &config.Config{Port: 4141, Token: "tok", MaxAttempts: 6}
+	cfg := &config.Config{Port: 4141, Token: "tok", MaxAttempts: 6, AllowWeaker: true}
 	rt := router.New(parsed, keys.NewResolver(store, nil), cfg)
 	rt.Client.HTTP = client
 	rt.StreamIdle = 2 * time.Second

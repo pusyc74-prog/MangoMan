@@ -11,6 +11,7 @@
       "needs_key": true,
       "signup_url": "https://console.groq.com/keys",
       "speed": 0.95,
+      "priority": 3,
       "policy": {
         "retention": "unknown",
         "trains_on_data": "unknown",
@@ -62,6 +63,7 @@
       "needs_key": true,
       "signup_url": "https://cloud.cerebras.ai/",
       "speed": 0.95,
+      "priority": 1,
       "policy": {
         "retention": "unknown",
         "trains_on_data": "unknown",
@@ -106,6 +108,7 @@
       "needs_key": true,
       "signup_url": "https://openrouter.ai/keys",
       "speed": 0.55,
+      "priority": 3,
       "policy": {
         "retention": "varies by upstream",
         "trains_on_data": "unknown",
@@ -137,6 +140,7 @@
       "needs_key": true,
       "signup_url": "https://build.nvidia.com/",
       "speed": 0.6,
+      "priority": 1,
       "policy": {
         "retention": "unknown",
         "trains_on_data": "unknown",
@@ -177,6 +181,7 @@
       "local": true,
       "signup_url": "https://ollama.com/download",
       "speed": 0.4,
+      "priority": 4,
       "policy": {
         "retention": "none",
         "trains_on_data": "no",
@@ -193,6 +198,7 @@
       "needs_key": true,
       "signup_url": "https://opencode.ai/zen",
       "speed": 0.6,
+      "priority": 2,
       "policy": {
         "retention": "varies by model",
         "trains_on_data": "yes",

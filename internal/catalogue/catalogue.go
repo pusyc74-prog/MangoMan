@@ -43,17 +43,20 @@ func (p DataPolicy) Label() string {
 
 // Provider is an upstream that serves models.
 type Provider struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	BaseURL   string     `json:"base_url"`
-	Kind      string     `json:"kind"` // "openai" (OpenAI-compatible); native kinds later
-	KeyEnv    string     `json:"key_env,omitempty"`
-	NeedsKey  bool       `json:"needs_key"`
-	Local     bool       `json:"local,omitempty"` // runs on the user's machine (Ollama)
-	SignupURL string     `json:"signup_url,omitempty"`
-	Speed     float64    `json:"speed"` // 0..1, higher is faster (seed estimate)
-	Policy    DataPolicy `json:"policy"`
-	Quirks    Quirks     `json:"quirks,omitempty"`
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	BaseURL   string  `json:"base_url"`
+	Kind      string  `json:"kind"` // "openai" (OpenAI-compatible); native kinds later
+	KeyEnv    string  `json:"key_env,omitempty"`
+	NeedsKey  bool    `json:"needs_key"`
+	Local     bool    `json:"local,omitempty"` // runs on the user's machine (Ollama)
+	SignupURL string  `json:"signup_url,omitempty"`
+	Speed     float64 `json:"speed"` // 0..1, higher is faster (seed estimate)
+	// Priority orders providers in the router's own ranking: 1 first. Models
+	// of equal skill on a lower number are tried first. 0 counts as 3.
+	Priority int        `json:"priority,omitempty"`
+	Policy   DataPolicy `json:"policy"`
+	Quirks   Quirks     `json:"quirks,omitempty"`
 	// AccountLimits apply across all of this provider's models for one key,
 	// e.g. OpenRouter's daily cap on free requests.
 	AccountLimits Limits `json:"account_limits,omitempty"`

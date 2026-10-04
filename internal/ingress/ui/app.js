@@ -637,6 +637,31 @@ function renderRecent(ov, act) {
 
 // ---------- loading ----------
 
+// ---------- live model panel ----------
+
+function modelName(target) { const [p, ...m] = target.split("/"); return `${m.join("/")} (${p})`; }
+
+function renderNow(o) {
+  if (o.last) {
+    $("now-model").replaceChildren(o.last.model, " ", el("small", {}, `on ${o.last.provider}, last answer at ${hm(o.last.time)}${o.last.weak ? ", a smaller model" : ""}`));
+  }
+  const next = (o.next || []).filter((t) => !o.last || t !== `${o.last.provider}/${o.last.model}`).slice(0, 2);
+  $("now-next").textContent = next.length ? `Next if it runs out: ${next.map(modelName).join(", ")}` : o.next && o.next.length ? "" : "No model is free right now. Connect a provider below.";
+  const allowed = o.weaker_always || o.weaker_until;
+  $("now-ask").hidden = !o.strong_busy || allowed;
+  $("now-ask-text").textContent = `The strong free models are busy${o.back_at ? ` until ${hm(o.back_at)}` : ""}. A smaller model can carry on, with simpler answers. Or connect Cerebras or NVIDIA (free) below.`;
+  $("now-weaker").hidden = !allowed;
+  $("now-weaker-text").textContent = o.weaker_always ? "Smaller models are allowed when the strong ones are busy." : allowed ? `Smaller models allowed until ${hm(o.weaker_until)}.` : "";
+}
+
+async function loadNow() {
+  try { renderNow(await api("/mangoman/now")); } catch (_) {}
+}
+
+async function setWeaker(mode) {
+  try { renderNow(await api("/mangoman/weaker", { method: "POST", body: JSON.stringify({ mode }) })); } catch (err) { alert(err.message); }
+}
+
 async function load() {
   try {
     const [ov, act, rv] = await Promise.all([api("/mangoman/overview"), api("/mangoman/activity?hours=24"),
@@ -644,6 +669,7 @@ async function load() {
     state.overview = ov; state.activity = act; state.radar = rv;
     $("app").hidden = false; $("gate").hidden = true;
     renderHead(ov, act);
+    loadNow();
     renderBoard(ov, act);
     renderMyList(ov);
     renderBrain(ov);
@@ -686,6 +712,8 @@ document.addEventListener("DOMContentLoaded", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => { if (state.overview) renderChart(state.activity, state.overview); }, 150);
   });
+  for (const b of document.querySelectorAll("[data-weaker]")) b.addEventListener("click", () => setWeaker(b.dataset.weaker));
   load();
+  setInterval(() => { if (!document.hidden && state.overview) loadNow(); }, 4000);
   setInterval(() => { if (!document.hidden && !state.open.size && !state.drawer) load(); }, 15000);
 });

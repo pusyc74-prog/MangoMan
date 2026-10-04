@@ -43,6 +43,23 @@ type Config struct {
 	Groups map[string][]string `json:"groups,omitempty"`
 	// Brain configures the decision brain. It is on by default.
 	Brain BrainConfig `json:"brain,omitempty"`
+	// AllowWeaker lets the router fall to clearly weaker models when the
+	// strong ones are used up, instead of stopping to ask. Off by default.
+	AllowWeaker bool `json:"allow_weaker,omitempty"`
+}
+
+// GetAllowWeaker reports the AllowWeaker setting.
+func (c *Config) GetAllowWeaker() bool {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.AllowWeaker
+}
+
+// SetAllowWeaker changes the AllowWeaker setting.
+func (c *Config) SetAllowWeaker(on bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	c.AllowWeaker = on
 }
 
 // BrainConfig is the decision brain's setting.

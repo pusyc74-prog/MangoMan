@@ -74,6 +74,18 @@ func (h *Health) Speed(target string) (float64, bool) {
 	return 1 / (1 + s.LatencyMS/2000), true
 }
 
+// Rate returns the share of attempts that succeeded, and false when there
+// are fewer than 3 attempts to judge by.
+func (h *Health) Rate(target string) (float64, bool) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	s, ok := h.m[target]
+	if !ok || s.Samples < 3 {
+		return 0, false
+	}
+	return float64(s.OK) / float64(s.Samples), true
+}
+
 // Snapshot returns all targets, most used first.
 func (h *Health) Snapshot() []TargetStats {
 	h.mu.Lock()

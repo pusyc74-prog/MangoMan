@@ -39,6 +39,9 @@ type Request struct {
 	// Internal marks the router's own requests (decision brain): no brain
 	// calls of their own, My list not applied.
 	Internal bool
+	// AllowWeaker lets this request fall to clearly weaker models when the
+	// strong ones are used up (header X-MangoMan-Allow-Weaker: 1).
+	AllowWeaker bool
 }
 
 // HasTools reports whether the client declared any tools.

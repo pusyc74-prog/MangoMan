@@ -288,3 +288,20 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
 .brain-line #brain-summary { flex: 1; min-width: 220px; font-size: 14px; }
 .brain-table { border: 0; border-top: 1px solid var(--hair); border-radius: 0 0 10px 10px; }
 #market-list td:first-child, #agents-installed td:first-child { white-space: normal; min-width: 240px; max-width: 520px; }
+
+/* Live model panel: beside the page on wide screens, on top of it otherwise */
+.now {
+  background: var(--surface); border: 1px solid var(--ring); border-radius: 10px;
+  padding: 14px 16px; margin-top: 24px; font-size: 14px;
+}
+.now h2 { font-size: 13px; color: var(--ink-2); font-weight: 600; margin: 0 0 4px; }
+.now p { margin: 0; }
+.now-model { font-weight: 650; font-size: 16px; overflow-wrap: anywhere; }
+.now-model small { font-weight: 400; color: var(--ink-2); font-size: 13px; }
+.now-next, .now-weaker { color: var(--ink-2); margin-top: 6px !important; overflow-wrap: anywhere; }
+.now-ask { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--hair); }
+.now-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.now-weaker .ghost { padding: 2px 10px; font-size: 13px; }
+@media (min-width: 1660px) {
+  .now { position: fixed; top: 96px; right: 24px; width: 240px; margin: 0; z-index: 10; }
+}

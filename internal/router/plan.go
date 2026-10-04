@@ -19,7 +19,17 @@ type Candidate struct {
 	Key      string
 	QKey     quota.Key
 	Score    float64
+	// Weak marks a model clearly less skilled than the best connected one
+	// for this request; the router asks before using it (see AllowWeaker).
+	Weak  bool
+	q     float64 // skill for this request's task class
+	tight bool    // fits now, but a growing chat would soon outgrow it
 }
+
+// weakGap is how far below the best connected model's skill a model counts
+// as weak. 0.12 keeps gpt-oss-120b, GLM, DeepSeek and Big Pickle level with
+// Kimi, and treats the small, fast models as weak.
+const weakGap = 0.12
 
 // Target is the breaker key for a candidate.
 func (c Candidate) Target() string { return c.Model.ID() }
@@ -45,6 +55,7 @@ type planInfo struct {
 	QuotaBlocked  int
 	BreakerOpen   int
 	DoesNotFit    int
+	Weaker        int // weak models left out because the user did not allow them
 	LocalTooSmall int // local models that fit except for their context size
 	OverMinute    int // models whose free tier takes fewer tokens a minute than the request needs
 	MinuteCap     int // the largest such per-minute cap
@@ -78,6 +89,7 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 		split = func(cs []Candidate) ([]Candidate, []Candidate) { return nil, cs }
 	}
 	var cloud, local []Candidate
+	var top float64
 	for _, m := range rt.Cat.AllModels() {
 		if !m.Free && !rt.Cfg.PaidFallback {
 			continue
@@ -106,15 +118,25 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			}
 			continue
 		}
-		c := Candidate{Model: m, Provider: p, Key: key, QKey: quota.Key{Provider: p.ID, Account: "default", Model: m.Canonical}}
+		c := Candidate{Model: m, Provider: p, Key: key, QKey: quota.Key{Provider: p.ID, Account: "default", Model: m.Canonical}, q: m.QualityFor(class)}
+		// The best skill among models that could take this request at all,
+		// even if busy now: the bar for calling a model weak.
+		top = max(top, c.q)
 		// A request bigger than a whole minute's token allowance is always
 		// refused (Groq's free tier: 8,000), so do not spend an attempt on it.
-		if l := rt.Quota.Effective(c.QKey, m.Limits); l.TPM > 0 && need > l.TPM {
-			info.DoesNotFit++
-			info.OverMinute++
-			info.MinuteCap = max(info.MinuteCap, l.TPM)
-			continue
+		size := m.Context
+		if l := rt.Quota.Effective(c.QKey, m.Limits); l.TPM > 0 {
+			if need > l.TPM {
+				info.DoesNotFit++
+				info.OverMinute++
+				info.MinuteCap = max(info.MinuteCap, l.TPM)
+				continue
+			}
+			if size == 0 || l.TPM < size {
+				size = l.TPM
+			}
 		}
+		c.tight = size > 0 && size < 2*need
 		state := rt.Breakers.StateOf(c.Target())
 		if state == breaker.Open {
 			info.BreakerOpen++
@@ -132,14 +154,17 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			w = defaultWeights
 		}
 		health := 1.0
+		if r, ok := rt.Health.Rate(c.Target()); ok {
+			health = r
+		}
 		if state == breaker.HalfOpen {
-			health = 0.5
+			health /= 2
 		}
 		speed := p.Speed
 		if measured, ok := rt.Health.Speed(c.Target()); ok {
 			speed = measured
 		}
-		c.Score = w.Q*m.QualityFor(class) + w.A*rt.share(c) + w.H*health - w.L*(1-speed)
+		c.Score = w.Q*c.q + w.A*rt.share(c) + w.H*health - w.L*(1-speed)
 		if p.Local {
 			local = append(local, c)
 		} else {
@@ -147,11 +172,27 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 		}
 	}
 
-	byScore := func(cs []Candidate) {
-		sort.SliceStable(cs, func(i, j int) bool { return cs[i].Score > cs[j].Score })
+	for _, cs := range [][]Candidate{cloud, local} {
+		for i := range cs {
+			cs[i].Weak = cs[i].q < top-weakGap
+		}
 	}
-	byScore(cloud)
-	byScore(local)
+	// Strong before weak, roomy before tight, then provider priority, then
+	// score: a chat stays on a model that can hold it as it grows.
+	sort.SliceStable(cloud, func(i, j int) bool {
+		a, b := cloud[i], cloud[j]
+		if a.Weak != b.Weak {
+			return b.Weak
+		}
+		if a.tight != b.tight {
+			return b.tight
+		}
+		if pa, pb := priority(a.Provider), priority(b.Provider); pa != pb {
+			return pa < pb
+		}
+		return a.Score > b.Score
+	})
+	sort.SliceStable(local, func(i, j int) bool { return local[i].Score > local[j].Score })
 
 	if scope != nil {
 		// Scope order (the user's order), then score within one entry, so the
@@ -182,18 +223,26 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 		out = append(out, sameModelFirst(others)...)
 		return rt.cap(out), info
 	}
-	// My list first, in the user's order; then the router's own ranking;
-	// then the best local model as the backstop, always kept last.
+	// My list first, in the user's order; then the router's own ranking,
+	// led by the model this chat already uses; then the best local model as
+	// the backstop, always kept last. Weak models only if the user allows.
+	allowWeak := req.AllowWeaker || req.Internal || rt.allowWeaker()
+	stuck := rt.stuck(req)
 	fav, others := split(append(cloud, local...))
-	var restCloud, restLocal []Candidate
+	var lead, restCloud, restLocal []Candidate
 	for _, c := range others {
-		if c.Provider.Local {
+		switch {
+		case c.Weak && !allowWeak:
+			info.Weaker++
+		case c.Provider.Local:
 			restLocal = append(restLocal, c)
-		} else {
+		case c.Model.Canonical == stuck && !c.Weak:
+			lead = append(lead, c)
+		default:
 			restCloud = append(restCloud, c)
 		}
 	}
-	out := rt.cap(append(fav, sameModelFirst(restCloud)...))
+	out := rt.cap(append(fav, sameModelFirst(append(lead, restCloud...))...))
 	if len(restLocal) > 0 {
 		out = append(out, restLocal[0])
 	}
@@ -251,6 +300,14 @@ func sameModelFirst(cs []Candidate) []Candidate {
 		}
 	}
 	return out
+}
+
+// priority is a provider's place in the router's own ranking (1 first).
+func priority(p catalogue.Provider) int {
+	if p.Priority == 0 {
+		return 3
+	}
+	return p.Priority
 }
 
 func (rt *Router) cap(cs []Candidate) []Candidate {

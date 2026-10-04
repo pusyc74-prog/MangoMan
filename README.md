@@ -330,6 +330,12 @@ Agent scripts run only through `mangoman agents exec`, in layers: every package 
 
 Each free pack can carry a public test set (`tests/cases`, `tests/score.py`); `mangoman agents eval` runs the pack and the agent on every case through the same headless OpenCode and an agent lists as Advanced only when it scores higher. In-house agents: `agents/amazon-listing-pro` (keyword research from the seller's search term report, competitor gaps, backend terms filled to 249 bytes, a before-and-after demand score) and `agents/google-ads-pro` (converting searches and wasted spend mined from the search term report, keyword groups and negatives that never block a converting search). Creators: see [CREATORS.md](CREATORS.md).
 
+## Privacy
+
+MangoMan runs on your computer and never receives your prompts or keys.
+Requests go straight to the providers you connect, and some free models are
+used for training. See [PRIVACY.md](PRIVACY.md).
+
 ## Next
 
 1. **Marketplace:** listing page, creator portal and review pipeline, then payments (Razorpay Route, Stripe Connect) and payouts.

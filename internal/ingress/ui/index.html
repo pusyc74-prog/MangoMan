@@ -21,6 +21,19 @@
 </header>
 
 <main id="app" hidden>
+  <aside class="now" id="now" aria-labelledby="h-now" aria-live="polite">
+    <h2 id="h-now">Model in use</h2>
+    <p class="now-model" id="now-model">Waiting for the first request</p>
+    <p class="now-next" id="now-next"></p>
+    <div class="now-ask" id="now-ask" hidden>
+      <p id="now-ask-text"></p>
+      <div class="now-btns">
+        <button type="button" class="primary" data-weaker="hour">Use a smaller model for 1 hour</button>
+        <button type="button" class="ghost" data-weaker="always">Always</button>
+      </div>
+    </div>
+    <p class="now-weaker" id="now-weaker" hidden><span id="now-weaker-text"></span> <button type="button" class="ghost" data-weaker="off">Stop</button></p>
+  </aside>
   <section class="totals" aria-label="Last 24 hours">
     <div><span class="num" id="t-requests">0</span><span class="lbl">requests in the last 24 hours</span></div>
     <div><span class="num" id="t-served">0</span><span class="lbl">answered</span></div>

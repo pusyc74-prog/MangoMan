@@ -42,6 +42,7 @@ func cmdDoctor(args []string) error {
 	yes := fs.Bool("yes", false, "do not ask before spending free quota")
 	out := fs.String("out", "", "report path (default: config dir/doctor-<time>.json)")
 	summary := fs.String("summary", "", "also write a markdown summary to this file (for CI run pages)")
+	listOnly := fs.String("list-only", "", "comma-separated provider ids to check by model list only (no requests)")
 	timeout := fs.Duration("timeout", 60*time.Second, "time limit per check; a model that times out has its other checks skipped")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -59,7 +60,7 @@ func cmdDoctor(args []string) error {
 		return err
 	}
 	d := &doctor.Doctor{Cat: cat, Keys: keys.NewResolver(st, envMap(cat)), Client: providers.NewClient(), Version: version}
-	o := doctor.Options{Providers: splitList(*prov), Models: splitList(*model), Cases: splitList(*cases), Excluded: cfg.Excluded, Progress: os.Stdout, Timeout: *timeout,
+	o := doctor.Options{Providers: splitList(*prov), Models: splitList(*model), Cases: splitList(*cases), Excluded: cfg.Excluded, Progress: os.Stdout, Timeout: *timeout, ListOnly: splitList(*listOnly),
 		// A cloud CI runner never has Ollama; name it with --provider to check it anyway.
 		SkipLocal: os.Getenv("GITHUB_ACTIONS") == "true"}
 	if *quick {

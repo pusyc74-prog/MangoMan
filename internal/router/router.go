@@ -47,6 +47,8 @@ type Router struct {
 	NonStreamTimeout time.Duration
 	// Brain makes typed decisions where the rules are unsure; nil = off.
 	Brain Brain
+
+	sess session
 }
 
 // Brain is the decision brain as the router uses it (package brain).
@@ -87,6 +89,9 @@ type attemptResult struct {
 // Handle serves one Chat Completions request end to end.
 func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Request) {
 	id := newID()
+	if r.Header.Get("X-MangoMan-Allow-Weaker") == "1" {
+		req.AllowWeaker = true
+	}
 	if msg := rt.scopeProblem(req.Model); msg != "" {
 		core.WriteError(w, http.StatusNotFound, "model_not_found", msg)
 		return
@@ -151,6 +156,9 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		})
 		rt.Logf("req=%s attempt=%d %s -> %s (%d) %s", id, attempts, c.Target(), res.outcome, res.status, res.errMsg)
 		if res.done {
+			if strings.HasPrefix(res.outcome, "ok") {
+				rt.answered(req, c, class)
+			}
 			return
 		}
 		if res.outcome == "rate_limited" {
@@ -192,6 +200,10 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 	}
 	if sawRateLimit || attempts == 0 {
 		_, info := rt.plan(req, class)
+		if info.Weaker > 0 {
+			rt.writeWeaker(w, info)
+			return
+		}
 		reset := info.EarliestReset
 		if reset.IsZero() {
 			reset = time.Now().Add(time.Minute)
@@ -208,8 +220,20 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 	core.WriteError(w, lastStatus, "all_candidates_failed", fmt.Sprintf("tried %d free candidates; last error: %s", attempts, lastMsg))
 }
 
+// writeWeaker stops a request that only weak models could take now.
+func (rt *Router) writeWeaker(w http.ResponseWriter, info planInfo) {
+	back := "soon"
+	if info.EarliestReset.After(time.Now()) {
+		back = "at " + info.EarliestReset.Local().Format("15:04")
+	}
+	core.WriteError(w, http.StatusServiceUnavailable, "only_weaker_models", fmt.Sprintf(
+		"the strong free models are busy and free up %s. To keep going now, allow a smaller model in the dashboard (mangoman dashboard), or connect Cerebras or NVIDIA, both free with large limits: mangoman keys add cerebras", back))
+}
+
 func (rt *Router) writeNoCandidate(w http.ResponseWriter, info planInfo) {
 	switch {
+	case info.Weaker > 0:
+		rt.writeWeaker(w, info)
 	case info.QuotaBlocked > 0 && info.EarliestReset.After(time.Now()):
 		core.WriteExhausted(w, info.EarliestReset, "free capacity is used up on every connected provider; it returns at the next reset")
 	case info.Considered > 0 && info.NoKey == info.Considered:
@@ -239,6 +263,9 @@ func (rt *Router) setHeaders(w http.ResponseWriter, c Candidate, class string, a
 	h.Set("X-MangoMan-Class", class)
 	h.Set("X-MangoMan-Attempts", strconv.Itoa(attempts))
 	h.Set("X-MangoMan-Data-Policy", rt.Cat.PolicyFor(c.Model).Label())
+	if c.Weak {
+		h.Set("X-MangoMan-Weaker", "1")
+	}
 }
 
 // attempt sends the request to one candidate.

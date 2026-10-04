@@ -99,6 +99,8 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /mangoman/keys", s.auth(http.HandlerFunc(s.addKey)))
 	mux.Handle("DELETE /mangoman/keys/{provider}", s.auth(http.HandlerFunc(s.removeKey)))
 	mux.Handle("POST /mangoman/providers/{provider}/exclude", s.auth(http.HandlerFunc(s.setExcluded)))
+	mux.Handle("GET /mangoman/now", s.auth(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, s.Router.Outlook()) })))
+	mux.Handle("POST /mangoman/weaker", s.auth(http.HandlerFunc(s.setWeaker)))
 	s.myListRoutes(mux)
 	s.brainRoutes(mux)
 	s.agentRoutes(mux)
@@ -239,6 +241,25 @@ func (s *Server) activity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, a)
+}
+
+// setWeaker answers the "strong models are busy" question: use smaller
+// models for an hour, always, or never.
+func (s *Server) setWeaker(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Mode string `json:"mode"`
+	}
+	if err := readJSON(r, &in); err != nil || (in.Mode != "hour" && in.Mode != "always" && in.Mode != "off") {
+		core.WriteError(w, http.StatusBadRequest, "bad_request", `mode must be "hour", "always" or "off"`)
+		return
+	}
+	s.Router.AllowWeakerFor(map[string]time.Duration{"hour": time.Hour}[in.Mode])
+	s.Cfg.SetAllowWeaker(in.Mode == "always")
+	if err := s.save(); err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "config_unsaved", err.Error())
+		return
+	}
+	writeJSON(w, s.Router.Outlook())
 }
 
 func readJSON(r *http.Request, v any) error {

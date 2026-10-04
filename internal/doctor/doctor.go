@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -38,6 +39,9 @@ type Options struct {
 	Timeout time.Duration
 	// Progress receives one line per finished model. May be nil.
 	Progress io.Writer
+	// ListOnly providers only have their model list read (free): no chat
+	// requests, so an account-wide daily cap (OpenRouter's 50) is untouched.
+	ListOnly []string
 }
 
 // ModelReport is the result for one model on one provider.
@@ -141,6 +145,10 @@ func (d *Doctor) Plan(o Options) map[string]int {
 		if skipped(p, o) || !(in(o.Models, m.Canonical) || in(o.Models, m.Upstream)) {
 			continue
 		}
+		if slices.Contains(o.ListOnly, p.ID) {
+			out[p.ID] += 0 // listed, no requests
+			continue
+		}
 		for _, c := range cases {
 			if !c.DirectOnly && (c.Needs == "" || m.Has(c.Needs)) {
 				out[m.Provider]++
@@ -148,6 +156,9 @@ func (d *Doctor) Plan(o Options) map[string]int {
 		}
 	}
 	for id := range out {
+		if slices.Contains(o.ListOnly, id) {
+			continue
+		}
 		out[id]++ // the bad_model check, once per provider
 		if p, ok := d.Cat.Provider(id); ok && p.AccountLimits.RPD > 0 && out[id] > p.AccountLimits.RPD/2 {
 			out[id] = p.AccountLimits.RPD / 2
@@ -305,6 +316,9 @@ func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases 
 			}
 		}
 		sort.Strings(pr.NewFreeModels)
+	}
+	if slices.Contains(o.ListOnly, p.ID) {
+		return
 	}
 
 	var lastCtx context.Context // the most recent check's context, to spot timeouts

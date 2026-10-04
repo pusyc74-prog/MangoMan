@@ -112,6 +112,14 @@ func TestDoctor(t *testing.T) {
 	if strings.Contains(string(js), `"k"`) {
 		t.Fatal("report contains a key")
 	}
+	// List only: the model list is read (removed models still found), no requests.
+	if plan := d.Plan(Options{ListOnly: []string{"openrouter"}}); plan["openrouter"] != 0 {
+		t.Fatalf("list-only plan %v", plan)
+	}
+	lo := d.Run(context.Background(), Options{ListOnly: []string{"openrouter"}, Providers: []string{"openrouter"}})
+	if p := lo.Providers[0]; p.Status != StatusOK || len(p.MissingUpstream) != 1 || len(p.Models) != 0 || p.BadModel != nil {
+		t.Fatalf("list-only run: %+v", p)
+	}
 	md := Markdown(rep)
 	for _, want := range []string{"| openrouter | ok | 2 | 1 | 1 |", "| openrouter | good | pass | pass |", "renamed-upstream", "**radar**"} {
 		if !strings.Contains(md, want) {

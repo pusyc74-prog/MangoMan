@@ -42,6 +42,7 @@ type fake struct {
 	account catalogue.Limits
 	limits  catalogue.Limits
 	local   bool
+	prio    int
 	calls   atomic.Int32
 	srv     *httptest.Server
 }
@@ -104,7 +105,7 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 		cat.Providers = append(cat.Providers, catalogue.Provider{
 			ID: f.id, Name: f.id, BaseURL: f.srv.URL, Kind: "openai", NeedsKey: true, Speed: speed,
 			Policy: catalogue.DataPolicy{Retention: "none", TrainsOnData: "no", Jurisdiction: "US"},
-			Quirks: f.quirks, AccountLimits: f.account, Local: f.local,
+			Quirks: f.quirks, AccountLimits: f.account, Local: f.local, Priority: f.prio,
 		})
 		cat.Models = append(cat.Models, catalogue.Model{
 			Canonical: f.model, Provider: f.id, Upstream: f.model + "-up", Free: true, Context: 32000,
@@ -118,7 +119,7 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rt := New(parsed, keys.NewResolver(store, nil), &config.Config{MaxAttempts: 6})
+	rt := New(parsed, keys.NewResolver(store, nil), &config.Config{MaxAttempts: 6, AllowWeaker: true})
 	if len(fakes) > 0 {
 		rt.Client.HTTP = fakes[0].srv.Client() // all httptest TLS servers share one cert
 	}
@@ -537,6 +538,8 @@ func TestMeasuredSpeedReranks(t *testing.T) {
 		rt.Health.Observe(ca, "ok", true, 15*time.Second)
 		rt.Health.Observe(cb, "ok", true, 300*time.Millisecond)
 	}
+	// A new chat (the first one would stay on a).
+	fast = `{"model":"free/fast","messages":[{"role":"user","content":"hello"}]}`
 	if w := do(t, rt, fast); w.Header().Get("X-MangoMan-Provider") != "b" {
 		t.Fatalf("measured speed should rerank to b, got %s", w.Header().Get("X-MangoMan-Provider"))
 	}
@@ -815,5 +818,71 @@ func TestRequestBiggerThanMinuteCapSkipsModelAndSaysWhatToConnect(t *testing.T) 
 	only := setup(t, &fake{id: "c", model: "m3", quality: 0.9, handler: okJSON("x"), limits: catalogue.Limits{RPM: 30, TPM: 8000}})
 	if w := do(t, only, string(body)); w.Code != 400 || !strings.Contains(w.Body.String(), "Cerebras") {
 		t.Fatalf("got %d %s", w.Code, w.Body)
+	}
+}
+
+func TestWeakModelNeedsPermission(t *testing.T) {
+	strong := &fake{id: "s", model: "big", quality: 0.85, handler: func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Retry-After", "60")
+		http.Error(w, `{"error":{"message":"slow down"}}`, 429)
+	}}
+	weak := &fake{id: "w", model: "small", quality: 0.6, handler: okJSON("from small")}
+	rt := setup(t, strong, weak)
+	rt.Cfg.AllowWeaker = false
+	body := `{"messages":[{"role":"user","content":"hi"}]}`
+	w := do(t, rt, body)
+	if w.Code != 503 || !strings.Contains(w.Body.String(), "only_weaker_models") || weak.calls.Load() != 0 {
+		t.Fatalf("should stop and ask, not use the weak model: %d %s (weak calls %d)", w.Code, w.Body, weak.calls.Load())
+	}
+	// Allowed for this request by header, then for an hour from the dashboard.
+	r := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(body))
+	r.Header.Set("X-MangoMan-Allow-Weaker", "1")
+	req, _ := core.ParseChat([]byte(body))
+	rec := httptest.NewRecorder()
+	rt.Handle(rec, r, req)
+	if rec.Header().Get("X-MangoMan-Weaker") != "1" || rec.Header().Get("X-MangoMan-Provider") != "w" {
+		t.Fatalf("header should allow the weak model: %v %s", rec.Header(), rec.Body)
+	}
+	rt.AllowWeakerFor(time.Hour)
+	if w := do(t, rt, body); w.Header().Get("X-MangoMan-Provider") != "w" {
+		t.Fatalf("allowed for an hour: %v %s", w.Header(), w.Body)
+	}
+	if o := rt.Outlook(); !o.StrongBusy || o.WeakerUntil.IsZero() || len(o.Next) == 0 || o.Last == nil || !o.Last.Weak {
+		t.Fatalf("outlook: %+v", o)
+	}
+}
+
+func TestChatStaysOnItsModel(t *testing.T) {
+	a := &fake{id: "a", model: "m1", quality: 0.8, handler: okJSON("from a")}
+	b := &fake{id: "b", model: "m2", quality: 0.8, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	chat := `{"messages":[{"role":"user","content":"build me a shop"}]}`
+	first := do(t, rt, chat).Header().Get("X-MangoMan-Provider")
+	// Make the other model look better; the ongoing chat must not move.
+	other := map[string]*fake{"a": b, "b": a}[first]
+	c := Candidate{Model: catalogue.Model{Provider: other.id, Canonical: other.model}, Provider: catalogue.Provider{ID: other.id}}
+	for i := 0; i < 3; i++ {
+		rt.Health.Observe(c, "ok", true, 100*time.Millisecond)
+	}
+	more := `{"messages":[{"role":"user","content":"build me a shop"},{"role":"assistant","content":"ok"},{"role":"user","content":"add a cart"}]}`
+	if got := do(t, rt, more).Header().Get("X-MangoMan-Provider"); got != first {
+		t.Fatalf("chat moved from %s to %s", first, got)
+	}
+}
+
+func TestProviderPriorityAndRoom(t *testing.T) {
+	z := &fake{id: "z", model: "m1", quality: 0.8, prio: 2, handler: okJSON("z")}
+	c := &fake{id: "c", model: "m2", quality: 0.78, prio: 1, handler: okJSON("c")}
+	rt := setup(t, z, c)
+	if got := do(t, rt, `{"messages":[{"role":"user","content":"a"}]}`).Header().Get("X-MangoMan-Provider"); got != "c" {
+		t.Fatalf("equal-skill models: priority 1 first, got %s", got)
+	}
+	// A request that would fill most of c's minute allowance goes to z,
+	// which has room for the chat to grow.
+	c.limits = catalogue.Limits{TPM: 12000}
+	rt = setup(t, z, c)
+	big := `{"max_tokens":7000,"messages":[{"role":"user","content":"b"}]}`
+	if got := do(t, rt, big).Header().Get("X-MangoMan-Provider"); got != "z" {
+		t.Fatalf("tight model should go after a roomy one, got %s", got)
 	}
 }

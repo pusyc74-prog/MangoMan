@@ -1,7 +1,8 @@
 name: doctor
 
 # Live check of every provider with a key in this repo's secrets.
-# Add any of GROQ_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY, NVIDIA_API_KEY (one is enough)
+# Add any of GROQ_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY, NVIDIA_API_KEY,
+# OPENCODE_ZEN_API_KEY (one is enough)
 # under Settings > Secrets and variables > Actions, then run this workflow
 # from the Actions tab. The summary appears on the run page; the JSON report
 # (no keys, no model answers) is attached as an artifact.
@@ -19,7 +20,10 @@ on:
         required: false
         default: ""
   schedule:
-    - cron: "30 2 * * 1" # weekly (Monday 08:00 IST), quick mode: a daily run used most of OpenRouter's 50 free requests a day
+    # Twice a day (08:00 and 20:00 IST), quick mode. OpenRouter's free tier
+    # allows 50 requests a day for the whole account, so these runs only read
+    # its model list (free); the Monday morning run also sends it requests.
+    - cron: "30 2,14 * * *"
   push:
     branches: [main]
     paths:
@@ -45,6 +49,7 @@ jobs:
       CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      OPENCODE_ZEN_API_KEY: ${{ secrets.OPENCODE_ZEN_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -52,12 +57,11 @@ jobs:
           go-version-file: go.mod
       - name: Build
         run: |
-          go mod tidy
           go build -o bin/mangoman ./cmd/mangoman
       - name: Check keys
         run: |
           n=0
-          for v in GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY NVIDIA_API_KEY; do
+          for v in GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY NVIDIA_API_KEY OPENCODE_ZEN_API_KEY; do
             if [ -n "${!v}" ]; then echo "found $v"; n=$((n+1)); fi
           done
           if [ "$n" -eq 0 ]; then
@@ -75,6 +79,9 @@ jobs:
           args=(--yes --out doctor-report.json --summary "$GITHUB_STEP_SUMMARY")
           [ "$MODE" = "full" ] || args+=(--quick)
           [ -z "$PROVIDER" ] || args+=(--provider "$PROVIDER")
+          if [ "${{ github.event_name }}" = schedule ] && ! { [ "$(date -u +%u)" = 1 ] && [ "$(date -u +%H)" -lt 12 ]; }; then
+            args+=(--list-only openrouter)
+          fi
           bin/mangoman doctor "${args[@]}" | tee doctor-output.txt
       - name: Publish report to doctor-reports branch
         if: always()
