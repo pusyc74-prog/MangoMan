@@ -1,0 +1,1 @@
+I want a blog article for my website. The brief is in brief.md, the keyword research is in keywords.csv (monthly searches in India), my business facts are in facts.md and the sources I trust are in sources.md. Write the article. Save the spec as article.json in this folder and build it into the folder article. Do not ask questions: everything you need is in the files.

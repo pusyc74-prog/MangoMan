@@ -1,0 +1,1 @@
+Create the social media posts for our free webinar as described in brief.md. Save the spec as posts.json in this folder and build it into the folder posts. Do not ask questions: everything you need is in the files.

@@ -142,7 +142,7 @@ body { --u: %(u).3fpx; --k: 1; font-family: %(body)s; -webkit-font-smoothing: an
 .story .frame { top: 250px; bottom: 250px; } /* the app's own bars cover the top and bottom 250 px of a story */
 .fit { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
 .end { justify-content: safe flex-end; } .mid { justify-content: safe center; }
-.h { font-family: %(head)s; font-weight: 700; line-height: 1.06; letter-spacing: -0.01em; overflow-wrap: break-word; }
+.h { font-family: %(head)s; font-weight: 700; line-height: 1.06; letter-spacing: -0.01em; overflow-wrap: break-word; padding-bottom: 0.1em; }
 .foot { display: flex; align-items: center; justify-content: space-between; gap: calc(3 * var(--u)); margin-top: calc(4 * var(--u)); min-height: calc(5.5 * var(--u)); }
 .foot img { height: calc(5 * var(--u)); width: auto; display: block; }
 .chip { padding: calc(1 * var(--u)) calc(1.6 * var(--u)); border-radius: calc(1.4 * var(--u)); }

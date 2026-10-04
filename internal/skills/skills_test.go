@@ -1,8 +1,10 @@
 package skills
 
 import (
+	"io/fs"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -93,5 +95,37 @@ func TestParseSkillAcceptsWindowsLineEndings(t *testing.T) {
 	p, err := ParseSkill([]byte("---\r\nname: demo-skill\r\ndescription: A demo.\r\nmetadata:\r\n  version: \"1.0\"\r\n---\r\n# Demo\r\n"))
 	if err != nil || p.Name != "demo-skill" || p.Version != "1.0" {
 		t.Fatalf("got %+v, %v", p, err)
+	}
+}
+
+// Every pack with a public test set has a scorer and cases with a prompt, so
+// mangoman agents eval can run it.
+func TestTestSetsAreComplete(t *testing.T) {
+	packs, err := List()
+	if err != nil {
+		t.Fatal(err)
+	}
+	sets := 0
+	for _, p := range packs {
+		root := path.Join("packs", p.Name, "tests")
+		if _, err := fs.Stat(packsFS, root); err != nil {
+			continue
+		}
+		sets++
+		if _, err := fs.Stat(packsFS, path.Join(root, "score.py")); err != nil {
+			t.Errorf("%s: tests without score.py", p.Name)
+		}
+		cases, _ := fs.ReadDir(packsFS, path.Join(root, "cases"))
+		if len(cases) < 3 {
+			t.Errorf("%s: %d test cases, want at least 3", p.Name, len(cases))
+		}
+		for _, c := range cases {
+			if _, err := fs.Stat(packsFS, path.Join(root, "cases", c.Name(), "prompt.txt")); err != nil {
+				t.Errorf("%s/%s: no prompt.txt", p.Name, c.Name())
+			}
+		}
+	}
+	if sets < 6 {
+		t.Errorf("%d packs have test sets, want at least 6", sets)
 	}
 }

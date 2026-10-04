@@ -1,0 +1,1 @@
+I run this business. The brief is in brief.md, the offer and business facts are in facts.md and the audience is described in audience.md. Write the email sequence the brief asks for. Save the spec as campaign.json in this folder and build it into the folder emails. Do not ask questions: everything you need is in the files.

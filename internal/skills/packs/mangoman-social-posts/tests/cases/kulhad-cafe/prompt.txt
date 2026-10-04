@@ -1,0 +1,1 @@
+We are opening our second cafe. The brief, facts and hashtags are in brief.md and our logo is logo.png. Make the social media posts the brief asks for. Save the spec as posts.json in this folder and build it into the folder posts. Do not ask questions: everything you need is in the files.

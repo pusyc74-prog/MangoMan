@@ -1,0 +1,1 @@
+Please make my resume for this backend role (job_description.md). Everything about my work is in candidate.md. Keep it to one page, A4, classic ATS-friendly design. Save the spec as resume.json in this folder and build it with the classic template into resume (so resume.pdf is in this folder). Do not ask questions: everything you need is in the files.
