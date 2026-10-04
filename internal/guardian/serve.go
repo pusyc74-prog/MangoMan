@@ -5,15 +5,17 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
 
-// Serve keeps watching until ctx ends: checks every `every`, opens and works
-// incidents one at a time in the background, takes approvals from Telegram,
-// and sends the daily reports. show prints each run's events.
+// Serve keeps watching until ctx ends: checks every `every`, works queued
+// changes one at a time in the background (development holds one change at
+// a time), takes approvals and change requests from Telegram, copies data
+// to dev nightly, and sends the daily reports. show prints each run's events.
 func (g *Guardian) Serve(ctx context.Context, every time.Duration, show func([]Event)) error {
-	jobs := make(chan func(), 64)
+	jobs := make(chan func(), 16)
 	go func() {
 		for job := range jobs {
 			job()
@@ -27,24 +29,24 @@ func (g *Guardian) Serve(ctx context.Context, every time.Duration, show func([]E
 			g.logf("too much waiting work; this job waits for the next run")
 		}
 	}
-	fix := func(id string) func() {
-		return func() {
-			if err := g.Fix(ctx, id); err != nil {
-				g.logf("%s: %v", id, err)
-			}
+	if g.Cfg.Repo != "" && g.Agent != nil {
+		if err := g.Setup(ctx); err != nil { // day 1: dev next to production
+			g.logf("development environment: %v", err)
 		}
 	}
 	// Pick up work left when Guardian last stopped.
 	for _, i := range g.Incidents() {
 		switch i.Status {
-		case "fixing":
-			queue(fix(i.ID))
+		case "working":
+			g.update(i.ID, func(i *Incident) { i.Status = "queued" })
 		case "deploying":
 			g.update(i.ID, func(i *Incident) {
 				i.Status, i.Note = "needs_you", "Guardian stopped while deploying: check production"
 			})
 		}
 	}
+	running := false // a Work job is queued or running; only Serve's loop reads and sets it
+	done := make(chan struct{}, 1)
 	offset := 0
 	for {
 		events, err := g.Run(ctx)
@@ -52,10 +54,23 @@ func (g *Guardian) Serve(ctx context.Context, every time.Duration, show func([]E
 			return err
 		}
 		show(events)
-		for _, id := range g.Open(events) {
-			queue(fix(id))
+		g.Open(events)
+		select {
+		case <-done:
+			running = false
+		default:
+		}
+		if id := g.next(); id != "" && !running {
+			running = true
+			queue(func() {
+				if err := g.Work(ctx, id); err != nil && err != errBusy {
+					g.logf("%s: %v", id, err)
+				}
+				done <- struct{}{}
+			})
 		}
 		g.dueReports(time.Now())
+		go g.dueData(ctx, time.Now())
 		next := time.Now().Add(every)
 		for time.Now().Before(next) {
 			if ctx.Err() != nil {
@@ -68,8 +83,7 @@ func (g *Guardian) Serve(ctx context.Context, every time.Duration, show func([]E
 				}
 				continue
 			}
-			wait := min(time.Until(next), 50*time.Second)
-			ups, err := g.TG.Updates(ctx, offset, wait)
+			ups, err := g.TG.Updates(ctx, offset, min(time.Until(next), 50*time.Second))
 			if err != nil {
 				select { // offline: try again shortly
 				case <-ctx.Done():
@@ -85,7 +99,8 @@ func (g *Guardian) Serve(ctx context.Context, every time.Duration, show func([]E
 	}
 }
 
-// answer handles one Telegram update from the owner.
+// answer handles one Telegram update from the owner: a button, /report, or
+// in plain words a change they want.
 func (g *Guardian) answer(ctx context.Context, u Update, queue func(func())) {
 	if u.Chat != g.TG.Chat {
 		return // someone else found the bot
@@ -101,13 +116,32 @@ func (g *Guardian) answer(ctx context.Context, u Update, queue func(func())) {
 		})
 	case action == "reject":
 		g.TG.Ack(u.Button, "Rejected")
-		if err := g.Reject(id); err == nil {
-			g.notify(g.Cfg.App + ": fix " + id + " rejected; production unchanged.")
-		}
+		queue(func() {
+			if err := g.Reject(ctx, id); err == nil {
+				g.notify(g.Cfg.App + ": " + id + " rejected; production unchanged.")
+			}
+		})
 	case strings.HasPrefix(u.Text, "/report"):
 		if rep, err := g.Report(false); err == nil {
 			_ = g.TG.Send(rep)
 		}
+	case action == "change":
+		g.TG.Ack(u.Button, "Queued")
+		if what, ok := g.asked[id]; ok {
+			delete(g.asked, id)
+			if _, err := g.Request(what); err != nil {
+				_ = g.TG.Send(err.Error())
+			}
+		}
+	case u.Text != "" && !strings.HasPrefix(u.Text, "/"):
+		// A message in plain words may be a change; ask before queuing it.
+		if g.asked == nil {
+			g.asked = map[string]string{}
+		}
+		key := strconv.Itoa(u.ID)
+		g.asked[key] = u.Text
+		_ = g.TG.Send("Make this change? It goes to development first, and to production only after you approve.\n"+cut(u.Text, 300),
+			[2]string{"Yes, make it", "change:" + key})
 	}
 }
 

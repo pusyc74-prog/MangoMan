@@ -341,29 +341,42 @@ to reproduce it. A free model adds likely causes, marked as a guess.
 mangoman qa ./my-shop --url http://localhost:3000/
 ```
 
-`mangoman guardian` keeps a running app healthy, on its own:
+`mangoman guardian` keeps a running app healthy, on its own. Every app gets
+a permanent **development environment** from day 1: the `dev` branch,
+deployed next to production all the time (`dev.yoursite.com` on the same
+server, a second Docker copy, or a Vercel preview), always with production's
+code. Guardian keeps it in step and reports any drift.
 
 1. **Watch.** Checks from `guardian.json`: is the site up and fast, are there
-   new error lines in a log, does a jobs script pass.
+   new error lines in a log, does a jobs script pass, does dev match
+   production.
 2. **First aid.** Runs only the fixes you listed for that check (restart,
    retry), so the app comes back while the real fix is made.
-3. **Fix in development.** Guardian finds the root cause and writes a fix on
-   its own branch; the QA agent writes a test for the bug (it may change only
-   test files); both run in a development copy: your start command on a free
-   port, a Docker copy, or a Vercel preview. Live secrets never reach it. Up
-   to 3 rounds, then Guardian hands it to you with what it found.
-4. **Your approval.** A fix that passed QA in development is sent to you on
-   Telegram with Approve and Reject buttons. Nothing goes live without it.
-5. **Production.** Guardian merges, runs your deploy command and has QA test
-   production. If that fails it runs your rollback, reverts the merge and
-   starts again from step 3.
-6. **Reports** at 08:00 and 20:00 every day, also when all is well.
+3. **Fix in dev, no approval needed.** Guardian finds the root cause and
+   writes the fix on its own branch; the QA agent writes tests for it (only
+   test files may change); the fix goes into dev, dev is deployed and QA
+   tests it there. Up to 3 rounds, then Guardian hands it to you. Dev holds
+   one change at a time; others wait their turn.
+4. **Your changes take the same path.** `mangoman guardian change "add a
+   contact page"`, or just write it to your Telegram bot.
+5. **Your approval.** When QA passes in dev, Telegram shows you the change
+   with Approve and Reject buttons. Nothing goes live without Approve.
+6. **Production.** Guardian merges dev into production, deploys and has QA
+   test production. If that fails it rolls back, puts dev back to
+   production's code and works on it again.
+7. **Data.** Every night production data is copied to dev's own database
+   with names, emails, phone numbers, addresses, Aadhaar and PAN masked
+   (SQL dumps, for example `pg_dump --column-inserts`). Live passwords and
+   keys never reach dev.
+8. **Reports** at 08:00 and 20:00 every day, also when all is well.
 
 ```sh
 mangoman guardian init                    # writes guardian.json for this project
+mangoman guardian setup                   # day 1: the dev environment
 mangoman guardian telegram BOT_TOKEN      # optional: your bot from @BotFather
-mangoman guardian run --every 5m          # keep watching and fixing
-mangoman guardian incidents               # what Guardian is working on
+mangoman guardian run --every 5m          # keep watching, fixing and reporting
+mangoman guardian change "add a contact page"
+mangoman guardian incidents               # what is queued, in dev, waiting or live
 mangoman guardian approve ID              # or the Approve button in Telegram
 ```
 

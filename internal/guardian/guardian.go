@@ -1,11 +1,14 @@
-// Package guardian keeps a running app healthy. The watchdog runs checks
-// (is the site up and fast, are there new errors in the log, does the jobs
-// check pass). On a failure Guardian gives first aid (only the fixes the
-// owner listed: restart, retry), then opens an incident: it finds the root
-// cause and writes a fix on its own branch, the QA agent writes a test for
-// it, and both are tested in a development copy, round after round. A fix
-// that passes goes to production only after the owner approves it, and is
-// tested again there (rolled back if it fails). See incident.go.
+// Package guardian keeps a running app healthy. Every app has a permanent
+// development environment next to production, with the same code (dev.go).
+// The watchdog runs checks (site up and fast, new errors in the log, jobs
+// script passing) and keeps dev in step with production. On a failure
+// Guardian gives first aid (only the fixes the owner listed: restart,
+// retry), then fixes the root cause: on its own branch, with tests from the
+// QA agent, tested in dev, round after round, with no approval needed. The
+// owner's own changes take the same path. Production gets a change only
+// after the owner approves it, and it is tested again there (rolled back if
+// it fails). Production data is copied to dev nightly with personal details
+// masked (data.go).
 package guardian
 
 import (
@@ -34,22 +37,23 @@ type Config struct {
 	Checks []Check `json:"checks"`
 	// Webhook gets every message and report (Slack, Discord and similar
 	// incoming webhooks). Telegram is set up with mangoman guardian telegram.
-	Webhook string `json:"webhook,omitempty"`
-	Dev     Env    `json:"dev,omitzero"`
-	Prod    Env    `json:"prod,omitzero"`
+	Webhook    string `json:"webhook,omitempty"`
+	Dev        Env    `json:"dev,omitzero"`
+	Prod       Env    `json:"prod,omitzero"`
+	ProdBranch string `json:"prod_branch,omitempty"` // default main; dev is always "dev"
+	Data       Data   `json:"data,omitzero"`
 	// Reports are the daily report times (24-hour, local), sent even on a
 	// quiet day. Default 08:00 and 20:00.
 	Reports []string `json:"reports,omitempty"`
 }
 
-// Env is how to reach one environment. In commands and addresses {port} is
-// a free port, {branch} the fix's branch and {id} the incident.
+// Env is one environment. Dev's commands run in its own folder (the dev
+// branch); production's in the project folder.
 type Env struct {
-	Start    string            `json:"start,omitempty"`    // dev: start a copy of the app (Docker, npm run dev)
 	Deploy   string            `json:"deploy,omitempty"`   // deploy; for dev, an address on the last output line is used
 	URL      string            `json:"url,omitempty"`      // where it answers
 	Rollback string            `json:"rollback,omitempty"` // prod: go back to the last good version
-	Env      map[string]string `json:"env,omitempty"`      // dev: test values; live secrets never reach dev
+	Env      map[string]string `json:"env,omitempty"`      // dev: its own values (test database); live secrets never reach dev
 }
 
 // Check is one thing to watch. Set exactly one of URL, Log or Command.
@@ -127,11 +131,13 @@ type Guardian struct {
 	// Agent does coding work in a folder (MangoMan's headless coding agent).
 	// nil = no incidents: first aid and reports only.
 	Agent func(ctx context.Context, dir, prompt string) error
-	Work  string    // where development copies are made
+	Root  string    // where the dev environment and change copies live
 	TG    *Telegram // nil = no Telegram
 	Logf  func(format string, args ...any)
 
-	mu sync.Mutex // guards the incidents file
+	mu      sync.Mutex        // guards the incidents file
+	copying sync.Mutex        // one nightly data copy at a time
+	asked   map[string]string // change requests from Telegram waiting for "Yes"; Serve's loop only
 }
 
 // Run checks everything once, tries the listed fixes on failures, records
@@ -168,6 +174,14 @@ func (g *Guardian) Run(ctx context.Context) ([]Event, error) {
 				}
 			}
 			g.notify(fmt.Sprintf("%s: %s %s. %s", g.Cfg.App, k.Name, ev.Status, ev.Detail))
+		}
+		events = append(events, ev)
+	}
+	if g.Cfg.Repo != "" {
+		ev := Event{Time: time.Now(), Check: "dev", Status: "ok"}
+		if d := g.parity(ctx); d != "" {
+			ev.Status, ev.Detail = "failing", d
+			g.notify(fmt.Sprintf("%s: %s", g.Cfg.App, d))
 		}
 		events = append(events, ev)
 	}

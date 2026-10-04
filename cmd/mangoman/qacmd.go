@@ -90,20 +90,34 @@ func guardianStart(dir string) *guardian.Config {
 	c := &guardian.Config{App: filepath.Base(dir), Repo: ".", Checks: []guardian.Check{
 		{Name: "site", URL: "https://example.com/", MaxMS: 3000, Fix: []string{"systemctl restart my-app"}},
 		{Name: "errors", Log: "/var/log/my-app.log"},
-	}, Prod: guardian.Env{Deploy: "./deploy.sh", Rollback: "./rollback.sh", URL: "https://example.com/"}}
+	},
+		// Own server: a second copy of the app on the same server.
+		Dev:  guardian.Env{Deploy: "./deploy.sh dev", URL: "https://dev.example.com/"},
+		Prod: guardian.Env{Deploy: "./deploy.sh", Rollback: "./rollback.sh", URL: "https://example.com/"},
+		Data: guardian.Data{Export: `pg_dump --data-only --column-inserts "$DATABASE_URL"`, Import: `psql "$DATABASE_URL"`},
+	}
+	if b, err := exec.Command("git", "-C", dir, "rev-parse", "--abbrev-ref", "HEAD").Output(); err == nil {
+		c.ProdBranch = strings.TrimSpace(string(b))
+	}
 	switch {
 	case has("vercel.json") || has(".vercel"):
-		c.Dev = guardian.Env{Deploy: "npx vercel deploy --yes"}
+		c.Dev = guardian.Env{Deploy: "npx vercel deploy --yes"} // prints the dev address
 		c.Prod = guardian.Env{Deploy: "npx vercel deploy --prod --yes", Rollback: "npx vercel rollback --yes", URL: "https://example.com/"}
 	case has("docker-compose.yml") || has("compose.yaml"):
-		c.Dev = guardian.Env{Start: "docker compose -p guardian-{id} up --build", URL: "http://127.0.0.1:{port}/"}
-	case has("package.json"):
-		c.Dev = guardian.Env{Start: "npm install && npm run dev", URL: "http://127.0.0.1:{port}/"}
+		c.Dev = guardian.Env{Deploy: "docker compose -p " + slugName(dir) + "-dev up -d --build", URL: "http://127.0.0.1:8081/"}
+		c.Prod.Deploy = "docker compose -p " + slugName(dir) + " up -d --build"
 	}
-	if c.Dev.Start != "" || c.Dev.Deploy != "" {
-		c.Dev.Env = map[string]string{"DATABASE_URL": "a test database, never the live one"}
-	}
+	c.Dev.Env = map[string]string{"DATABASE_URL": "dev's own database, never the live one"}
 	return c
+}
+
+func slugName(dir string) string {
+	return strings.ToLower(strings.Map(func(r rune) rune {
+		if r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' {
+			return r
+		}
+		return '-'
+	}, filepath.Base(dir)))
 }
 
 func cmdGuardian(args []string) error {
@@ -139,8 +153,9 @@ func cmdGuardian(args []string) error {
 				f.Close()
 			}
 		}
-		fmt.Printf("Wrote %s. Set your checks, the fixes that are safe any time, and how to deploy.\n"+
-			"Then: mangoman guardian telegram BOT_TOKEN (optional) and mangoman guardian run --every 5m\n", *path)
+		fmt.Printf("Wrote %s. Set your checks, the fixes that are safe any time, and how to deploy dev and production.\n"+
+			"Then: mangoman guardian setup (makes the dev environment), mangoman guardian telegram BOT_TOKEN,\n"+
+			"and mangoman guardian run --every 5m\n", *path)
 		return nil
 	}
 	cfg, err := guardian.Load(*path)
@@ -158,7 +173,7 @@ func cmdGuardian(args []string) error {
 	cdir, _ := config.Dir()
 	self, _ := os.Executable()
 	g := &guardian.Guardian{Cfg: cfg, Dir: state, Wait: 10 * time.Second, TG: guardian.LoadTelegram(state),
-		Work: filepath.Join(cdir, "guardian-work"),
+		Root: filepath.Join(cdir, "guardian", slugName(cfg.App)),
 		Ask:  func(p string) (string, error) { a, _, err := askRouter(p); return a, err },
 		Agent: func(ctx context.Context, dir, prompt string) error {
 			cmd := exec.CommandContext(ctx, self, "code", "--no-web", "run", "--auto", "--dir", dir, prompt)
@@ -182,12 +197,28 @@ func cmdGuardian(args []string) error {
 	case "approve":
 		return g.Approve(ctx, id)
 	case "reject":
-		return g.Reject(id)
+		return g.Reject(ctx, id)
+	case "change":
+		what := strings.Join(fs.Args(), " ")
+		if what == "" {
+			return errors.New(`say what to change: mangoman guardian change "add a contact page"`)
+		}
+		qid, err := g.Request(what)
+		if err == nil {
+			fmt.Println("Queued as", qid+". Guardian builds it in dev, QA tests it, then asks you before it goes live.")
+		}
+		return err
+	case "setup":
+		if err := g.Setup(ctx); err != nil {
+			return err
+		}
+		fmt.Println("Development environment ready: branch dev, deployed with dev.deploy, running next to production.")
+		return nil
 	case "telegram":
 		return setupTelegram(ctx, state, id)
 	case "run":
 	default:
-		return fmt.Errorf("unknown guardian command %q (init, run, report, incidents, approve, reject, telegram)", sub)
+		return fmt.Errorf("unknown guardian command %q (init, setup, run, change, report, incidents, approve, reject, telegram)", sub)
 	}
 	if *every > 0 {
 		return g.Serve(ctx, *every, showEvents)

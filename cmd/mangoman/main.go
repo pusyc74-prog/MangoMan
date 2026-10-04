@@ -58,7 +58,7 @@ Usage:
   mangoman test [prompt]        send a test request through the running router
   mangoman doctor [flags]       live-check every connected provider and model
   mangoman qa [DIR] [--url URL] test a project: its tests, and its web app in a browser
-  mangoman guardian [init|run|report]  watch an app, fix it from your list, report daily
+  mangoman guardian [init|setup|run|change|approve]  dev next to production; watch, fix, test, ask, deploy
   mangoman usage [--days N]     summarise requests, failovers and tokens
   mangoman version
 
