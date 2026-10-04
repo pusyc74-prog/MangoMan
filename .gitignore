@@ -4,4 +4,4 @@ dist/
 __pycache__/
 router.log
 qa-out/
-.github/qa/guardian-*
+.github/qa/.guardian/

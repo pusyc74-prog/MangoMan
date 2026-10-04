@@ -1,9 +1,11 @@
-// Package guardian watches a running app and keeps it healthy. The watchdog
-// part runs checks (is the site up and fast, are there new errors in the
-// log, does the jobs check pass). When one fails, Guardian asks a model for
-// the likely cause, runs only the fixes the owner listed for that check
-// (restart, retry, roll back), checks again, and reports. It never changes
-// code.
+// Package guardian keeps a running app healthy. The watchdog runs checks
+// (is the site up and fast, are there new errors in the log, does the jobs
+// check pass). On a failure Guardian gives first aid (only the fixes the
+// owner listed: restart, retry), then opens an incident: it finds the root
+// cause and writes a fix on its own branch, the QA agent writes a test for
+// it, and both are tested in a development copy, round after round. A fix
+// that passes goes to production only after the owner approves it, and is
+// tested again there (rolled back if it fails). See incident.go.
 package guardian
 
 import (
@@ -21,6 +23,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,9 +32,24 @@ type Config struct {
 	App    string  `json:"app"`
 	Repo   string  `json:"repo,omitempty"` // a git folder: recent commits help find the cause
 	Checks []Check `json:"checks"`
-	// Webhook gets a message when a check fails or is fixed, and the morning
-	// report (Slack, Discord and similar incoming webhooks).
+	// Webhook gets every message and report (Slack, Discord and similar
+	// incoming webhooks). Telegram is set up with mangoman guardian telegram.
 	Webhook string `json:"webhook,omitempty"`
+	Dev     Env    `json:"dev,omitzero"`
+	Prod    Env    `json:"prod,omitzero"`
+	// Reports are the daily report times (24-hour, local), sent even on a
+	// quiet day. Default 08:00 and 20:00.
+	Reports []string `json:"reports,omitempty"`
+}
+
+// Env is how to reach one environment. In commands and addresses {port} is
+// a free port, {branch} the fix's branch and {id} the incident.
+type Env struct {
+	Start    string            `json:"start,omitempty"`    // dev: start a copy of the app (Docker, npm run dev)
+	Deploy   string            `json:"deploy,omitempty"`   // deploy; for dev, an address on the last output line is used
+	URL      string            `json:"url,omitempty"`      // where it answers
+	Rollback string            `json:"rollback,omitempty"` // prod: go back to the last good version
+	Env      map[string]string `json:"env,omitempty"`      // dev: test values; live secrets never reach dev
 }
 
 // Check is one thing to watch. Set exactly one of URL, Log or Command.
@@ -77,6 +95,14 @@ func Load(path string) (*Config, error) {
 			}
 		}
 	}
+	if len(c.Reports) == 0 {
+		c.Reports = []string{"08:00", "20:00"}
+	}
+	for _, r := range c.Reports {
+		if _, err := time.Parse("15:04", r); err != nil {
+			return nil, fmt.Errorf("report time %q: use 24-hour HH:MM", r)
+		}
+	}
 	return &c, nil
 }
 
@@ -91,14 +117,21 @@ type Event struct {
 	Done   []string  `json:"done,omitempty"` // fixes run, with their result
 }
 
-// Guardian runs checks for one config. State (log positions, history) is
-// kept next to the config file.
+// Guardian runs one config.
 type Guardian struct {
 	Cfg  *Config
-	Dir  string                                 // where state and history live
+	Dir  string                                 // where state, history and incidents live
 	Ask  func(prompt string) (string, error)    // a model, for likely causes; nil = none
 	Send func(url string, payload []byte) error // webhook sender; nil = HTTP POST
-	Wait time.Duration                          // pause after a fix before checking again
+	Wait time.Duration                          // pause after a fix or deploy before checking again
+	// Agent does coding work in a folder (MangoMan's headless coding agent).
+	// nil = no incidents: first aid and reports only.
+	Agent func(ctx context.Context, dir, prompt string) error
+	Work  string    // where development copies are made
+	TG    *Telegram // nil = no Telegram
+	Logf  func(format string, args ...any)
+
+	mu sync.Mutex // guards the incidents file
 }
 
 // Run checks everything once, tries the listed fixes on failures, records
@@ -191,7 +224,7 @@ func (g *Guardian) check(ctx context.Context, k Check, offsets map[string]int64)
 			return fmt.Sprintf("%d new error lines, latest: %s", len(bad), cut(bad[len(bad)-1], 300))
 		}
 	case k.Command != "":
-		out, err := shell(ctx, k.Command)
+		out, err := shell(ctx, "", k.Command)
 		if err != nil {
 			return "failed: " + cut(strings.TrimSpace(out), 300)
 		}
@@ -253,23 +286,32 @@ func (g *Guardian) cause(k Check, detail string) string {
 func runFix(ctx context.Context, fix string) string {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
-	out, err := shell(ctx, fix)
+	out, err := shell(ctx, "", fix)
 	if err != nil {
 		return "failed (" + cut(strings.TrimSpace(out), 200) + ")"
 	}
 	return "done"
 }
 
-func shell(ctx context.Context, line string) (string, error) {
-	cmd := exec.CommandContext(ctx, "sh", "-c", line)
+func shellCmd(ctx context.Context, line string) *exec.Cmd {
 	if runtime.GOOS == "windows" {
-		cmd = exec.CommandContext(ctx, "cmd", "/C", line)
+		return exec.CommandContext(ctx, "cmd", "/C", line)
 	}
+	return exec.CommandContext(ctx, "sh", "-c", line)
+}
+
+// shell runs a command line in dir ("" = here) and returns its output.
+func shell(ctx context.Context, dir, line string) (string, error) {
+	cmd := shellCmd(ctx, line)
+	cmd.Dir = dir
 	out, err := cmd.CombinedOutput()
 	return string(out), err
 }
 
 func (g *Guardian) notify(text string) {
+	if g.TG != nil {
+		_ = g.TG.Send(text)
+	}
 	if g.Cfg.Webhook == "" {
 		return
 	}
@@ -365,10 +407,13 @@ func (g *Guardian) Report(send bool) (string, error) {
 	}
 	if len(order) == 0 {
 		b.WriteString("No checks ran.\n")
+	} else if len(fails) == 0 {
+		b.WriteString("All good: no issues.\n")
 	}
 	if len(decide) > 0 {
 		fmt.Fprintf(&b, "Needs you: %s still failing.\n", strings.Join(decide, ", "))
 	}
+	b.WriteString(g.incidentLines())
 	if send {
 		g.notify(b.String())
 	}

@@ -1,6 +1,6 @@
 {
   "app": "MangoMan router (CI)",
-  "repo": ".",
+  "repo": "../..",
   "checks": [
     { "name": "router", "url": "http://127.0.0.1:4141/healthz", "max_ms": 1000 },
     { "name": "dashboard", "url": "http://127.0.0.1:4141/ui/", "max_ms": 1000 },

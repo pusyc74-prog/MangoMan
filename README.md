@@ -341,17 +341,30 @@ to reproduce it. A free model adds likely causes, marked as a guess.
 mangoman qa ./my-shop --url http://localhost:3000/
 ```
 
-`mangoman guardian` watches a running app. Its watchdog checks, from
-`guardian.json`, whether the site is up and fast, whether new error lines
-appear in a log, and whether a jobs script passes. When a check fails,
-Guardian asks a free model for the likely cause, runs only the fixes you
-listed for that check (restart, retry, roll back), checks again and sends a
-message to your Slack or Discord webhook. It never changes code.
+`mangoman guardian` keeps a running app healthy, on its own:
+
+1. **Watch.** Checks from `guardian.json`: is the site up and fast, are there
+   new error lines in a log, does a jobs script pass.
+2. **First aid.** Runs only the fixes you listed for that check (restart,
+   retry), so the app comes back while the real fix is made.
+3. **Fix in development.** Guardian finds the root cause and writes a fix on
+   its own branch; the QA agent writes a test for the bug (it may change only
+   test files); both run in a development copy: your start command on a free
+   port, a Docker copy, or a Vercel preview. Live secrets never reach it. Up
+   to 3 rounds, then Guardian hands it to you with what it found.
+4. **Your approval.** A fix that passed QA in development is sent to you on
+   Telegram with Approve and Reject buttons. Nothing goes live without it.
+5. **Production.** Guardian merges, runs your deploy command and has QA test
+   production. If that fails it runs your rollback, reverts the merge and
+   starts again from step 3.
+6. **Reports** at 08:00 and 20:00 every day, also when all is well.
 
 ```sh
-mangoman guardian init                   # writes guardian.json to edit
-mangoman guardian run --every 5m         # keep watching
-mangoman guardian report --send          # the last day, for a morning summary
+mangoman guardian init                    # writes guardian.json for this project
+mangoman guardian telegram BOT_TOKEN      # optional: your bot from @BotFather
+mangoman guardian run --every 5m          # keep watching and fixing
+mangoman guardian incidents               # what Guardian is working on
+mangoman guardian approve ID              # or the Approve button in Telegram
 ```
 
 To watch MangoMan itself, point a check at `http://127.0.0.1:4141/healthz`
