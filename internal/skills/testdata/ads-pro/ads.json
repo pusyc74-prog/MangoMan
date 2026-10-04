@@ -1,0 +1,24 @@
+{
+ "brand": "Gauveda",
+ "allowed_caps": ["UPI", "QR"],
+ "facts": {"jar_500": "500 ml glass jar ₹1,250", "jar_1l": "1 litre glass jar ₹2,350", "offer": "10% off the first order with code FIRST10",
+           "delivery": "free delivery on orders above ₹1,500; across India in 3 to 6 days", "herd": "140 Gir cows near Gondal, Gujarat",
+           "testing": "every batch lab tested", "payment": "UPI, cards, cash on delivery"},
+ "google": {
+  "campaign": "A2 ghee",
+  "ad_groups": [{
+   "name": "A2 Gir cow ghee",
+   "final_url": "https://gauveda.in/a2-ghee",
+   "path1": "a2-ghee", "path2": "bilona",
+   "keywords": [{"text": "a2 ghee", "match": "phrase"}, {"text": "a2 gir cow ghee", "match": "exact"}, {"text": "bilona ghee", "match": "phrase"}],
+   "negatives": ["jobs", "recipe"],
+   "headlines": ["Gauveda A2 Gir Cow Ghee", "Bilona Ghee, Churned by Hand", "From Our 140 Gir Cows", "Every Batch Lab Tested",
+                 "500 ml Jar for ₹1,250", "10% Off With Code FIRST10", "Free Delivery Above ₹1,500", "Delivered in 3 to 6 Days",
+                 "Pay by UPI or Cash on Delivery", "Farm Near Gondal, Gujarat", "Order A2 Ghee Online", "Slow-Heated on a Wood Fire"],
+   "descriptions": ["A2 Gir cow ghee made the bilona way: curd churned by hand, heated slowly on a wood fire.",
+                    "Every batch lab tested; scan the QR code on the jar for the report.",
+                    "500 ml jar ₹1,250, 1 litre ₹2,350. Get 10% off your first order with code FIRST10.",
+                    "Delivered across India in 3 to 6 days. Pay by UPI, card or cash on delivery."]
+  }]
+ }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "google-ads-pro",
+  "version": "1.0.0",
+  "title": "Google Ads pro",
+  "description": "Writes Google search ads from the advertiser's own search term report or Keyword Planner ideas: the searches that convert, wasted spend, negatives that block it without blocking a sale, ad groups by theme with match types, headlines that cover the demand, and a before-and-after score.",
+  "skill": "mangoman-ad-copy",
+  "author": {"name": "MangoMan", "contact": "agents@mangoman.app"},
+  "runs_on": "local",
+  "permissions": {"network": [], "commands": []},
+  "models": "free",
+  "price_inr_month": 0,
+  "data_policy": "Runs on your computer. Your reports and ads never leave it; only the copy you approve goes to your AI model through MangoMan."
+}
