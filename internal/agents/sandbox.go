@@ -16,7 +16,7 @@ var guardPy []byte
 
 // safeEnv is the only environment an agent gets from the user's: anything
 // else (keys, tokens, database addresses, proxies) stays out.
-var safeEnv = regexp.MustCompile(`(?i)^(PATH|HOME|USERPROFILE|USER|USERNAME|LOGNAME|LANG|LANGUAGE|LC_[A-Z]+|TERM|TZ|SYSTEMROOT|WINDIR|COMSPEC|PATHEXT|PROGRAMFILES|PROGRAMFILES\(X86\)|LOCALAPPDATA|APPDATA|XDG_CACHE_HOME|PLAYWRIGHT_BROWSERS_PATH)$`)
+var safeEnv = regexp.MustCompile(`(?i)^(PATH|HOME|USERPROFILE|USER|USERNAME|LOGNAME|LANG|LANGUAGE|LC_[A-Z]+|TERM|TZ|SYSTEMROOT|WINDIR|COMSPEC|PATHEXT|PROGRAMFILES|PROGRAMFILES\(X86\)|LOCALAPPDATA|APPDATA|HOMEDRIVE|HOMEPATH|XDG_CACHE_HOME|PLAYWRIGHT_BROWSERS_PATH)$`)
 
 // Command builds the sandboxed command that runs one of an installed agent's
 // Python scripts: in workdir, with the guard loaded, with only safe
@@ -32,8 +32,8 @@ func Command(agentsDir, name, workdir, script string, args []string) (*exec.Cmd,
 		return nil, err
 	}
 	scripts := filepath.Join(dir, "scripts")
-	path := filepath.Join(scripts, filepath.Clean("/"+script))
-	if !strings.HasSuffix(path, ".py") || filepath.Dir(path) != scripts {
+	path := filepath.Join(scripts, script)
+	if !strings.HasSuffix(script, ".py") || strings.ContainsAny(script, `/\:`) || strings.HasPrefix(script, ".") {
 		return nil, fmt.Errorf("%s is not one of %s's scripts", script, name)
 	}
 	if _, err := os.Stat(path); err != nil {

@@ -11,6 +11,7 @@ On Linux, an agent with no network also runs in a namespace with no network
 at all. This guard is one layer; the marketplace review is the other.
 """
 import os
+import shutil
 import socket
 import sys
 import tempfile
@@ -59,7 +60,7 @@ def _recording_getaddrinfo(host, *a, **k):
 socket.getaddrinfo = _recording_getaddrinfo
 
 
-GUARD_DIR = os.path.dirname(os.path.abspath(__file__))
+GUARD_DIR = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
 PYTHONS = {"python", "python3", os.path.basename(sys.executable).lower().removesuffix(".exe")}
 
 
@@ -71,11 +72,15 @@ def _program_ok(exe, argv=None, env=None):
     name = os.path.basename(exe)
     if os.name == "nt":
         name = name.lower().removesuffix(".exe")
-    if name.startswith("python"):
+    real = os.path.basename(os.path.realpath(shutil.which(exe) or exe)).lower()
+    if name.startswith(("python", "pypy")) or real.startswith(("python", "pypy")):
         flags = [os.fsdecode(a) for a in list(argv or [])[1:] if os.fsdecode(a).startswith("-")]
         if name not in PYTHONS or any(f in ("-S", "-I", "-E") or (len(f) > 1 and f[1] != "-" and set(f[1:]) & set("SIE")) for f in flags):
             return False
-        return env is None or GUARD_DIR in os.fsdecode(env.get("PYTHONPATH", env.get(b"PYTHONPATH", b"")))
+        if env is None:
+            return True
+        pp = os.fsdecode(env.get("PYTHONPATH", env.get(b"PYTHONPATH", b"")))
+        return bool(pp) and os.path.realpath(pp.split(os.pathsep)[0]) == GUARD_DIR
     return name in CMDS or "playwright" + os.sep + "driver" in _real(exe)
 
 
@@ -114,7 +119,7 @@ def _hook(event, args):
         addr = args[1]
         if isinstance(addr, tuple) and addr[0] not in _ips:
             _deny("connect to %s" % addr[0])
-        if isinstance(addr, (str, bytes)) and "localhost" not in HOSTS:
+        if isinstance(addr, (str, bytes)):
             _deny("connect to the local socket %s" % os.fsdecode(addr))
     elif event == "subprocess.Popen":
         exe, argv, env = args[0], args[1], args[3]

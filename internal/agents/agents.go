@@ -107,6 +107,8 @@ func (m Manifest) Validate() error {
 	for _, c := range m.Permissions.Commands {
 		if c == "" || strings.ContainsAny(c, `/\ `) {
 			p = append(p, fmt.Sprintf("command %q must be a bare program name", c))
+		} else if lc := strings.ToLower(c); strings.HasPrefix(lc, "python") || strings.HasPrefix(lc, "pypy") {
+			p = append(p, "python is always available; do not declare it as a command")
 		}
 	}
 	if m.Models != "free" && m.Models != "paid" {

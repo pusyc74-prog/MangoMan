@@ -169,6 +169,10 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 		"python -S child": "import subprocess, sys; subprocess.run([sys.executable, '-S', '-c', 'print(1)'], check=True)",
 		"bare env child":  "import subprocess, sys; subprocess.run([sys.executable, '-c', 'print(1)'], env={'PATH': '/usr/bin'}, check=True)",
 		"hard link":       "import os; os.link(" + quote(secret) + ", 'leak')",
+		"own startup file": "import os, subprocess, sys; open('sitecustomize.py','w').write('');" +
+			" g = os.environ['PYTHONPATH'].split(os.pathsep)[0];" +
+			" subprocess.run([sys.executable, '-c', 'print(1)'], env={'PYTHONPATH': os.getcwd() + os.pathsep + g, 'PATH': '/usr/bin'}, check=True)",
+		"unix socket": "import socket; s = socket.socket(socket.AF_UNIX); s.connect('/var/run/docker.sock')",
 	}
 	pkg, _ := packDemo(t, root, map[string]string{"scripts/ok.py": "import os, subprocess, sys\nopen('ok.txt','w').write(os.environ.get('GROQ_API_KEY','none') + os.environ.get('DATABASE_URL','none'))\nsubprocess.run([sys.executable, '-c', 'pass'], check=True)\n"})
 	dir := filepath.Join(root, "agents")
