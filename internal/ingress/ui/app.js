@@ -637,6 +637,34 @@ function renderRecent(ov, act) {
 
 // ---------- loading ----------
 
+// ---------- Guardian ----------
+
+const GSTATUS = { queued: "Waiting its turn", working: "Being fixed and tested in development", ready: "Ready for production",
+  deploying: "Going live", live: "Live", rejected: "Rejected", needs_you: "Needs you" };
+
+async function loadGuardian() {
+  let projects = [];
+  try { projects = await api("/mangoman/guardian"); } catch (_) {}
+  const rows = [];
+  for (const p of projects) {
+    for (const i of p.incidents) {
+      const act = (action, label, cls) => el("button", { type: "button", class: cls, onclick: async (e) => {
+        e.target.disabled = true;
+        try { await api(`/mangoman/guardian/${action}`, { method: "POST", body: JSON.stringify({ config: p.config, id: i.id }) }); } catch (err) { alert(err.message); }
+        setTimeout(loadGuardian, 1500);
+      } }, label);
+      rows.push(el("tr", {},
+        el("td", {}, p.app),
+        el("td", {}, i.kind === "change" ? i.problem : `Fix: ${i.check}. ${i.problem}`),
+        el("td", {}, GSTATUS[i.status] || i.status),
+        el("td", {}, i.note || ""),
+        el("td", {}, i.status === "ready" ? [act("approve", "Approve", "primary"), " ", act("reject", "Reject", "ghost")] : "")));
+    }
+  }
+  $("guardian-block").hidden = projects.length === 0;
+  $("guardian-list").tBodies[0].replaceChildren(...rows);
+}
+
 // ---------- live model panel ----------
 
 function modelName(target) { const [p, ...m] = target.split("/"); return `${m.join("/")} (${p})`; }
@@ -674,6 +702,7 @@ async function load() {
     renderMyList(ov);
     renderBrain(ov);
     await loadAgents();
+    loadGuardian();
     renderFab();
     if (state.drawer) renderDrawer();
     renderChart(act, ov);

@@ -371,3 +371,45 @@ func TestOwnersWorkspaceShips(t *testing.T) {
 		t.Fatal("the owner's change should be in dev only")
 	}
 }
+
+func TestFixNeedsATestThatCatchesTheBug(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses sh and make")
+	}
+	repo := gitRepo(t)
+	os.WriteFile(filepath.Join(repo, "Makefile"), []byte("test:\n\ttrue\n"), 0o644) // passes with or without the fix
+	commit(repo, "weak tests")
+	var fixes atomic.Int32
+	g := &Guardian{Cfg: &Config{App: "shop", Repo: repo, Checks: []Check{{Name: "page", Command: "false"}}},
+		Dir: t.TempDir(), Root: t.TempDir(), Agent: fakeAgent(&fixes, true)}
+	ev, _ := g.Run(context.Background())
+	id := g.Open(ev)[0]
+	g.Work(context.Background(), id)
+	if inc := g.Incidents()[0]; inc.Status != "needs_you" || !strings.Contains(inc.QA, "would not catch this bug") {
+		t.Fatalf("a test that passes without the fix must not count: %+v", inc)
+	}
+}
+
+func TestMaskJSONAndCSV(t *testing.T) {
+	j := Mask(`[{"id":9876543210,"name":"Asha Rao","contact":{"phone":"+91 9876543210"},"note":"mail asha@gmail.com"}]`)
+	c := Mask("id,full_name,city,amount\n9876543210,Asha Rao,Pune,4999\n")
+	l := Mask("{\"email\":\"asha@gmail.com\",\"total\":5}\n{\"email\":\"ravi@x.in\",\"total\":7}\n")
+	for _, out := range []string{j, c, l} {
+		for _, gone := range []string{"Asha", "Pune", "asha@gmail.com", "ravi@x.in", "+91 9876543210"} {
+			if strings.Contains(out, gone) {
+				t.Fatalf("%q not masked:\n%s", gone, out)
+			}
+		}
+	}
+	if !strings.Contains(j, "9876543210") || !strings.Contains(c, "9876543210,") || !strings.Contains(l, `"total":7`) {
+		t.Fatalf("ids and amounts must stay:\n%q\n%q\n%q", j, c, l)
+	}
+}
+
+func TestSiteURL(t *testing.T) {
+	vercel := "Inspect: https://vercel.com/me/shop/abc [2s]\nPreview: https://shop-git-dev-me.vercel.app [3s]\n"
+	netlify := "Website draft URL: https://dev--shop.netlify.app\nBuild logs: https://app.netlify.com/sites/shop/deploys/1\n"
+	if siteURL(vercel) != "https://shop-git-dev-me.vercel.app" || siteURL(netlify) != "https://dev--shop.netlify.app" || siteURL("done") != "" {
+		t.Fatal(siteURL(vercel), siteURL(netlify))
+	}
+}

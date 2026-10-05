@@ -103,6 +103,9 @@ func guardianStart(dir string) *guardian.Config {
 	case has("vercel.json") || has(".vercel"):
 		c.Dev = guardian.Env{Deploy: "npx vercel deploy --yes"} // prints the dev address
 		c.Prod = guardian.Env{Deploy: "npx vercel deploy --prod --yes", Rollback: "npx vercel rollback --yes", URL: "https://example.com/"}
+	case has("netlify.toml"):
+		c.Dev = guardian.Env{Deploy: "npx netlify deploy --alias dev"} // prints the dev address
+		c.Prod = guardian.Env{Deploy: "npx netlify deploy --prod", URL: "https://example.com/"}
 	case has("docker-compose.yml") || has("compose.yaml"):
 		c.Dev = guardian.Env{Deploy: "docker compose -p " + slugName(dir) + "-dev up -d --build", URL: "http://127.0.0.1:8081/"}
 		c.Prod.Deploy = "docker compose -p " + slugName(dir) + " up -d --build"
@@ -129,6 +132,7 @@ func loadGuardian(path string) (*guardian.Guardian, error) {
 	}
 	cdir, _ := config.Dir()
 	self, _ := os.Executable()
+	guardian.Register(filepath.Join(cdir, "guardian", "projects.json"), must(filepath.Abs(path)))
 	return &guardian.Guardian{Cfg: cfg, Dir: state, Wait: 10 * time.Second, TG: guardian.LoadTelegram(state),
 		Root: filepath.Join(cdir, "guardian", slugName(cfg.App)),
 		Ask:  func(p string) (string, error) { a, _, err := askRouter(p); return a, err },

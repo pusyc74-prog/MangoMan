@@ -2,6 +2,7 @@ package guardian
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -31,21 +32,103 @@ var (
 	insertRe    = regexp.MustCompile(`(?is)^INSERT INTO ["\x60]?(?:\w+\.)?(\w+)["\x60]?\s*(\(([^)]*)\))?\s*VALUES\s*(.*)$`)
 )
 
-// Mask hides personal details in an SQL dump: every value in a column whose
-// name looks personal (name, email, phone, address, Aadhaar, PAN, date of
-// birth...), and any email, Indian mobile number or Aadhaar-like number
-// anywhere. Column names come from INSERT column lists or CREATE TABLE.
+// Mask hides personal details in a data export: every value in a column or
+// field whose name looks personal (name, email, phone, address, Aadhaar,
+// PAN, date of birth...), and any email, Indian mobile number or
+// Aadhaar-like number inside text. It reads SQL dumps (column names from
+// INSERT column lists or CREATE TABLE), JSON, JSON lines and CSV.
 func Mask(dump string) string {
+	t := strings.TrimSpace(dump)
+	switch {
+	case strings.HasPrefix(t, "{") || strings.HasPrefix(t, "["):
+		return maskJSON(dump)
+	case !strings.Contains(strings.ToUpper(t), "INSERT INTO") && strings.Contains(strings.SplitN(t, "\n", 2)[0], ","):
+		return maskCSV(dump)
+	}
+	return maskSQL(dump)
+}
+
+func maskText(v string) string {
+	v = emailRe.ReplaceAllString(v, "user@example.com")
+	v = phoneRe.ReplaceAllString(v, "9000000000")
+	return aadhaarRe.ReplaceAllString(v, "000000000000")
+}
+
+// maskJSON masks a JSON document, or JSON lines (one object per line).
+func maskJSON(dump string) string {
+	n := 0
+	one := func(text string) string {
+		var v any
+		if json.Unmarshal([]byte(text), &v) != nil {
+			return maskText(text)
+		}
+		b, _ := json.Marshal(walkJSON(v, "", &n))
+		return string(b)
+	}
+	if t := strings.TrimSpace(dump); json.Valid([]byte(t)) {
+		return one(t) + "\n"
+	}
+	var out strings.Builder
+	for _, line := range strings.Split(strings.TrimRight(dump, "\n"), "\n") {
+		out.WriteString(one(line) + "\n")
+	}
+	return out.String()
+}
+
+func walkJSON(v any, key string, n *int) any {
+	switch x := v.(type) {
+	case map[string]any:
+		*n++
+		for k, val := range x {
+			x[k] = walkJSON(val, k, n)
+		}
+		return x
+	case []any:
+		for i := range x {
+			x[i] = walkJSON(x[i], key, n)
+		}
+		return x
+	case string:
+		if key != "" && personalCol.MatchString(key) {
+			return fake(key, *n)
+		}
+		return maskText(x)
+	case float64:
+		if key != "" && personalCol.MatchString(key) {
+			return fake(key, *n)
+		}
+	}
+	return v
+}
+
+// maskCSV masks a CSV file whose first row names the columns.
+func maskCSV(dump string) string {
+	rows, err := csv.NewReader(strings.NewReader(dump)).ReadAll()
+	if err != nil || len(rows) == 0 {
+		return maskText(dump)
+	}
+	for r := 1; r < len(rows); r++ {
+		for c, v := range rows[r] {
+			if c < len(rows[0]) && personalCol.MatchString(rows[0][c]) && v != "" {
+				rows[r][c] = fake(rows[0][c], r)
+			} else if strings.Trim(v, "0123456789.-") != "" { // plain numbers are ids and amounts
+				rows[r][c] = maskText(v)
+			}
+		}
+	}
+	var out strings.Builder
+	w := csv.NewWriter(&out)
+	_ = w.WriteAll(rows)
+	return out.String()
+}
+
+func maskSQL(dump string) string {
 	cols := map[string][]string{}
 	n := 0
 	var out strings.Builder
 	for _, stmt := range strings.SplitAfter(dump, ";\n") {
 		// Inside text values only: numbers outside quotes are ids and amounts.
-		stmt = textRe.ReplaceAllStringFunc(stmt, func(v string) string {
-			v = emailRe.ReplaceAllString(v, "user@example.com")
-			v = phoneRe.ReplaceAllString(v, "9000000000")
-			return aadhaarRe.ReplaceAllString(v, "000000000000")
-		})
+		stmt = textRe.ReplaceAllStringFunc(stmt, maskText)
 		trimmed := strings.TrimSpace(stmt)
 		if m := createRe.FindStringSubmatch(trimmed); m != nil {
 			for _, part := range splitTop(m[2], ',') {
@@ -71,7 +154,7 @@ func Mask(dump string) string {
 				n++
 				for i, v := range vals {
 					if i < len(names) && personalCol.MatchString(names[i]) && strings.TrimSpace(v) != "NULL" {
-						vals[i] = v[:len(v)-len(strings.TrimLeft(v, " "))] + fake(names[i], n)
+						vals[i] = v[:len(v)-len(strings.TrimLeft(v, " "))] + "'" + fake(names[i], n) + "'"
 					}
 				}
 				rows = append(rows, "("+strings.Join(vals, ",")+")")
@@ -92,15 +175,15 @@ func fake(col string, n int) string {
 	c := strings.ToLower(col)
 	switch {
 	case strings.Contains(c, "email"):
-		return fmt.Sprintf("'user%d@example.com'", n)
+		return fmt.Sprintf("user%d@example.com", n)
 	case strings.Contains(c, "phone") || strings.Contains(c, "mobile"):
-		return "'9000000000'"
+		return "9000000000"
 	case strings.Contains(c, "dob") || strings.Contains(c, "birth"):
-		return "'2000-01-01'"
+		return "2000-01-01"
 	case strings.Contains(c, "name"):
-		return fmt.Sprintf("'Customer %d'", n)
+		return fmt.Sprintf("Customer %d", n)
 	}
-	return "'masked'"
+	return "masked"
 }
 
 // splitTop splits s at sep outside quotes and brackets.

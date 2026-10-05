@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -69,9 +70,8 @@ func (g *Guardian) deployDev(ctx context.Context) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("development deploy failed: %s", cut(strings.TrimSpace(string(out)), 300))
 		}
-		lines := strings.Split(strings.TrimSpace(string(out)), "\n")
-		if last := strings.TrimSpace(lines[len(lines)-1]); strings.HasPrefix(last, "http") {
-			url = last // a preview link printed by the deploy (Vercel)
+		if u := siteURL(string(out)); u != "" {
+			url = u // a preview link printed by the deploy (Vercel, Netlify)
 		}
 	}
 	if url != "" {
@@ -80,6 +80,43 @@ func (g *Guardian) deployDev(ctx context.Context) (string, error) {
 		}
 	}
 	return url, nil
+}
+
+var urlRe = regexp.MustCompile(`https?://[^\s"'<>]+`)
+
+// siteURL is the last address in a deploy's output that is not the host's
+// own dashboard (Vercel's "Inspect", Netlify's logs).
+func siteURL(out string) string {
+	found := ""
+	for _, u := range urlRe.FindAllString(out, -1) {
+		if !strings.Contains(u, "//vercel.com/") && !strings.Contains(u, "//app.netlify.com/") {
+			found = strings.TrimRight(u, ".,)")
+		}
+	}
+	return found
+}
+
+// running checks that the Version address of an environment reports the
+// commit of branch; "" means it does (or no Version address is set).
+func (g *Guardian) running(ctx context.Context, e Env, branch string) string {
+	if e.Version == "" {
+		return ""
+	}
+	want, err := git(g.Cfg.Repo, "rev-parse", "--short=7", branch)
+	if err != nil {
+		return ""
+	}
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, e.Version, nil)
+	resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
+	if err != nil {
+		return "version address not reachable: " + err.Error()
+	}
+	defer resp.Body.Close()
+	b, _ := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
+	if !strings.Contains(string(b), want) {
+		return fmt.Sprintf("%s is not running the code it should (%s %s)", e.Version, branch, want)
+	}
+	return ""
 }
 
 var errBusy = errors.New("development is busy with another change")
@@ -126,7 +163,10 @@ func (g *Guardian) Work(ctx context.Context, id string) error {
 		}
 		keepTestsOnly(inc.Work)
 		commit(inc.Work, "QA: tests for "+inc.ID)
-		report, ok := g.tryInDev(ctx, inc)
+		report, ok := g.catchesBug(ctx, inc)
+		if ok {
+			report, ok = g.tryInDev(ctx, inc)
+		}
 		inc, _ = g.update(id, func(i *Incident) { i.QA, i.Summary = report, summary })
 		if ok {
 			inc, _ = g.update(id, func(i *Incident) { i.Status, i.Note = "ready", "passed QA in development" })
@@ -139,6 +179,33 @@ func (g *Guardian) Work(ctx context.Context, id string) error {
 		g.logf("%s: QA failed in development", id)
 	}
 	return g.giveUp(id, fmt.Sprintf("QA still failed after %d rounds. The work so far is on branch %s", maxRounds, inc.Branch))
+}
+
+// catchesBug checks that, for a fix, the project's tests (with the QA
+// agent's new ones) fail on the code from before the fix. Tests that pass
+// either way would not catch the bug coming back.
+func (g *Guardian) catchesBug(ctx context.Context, inc Incident) (string, bool) {
+	if inc.Kind != "fix" || len(qa.Detect(inc.Work)) == 0 {
+		return "", true
+	}
+	old := filepath.Join(g.Root, inc.ID+"-before")
+	if _, err := git(g.Cfg.Repo, "worktree", "add", "--detach", old, inc.DevBefore); err != nil {
+		return "", true // cannot check; QA in dev still runs
+	}
+	defer git(g.Cfg.Repo, "worktree", "remove", "--force", old)
+	tests, _ := git(inc.Work, "diff", "--name-only", "--diff-filter=AM", "HEAD~1", "HEAD")
+	for _, f := range strings.Fields(tests) {
+		if b, err := os.ReadFile(filepath.Join(inc.Work, f)); err == nil {
+			_ = os.MkdirAll(filepath.Dir(filepath.Join(old, f)), 0o755)
+			_ = os.WriteFile(filepath.Join(old, f), b, 0o644)
+		}
+	}
+	for _, r := range qa.RunTests(ctx, old, qa.Detect(old)) {
+		if !r.OK {
+			return "", true
+		}
+	}
+	return "The tests pass even without the fix, so they would not catch this bug coming back. Write a test that reproduces it.", false
 }
 
 // tryInDev merges the change into dev, deploys dev and runs QA there.
@@ -332,6 +399,10 @@ func (g *Guardian) prodQA(ctx context.Context) (string, bool) {
 			fmt.Fprintf(&b, "Check %s failed: %s\n", k.Name, d)
 		}
 	}
+	if d := g.running(ctx, g.Cfg.Prod, g.prod()); d != "" {
+		ok = false
+		b.WriteString(d + "\n")
+	}
 	visited, found, note := g.browse(ctx, g.Cfg.Prod.URL)
 	if len(visited) > 0 || len(found) > 0 {
 		b.WriteString(qa.Report(nil, visited, found, ""))
@@ -390,5 +461,8 @@ func (g *Guardian) parity(ctx context.Context) string {
 	if stat, err := git(g.Cfg.Repo, "diff", "--shortstat", g.prod(), devBranch); err != nil || stat != "" {
 		return "dev differs from production outside Guardian: " + stat
 	}
-	return ""
+	if d := g.running(ctx, g.Cfg.Dev, devBranch); d != "" {
+		return d
+	}
+	return g.running(ctx, g.Cfg.Prod, g.prod())
 }

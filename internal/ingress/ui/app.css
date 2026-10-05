@@ -305,3 +305,13 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
 @media (min-width: 1660px) {
   .now { position: fixed; top: 96px; right: 24px; width: 240px; margin: 0; z-index: 10; }
 }
+
+/* Guardian: rows stack on phones so Approve is always in view */
+#guardian-list td { white-space: normal; }
+@media (max-width: 760px) {
+  #guardian-list thead { display: none; }
+  #guardian-list tr, #guardian-list td { display: block; }
+  #guardian-list td { border: 0; padding: 2px 14px; }
+  #guardian-list tr { padding: 10px 0; border-bottom: 1px solid var(--hair); }
+  #guardian-list td:first-child { font-weight: 600; }
+}

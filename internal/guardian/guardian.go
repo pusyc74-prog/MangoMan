@@ -54,6 +54,9 @@ type Env struct {
 	URL      string            `json:"url,omitempty"`      // where it answers
 	Rollback string            `json:"rollback,omitempty"` // prod: go back to the last good version
 	Env      map[string]string `json:"env,omitempty"`      // dev: its own values (test database); live secrets never reach dev
+	// Version is an address whose answer includes the running commit (the
+	// first 7 characters are enough), to check what is really deployed.
+	Version string `json:"version,omitempty"`
 }
 
 // Check is one thing to watch. Set exactly one of URL, Log or Command.

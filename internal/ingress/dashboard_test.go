@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/pusyc74-prog/mangoman/internal/guardian"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -166,5 +168,29 @@ func TestAgentsAPI(t *testing.T) {
 	}
 	if w = do("POST", "/mangoman/agents/install", `{}`); w.Code != 400 {
 		t.Fatalf("install without a name: %d", w.Code)
+	}
+}
+
+func TestGuardianApprovals(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("MANGOMAN_HOME", home)
+	proj := t.TempDir()
+	cfgPath := filepath.Join(proj, "guardian.json")
+	os.WriteFile(cfgPath, []byte(`{"app":"shop","repo":"."}`), 0o644)
+	os.MkdirAll(filepath.Join(proj, ".guardian"), 0o700)
+	os.WriteFile(filepath.Join(proj, ".guardian", "incidents.json"),
+		[]byte(`{"a":{"id":"a","kind":"fix","check":"site","problem":"down","status":"ready","opened":"2026-10-05T08:00:00Z","qa":"long report"}}`), 0o600)
+	guardian.Register(filepath.Join(home, "guardian", "projects.json"), cfgPath)
+	h, _ := dashServer(t, mem{})
+	w := call(h, "GET", "/mangoman/guardian", "127.0.0.1:4141", authz, "")
+	var got []GuardianProject
+	if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil || len(got) != 1 || got[0].App != "shop" || len(got[0].Incidents) != 1 || got[0].Incidents[0].QA != "" {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	if w := call(h, "POST", "/mangoman/guardian/approve", "127.0.0.1:4141", authz, `{"config":"/etc/other.json","id":"a"}`); w.Code != 404 {
+		t.Fatalf("only registered projects: %d", w.Code)
+	}
+	if w := call(h, "POST", "/mangoman/guardian/deploy", "127.0.0.1:4141", authz, `{"config":"`+cfgPath+`","id":"a"}`); w.Code != 400 {
+		t.Fatalf("only approve and reject: %d", w.Code)
 	}
 }
