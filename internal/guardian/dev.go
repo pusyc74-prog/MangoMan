@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/qa"
+	"github.com/pusyc74-prog/mangoman/internal/review"
 )
 
 // The permanent development environment is the dev branch, checked out in
@@ -213,6 +214,11 @@ func (g *Guardian) tryInDev(ctx context.Context, inc Incident) (string, bool) {
 	if _, err := git(inc.Work, "diff", "--quiet", inc.DevBefore, "HEAD"); err == nil {
 		return "No change was made to the code.", false
 	}
+	diff, _ := git(inc.Work, "diff", inc.DevBefore, "HEAD")
+	found := review.Scan(diff)
+	if review.Blocking(found) {
+		return "Code review stopped it before dev:\n" + review.Report(found, ""), false
+	}
 	if _, err := git(g.devDir(), "merge", "--no-ff", "--no-edit", inc.Branch); err != nil {
 		_, _ = git(g.devDir(), "merge", "--abort")
 		return "The change does not merge into dev: " + err.Error(), false
@@ -221,7 +227,11 @@ func (g *Guardian) tryInDev(ctx context.Context, inc Incident) (string, bool) {
 	if err != nil {
 		return err.Error(), false
 	}
-	return g.qa(ctx, g.devDir(), url)
+	report, ok := g.qa(ctx, g.devDir(), url)
+	if len(found) > 0 {
+		report += "\n" + review.Report(found, "")
+	}
+	return report, ok
 }
 
 // qa runs the project's tests in dir and clicks through url (if any).

@@ -413,3 +413,25 @@ func TestSiteURL(t *testing.T) {
 		t.Fatal(siteURL(vercel), siteURL(netlify))
 	}
 }
+
+func TestLeakedSecretNeverReachesDev(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses sh and make")
+	}
+	repo := gitRepo(t)
+	g := &Guardian{Cfg: &Config{App: "shop", Repo: repo}, Dir: t.TempDir(), Root: t.TempDir(),
+		Agent: func(_ context.Context, dir, prompt string) error {
+			if strings.Contains(prompt, "You are Guardian") {
+				os.WriteFile(filepath.Join(dir, "app.txt"), []byte("fixed\nkey = \"rzp_live_abcdefghijklmnop\"\n"), 0o644)
+			}
+			return nil
+		}}
+	id, _ := g.Request("take payments")
+	g.Work(context.Background(), id)
+	if inc := g.Incidents()[0]; inc.Status != "needs_you" || !strings.Contains(inc.QA, "MUST FIX: live payment key") {
+		t.Fatalf("%+v", inc)
+	}
+	if strings.Contains(read(t, filepath.Join(g.devDir(), "app.txt")), "rzp_live") {
+		t.Fatal("the secret reached dev")
+	}
+}

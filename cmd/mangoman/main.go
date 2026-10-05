@@ -58,6 +58,9 @@ Usage:
   mangoman test [prompt]        send a test request through the running router
   mangoman doctor [flags]       live-check every connected provider and model
   mangoman new NAME             start an app with a development environment from day 1
+  mangoman review [DIR]         check a change: secrets, risky code, new dependencies, bugs
+  mangoman tests [FILE...]      the QA agent writes tests, then runs them
+  mangoman changelog            release notes from recent commits, into CHANGELOG.md
   mangoman qa [DIR] [--url URL] test a project: its tests, and its web app in a browser
   mangoman guardian [init|setup|run|change|approve]  dev next to production; watch, fix, test, ask, deploy
   mangoman usage [--days N]     summarise requests, failovers and tokens
@@ -114,6 +117,12 @@ func main() {
 		err = cmdQA(os.Args[2:])
 	case "new":
 		err = cmdNew(os.Args[2:])
+	case "review":
+		err = cmdCodeReview(os.Args[2:])
+	case "tests":
+		err = cmdTests(os.Args[2:])
+	case "changelog":
+		err = cmdChangelog(os.Args[2:])
 	case "guardian", "watch":
 		err = cmdGuardian(os.Args[2:])
 	case "usage":
