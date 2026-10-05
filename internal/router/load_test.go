@@ -29,12 +29,8 @@ func TestLoad(t *testing.T) {
 	steady := &fake{id: "b", model: "m2", quality: 0.8, limits: catalogue.Limits{RPM: 1 << 30}, handler: okJSON("b")}
 	rt := setup(t, flaky, steady)
 	rt.Breakers = breaker.New(1<<30, time.Second, time.Second) // keep both in play: this measures the router, not the breaker
-	const total, workers = 3000, 200
-	// Real providers speak HTTP/2 (one connection for all requests); the
-	// test servers speak HTTP/1.1, so keep their connections for reuse.
-	tr := rt.Client.HTTP.Transport.(*http.Transport).Clone()
-	tr.MaxIdleConnsPerHost = workers
-	rt.Client.HTTP = &http.Client{Transport: tr}
+	const total, workers = 3000, 300
+
 	var failed atomic.Int64
 	jobs := make(chan int)
 	var wg sync.WaitGroup

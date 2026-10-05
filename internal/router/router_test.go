@@ -89,7 +89,8 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 	store := memStore{}
 	for _, f := range fakes {
 		f := f
-		f.srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// HTTP/2, as real providers speak: all requests share one connection.
+		f.srv = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			f.calls.Add(1)
 			if r.Header.Get("Authorization") != "Bearer key-"+f.id {
 				http.Error(w, "bad key", 401)
@@ -97,6 +98,8 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 			}
 			f.handler(w, r)
 		}))
+		f.srv.EnableHTTP2 = true
+		f.srv.StartTLS()
 		t.Cleanup(f.srv.Close)
 		speed := f.speed
 		if speed == 0 {
