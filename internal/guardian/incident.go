@@ -18,8 +18,9 @@ import (
 // approval, production, QA again.
 type Incident struct {
 	ID      string    `json:"id"`
-	Kind    string    `json:"kind"`  // fix or change
-	Check   string    `json:"check"` // the failed check, or "change"
+	Kind    string    `json:"kind"`             // fix or change
+	Manual  bool      `json:"manual,omitempty"` // the owner wrote it (mangoman code); Guardian only steps in if QA fails
+	Check   string    `json:"check"`            // the failed check, or "change"
 	Problem string    `json:"problem"`
 	Cause   string    `json:"cause,omitempty"`
 	Opened  time.Time `json:"opened"`
@@ -127,7 +128,10 @@ func (g *Guardian) add(inc Incident) string {
 		}
 	}
 	inc.ID = inc.Opened.Format("0102-150405") + "-" + slug(inc.Check)
-	inc.Status, inc.Branch = "queued", "guardian/"+inc.ID
+	inc.Status = "queued"
+	if inc.Branch == "" {
+		inc.Branch = "guardian/" + inc.ID
+	}
 	m[inc.ID] = &inc
 	if g.store(m) != nil {
 		return ""

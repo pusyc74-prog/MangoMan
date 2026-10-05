@@ -113,10 +113,13 @@ func (g *Guardian) Work(ctx context.Context, id string) error {
 	for inc.Round < maxRounds {
 		inc, _ = g.update(id, func(i *Incident) { i.Round++ })
 		g.logf("%s: round %d", id, inc.Round)
-		if err := g.Agent(ctx, inc.Work, workPrompt(inc)); err != nil && ctx.Err() != nil {
-			return ctx.Err()
+		summary := inc.Summary
+		if !inc.Manual || inc.Round > 1 { // the owner's own code goes to QA as written first
+			if err := g.Agent(ctx, inc.Work, workPrompt(inc)); err != nil && ctx.Err() != nil {
+				return ctx.Err()
+			}
+			summary = readAndRemove(filepath.Join(inc.Work, "GUARDIAN_FIX.md"))
 		}
-		summary := readAndRemove(filepath.Join(inc.Work, "GUARDIAN_FIX.md"))
 		commit(inc.Work, "Guardian: "+cut(inc.Problem, 60))
 		if err := g.Agent(ctx, inc.Work, testPrompt(inc, summary)); err != nil && ctx.Err() != nil {
 			return ctx.Err()
@@ -291,15 +294,24 @@ func (g *Guardian) Approve(ctx context.Context, id string) error {
 		_, _ = shell(ctx, g.Cfg.Repo, g.Cfg.Prod.Rollback)
 	}
 	_, _ = git(g.Cfg.Repo, "revert", "-m", "1", "--no-edit", "HEAD")
-	// Dev goes back to production's code. The change starts again on a new
-	// branch: one that was merged and reverted would not merge again.
+	// Dev goes back to production's code. The work moves to a new branch as
+	// fresh copies of its commits: a branch that was merged and reverted
+	// would not merge again.
 	_, _ = git(g.devDir(), "reset", "-q", "--hard", inc.DevBefore)
 	_ = g.sync()
 	_, _ = g.deployDev(ctx)
+	branch := "guardian/" + id + "-" + time.Now().Format("150405")
+	work := filepath.Join(g.Root, slug(branch))
+	if _, err := git(g.Cfg.Repo, "worktree", "add", "-b", branch, work, devBranch); err != nil {
+		work = ""
+	} else if commits, _ := git(g.Cfg.Repo, "rev-list", "--reverse", "--no-merges", inc.DevBefore+".."+inc.Branch); commits != "" {
+		if _, err := git(work, append([]string{"cherry-pick"}, strings.Fields(commits)...)...); err != nil {
+			_, _ = git(work, "cherry-pick", "--abort") // start from dev's code instead
+		}
+	}
 	g.cleanup(inc)
 	g.update(id, func(i *Incident) {
-		i.Status, i.QA, i.Work = "queued", report, ""
-		i.Branch = "guardian/" + id + "-" + time.Now().Format("150405")
+		i.Status, i.QA, i.Work, i.Branch, i.Manual = "queued", report, work, branch, false
 		i.Note = "failed QA in production and was rolled back"
 	})
 	g.notify(fmt.Sprintf("%s: %s failed QA in production and was rolled back. Guardian will work on it again.", g.Cfg.App, id))

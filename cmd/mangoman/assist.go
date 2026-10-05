@@ -211,6 +211,20 @@ func cmdCode(args []string) error {
 
 	cmd := exec.Command(oc, fs.Args()...)
 	cmd.Stdin, cmd.Stdout, cmd.Stderr, cmd.Env = os.Stdin, os.Stdout, os.Stderr, env
+	// In a project Guardian looks after, your coding happens in a copy made
+	// from dev, never in production's code; ship it when it is ready.
+	if _, err := os.Stat("guardian.json"); err == nil && fs.Arg(0) != "run" {
+		g, err := loadGuardian("guardian.json")
+		if err != nil {
+			return err
+		}
+		dir, branch, err := g.Workspace(context.Background())
+		if err != nil {
+			return fmt.Errorf("could not make your workspace from dev: %w", err)
+		}
+		cmd.Dir = dir
+		fmt.Printf("Working in a copy of dev on branch %s.\nWhen it is ready: mangoman guardian ship (QA tests it in dev, then you approve it for production).\n", branch)
+	}
 	// Ctrl-C belongs to OpenCode while it runs. A terminate or hang-up
 	// (closing the terminal) is passed on, so OpenCode ends and the router
 	// started above is stopped by the deferred cleanup instead of lingering.

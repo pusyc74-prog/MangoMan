@@ -83,7 +83,7 @@ func TestGuardianWatchesFixesAndReports(t *testing.T) {
 
 func TestLoadRejectsBadChecks(t *testing.T) {
 	dir := t.TempDir()
-	for _, bad := range []string{`{"checks":[]}`, `{"checks":[{"name":"x"}]}`, `{"checks":[{"name":"x","url":"u","log":"l"}]}`, `{"checks":[{"name":"x","log":"l","pattern":"("}]}`} {
+	for _, bad := range []string{`{"checks":[]}`, `{"checks":[],"reports":["8am"],"repo":"."}`, `{"checks":[{"name":"x"}]}`, `{"checks":[{"name":"x","url":"u","log":"l"}]}`, `{"checks":[{"name":"x","log":"l","pattern":"("}]}`} {
 		p := filepath.Join(dir, "g.json")
 		os.WriteFile(p, []byte(bad), 0o644)
 		if _, err := Load(p); err == nil {
@@ -334,5 +334,40 @@ func TestNightlyDataCopyIsMasked(t *testing.T) {
 	got := read(t, filepath.Join(g.devDir(), "imported.sql"))
 	if !strings.Contains(got, "(7, 'user1@example.com')") || strings.Contains(got, "asha") {
 		t.Fatalf("dev got %q", got)
+	}
+}
+
+func TestOwnersWorkspaceShips(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses sh and make")
+	}
+	ctx := context.Background()
+	repo := gitRepo(t)
+	var fixes atomic.Int32
+	g := &Guardian{Cfg: &Config{App: "shop", Repo: repo}, Dir: t.TempDir(), Root: t.TempDir(), Agent: fakeAgent(&fixes, true)}
+	if _, err := g.Ship(""); err == nil {
+		t.Fatal("nothing to ship yet")
+	}
+	ws, _, err := g.Workspace(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again, _, _ := g.Workspace(ctx); again != ws {
+		t.Fatal("the same workspace until it ships")
+	}
+	os.WriteFile(filepath.Join(ws, "app.txt"), []byte("fixed by the owner\n"), 0o644)
+	id, err := g.Ship("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := g.Work(ctx, id); err != nil {
+		t.Fatal(err)
+	}
+	inc := g.Incidents()[0]
+	if inc.Status != "ready" || fixes.Load() != 0 || !strings.Contains(inc.Problem, "Owner's changes") {
+		t.Fatalf("the owner's code goes to QA as written: %+v (Guardian fixes %d)", inc, fixes.Load())
+	}
+	if read(t, filepath.Join(g.devDir(), "app.txt")) != "fixed by the owner\n" || read(t, filepath.Join(repo, "app.txt")) != "broken\n" {
+		t.Fatal("the owner's change should be in dev only")
 	}
 }

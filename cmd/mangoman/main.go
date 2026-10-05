@@ -57,6 +57,7 @@ Usage:
   mangoman models               list the free model catalogue with data policies
   mangoman test [prompt]        send a test request through the running router
   mangoman doctor [flags]       live-check every connected provider and model
+  mangoman new NAME             start an app with a development environment from day 1
   mangoman qa [DIR] [--url URL] test a project: its tests, and its web app in a browser
   mangoman guardian [init|setup|run|change|approve]  dev next to production; watch, fix, test, ask, deploy
   mangoman usage [--days N]     summarise requests, failovers and tokens
@@ -111,6 +112,8 @@ func main() {
 		err = cmdDoctor(os.Args[2:])
 	case "qa":
 		err = cmdQA(os.Args[2:])
+	case "new":
+		err = cmdNew(os.Args[2:])
 	case "guardian", "watch":
 		err = cmdGuardian(os.Args[2:])
 	case "usage":

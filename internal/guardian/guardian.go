@@ -80,8 +80,8 @@ func Load(path string) (*Config, error) {
 	if err := json.Unmarshal(b, &c); err != nil {
 		return nil, fmt.Errorf("%s: %v", path, err)
 	}
-	if len(c.Checks) == 0 {
-		return nil, fmt.Errorf("%s has no checks", path)
+	if len(c.Checks) == 0 && c.Repo == "" {
+		return nil, fmt.Errorf("%s has no checks and no repo", path)
 	}
 	for _, k := range c.Checks {
 		n := 0
