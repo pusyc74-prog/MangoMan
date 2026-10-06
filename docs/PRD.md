@@ -1,6 +1,6 @@
 # MangoMan: Technical PRD
 
-Oct 6, 2026 · @Denis
+Oct 6, 2026 · MANGO
 
 MangoMan is a free, local-first AI router that pools every free model a builder can reach, switches automatically when one runs dry, and never holds their keys or sees their prompts.
 
