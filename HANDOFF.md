@@ -60,8 +60,16 @@ a QA agent, and **Guardian**, the self-healing system.
   tested changes, after the owner approves on Telegram.
 - **Data sharing is a deliberate call:** the free-model training notice
   lives only in PRIVACY.md, with no accept switch.
-- **Not yet answered (ask the owner once, then record here):** timeline,
-  money situation, and what success means to them personally. Never guess.
+- **Timeline:** MangoMan ready by the end of the week of 12 Oct 2026 (about
+  16 Oct). Put what gets it into real users' hands fastest first. Cut or
+  postpone everything else.
+- **Money:** the only budget is the Claude subscription. No paid services,
+  hosting, APIs or tools. Everything runs on free tiers (free model keys,
+  GitHub Actions, free hosting) or on the user's own machine. If something
+  would cost money, tell the owner first and give the free option.
+- **Success, two goals:** (1) 10,000 people using free AI through MangoMan;
+  (2) creators earning money from their agents on the marketplace. Judge
+  every idea by whether it moves toward one of these two.
 
 ## Parked: do not reopen on your own
 
