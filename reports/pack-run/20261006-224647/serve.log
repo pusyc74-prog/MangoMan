@@ -1,0 +1,57 @@
+mangoman 2026/10/06 21:42:21 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 21:42:21 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 21:43:15 req=add461fd8683 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 21:45:24 req=9b143d47483f attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 21:47:24 req=9b143d47483f attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 21:50:27 req=e61c4b4828c0 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 21:52:21 req=e61c4b4828c0 attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 21:52:21 stopped
+mangoman 2026/10/06 21:52:21 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 21:52:21 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 21:53:27 req=31c19fee1989 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 21:55:09 req=118786b17495 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/06 21:57:17 req=69489c8b6dfb attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/06 22:00:17 req=78d1801c80a0 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 22:02:17 req=78d1801c80a0 attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 22:02:21 req=626245cb6f77 attempt=1 nvidia/kimi-k3 -> client_gone (0) 
+mangoman 2026/10/06 22:02:21 stopped
+mangoman 2026/10/06 22:02:21 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 22:02:21 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 22:04:55 req=7598bbf7e423 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 22:05:24 req=c431edb4e043 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 22:07:24 req=c431edb4e043 attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 22:10:26 req=e4ec3d55cf1c attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 22:12:21 req=e4ec3d55cf1c attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 22:12:21 stopped
+mangoman 2026/10/06 22:12:22 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 22:12:22 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 22:13:08 req=9d24ba0a8b4f attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 22:15:24 req=7228bf61b791 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 22:17:24 req=7228bf61b791 attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 22:19:55 req=35a52547fae2 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/06 22:22:22 req=7b5666b04701 attempt=1 nvidia/kimi-k3 -> client_gone (0) 
+mangoman 2026/10/06 22:22:22 stopped
+mangoman 2026/10/06 22:22:22 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 22:22:22 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 22:24:50 req=9cec7108ddcb attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 22:25:25 req=18d490345267 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 22:27:25 req=18d490345267 attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 22:30:27 req=5974d1804dcc attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 22:32:22 req=5974d1804dcc attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 22:32:22 stopped
+mangoman 2026/10/06 22:32:22 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 22:32:22 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 22:33:33 req=3d776c7b99d2 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 22:35:25 req=4beec9863f6f attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 22:35:27 req=4beec9863f6f attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 22:35:31 req=4a7da62a4319 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 22:36:46 req=37279e8692df attempt=1 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/06 22:36:46 stopped
+mangoman 2026/10/06 22:36:47 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 22:36:47 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 22:38:29 req=f0262ab20cfd attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 22:39:49 req=1680fa435c21 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 22:41:49 req=1680fa435c21 attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 22:44:51 req=180fed0f9a54 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 22:46:47 req=180fed0f9a54 attempt=2 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 22:46:47 stopped
