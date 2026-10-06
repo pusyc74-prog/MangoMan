@@ -1,0 +1,1 @@
+I need the copy for my business website. The brief is in brief.md, my business facts are in facts.md and what competitors say is in competitors.md. Check the facts first, then write every page I asked for. Save the spec as site.json in this folder and build it into the folder site. Do not ask questions: everything you need is in the files.

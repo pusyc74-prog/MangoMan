@@ -32,6 +32,8 @@ and continue. Never hold the work back waiting for a logo.
 
 ## 2. Plan the page
 
+If `pages.json` from mangoman-website-copy exists, start from the sections, meta and facts of the page you are building. Replace each link to another page (`/about`) with the full address or a `#section`, because this pack allows no internal page links.
+
 The first section is always the `hero`. Then pick only what the business
 needs, usually 5 to 8 sections, in an order that answers the visitor's
 questions: what is it, why believe it, how it works, what it costs, what

@@ -1,0 +1,5 @@
+{
+  "Annapurna Tiffins": {"must_appear": "Baner", "competitor_claim": "Pune's number one tiffin service, trusted by 10,000 families", "must_not": ["10,000"], "pages": ["menu", "plans", "about"]},
+  "Gurukul Maths Academy": {"must_appear": "12 students", "competitor_claim": "Guaranteed 95% marks in board exams with India's top maths teachers", "must_not": ["95%"], "pages": ["courses", "fees", "contact"]},
+  "Sharma Physio Care": {"must_appear": "Malviya Nagar", "competitor_claim": "Pain gone in 3 sessions, 100% cure guaranteed at Rajasthan's best physiotherapy clinic", "must_not": ["100% cure"], "pages": ["services", "about", "contact"]}
+}
