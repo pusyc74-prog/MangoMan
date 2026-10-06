@@ -555,19 +555,26 @@ Phase 1, the core router, is the product; later layers ship only after the gate 
 ```mermaid
 flowchart TB
   p0["Phase 0: Interviews<br/>Interviews with 15-20 builders before building<br/>If they rarely hit free limits, lead with radar and bad-answer failover"]
-  g0{"Gate: criteria not in this copy of the PRD"}
+  g0{"Gate 0 to 1: 15+ interviewed, 8+ hit free limits weekly, 5+ would install"}
   p1["Phase 1: Core router<br/>Router, failover, quotas, radar, key health, MCP assist, dashboard, CLI<br/>M1 to M4 built by Oct 2, 2026; live beta with real users is next"]
   g1{"Gate: conformance suite passes, Phase 1 metrics met"}
   p2["Phase 2: Tool suite<br/>Multi-model answers, fit-to-model, quota forecast, personal evals<br/>Test generator, QA agent, code review, docs writer<br/>Data to dashboards and decks, document builds, network intelligence"]
-  g2{"Gate: criteria not in this copy of the PRD"}
+  g2{"Gate 2 to 3: Phase 1 metrics held 2 months, tools in weekly use, packs proven, sandbox reviewed"}
   p3["Phase 3: Agents and Guardian<br/>Agent marketplace, plug-in runtimes, own agent kit<br/>Guardian self-healing monitor (built; first real-model run pending)<br/>Web chat and model arena"]
-  g3{"Gate: criteria not in this copy of the PRD"}
+  g3{"Gate 3 to 4: 10+ paying subscribers, no incidents, teams asking, 2,000 weekly installs"}
   p4["Phase 4: Team and desktop<br/>Team mode, offline mode, non-developer desktop app<br/>Cloud mode, if at all (opt-in, split-key design)"]
   p0 --> g0 --> p1 --> g1 --> p2 --> g2 --> p3 --> g3 --> p4
   style p1 fill:#e3eefb,stroke:#2f6fd6,stroke-width:2px
 ```
 
 Phases are not drawn to scale; a later phase ships only after the gate before it is met.
+
+| Gate | Criteria |
+| --- | --- |
+| Gate 0 to 1 | At least 15 builders interviewed. At least 8 hit a free-tier limit weekly or more. At least 5 would install a router that fixes it. If fewer than 8 hit limits, Phase 1 leads with radar and bad-answer failover. |
+| Gate 1 to 2 | Conformance suite passes and Phase 1 metrics are met. |
+| Gate 2 to 3 | Phase 1 metrics held 2 months in a row. At least 3 tools used weekly by 20% or more of active installs. All 17 free packs pass the sample checks and score 85+ on real-model runs. Guardian's first real-model run completes with no unsafe action. Signing and sandbox reviewed by someone outside the team. |
+| Gate 3 to 4 | At least 10 paying agent subscribers and 3 outside developers with a live agent. No key or sandbox incidents. Agent refund rate under 5%. At least 5 teams ask for shared quotas (a waitlist counts). 2,000 weekly active installs. |
 
 If Phase 0 interviews show builders rarely hit free limits, Phase 1 leads with the radar, data-policy filters and bad-answer failover rather than pooling.
 
@@ -581,6 +588,7 @@ Phase 1 milestones M1 to M4, decision brain v1 and all 17 skill packs (waves 1 t
 
 | Date | Item | What changed |
 | --- | --- | --- |
+| 2026-10-06 | Roadmap gate criteria approved | Gate 0 to 1: 15+ builders interviewed, 8+ hit free limits weekly, 5+ would install. Gate 2 to 3: Phase 1 metrics held 2 months in a row, 3 tools used weekly by 20%+ of active installs, 17 packs score 85+ on real models, Guardian's first real-model run safe, outside review of signing and sandbox. Gate 3 to 4: 10+ paying agent subscribers and 3 outside developers live, 0 key or sandbox incidents, refunds under 5%, 5+ teams ask for shared quotas, 2,000 weekly active installs. |
 | 2026-10-06 | Skill packs wave 5: website copy | New pack mangoman-website-copy: brief, a stop-and-ask gate (brief_gate.py stops when the facts are too thin, even if the user says to just do it), competitor research, messaging plan, sitemap, copy per page, at most 2 rounds of self-critique. Builds Markdown per page, pages.csv for a CMS, sitemap.md and pages.json for the landing page pack. Checks that every number is in the user's facts, no five-word run is copied from a competitor, no placeholders, cliches or risky claims, voice rules hold, each page has its keyword, a button and a link in, titles and descriptions are unique, and sentences are short. Three test cases, each with one competitor claim that must not be copied and one fact that must appear (kept in tests/expect.json, outside the case folder). A short-step (STE) version of the instructions sits in tests/ste to be scored against the current one when the keys exist. The landing page pack starts from pages.json when it exists. 17 packs in total |
 | 2026-10-06 | Diagrams redrawn; PRD kept in two places | System architecture and roadmap diagrams redrawn in the Claude Docs PRD (drawings) and in docs/PRD.md (Mermaid). The roadmap shows criteria only for the Phase 1 gate (conformance suite passes, Phase 1 metrics met); the other three gates say their criteria are not in this copy, to be confirmed. Decided: every PRD change is made in the Claude Docs PRD and in docs/PRD.md in the same step. The Claude Docs PRD was created in this account from the repository copy. |
 | 2026-10-06 | Handoff, PRD copy, decisions | HANDOFF.md and docs/PRD.md added to the repo for continuing in a new account. Decided: prompting keeps our structure, scripts and checkers; STE-style wording (one action per line, imperative, under 20 words, fixed terms) is a possible improvement, to be proven with the eval harness. Next build candidate: a website copy skill pack (brief, competitor research, messaging plan, sitemap, copy per page in one voice, self-critique and rewrite, checks for cliches, reading level, claims and SEO fields). Guardian marked built in the feature tables. Project B (superagents) is separate and not part of MangoMan. |
