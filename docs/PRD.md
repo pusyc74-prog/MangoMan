@@ -307,9 +307,32 @@ Rendered files are kept 90 days and rebuilt from their recipe after that. Rough 
 
 Everything that touches keys or prompts runs on the user's machine; our cloud only publishes data and receives opt-in outcome counts.
 
-&#91;embedded content: system architecture · local router, providers, our cloud\]
+```mermaid
+flowchart TB
+  subgraph machine["On your machine"]
+    tools["Your tools<br/>Claude Code, Codex, Cursor, OpenCode,<br/>any OpenAI or Anthropic client"]
+    ollama["Ollama<br/>Local models as the unlimited backstop"]
+    router["MangoMan router on 127.0.0.1<br/>Classify, filter, rank, quality guard, failover<br/>Quota tracker, SQLite history, keys in the OS keychain<br/>Dashboard and MCP server built in"]
+    tools -->|local endpoint| router
+    router --> ollama
+  end
+  subgraph providers["Free providers"]
+    groq[Groq]
+    cerebras[Cerebras]
+    nvidia[NVIDIA]
+    openrouter[OpenRouter]
+    zen[OpenCode Zen]
+  end
+  subgraph cloud["Our cloud: publishes data, receives counts"]
+    catalogue["Signed catalogue<br/>Free models, real limits, data policy<br/>Data only, never code"]
+    counts["Opt-in outcome counts<br/>Provider, model, outcome, latency bucket<br/>Never prompts, outputs or keys"]
+  end
+  router -->|prompts and keys go direct| providers
+  catalogue -->|signed catalogue, data only| router
+  router -->|opt-in counts, no content| counts
+```
 
-Only two things cross to our cloud: the signed catalogue (down) and opt-in outcome counts with no content (up). Prompts and keys go straight from the user's machine to each provider.
+Only two things cross to our cloud: the signed catalogue (down) and opt-in outcome counts with no content (up). Prompts and keys go straight from the user's machine to each provider. The router is the only box that holds keys and sees prompts.
 
 ## Routing engine
 
@@ -529,7 +552,22 @@ The client is a single signed Go binary with few dependencies; our cloud is a th
 
 Phase 1, the core router, is the product; later layers ship only after the gate before them is met. Timings are tentative and assume a 3-4 person team. Status: Phase 1 milestones M1 to M4 were built by October 2, 2026 (see Build status below); live beta testing with real users is the next step toward the Phase 1 gate.
 
-&#91;embedded content: roadmap · 5 phases, 4 gates\]
+```mermaid
+flowchart TB
+  p0["Phase 0: Interviews<br/>Interviews with 15-20 builders before building<br/>If they rarely hit free limits, lead with radar and bad-answer failover"]
+  g0{"Gate: criteria not in this copy of the PRD"}
+  p1["Phase 1: Core router<br/>Router, failover, quotas, radar, key health, MCP assist, dashboard, CLI<br/>M1 to M4 built by Oct 2, 2026; live beta with real users is next"]
+  g1{"Gate: conformance suite passes, Phase 1 metrics met"}
+  p2["Phase 2: Tool suite<br/>Multi-model answers, fit-to-model, quota forecast, personal evals<br/>Test generator, QA agent, code review, docs writer<br/>Data to dashboards and decks, document builds, network intelligence"]
+  g2{"Gate: criteria not in this copy of the PRD"}
+  p3["Phase 3: Agents and Guardian<br/>Agent marketplace, plug-in runtimes, own agent kit<br/>Guardian self-healing monitor (built; first real-model run pending)<br/>Web chat and model arena"]
+  g3{"Gate: criteria not in this copy of the PRD"}
+  p4["Phase 4: Team and desktop<br/>Team mode, offline mode, non-developer desktop app<br/>Cloud mode, if at all (opt-in, split-key design)"]
+  p0 --> g0 --> p1 --> g1 --> p2 --> g2 --> p3 --> g3 --> p4
+  style p1 fill:#e3eefb,stroke:#2f6fd6,stroke-width:2px
+```
+
+Phases are not drawn to scale; a later phase ships only after the gate before it is met.
 
 If Phase 0 interviews show builders rarely hit free limits, Phase 1 leads with the radar, data-policy filters and bad-answer failover rather than pooling.
 
@@ -543,6 +581,7 @@ Phase 1 milestones M1 to M4, decision brain v1 and all 16 skill packs (waves 1 t
 
 | Date | Item | What changed |
 | --- | --- | --- |
+| 2026-10-06 | Diagrams redrawn; PRD kept in two places | System architecture and roadmap diagrams redrawn in the Claude Docs PRD (drawings) and in docs/PRD.md (Mermaid). The roadmap shows criteria only for the Phase 1 gate (conformance suite passes, Phase 1 metrics met); the other three gates say their criteria are not in this copy, to be confirmed. Decided: every PRD change is made in the Claude Docs PRD and in docs/PRD.md in the same step. The Claude Docs PRD was created in this account from the repository copy. |
 | 2026-10-06 | Handoff, PRD copy, decisions | HANDOFF.md and docs/PRD.md added to the repo for continuing in a new account. Decided: prompting keeps our structure, scripts and checkers; STE-style wording (one action per line, imperative, under 20 words, fixed terms) is a possible improvement, to be proven with the eval harness. Next build candidate: a website copy skill pack (brief, competitor research, messaging plan, sitemap, copy per page in one voice, self-critique and rewrite, checks for cliches, reading level, claims and SEO fields). Guardian marked built in the feature tables. Project B (superagents) is separate and not part of MangoMan. |
 | 2026-10-05 | Pending list built (23810f0, 85be424, f7341a7, 84a91f9) | Owner's coding through dev: mangoman code in a Guardian project opens a workspace (branch from dev); mangoman guardian ship queues it (QA tests, dev, approval; Guardian rewrites only if QA fails). mangoman new NAME starts an app with git, guardian.json and the dev branch from day 1. Production rollback keeps the work (commits copied to a fresh branch). Guardian: a fix's tests must fail on the code from before the fix; optional version address per environment checks the commit really deployed; deploy previews read from output (Vercel, Netlify; init detects netlify.toml); nightly masking also for JSON, JSON lines and CSV; dashboard Guardian section with Approve and Reject (registered projects only, rows stack on phones). Agents (P2): internal/review scan on every change before dev (secrets block; risky code and new dependencies flagged); mangoman review (scan plus model bug review), mangoman tests (QA agent writes tests, runs them), mangoman changelog (plain release notes into CHANGELOG.md). Load test (3,000 requests, 300 at once, one provider failing 1 in 10: 688/s, 0 failed) runs with every test run. The six screenshot issues were already fixed in the earlier sweep. Still open: measuring quality after a mid-task model switch (needs real model keys); removing the dashboard training labels (owner's call). |
 | 2026-10-04 | Permanent development environment (e03cd78) | Decided with the owner: every app gets a dev environment from day 1, running next to production all the time with the same code; own server or VPS: the same server at dev.yoursite.com; production data copied to dev every night with personal details masked; the owner's own changes take the same path as Guardian's fixes. Built: dev branch from the production branch in its own folder, deployed with dev.deploy (Vercel preview, second Docker copy, or own-server script). Each run merges production's new commits into dev and reports drift. Fixes and owner changes (guardian change, or a Telegram message confirmed with a button) are written on their own branch, get tests from the QA agent, are merged into dev, deployed and QA-tested there with no approval, and taken out again on failure; dev holds one change at a time, the rest queue. Approval merges dev into production, deploys and tests; on failure rollback, revert, dev reset, queued again. Nightly masked data copy: data.export SQL dump (pg\_dump --column-inserts, MySQL, SQLite) masked by column name (name, email, phone, address, Aadhaar, PAN, birth date) and by pattern inside text values, then data.import into dev's own database. Temporary per-fix copies removed. Not built yet: masking for non-SQL data; checking the deployed version (only code parity is checked); dashboard approvals. |
