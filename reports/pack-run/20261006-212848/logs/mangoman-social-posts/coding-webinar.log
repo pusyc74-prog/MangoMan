@@ -1,0 +1,18 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m
+[0m$ [0mls -la /tmp/tmp.0zZCpatgr9/run/mangoman-social-posts/coding-webinar
+total 20
+drwxr-xr-x 2 runner runner 4096 Oct  6 21:13 .
+drwxr-xr-x 3 runner runner 4096 Oct  6 21:13 ..
+-rw-r--r-- 1 runner runner 1556 Oct  6 21:13 brief.md
+-rw-r--r-- 1 runner runner  215 Oct  6 21:13 prompt.txt
+-rw-r--r-- 1 runner runner  418 Oct  6 21:14 run.log
+[0m
+[0m→ [0mRead prompt.txt
+[0m→ [0mSkill "mangoman-social-posts"
+[91m[1mError: [0m{"message":"upstream stream failed: context canceled","type":"upstream_stream_error"}

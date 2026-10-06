@@ -1,0 +1,470 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-website-copy"
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/tests/ste/scripts/brief_gate.py /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/facts.md --pages 4
+python3: can't open file '/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/tests/ste/scripts/brief_gate.py': [Errno 2] No such file or directory
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/tests/ste/scripts/
+ls: cannot access '/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/tests/ste/scripts/': No such file or directory
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/
+total 28
+drwxr-xr-x  4 runner runner 4096 Oct  6 21:18 .
+drwxr-xr-x 19 runner runner 4096 Oct  6 21:18 ..
+-rw-r--r--  1 runner runner    4 Oct  6 21:18 .mangoman-pack
+-rw-r--r--  1 runner runner 6190 Oct  6 21:18 SKILL.md
+drwxr-xr-x  2 runner runner 4096 Oct  6 21:18 scripts
+drwxr-xr-x  4 runner runner 4096 Oct  6 21:18 tests
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/
+total 80
+drwxr-xr-x 2 runner runner  4096 Oct  6 21:18 .
+drwxr-xr-x 4 runner runner  4096 Oct  6 21:18 ..
+-rwxr-xr-x 1 runner runner 11509 Oct  6 21:18 brandkit.py
+-rwxr-xr-x 1 runner runner  1979 Oct  6 21:18 brief_gate.py
+-rwxr-xr-x 1 runner runner  7372 Oct  6 21:18 build_copy.py
+-rwxr-xr-x 1 runner runner  6826 Oct  6 21:18 check_copy.py
+-rwxr-xr-x 1 runner runner  2452 Oct  6 21:18 checks.py
+-rwxr-xr-x 1 runner runner  8276 Oct  6 21:18 render.py
+-rwxr-xr-x 1 runner runner  2326 Oct  6 21:18 tracenum.py
+-rwxr-xr-x 1 runner runner 18954 Oct  6 21:18 vizlib.py
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/brief_gate.py /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/facts.md --pages 4
+PASS  15 facts for 4 pages
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/SKILL.md
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json --out /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site
+Built 4 pages into /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site
+PASS  spec is valid
+PASS  all output files exist
+FAIL  numbers not in the facts: 12; 240; 26; 3,200; 3200
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 8.6 words
+FAIL  keyword missing: about: keyword 'about Annapurna Tiffins' in neither title nor h1; home: keyword 'home-style tiffin delivery Pune' in neither title nor h1; menu: keyword 'tiffin contents Pune' in neither title nor h1; plans: keyword 'weekly tiffin plan price' in neither title nor h1
+WARN  search fit: about: description is 168 characters (70 to 160); about: keyword not in the description; about: keyword not in the first 100 words; home: description is 173 characters (70 to 160); home: keyword not in the description; home: keyword not in the first 100 words; home: title is 65 characters (30 to 60); menu: description is 172 characters (70 to 160)
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+WARN  pages nobody links to: about; menu; plans
+WARN  sentences repeated across pages: Start Weekly Plan on WhatsApp; ₹ for weekly plan (6 lunches)
+PASS  no thin pages
+[0m
+[0m$ [0mgrep -n "12" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+26:        "description": "Fresh vegetarian tiffins with 4 rotis, sabzi, dal, rice & Sunday sweet. Delivered 12-1 PM in Baner, Aundh, Balewadi, Pashan. Weekly plan Rs 780. Start your plan on WhatsApp."
+46:          "body": ["Annapurna Tiffins cooks home-style vegetarian tiffins in a kitchen in Baner, Pune. We deliver to Baner, Aundh, Balewadi and Pashan. Lunch reaches your door between 12:00 and 1:00 pm, with orders for the next day closing at 8 pm."]
+111:            {"title": "Fresh Daily", "text": "Lunch prepared fresh and delivered between 12:00-1:00 pm"},
+142:        "description": "Weekly plan: 6 lunches for Rs 780. Monthly plan: 26 lunches for Rs 3,200. Pay by UPI, pause free with 1 day notice. Fresh tiffins delivered 12-1 PM daily."
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -21,19 +21,19 @@
+ "name": "Home",
+ "goal": "Introduce the service and encourage starting a weekly plan",
+ "keyword": "home-style tiffin delivery Pune",
+ "meta": {
+-  "title": "Annapurna Tiffins | Home-Style Vegetarian Tiffin Delivery in Pune",
+-  "description": "Fresh vegetarian tiffins with 4 rotis, sabzi, dal, rice & Sunday sweet. Delivered 12-1 PM in Baner, Aundh, Balewadi, Pashan. Weekly plan Rs 780. Start your plan on WhatsApp."
++  "title": "Home-Style Tiffin Delivery in Pune | Annapurna Tiffins",
++  "description": "Home-style vegetarian tiffin delivery in Pune. Fresh tiffins with 4 rotis, sabzi, dal, rice & Sunday sweet. Delivered between 12:00 and 1:00 pm. Weekly plan Rs 780."
+ },
+ "cta": {
+   "label": "Start Weekly Plan on WhatsApp",
+   "href": "https://wa.me/919876543210"
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Home-Style Tiffins Delivered Fresh Daily in Pune",
++    "headline": "Home-Style Tiffin Delivery in Pune",
+     "sub": "Vegetarian lunch with 4 rotis, sabzi, dal, rice & Sunday sweet",
+     "proof": "Made in Baner kitchen since 2019",
+     "cta": {
+       "label": "Start Weekly Plan on WhatsApp",
+@@ -42,9 +42,9 @@
+   },
+   {
+     "type": "text",
+     "headline": "About Our Service",
+-    "body": ["Annapurna Tiffins cooks home-style vegetarian tiffins in a kitchen in Baner, Pune. We deliver to Baner, Aundh, Balewadi and Pashan. Lunch reaches your door between 12:00 and 1:00 pm, with orders for the next day closing at 8 pm."]
++    "body": ["Annapurna Tiffins cooks home-style vegetarian tiffins in a kitchen in Baner, Pune. We deliver to Baner, Aundh, Balewadi and Pashan. Lunch reaches your door between 12:00 and 1:00 pm, with orders for the next day closing at 8 pm. Try our weekly plan for just Rs 780."]
+   },
+   {
+     "type": "features",
+     "headline": "What's in Your Tiffin",
+@@ -79,19 +79,19 @@
+ "name": "Menu",
+ "goal": "Show what's in the tiffins",
+ "keyword": "tiffin contents Pune",
+ "meta": {
+-  "title": "Annapurna Tiffins | What's in Our Daily Tiffin Lunch",
+-  "description": "Each tiffin contains 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays. Menu changes daily, posted on WhatsApp at 9 pm. Jain meals available same price."
++  "title": "Tiffin Contents | Annapurna Tiffins",
++  "description": "See what's in our daily tiffin: 4 rotis, sabzi, dal, rice & Sunday sweet. Menu changes daily, posted on WhatsApp at 9 pm. Jain meals available. Lunch delivered between 12:00 and 1:00 pm."
+ },
+ "cta": {
+   "label": "Start Weekly Plan on WhatsApp",
+   "href": "https://wa.me/919876543210"
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Fresh Vegetarian Tiffins Made Daily",
++    "headline": "Tiffin Contents",
+     "sub": "With 4 rotis, sabzi, dal, rice and Sunday sweet",
+     "proof": "Menu changes every day, posted on WhatsApp at 9 pm",
+     "cta": {
+       "label": "Start Weekly Plan on WhatsApp",
+@@ -100,16 +100,16 @@
+   },
+   {
+     "type": "text",
+     "headline": "Our Daily Tiffin",
+-    "body": ["Each Annapurna Tiffin contains 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays only. We use cold-pressed groundnut oil and never add ajinomoto. The menu varies daily to provide balanced, home-style nutrition."]
++    "body": ["Each Annapurna Tiffin contains 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays only. We use cold-pressed groundnut oil and never add ajinomoto. The menu varies daily to provide balanced, home-style nutrition. Lunch reaches you between 12:00 and 1:00 pm."]
+   },
+   {
+     "type": "features",
+     "headline": "What Makes Our Tiffins Special",
+     "items": [
+       {"title": "Home-Style Cooking", "text": "Prepared like a mother's kitchen in Baner, Pune"},
+-      {"title": "Fresh Daily", "text": "Lunch prepared fresh and delivered between 12:00-1:00 pm"},
++      {"title": "Fresh Daily", "text": "Lunch prepared fresh and delivered between 12:00 and 1:00 pm"},
+       {"title": "Jain Options", "text": "Jain meals available at the same price upon request"}
+     ]
+   },
+   {
+@@ -137,19 +137,19 @@
+ "name": "Plans",
+ "goal": "Show pricing and plan benefits",
+ "keyword": "weekly tiffin plan price",
+ "meta": {
+-  "title": "Annapurna Tiffins | Weekly & Monthly Tiffin Plans Pricing",
+-  "description": "Weekly plan: 6 lunches for Rs 780. Monthly plan: 26 lunches for Rs 3,200. Pay by UPI, pause free with 1 day notice. Fresh tiffins delivered 12-1 PM daily."
++  "title": "Weekly Tiffin Plan Pricing | Annapurna Tiffins",
++  "description": "Weekly tiffin plan pricing: 6 lunches for Rs 780, monthly for Rs 3,200. Pay by UPI, pause free with 1 day notice. Fresh tiffins delivered between 12:00 and 1:00 pm."
+ },
+ "cta": {
+   "label": "Start Weekly Plan on WhatsApp",
+   "href": "https://wa.me/919876543210"
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Affordable Weekly & Monthly Tiffin Plans",
++    "headline": "Weekly Tiffin Plan Pricing",
+     "sub": "Save with our tiffin subscription plans",
+     "proof": "Weekly plan: 6 lunches for Rs 780",
+     "cta": {
+       "label": "Start Weekly Plan on WhatsApp",
+@@ -158,9 +158,9 @@
+   },
+   {
+     "type": "text",
+     "headline": "Our Tiffin Plans",
+-    "body": ["Choose from our weekly or monthly tiffin plans. A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200. Pay by UPI at the start of your plan. Customers can pause a plan for free with 1 day notice."]
++    "body": ["Choose from our weekly or monthly tiffin plans. A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200. Pay by UPI at the start of your plan. Customers can pause a plan for free with 1 day notice. Lunch delivered between 12:00 and 1:00 pm."]
+   },
+   {
+     "type": "features",
+     "headline": "Plan Benefits",
+@@ -174,9 +174,9 @@
+     "type": "stats",
+     "headline": "Plan Pricing Details",
+     "items": [
+       {"value": "780", "label": "₹ for weekly plan (6 lunches)"},
+-      {"value": "3200", "label": "₹ for monthly plan (26 lunches)"},
++      {"value": "3,200", "label": "₹ for monthly plan (26 lunches)"},
+       {"value": "1", "label": "day notice to pause"}
+     ]
+   },
+   {
+@@ -195,19 +195,19 @@
+ "name": "About",
+ "goal": "Tell the founder story and build trust",
+ "keyword": "about Annapurna Tiffins",
+ "meta": {
+-  "title": "Annapurna Tiffins | About Our Home-Style Kitchen Story",
+-  "description": "Started by Savita Joshi in 2019 with 6 customers. Now delivering 240 tiffins daily from Baner, Pune. Home-style vegetarian tiffins with flexible plans and Jain options."
++  "title": "About Annapurna Tiffins | Our Story",
++  "description": "About Annapurna Tiffins: Started by Savita Joshi in 2019 with 6 customers. Now delivering 240 tiffins daily from Baner, Pune. Home-style vegetarian tiffins with flexible plans. Lunch delivered between 12:00 and 1:00 pm."
+ },
+ "cta": {
+   "label": "Start Weekly Plan on WhatsApp",
+   "href": "https://wa.me/919876543210"
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "The Story of Annapurna Tiffins",
++    "headline": "About Annapurna Tiffins",
+     "sub": "Started by Savita Joshi in 2019 with home-style cooking",
+     "proof": "From 6 customers to 240 tiffins daily",
+     "cta": {
+       "label": "Start Weekly Plan on WhatsApp",
+@@ -216,9 +216,9 @@
+   },
+   {
+     "type": "text",
+     "headline": "Our Journey",
+-    "body": ["Savita Joshi started Annapurna Tiffins in 2019 with just 6 customers in Baner, Pune. Today, we proudly send out about 240 tiffins every day to working professionals seeking home-style vegetarian meals. Our kitchen continues to follow the same principles of fresh, wholesome cooking that began with those first few customers."]
++    "body": ["Savita Joshi started Annapurna Tiffins in 2019 with just 6 customers in Baner, Pune. Today, we proudly send out about 240 tiffins every day to working professionals seeking home-style vegetarian meals. Our kitchen continues to follow the same principles of fresh, wholesome cooking that began with those first few customers. Lunch is delivered between 12:00 and 1:00 pm."]
+   },
+   {
+     "type": "features",
+     "headline": "Our Values",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json --out /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site
+Built 4 pages into /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site
+PASS  spec is valid
+PASS  all output files exist
+FAIL  numbers not in the facts: 12; 240; 26; 3,200
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 8.8 words
+FAIL  keyword missing: home: keyword 'home-style tiffin delivery Pune' in neither title nor h1; menu: keyword 'tiffin contents Pune' in neither title nor h1; plans: keyword 'weekly tiffin plan price' in neither title nor h1
+WARN  search fit: about: description is 219 characters (70 to 160); home: description is 164 characters (70 to 160); home: keyword not in the description; home: keyword not in the first 100 words; menu: description is 186 characters (70 to 160); menu: keyword not in the description; menu: keyword not in the first 100 words; plans: description is 164 characters (70 to 160)
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+WARN  pages nobody links to: about; menu; plans
+WARN  sentences repeated across pages: Start Weekly Plan on WhatsApp; ₹ for weekly plan (6 lunches)
+PASS  no thin pages
+[0m
+[0m$ [0mgrep -n "12" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+26:        "description": "Home-style vegetarian tiffin delivery in Pune. Fresh tiffins with 4 rotis, sabzi, dal, rice & Sunday sweet. Delivered between 12:00 and 1:00 pm. Weekly plan Rs 780."
+46:          "body": ["Annapurna Tiffins cooks home-style vegetarian tiffins in a kitchen in Baner, Pune. We deliver to Baner, Aundh, Balewadi and Pashan. Lunch reaches your door between 12:00 and 1:00 pm, with orders for the next day closing at 8 pm. Try our weekly plan for just Rs 780."]
+84:        "description": "See what's in our daily tiffin: 4 rotis, sabzi, dal, rice & Sunday sweet. Menu changes daily, posted on WhatsApp at 9 pm. Jain meals available. Lunch delivered between 12:00 and 1:00 pm."
+104:          "body": ["Each Annapurna Tiffin contains 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays only. We use cold-pressed groundnut oil and never add ajinomoto. The menu varies daily to provide balanced, home-style nutrition. Lunch reaches you between 12:00 and 1:00 pm."]
+111:            {"title": "Fresh Daily", "text": "Lunch prepared fresh and delivered between 12:00 and 1:00 pm"},
+142:        "description": "Weekly tiffin plan pricing: 6 lunches for Rs 780, monthly for Rs 3,200. Pay by UPI, pause free with 1 day notice. Fresh tiffins delivered between 12:00 and 1:00 pm."
+162:          "body": ["Choose from our weekly or monthly tiffin plans. A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200. Pay by UPI at the start of your plan. Customers can pause a plan for free with 1 day notice. Lunch delivered between 12:00 and 1:00 pm."]
+200:        "description": "About Annapurna Tiffins: Started by Savita Joshi in 2019 with 6 customers. Now delivering 240 tiffins daily from Baner, Pune. Home-style vegetarian tiffins with flexible plans. Lunch delivered between 12:00 and 1:00 pm."
+220:          "body": ["Savita Joshi started Annapurna Tiffins in 2019 with just 6 customers in Baner, Pune. Today, we proudly send out about 240 tiffins every day to working professionals seeking home-style vegetarian meals. Our kitchen continues to follow the same principles of fresh, wholesome cooking that began with those first few customers. Lunch is delivered between 12:00 and 1:00 pm."]
+[0m
+[0m$ [0mgrep -n "\b12\b" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/facts.md
+8:- Lunch reaches the door between 12:00 and 1:00 pm.
+[0m
+[0m$ [0mgrep -n "\b240\b" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/facts.md
+12:- Today we send out about 240 tiffins every day.
+[0m
+[0m$ [0mgrep -n "\b26\b" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/facts.md
+6:- A monthly plan of 26 lunches costs Rs 3,200.
+[0m
+[0m$ [0mgrep -n "\b3,200\b" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/facts.md
+6:- A monthly plan of 26 lunches costs Rs 3,200.
+[0m
+[0m$ [0mgrep -n "3,200" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+142:        "description": "Weekly tiffin plan pricing: 6 lunches for Rs 780, monthly for Rs 3,200. Pay by UPI, pause free with 1 day notice. Fresh tiffins delivered between 12:00 and 1:00 pm."
+162:          "body": ["Choose from our weekly or monthly tiffin plans. A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200. Pay by UPI at the start of your plan. Customers can pause a plan for free with 1 day notice. Lunch delivered between 12:00 and 1:00 pm."]
+178:            {"value": "3,200", "label": "₹ for monthly plan (26 lunches)"},
+[0m
+[0m$ [0mgrep -n "240" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+61:            {"value": "240", "label": "tiffins delivered daily"},
+200:        "description": "About Annapurna Tiffins: Started by Savita Joshi in 2019 with 6 customers. Now delivering 240 tiffins daily from Baner, Pune. Home-style vegetarian tiffins with flexible plans. Lunch delivered between 12:00 and 1:00 pm."
+211:          "proof": "From 6 customers to 240 tiffins daily",
+220:          "body": ["Savita Joshi started Annapurna Tiffins in 2019 with just 6 customers in Baner, Pune. Today, we proudly send out about 240 tiffins every day to working professionals seeking home-style vegetarian meals. Our kitchen continues to follow the same principles of fresh, wholesome cooking that began with those first few customers. Lunch is delivered between 12:00 and 1:00 pm."]
+237:            {"value": "240", "label": "tiffins delivered daily"}
+[0m
+[0m$ [0mgrep -n "26" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+162:          "body": ["Choose from our weekly or monthly tiffin plans. A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200. Pay by UPI at the start of your plan. Customers can pause a plan for free with 1 day notice. Lunch delivered between 12:00 and 1:00 pm."]
+178:            {"value": "3,200", "label": "₹ for monthly plan (26 lunches)"},
+[0m
+[0m$ [0mgrep -n "3,200" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+142:        "description": "Weekly tiffin plan pricing: 6 lunches for Rs 780, monthly for Rs 3,200. Pay by UPI, pause free with 1 day notice. Fresh tiffins delivered between 12:00 and 1:00 pm."
+162:          "body": ["Choose from our weekly or monthly tiffin plans. A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200. Pay by UPI at the start of your plan. Customers can pause a plan for free with 1 day notice. Lunch delivered between 12:00 and 1:00 pm."]
+178:            {"value": "3,200", "label": "₹ for monthly plan (26 lunches)"},
+[0m
+[0m$ [0mls -la /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site/
+total 36
+drwxr-xr-x 3 runner runner 4096 Oct  6 21:26 .
+drwxr-xr-x 3 runner runner 4096 Oct  6 21:26 ..
+drwxr-xr-x 2 runner runner 4096 Oct  6 21:26 copy
+-rw-r--r-- 1 runner runner 5249 Oct  6 21:27 pages.csv
+-rw-r--r-- 1 runner runner 9969 Oct  6 21:27 pages.json
+-rw-r--r-- 1 runner runner  622 Oct  6 21:27 sitemap.md
+[0m
+[0m$ [0mcat /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site/copy/home.md
+# Home-Style Tiffin Delivery in Pune
+
+Vegetarian lunch with 4 rotis, sabzi, dal, rice & Sunday sweet
+
+Made in Baner kitchen since 2019
+
+**[Start Weekly Plan on WhatsApp](https://wa.me/919876543210)**
+
+## About Our Service
+
+Annapurna Tiffins cooks home-style vegetarian tiffins in a kitchen in Baner, Pune. We deliver to Baner, Aundh, Balewadi and Pashan. Lunch reaches your door between 12:00 and 1:00 pm, with orders for the next day closing at 8 pm. Try our weekly plan for just Rs 780.
+
+## What's in Your Tiffin
+
+- **Daily Variety**: Menu changes every day and is posted on WhatsApp at 9 pm
+- **Wholesome Ingredients**: Each tiffin has 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays only
+- **Pure Cooking**: We use cold-pressed groundnut oil and no ajinomoto
+
+## Serving Pune Since 2019
+
+- **240** tiffins delivered daily
+- **6** customers when we started
+- **780** ₹ for weekly plan (6 lunches)
+
+## Ready for Homemade Lunch?
+
+Start your weekly plan today
+
+**[Start Weekly Plan on WhatsApp](https://wa.me/919876543210)**
+[0m
+[0m$ [0mcat /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site/copy/menu.md
+# Tiffin Contents
+
+With 4 rotis, sabzi, dal, rice and Sunday sweet
+
+Menu changes every day, posted on WhatsApp at 9 pm
+
+**[Start Weekly Plan on WhatsApp](https://wa.me/919876543210)**
+
+## Our Daily Tiffin
+
+Each Annapurna Tiffin contains 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays only. We use cold-pressed groundnut oil and never add ajinomoto. The menu varies daily to provide balanced, home-style nutrition. Lunch reaches you between 12:00 and 1:00 pm.
+
+## What Makes Our Tiffins Special
+
+- **Home-Style Cooking**: Prepared like a mother's kitchen in Baner, Pune
+- **Fresh Daily**: Lunch prepared fresh and delivered between 12:00 and 1:00 pm
+- **Jain Options**: Jain meals available at the same price upon request
+
+## Tiffin Contents at a Glance
+
+- **4** rotis per tiffin
+- **1** dry sabzi
+- **1** dal or curry
+
+## Want to See Today's Menu?
+
+Get the daily menu on WhatsApp
+
+**[Start Weekly Plan on WhatsApp](https://wa.me/919876543210)**
+[0m
+[0m$ [0mcat /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site/copy/plans.md
+# Weekly Tiffin Plan Pricing
+
+Save with our tiffin subscription plans
+
+Weekly plan: 6 lunches for Rs 780
+
+**[Start Weekly Plan on WhatsApp](https://wa.me/919876543210)**
+
+## Our Tiffin Plans
+
+Choose from our weekly or monthly tiffin plans. A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200. Pay by UPI at the start of your plan. Customers can pause a plan for free with 1 day notice. Lunch delivered between 12:00 and 1:00 pm.
+
+## Plan Benefits
+
+- **Flexible Pausing**: Pause your plan for free with just 1 day notice
+- **Easy Payment**: Pay securely by UPI at the beginning of your plan
+- **Daily Delivery**: Fresh tiffins delivered to your door every lunch day
+
+## Plan Pricing Details
+
+- **780** ₹ for weekly plan (6 lunches)
+- **3,200** ₹ for monthly plan (26 lunches)
+- **1** day notice to pause
+
+## Ready to Subscribe?
+
+Start your tiffin plan today
+
+**[Start Weekly Plan on WhatsApp](https://wa.me/919876543210)**
+[0m
+[0m$ [0mcat /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site/copy/about.md
+# About Annapurna Tiffins
+
+Started by Savita Joshi in 2019 with home-style cooking
+
+From 6 customers to 240 tiffins daily
+
+**[Start Weekly Plan on WhatsApp](https://wa.me/919876543210)**
+
+## Our Journey
+
+Savita Joshi started Annapurna Tiffins in 2019 with just 6 customers in Baner, Pune. Today, we proudly send out about 240 tiffins every day to working professionals seeking home-style vegetarian meals. Our kitchen continues to follow the same principles of fresh, wholesome cooking that began with those first few customers. Lunch is delivered between 12:00 and 1:00 pm.
+
+## Our Values
+
+- **Home-Style Taste**: Every tiffin prepared with the care of a home kitchen
+- **Consistent Quality**: Same taste and quality since day one
+- **Community Focused**: Serving Baner, Aundh, Balewadi and Pashan neighborhoods
+
+## Our Growth
+
+- **2019** year we started
+- **6** initial customers
+- **240** tiffins delivered daily
+
+## Want to Know More?
+
+Message us on WhatsApp
+
+**[Start Weekly Plan on WhatsApp](https://wa.me/919876543210)**
+[0m
+[0m$ [0mgrep -n "3200[^,]" /tmp/tmp.0zZCpatgr9/run/mangaman-website-copy/annapurna-tiffins/site.json
+grep: /tmp/tmp.0zZCpatgr9/run/mangaman-website-copy/annapurna-tiffins/site.json: No such file or directory
+[0m
+[0m$ [0mgrep -n "3200[^,]" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mgrep -n "3200" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mgrep -o '[0-9][0-9]*[.,]?[0-9]*' /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json | sort | uniq
+(no output)
+[0m
+[0m$ [0mgrep -o '[0-9]\+' /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json | sort | uniq
+00
+1
+12
+200
+2019
+240
+26
+3
+4
+6
+780
+8
+9
+919876543210
+[0m
+[0m$ [0mgrep -n "200" /tmp/tmp.0zZCpatgr9/run/mangoman-website-copy/annapurna-tiffins/site.json
+142:        "description": "Weekly tiffin plan pricing: 6 lunches for Rs 780, monthly for Rs 3,200. Pay by UPI, pause free with 1 day notice. Fresh tiffins delivered between 12:00 and 1:00 pm."
+162:          "body": ["Choose from our weekly or monthly tiffin plans. A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200. Pay by UPI at the start of your plan. Customers can pause a plan for free with 1 day notice. Lunch delivered between 12:00 and 1:00 pm."]
+178:            {"value": "3,200", "label": "₹ for monthly plan (26 lunches)"},
+[0m

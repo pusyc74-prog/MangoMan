@@ -1,0 +1,25 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-resume"
+[0m→ [0mRead job_description.md
+[0m→ [0mRead candidate.md
+[0m
+[0m← [0mWrite resume.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/build.py resume.json --template classic --out resume && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/check.py resume.json resume.pdf --pages 1
+built resume.html, resume.pdf, resume.png
+PASS  1 page as planned
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  the page is well filled
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  90% of bullets show a measurable result
+PASS  dates use one format
+[0m
+Done. `resume.pdf` is in the folder, one page A4, classic ATS-friendly design, all checks pass.
