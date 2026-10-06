@@ -90,6 +90,14 @@ a QA agent, and **Guardian**, the self-healing system.
 - Waits until after launch: Guardian's first real run, payments, M5, M6.
 - Needed from the owner: Cerebras and NVIDIA keys as GitHub secrets (today), a Windows tester (by 8 Oct), MARKETPLACE_KEY (by 12 Oct), beta names or groups (by 13 Oct).
 
+## Free capacity and quality (decided 6 Oct)
+
+- Cerebras needs a card for its $5 trial (2 models, 5 requests a minute): optional, skipped under the no-card rule. NVIDIA and OpenCode Zen carry coding.
+- Beta: one model per task, ask first for weaker ones. No step-splitting across models.
+- Later, test with the eval harness whether small or local models can do work the user never sees (sorting, trimming tool output, script-checked cleanup). Never for the writing or the final answer. Local models are a labelled fallback only.
+- 8 Oct: measure real requests and tokens per coding task and per pack task on NVIDIA; tell the owner how many tasks a free user gets a day.
+- After launch: slim coding mode and a capacity meter. Heavy coding is not promised at launch; chat and packs are.
+
 ## Decisions already made (with reasons)
 
 | Decision | Why |
