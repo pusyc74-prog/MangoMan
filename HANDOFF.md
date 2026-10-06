@@ -60,9 +60,10 @@ a QA agent, and **Guardian**, the self-healing system.
   tested changes, after the owner approves on Telegram.
 - **Data sharing is a deliberate call:** the free-model training notice
   lives only in PRIVACY.md, with no accept switch.
-- **Timeline:** MangoMan ready by the end of the week of 12 Oct 2026 (about
-  16 Oct). Put what gets it into real users' hands fastest first. Cut or
-  postpone everything else.
+- **Timeline:** no fixed date and no day-wise plan. Keep building at full
+  pace; the owner sets go-live once the build is complete. (The earlier
+  target was about 16 Oct 2026.) Put first what gets MangoMan to real
+  users fastest.
 - **Money:** the only budget is the Claude subscription. No paid services,
   hosting, APIs or tools. Everything runs on free tiers (free model keys,
   GitHub Actions, free hosting) or on the user's own machine. If something
@@ -81,21 +82,21 @@ a QA agent, and **Guardian**, the self-healing system.
 | M6 coding workspace screen | Later, after M5. |
 | Cloud mode | Only if at all, opt-in, split-key design. |
 
-## 10-day launch plan (approved 6 Oct, start 7 Oct)
+## Launch (no day-wise plan)
 
-- 7 Oct: publish the builds CI already makes (Windows, Mac Intel and M-series, Linux) as a GitHub Release.
+- The owner decides go-live once the build is complete. Do not propose day-by-day schedules.
+- Publish the builds CI already makes (Windows, Mac Intel and M-series, Linux) as a GitHub Release.
 - Beta users start with the router and chat. Skill packs need Python, so they come after, with a simple guide.
 - A user count must be opt-in and PRIVACY.md updated in the same step (it says no analytics and no tracking). Otherwise count downloads and stars.
-- 13 Oct private beta (10 to 20 people); 16 Oct public launch, posted by the owner.
 - Waits until after launch: Guardian's first real run, payments, M5, M6.
-- Needed from the owner: Cerebras and NVIDIA keys as GitHub secrets (today), a Windows tester (by 8 Oct), MARKETPLACE_KEY (by 12 Oct), beta names or groups (by 13 Oct).
+- Needed from the owner: NVIDIA key as a GitHub secret, a Windows tester, MARKETPLACE_KEY before the marketplace opens, and the names of the first beta users.
 
 ## Free capacity and quality (decided 6 Oct)
 
 - Cerebras needs a card for its $5 trial (2 models, 5 requests a minute): optional, skipped under the no-card rule. NVIDIA and OpenCode Zen carry coding.
 - Beta: one model per task, ask first for weaker ones. No step-splitting across models.
 - Later, test with the eval harness whether small or local models can do work the user never sees (sorting, trimming tool output, script-checked cleanup). Never for the writing or the final answer. Local models are a labelled fallback only.
-- 8 Oct: measure real requests and tokens per coding task and per pack task on NVIDIA; tell the owner how many tasks a free user gets a day.
+- Before go-live: measure real requests and tokens per coding task and per pack task on NVIDIA; tell the owner how many tasks a free user gets a day.
 - After launch: slim coding mode and a capacity meter. Heavy coding is not promised at launch; chat and packs are.
 
 ## Decisions already made (with reasons)
@@ -155,8 +156,7 @@ a QA agent, and **Guardian**, the self-healing system.
 
 ## Order of work
 
-Real-model runs (keys), bug sweep, **beta on today's tool by about 16 Oct
-2026**, then M5 (the app for everyone), then M6 (the coding workspace).
+Real-model runs (keys), bug sweep, **beta on today's tool (go-live set once the build is complete)**, then M5 (the app for everyone), then M6 (the coding workspace).
 
 ## Separate: Project B
 
