@@ -390,34 +390,23 @@ func TestStreamIdleTimeout(t *testing.T) {
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: stall}
 	b := &fake{id: "b", model: "m2", quality: 0.3, handler: sse(chunk("ok"), "[DONE]")}
 	rt := setup(t, a, b)
-	rt.StreamFirst, rt.StreamIdle = 300*time.Millisecond, 300*time.Millisecond
+	rt.StreamIdle = 300 * time.Millisecond
 	start := time.Now()
 	w := do(t, rt, helloStream)
 	if w.Header().Get("X-MangoMan-Provider") != "b" || time.Since(start) > 3*time.Second {
 		t.Fatalf("got %v after %s", w.Header(), time.Since(start))
 	}
-}
-
-// A model that reasons says nothing for a while, then streams normally. It
-// must be given that thinking time, not cut off at the gap limit.
-func TestSlowFirstWordIsAllowed(t *testing.T) {
-	think := func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/event-stream")
-		w.(http.Flusher).Flush()
-		select {
-		case <-r.Context().Done():
-			return
-		case <-time.After(400 * time.Millisecond):
-		}
-		sse(chunk("ok"), "[DONE]")(w, r)
+	// A model that stalls must measure as the slowest thing in the pool, so
+	// later requests stop spending their time on it. Counting only its
+	// successes left it unmeasured, and it kept its place at the front.
+	do(t, rt, helloStream)
+	if _, measured := rt.Health.Speed("a/m1"); !measured {
+		t.Fatal("a stalling model was left unmeasured, so it keeps its place in the ranking")
 	}
-	a := &fake{id: "a", model: "m1", quality: 0.9, handler: think}
-	b := &fake{id: "b", model: "m2", quality: 0.3, handler: sse(chunk("ok"), "[DONE]")}
-	rt := setup(t, a, b)
-	rt.StreamFirst, rt.StreamIdle = 3*time.Second, 100*time.Millisecond
-	w := do(t, rt, helloStream)
-	if w.Header().Get("X-MangoMan-Provider") != "a" {
-		t.Fatalf("the thinking model was cut off: %v", w.Header())
+	for _, s := range rt.Health.Snapshot() {
+		if s.Target == "a/m1" && s.LatencyMS < 300 {
+			t.Fatalf("the time spent stalling was not recorded: %v ms", s.LatencyMS)
+		}
 	}
 }
 

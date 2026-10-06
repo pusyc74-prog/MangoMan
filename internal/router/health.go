@@ -49,7 +49,9 @@ func (h *Health) Observe(c Candidate, outcome string, ok bool, latency time.Dura
 	} else {
 		s.Failed++
 	}
-	if ok && latency > 0 {
+	// Any latency given is counted, success or not. The caller decides
+	// which failures were slow enough to say something about speed.
+	if latency > 0 {
 		ms := float64(latency.Milliseconds())
 		if s.LatencyMS == 0 {
 			s.LatencyMS = ms
@@ -62,13 +64,13 @@ func (h *Health) Observe(c Candidate, outcome string, ok bool, latency time.Dura
 }
 
 // Speed returns a 0..1 speed score from measurements, and false when there
-// are too few successful samples to trust it. The curve is 1/(1+t/2s):
+// are too few samples to trust it. The curve is 1/(1+t/2s):
 // 0.3 s scores 0.87, 2 s 0.5, 10 s 0.17, 60 s 0.03.
 func (h *Health) Speed(target string) (float64, bool) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	s, ok := h.m[target]
-	if !ok || s.OK < 2 || s.LatencyMS == 0 {
+	if !ok || s.Samples < 2 || s.LatencyMS == 0 {
 		return 0, false
 	}
 	return 1 / (1 + s.LatencyMS/2000), true

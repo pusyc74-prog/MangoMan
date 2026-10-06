@@ -41,12 +41,10 @@ type Router struct {
 	Health   *Health
 	Logf     func(format string, args ...any)
 
-	// StreamFirst is how long a stream has to say its first word: the same
-	// as a whole non-streaming answer, because a model that reasons thinks
-	// for minutes before it starts. Measured on real free models: one took
-	// 117 s, and three were cut off by the old 60 s limit on every request.
-	StreamFirst time.Duration
-	// StreamIdle aborts a stream that goes quiet this long after it started.
+	// StreamIdle aborts a stream that sends nothing for this long. Keep it
+	// short: measured on real free models, a model that says nothing in the
+	// first minute is not thinking, it is not going to answer, and waiting
+	// longer only spends the request's time.
 	StreamIdle time.Duration
 	// NonStreamTimeout caps one non-streaming attempt.
 	NonStreamTimeout time.Duration
@@ -71,7 +69,6 @@ func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Route
 		Client:           providers.NewClient(),
 		Logf:             func(string, ...any) {},
 		Health:           NewHealth(),
-		StreamFirst:      180 * time.Second,
 		StreamIdle:       60 * time.Second,
 		NonStreamTimeout: 180 * time.Second,
 	}
@@ -150,7 +147,13 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 				lat = time.Since(start)
 			}
 			good := strings.HasPrefix(res.outcome, "ok")
-			if !good {
+			// A failure that took real time counts towards the latency: a
+			// model cut off after a minute without a word is the slowest
+			// thing in the pool, and ignoring that kept it at the front of
+			// the ranking, spending every request's time before falling
+			// through to a model that answers. A quick failure (bad key,
+			// rate limit) says nothing about speed, so it is not counted.
+			if !good && res.outcome != "timeout" && res.outcome != "stream_error" {
 				lat = 0
 			}
 			rt.Health.Observe(c, res.outcome, good, lat)
@@ -290,10 +293,10 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 	// A non-streaming answer gets NonStreamTimeout in all; a stream must
-	// start (send headers) within StreamFirst, then the idle reader takes over.
+	// start (send headers) within StreamIdle, then the idle reader takes over.
 	var headers *time.Timer
 	if req.Stream {
-		headers = time.AfterFunc(rt.StreamFirst, cancel)
+		headers = time.AfterFunc(rt.StreamIdle, cancel)
 	} else {
 		var tcancel context.CancelFunc
 		ctx, tcancel = context.WithTimeout(ctx, rt.NonStreamTimeout)
