@@ -8,7 +8,7 @@ groq        gpt-oss-120b               basic:P stream:P tools:P json:P
 groq        gpt-oss-20b                basic:P stream:P tools:P json:P
 groq        qwen3.8-27b                basic:P stream:P tools:P json:P
 
-Done in 27s, 13 requests.
+Done in 25s, 13 requests.
 
 PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
 cerebras    no_key  0              0                         0
