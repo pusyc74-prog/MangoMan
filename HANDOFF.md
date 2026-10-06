@@ -24,8 +24,26 @@ back your understanding before building anything.
   `pkill -f` (it killed the shell before).
 - Commits: identity pusyc74-prog / pusyc74@gmail.com; repo
   github.com/pusyc74-prog/MangoMan (branch main). CI: ci.yml (Linux, Mac,
-  Windows), qa.yml (nightly, race tests, dashboard browser check, Guardian),
-  doctor.yml (twice a day), agent-eval.yml.
+  Windows, plus the pack regression and the lean check, and nightly for those
+  two), qa.yml (nightly, race tests, dashboard browser check, Guardian),
+  doctor.yml (twice a day), agent-eval.yml, pack-run.yml (real-model pack
+  runs, by hand only).
+
+## Two standing rules the owner confirmed on 6 Oct
+
+- **Sweep for bugs regularly, do not wait for a wave to end.** Every push
+  runs vet, race tests on three systems, the pack regression and the lean
+  check. Every night ci.yml reruns the pack regression and the lean check,
+  qa.yml runs the race tests and clicks through the dashboard in a browser
+  with Guardian watching, and doctor.yml checks every provider twice a day. A
+  failing nightly qa opens or updates a GitHub issue. On top of that, end
+  each wave of work with a read-through for bugs and dead code.
+- **Keep the code lean.** No dead code, no unused options, no abstraction
+  with one caller; reuse the Go packages under `internal/` and the pack
+  helpers in `internal/skills/packs/shared/`; prefer deleting to adding. The
+  lean job in ci.yml fails the build on dead code (functions, types, fields
+  and constants nothing uses) and on assignments that never take effect, so
+  this is checked, not just promised.
 
 ## The PRD
 

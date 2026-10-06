@@ -37,7 +37,7 @@ func TestFavoritesAPI(t *testing.T) {
 }
 
 func TestRadarAddToMyList(t *testing.T) {
-	h, s := dashServer(t, mem{"openrouter": "k"})
+	_, s := dashServer(t, mem{"openrouter": "k"})
 	listing := []string{"qwen/qwen3.8-27b:free", "acme/fresh-2:free"}
 	s.Radar = &radar.Radar{Cat: s.Router.Cat, Keys: s.Router.Keys,
 		List: func(_ context.Context, p catalogue.Provider, _ string) ([]string, error) {
@@ -47,7 +47,7 @@ func TestRadarAddToMyList(t *testing.T) {
 			return nil, nil
 		}}
 	_ = s.Radar.Load()
-	h = s.Handler()
+	h := s.Handler()
 
 	w := call(h, "POST", "/mangoman/radar/scan", "127.0.0.1:4141", authz, "")
 	var rv RadarView

@@ -1,0 +1,94 @@
+name: pack-run
+
+# Runs the skill packs on their own test cases with real free models, scores
+# every case and records how many requests and tokens each task cost. This is
+# the measurement behind "how many tasks does a free user get in a day".
+#
+# Needs at least one provider key in this repo's secrets (NVIDIA_API_KEY is the
+# one with room for this). Run it from the Actions tab; it also runs once when
+# this file changes, so the first run needs no click. It is never scheduled:
+# each run uses real free-tier requests.
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "model for OpenCode (free/coder, free/auto, strict/<model>)"
+        default: free/coder
+      packs:
+        description: "pack folder names, space separated (empty = all with cases)"
+        required: false
+        default: ""
+      variant:
+        description: "instruction style to test instead of SKILL.md (e.g. ste)"
+        required: false
+        default: ""
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/pack-run.yml"
+      - "scripts/pack-run.sh"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pack-run
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      MANGOMAN_KEYSTORE: file
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      OPENCODE_ZEN_API_KEY: ${{ secrets.OPENCODE_ZEN_API_KEY }}
+      MODEL: ${{ inputs.model || 'free/coder' }}
+      PACKS: ${{ inputs.packs }}
+      VARIANT: ${{ inputs.variant }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install tools
+        run: |
+          pip install pandas pillow python-pptx python-docx pypdf playwright
+          python -m playwright install --with-deps chromium
+          npm install -g opencode-ai
+      - name: Set up MangoMan
+        run: |
+          export MANGOMAN_HOME="$RUNNER_TEMP/mangoman"
+          echo "MANGOMAN_HOME=$MANGOMAN_HOME" >> "$GITHUB_ENV"
+          go run ./cmd/mangoman init > /dev/null
+      - name: Run the packs
+        timeout-minutes: 160
+        run: |
+          set +e
+          scripts/pack-run.sh "$MODEL" $PACKS 2>&1 | tee report.md
+          status=${PIPESTATUS[0]}
+          {
+            echo "## Pack run: $MODEL${VARIANT:+ (instructions: $VARIANT)}"
+            grep '^|' report.md
+          } >> "$GITHUB_STEP_SUMMARY"
+          [ "$status" = 0 ] || echo "::warning::some cases scored below 50; see the summary"
+          exit 0
+      - name: Record what the run cost
+        if: always()
+        run: go run ./cmd/mangoman usage --days 1 | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pack-run-report
+          path: report.md
+          if-no-files-found: ignore
