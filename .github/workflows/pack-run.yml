@@ -36,6 +36,11 @@ on:
     paths:
       - ".github/workflows/pack-run.yml"
       - "scripts/pack-run.sh"
+  # Lets a session start a run without the Actions page, which it cannot
+  # reach: POST /repos/<owner>/<repo>/dispatches with event_type pack-run and
+  # any of model, packs, cases, case_timeout in client_payload.
+  repository_dispatch:
+    types: [pack-run]
 
 permissions:
   contents: write # only to publish the report to the eval-reports branch
@@ -55,13 +60,13 @@ jobs:
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
       OPENCODE_ZEN_API_KEY: ${{ secrets.OPENCODE_ZEN_API_KEY }}
-      MODEL: ${{ inputs.model || 'free/coder' }}
-      PACKS: ${{ inputs.packs }}
-      VARIANT: ${{ inputs.variant }}
+      MODEL: ${{ inputs.model || github.event.client_payload.model || 'free/coder' }}
+      PACKS: ${{ inputs.packs || github.event.client_payload.packs }}
+      VARIANT: ${{ inputs.variant || github.event.client_payload.variant }}
       # A push that changes this workflow or the script runs a cheap smoke run
       # instead of the full set: one case per pack, ten minutes each.
-      CASES: ${{ inputs.cases || (github.event_name == 'push' && '1' || '') }}
-      CASE_TIMEOUT: ${{ inputs.case_timeout || (github.event_name == 'push' && '600' || '900') }}
+      CASES: ${{ inputs.cases || github.event.client_payload.cases || (github.event_name == 'push' && '1' || '') }}
+      CASE_TIMEOUT: ${{ inputs.case_timeout || github.event.client_payload.case_timeout || (github.event_name == 'push' && '600' || '900') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

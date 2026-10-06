@@ -36,7 +36,18 @@ The GitHub Actions API is blocked from the session's network, so
 run: `gh api repos/pusyc74-prog/MangoMan/commits/<sha>/check-runs` (job names,
 status, conclusion) and `gh api repos/pusyc74-prog/MangoMan/issues` (the QA
 workflow opens one when the nightly fails). Logs and step summaries are not
-reachable; ask the owner for those.
+reachable, which is why the pack run publishes its report, its per-case logs
+and the router log to the **eval-reports** branch: clone that branch to read
+a result.
+
+A session can also start a pack run without the Actions page:
+
+    gh api -X POST repos/pusyc74-prog/MangoMan/dispatches \
+      -f event_type=pack-run \
+      -F 'client_payload[cases]=1' -F 'client_payload[case_timeout]=600'
+
+`client_payload` takes model, packs, variant, cases and case_timeout. Leave
+cases out for the full set of three per pack.
 
 ## Two standing rules the owner confirmed on 6 Oct
 
