@@ -8,6 +8,8 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -16,11 +18,25 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 )
 
+// Version is the OpenCode release MangoMan has tested. Moving it forward
+// means testing the new release first, then updating Version and sums.
+const Version = "1.18.34"
+
 // Releases is where OpenCode publishes its builds (MIT licence).
-var Releases = "https://github.com/anomalyco/opencode/releases/latest/download/"
+var Releases = "https://github.com/anomalyco/opencode/releases/download/v" + Version + "/"
+
+// sums are the SHA-256 of each download for Version.
+var sums = map[string]string{
+	"opencode-linux-x64.tar.gz":   "0f22479647226d1d2dd99595d20082ee7bda3870b62dc6a90b41efc1a71d7e9a",
+	"opencode-linux-arm64.tar.gz": "bbdb3f00c2c51e42e315525233151309724226a8776da8e9145e3b0fa3d5310f",
+	"opencode-darwin-x64.zip":     "66bf0638cffad3b65bd6648cc3947619e1dd71f4bfeee0a81e087ac036bb1088",
+	"opencode-darwin-arm64.zip":   "8522b70f545184b3a8d97c5ca4f814093b2476d72aebfda8c48bcd072ec31d1b",
+	"opencode-windows-x64.zip":    "8ec42ed1ad8db108052394b83ab69d0331398f761fbfff5fe50f91d65bdd3548",
+}
 
 const maxSize = 400 << 20 // the unpacked program is about 180 MB
 
@@ -41,6 +57,20 @@ func Path(dir string) (string, error) {
 		return "", errors.New("opencode not found")
 	}
 	return own, nil
+}
+
+// Outdated reports whether MangoMan's own copy (never one the user installed
+// themselves) is not the tested Version.
+func Outdated(dir string) bool {
+	if _, err := exec.LookPath("opencode"); err == nil {
+		return false
+	}
+	own := filepath.Join(dir, "tools", exeName())
+	if _, err := os.Stat(own); err != nil {
+		return false
+	}
+	v, _ := os.ReadFile(filepath.Join(dir, "tools", "opencode.version"))
+	return strings.TrimSpace(string(v)) != Version
 }
 
 // asset names the download for this computer.
@@ -90,6 +120,9 @@ func Install(dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if sum := sha256.Sum256(data); hex.EncodeToString(sum[:]) != sums[name] {
+		return "", errors.New("the download does not match the tested OpenCode release; not installing it")
+	}
 	bin, err := extract(name, data)
 	if err != nil {
 		return "", err
@@ -106,7 +139,7 @@ func Install(dir string) (string, error) {
 	if err := os.Rename(tmp, dst); err != nil {
 		return "", err
 	}
-	return dst, nil
+	return dst, os.WriteFile(filepath.Join(tools, "opencode.version"), []byte(Version), 0o600)
 }
 
 // extract returns the OpenCode program from a downloaded archive.

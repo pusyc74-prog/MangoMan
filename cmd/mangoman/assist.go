@@ -121,7 +121,7 @@ const openCodeInstall = `To install OpenCode yourself, use one of:
 then run "mangoman code" again.`
 
 // offerOpenCode asks before downloading OpenCode into MangoMan's own folder.
-func offerOpenCode(home string) (string, error) {
+func offerOpenCode(home, why string) (string, error) {
 	if !stdinIsTerminal() {
 		return "", errors.New("opencode not found")
 	}
@@ -129,7 +129,7 @@ func offerOpenCode(home string) (string, error) {
 	if n := opencode.Size(); n > 0 {
 		size = fmt.Sprintf("%d MB", n>>20)
 	}
-	fmt.Printf("MangoMan's coding helper (OpenCode, free and open source) is not installed.\nDownload it now from its official GitHub page (%s)? [Y/n] ", size)
+	fmt.Printf("MangoMan's coding helper (OpenCode, free and open source) %s.\nDownload it now from its official GitHub page (%s)? [Y/n] ", why, size)
 	line, _ := stdin.ReadString('\n')
 	if a := strings.ToLower(strings.TrimSpace(line)); a != "" && a != "y" && a != "yes" {
 		return "", errors.New("opencode not installed")
@@ -161,9 +161,13 @@ func cmdCode(args []string) error {
 	}
 	oc, err := opencode.Path(home)
 	if err != nil {
-		if oc, err = offerOpenCode(home); err != nil {
+		if oc, err = offerOpenCode(home, "is not installed"); err != nil {
 			fmt.Println(openCodeInstall)
 			return err
+		}
+	} else if opencode.Outdated(home) {
+		if p, err := offerOpenCode(home, "has a newer tested version"); err == nil {
+			oc = p
 		}
 	}
 

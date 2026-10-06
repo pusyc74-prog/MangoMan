@@ -5,6 +5,8 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -44,6 +46,8 @@ func TestInstallThenFind(t *testing.T) {
 		}
 		w.Write(archive(t, name))
 	}))
+	sum := sha256.Sum256(archive(t, name))
+	sums[name] = hex.EncodeToString(sum[:])
 	defer srv.Close()
 	old := Releases
 	Releases = srv.URL + "/"
@@ -63,6 +67,17 @@ func TestInstallThenFind(t *testing.T) {
 	}
 	if got, err := Path(dir); err != nil || got != p {
 		t.Fatalf("Path = %q, %v", got, err)
+	}
+	if Outdated(dir) {
+		t.Fatal("just installed, should be current")
+	}
+	os.WriteFile(filepath.Join(dir, "tools", "opencode.version"), []byte("0.0.1"), 0o600)
+	if !Outdated(dir) {
+		t.Fatal("an older recorded version should be outdated")
+	}
+	sums[name] = "bad"
+	if _, err := Install(t.TempDir()); err == nil {
+		t.Fatal("a download that does not match the tested sum must be refused")
 	}
 }
 

@@ -103,6 +103,7 @@ a QA agent, and **Guardian**, the self-healing system.
 
 - With a My list set, the router uses only those models. When all are busy or out of limits it stops and asks before using any other model (1 hour or always). No list: normal ranking.
 - `mangoman code` offers to download OpenCode (about 60 MB, official release, no Node) into MangoMan's folder when it is missing.
+- OpenCode is pinned to the tested version (internal/opencode, `Version` and `sums`), the download is SHA-256 checked, and an older copy gets an update offer. To move the pin: test the new release, then change `Version` and `sums` together.
 
 ## Decisions already made (with reasons)
 
