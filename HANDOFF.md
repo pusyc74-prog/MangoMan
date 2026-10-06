@@ -133,6 +133,13 @@ a QA agent, and **Guardian**, the self-healing system.
 - Measure answer quality after a mid-task model switch (needs real keys).
 - Remove dashboard training labels (only if the owner asks).
 - Guardian has only been tested with a stand-in AI, not real models yet.
+- A Telegram bot from @BotFather and a real app to point Guardian at.
+- OPENCODE_ZEN_API_KEY secret, so the doctor also checks Zen.
+
+## Order of work
+
+Real-model runs (keys), bug sweep, **beta on today's tool by about 16 Oct
+2026**, then M5 (the app for everyone), then M6 (the coding workspace).
 
 ## Separate: Project B
 
