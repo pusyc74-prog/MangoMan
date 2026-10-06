@@ -2,27 +2,53 @@ MangoMan doctor: live checks against your connected providers.
 Requests go straight from this machine to each provider with your keys; nothing goes to MangoMan.
 
   groq        up to 13 requests
+  nvidia      up to 41 requests
   openrouter  up to 0 requests
 
+nvidia      gpt-oss-20b                basic:P stream:P tools:P json:P
 groq        gpt-oss-120b               basic:P stream:P tools:P json:P
 groq        gpt-oss-20b                basic:P stream:P tools:P json:P
 groq        qwen3.8-27b                basic:P stream:P tools:P json:P
+nvidia      kimi-k3                    basic:F stream:- tools:- json:-
+nvidia      deepseek-v4.1-flash        basic:F stream:- tools:- json:-
+nvidia      glm-5.3                    basic:P stream:P tools:P json:P
+nvidia      glm-5.3-flash              basic:F stream:- tools:- json:-
+nvidia      nemotron-3-ultra-550b      basic:P stream:F tools:P json:P
+nvidia      nemotron-3-super-120b      basic:P stream:P tools:P json:P
+nvidia      nemotron-3.5-lightning     basic:P stream:P tools:P json:P
+nvidia      gemma-4-31b                basic:P stream:P tools:P json:P
+nvidia      laguna-xs-2.1              basic:F stream:- tools:- json:-
 
-Done in 25s, 13 requests.
+Done in 10m38s, 42 requests.
 
 PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
 cerebras    no_key  0              0                         0
 groq        ok      11             0                         0
-nvidia      no_key  0              0                         0
-openrouter  ok      464            1                         8
+nvidia      ok      80             0                         0
+openrouter  ok      466            1                         8
 zen         no_key  0              0                         0
 
-PROVIDER  MODEL         PASS  WARN  FAIL  SKIP  VERDICT
-groq      gpt-oss-120b  4     0     0     0     ready
-groq      gpt-oss-20b   4     0     0     0     ready
-groq      qwen3.8-27b   4     0     0     0     ready
+PROVIDER  MODEL                   PASS  WARN  FAIL  SKIP  VERDICT
+groq      gpt-oss-120b            4     0     0     0     ready
+groq      gpt-oss-20b             4     0     0     0     ready
+groq      qwen3.8-27b             4     0     0     0     ready
+nvidia    gpt-oss-20b             4     0     0     0     ready
+nvidia    kimi-k3                 0     0     1     3     needs work
+nvidia    deepseek-v4.1-flash     0     0     1     3     needs work
+nvidia    glm-5.3                 4     0     0     0     ready
+nvidia    glm-5.3-flash           0     0     1     3     needs work
+nvidia    nemotron-3-ultra-550b   3     0     1     0     needs work
+nvidia    nemotron-3-super-120b   4     0     0     0     ready
+nvidia    nemotron-3.5-lightning  4     0     0     0     ready
+nvidia    gemma-4-31b             4     0     0     0     ready
+nvidia    laguna-xs-2.1           0     0     1     3     needs work
 
 Notes:
+  FAIL nvidia/kimi-k3 basic: no complete answer within 1m0s
+  FAIL nvidia/deepseek-v4.1-flash basic: no complete answer within 1m0s
+  FAIL nvidia/glm-5.3-flash basic: no complete answer within 1m0s
+  FAIL nvidia/nemotron-3-ultra-550b stream: error in body: Service temporarily overloaded
+  FAIL nvidia/laguna-xs-2.1 basic: no complete answer within 1m0s
   CATALOGUE openrouter: "qwen/qwen3.8-27b:free" is not in the provider's model list
   RADAR openrouter: 8 free models not in the catalogue, e.g. apodex/apodex-1.1-mini:free, dots-studio/dots-3-note-preview:free, inclusionai/ling-3.0-flash-sante:free
 
