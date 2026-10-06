@@ -29,6 +29,15 @@ back your understanding before building anything.
   doctor.yml (twice a day), agent-eval.yml, pack-run.yml (real-model pack
   runs, by hand only).
 
+## Watching CI from a session
+
+The GitHub Actions API is blocked from the session's network, so
+`gh run list` and `gh secret list` fail. These work and are enough to watch a
+run: `gh api repos/pusyc74-prog/MangoMan/commits/<sha>/check-runs` (job names,
+status, conclusion) and `gh api repos/pusyc74-prog/MangoMan/issues` (the QA
+workflow opens one when the nightly fails). Logs and step summaries are not
+reachable; ask the owner for those.
+
 ## Two standing rules the owner confirmed on 6 Oct
 
 - **Sweep for bugs regularly, do not wait for a wave to end.** Every push

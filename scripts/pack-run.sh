@@ -8,12 +8,15 @@
 #
 # Set VARIANT=ste to use a pack's other instruction style
 # (tests/<VARIANT>/SKILL.md) instead of its SKILL.md, so both can be scored on
-# the same cases. Set CASE_TIMEOUT to change the 900 s a case is given.
+# the same cases. Set CASE_TIMEOUT to change the 900 s a case is given, and
+# CASES to use only the first N cases of each pack (CASES=1 is a cheap smoke
+# run: one task per pack instead of three).
 #
 # Needs: provider keys in MANGOMAN_HOME, opencode on PATH, and the pack
 # dependencies (pandas, Pillow, python-pptx, python-docx, pypdf, playwright).
 # Prints a Markdown table of pack, case, score, requests, tokens and seconds,
-# and exits 1 if any case scored below 50.
+# writes each case's output to pack-run-logs/<pack>/<case>.log, and exits 1 if
+# any case scored below 50.
 set -u
 cd "$(dirname "$0")/.."
 repo=$PWD
@@ -56,7 +59,10 @@ for pack in "${packs[@]}"; do
   if [ -n "${VARIANT:-}" ] && [ -f "$src/tests/$VARIANT/SKILL.md" ]; then
     cp "$src/tests/$VARIANT/SKILL.md" "$work/skills/$pack/SKILL.md"
   fi
+  n=0
   for case in "$src"/tests/cases/*/; do
+    n=$((n + 1))
+    [ -n "${CASES:-}" ] && [ "$n" -gt "$CASES" ] && break
     name=$(basename "$case")
     d="$work/run/$pack/$name"
     mkdir -p "$d" && cp "$case"/* "$d/"
@@ -77,6 +83,8 @@ except ValueError:
 print(s.get("score", 0), (s.get("notes") or "").replace("|", "/"))
 ')"
     echo "| $pack | $name | $score | $((r1 - r0)) | $((t1 - t0)) | $secs |"
+    mkdir -p "$repo/pack-run-logs/$pack"
+    tail -c 200000 "$d/run.log" > "$repo/pack-run-logs/$pack/$name.log"
     [ "$score" -lt 50 ] && { low=1; echo "      $name: $notes" >&2; }
   done
 done

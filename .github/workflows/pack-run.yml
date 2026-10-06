@@ -23,6 +23,14 @@ on:
         description: "instruction style to test instead of SKILL.md (e.g. ste)"
         required: false
         default: ""
+      cases:
+        description: "cases per pack (empty = all three; 1 is a cheap smoke run)"
+        required: false
+        default: ""
+      case_timeout:
+        description: "seconds one case may take before it is cut (default 900)"
+        required: false
+        default: ""
   push:
     branches: [main]
     paths:
@@ -30,7 +38,7 @@ on:
       - "scripts/pack-run.sh"
 
 permissions:
-  contents: read
+  contents: write # only to publish the report to the eval-reports branch
 
 concurrency:
   group: pack-run
@@ -50,6 +58,10 @@ jobs:
       MODEL: ${{ inputs.model || 'free/coder' }}
       PACKS: ${{ inputs.packs }}
       VARIANT: ${{ inputs.variant }}
+      # A push that changes this workflow or the script runs a cheap smoke run
+      # instead of the full set: one case per pack, ten minutes each.
+      CASES: ${{ inputs.cases || (github.event_name == 'push' && '1' || '') }}
+      CASE_TIMEOUT: ${{ inputs.case_timeout || (github.event_name == 'push' && '600' || '900') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -86,6 +98,30 @@ jobs:
       - name: Record what the run cost
         if: always()
         run: go run ./cmd/mangoman usage --days 1 | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Publish the report to the eval-reports branch
+        if: always()
+        run: |
+          [ -s report.md ] || exit 0
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports 2>/dev/null || true
+          if git show-ref --quiet refs/remotes/origin/eval-reports; then
+            git worktree add ../reports origin/eval-reports
+            (cd ../reports && git switch -C eval-reports)
+          else
+            git worktree add --detach ../reports
+            (cd ../reports && git switch --orphan eval-reports)
+          fi
+          out="../reports/reports/pack-run/$stamp"
+          mkdir -p "$out"
+          cp report.md "$out/"
+          cp -r pack-run-logs "$out/logs" 2>/dev/null || true
+          go run ./cmd/mangoman usage --json --days 1 > "$out/usage.json" || true
+          cd ../reports
+          git add -A
+          git commit -q -m "pack run $MODEL${VARIANT:+ ($VARIANT)} $stamp (run ${{ github.run_id }})" || exit 0
+          git push origin eval-reports
       - uses: actions/upload-artifact@v4
         if: always()
         with:
