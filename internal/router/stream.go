@@ -32,7 +32,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		return attemptResult{outcome: "not_a_stream", status: resp.StatusCode, errMsg: upstreamMessage(data)}
 	}
 
-	body := newIdleReader(resp.Body, rt.StreamIdle, cancel)
+	body := newIdleReader(resp.Body, rt.StreamFirst, rt.StreamIdle, cancel)
 	defer body.stop()
 	br := bufio.NewReaderSize(body, 64<<10)
 
@@ -249,28 +249,34 @@ func parseDelta(data []byte) delta {
 	return d
 }
 
-// idleReader cancels the attempt when the upstream sends nothing for too long.
+// idleReader cancels the attempt when the upstream sends nothing for too
+// long. The first words get longer than the gaps after them: a model that
+// reasons can think for minutes before it says anything, but once it is
+// talking a long gap means it has stopped.
 type idleReader struct {
-	r       io.Reader
-	timeout time.Duration
-	timer   *time.Timer
-	once    sync.Once
-	fired   atomic.Bool
+	r     io.Reader
+	idle  time.Duration
+	timer *time.Timer
+	once  sync.Once
+	fired atomic.Bool
 }
 
-func newIdleReader(r io.Reader, d time.Duration, cancel context.CancelFunc) *idleReader {
-	if d <= 0 {
-		d = 60 * time.Second
+func newIdleReader(r io.Reader, first, idle time.Duration, cancel context.CancelFunc) *idleReader {
+	if idle <= 0 {
+		idle = 60 * time.Second
 	}
-	ir := &idleReader{r: r, timeout: d}
-	ir.timer = time.AfterFunc(d, func() { ir.fired.Store(true); cancel() })
+	if first < idle {
+		first = idle
+	}
+	ir := &idleReader{r: r, idle: idle}
+	ir.timer = time.AfterFunc(first, func() { ir.fired.Store(true); cancel() })
 	return ir
 }
 
 func (i *idleReader) Read(p []byte) (int, error) {
 	n, err := i.r.Read(p)
 	if n > 0 {
-		i.timer.Reset(i.timeout)
+		i.timer.Reset(i.idle)
 	}
 	return n, err
 }

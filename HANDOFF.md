@@ -179,6 +179,19 @@ a QA agent, and **Guardian**, the self-healing system.
 - Revenue share for paid agents; Razorpay or Stripe.
 - A Telegram bot from @BotFather; a real app to point Guardian at.
 
+## What a task costs on free models (measured 6 Oct)
+
+First real-model run, seven packs, one case each, through OpenCode on the
+NVIDIA key. A **light** pack task (resume, social posts, ad copy, listing)
+takes 4 to 6 requests and 30K to 70K tokens. A **heavy** one (website copy,
+SEO article, email campaign) takes 32 to 37 requests and 0.8M to 1.0M tokens.
+Against the free tiers, one heavy task is about five times Groq's whole daily
+token allowance and most of OpenRouter's 50 daily requests, so NVIDIA has to
+carry pack work. Scores on the cases that finished: email campaign 100,
+resume 98, SEO article 92, website copy 61 (cut by its time limit, not
+finished). Reports and per-case logs are on the **eval-reports** branch under
+`reports/pack-run/`.
+
 ## Still open (not built)
 
 - Measure answer quality after a mid-task model switch (needs real keys).

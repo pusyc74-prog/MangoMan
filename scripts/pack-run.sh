@@ -74,18 +74,20 @@ for pack in "${packs[@]}"; do
     secs=$((SECONDS - start))
     read -r r1 t1 <<< "$(used)"
     out=$(python3 "$src/tests/score.py" "$d" 2>> "$d/run.log")
-    read -r score notes <<< "$(printf '%s' "$out" | python3 -c '
+    # Scores can be fractional, so the "too low" test is done here, not in sh.
+    read -r bad score notes <<< "$(printf '%s' "$out" | python3 -c '
 import json, sys
 try:
     s = json.load(sys.stdin)
 except ValueError:
-    print("0 scorer gave no result"); raise SystemExit
-print(s.get("score", 0), (s.get("notes") or "").replace("|", "/"))
+    print("1 0 scorer gave no result"); raise SystemExit
+n = float(s.get("score") or 0)
+print(int(n < 50), s.get("score", 0), (s.get("notes") or "").replace("|", "/"))
 ')"
     echo "| $pack | $name | $score | $((r1 - r0)) | $((t1 - t0)) | $secs |"
     mkdir -p "$repo/pack-run-logs/$pack"
     tail -c 200000 "$d/run.log" > "$repo/pack-run-logs/$pack/$name.log"
-    [ "$score" -lt 50 ] && { low=1; echo "      $name: $notes" >&2; }
+    [ "$bad" = 1 ] && { low=1; echo "      $name: $notes" >&2; }
   done
 done
 exit $low

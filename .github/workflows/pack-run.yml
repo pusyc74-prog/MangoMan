@@ -117,6 +117,7 @@ jobs:
           mkdir -p "$out"
           cp report.md "$out/"
           cp -r pack-run-logs "$out/logs" 2>/dev/null || true
+          cp "$MANGOMAN_HOME/serve.log" "$out/" 2>/dev/null || true
           go run ./cmd/mangoman usage --json --days 1 > "$out/usage.json" || true
           cd ../reports
           git add -A
