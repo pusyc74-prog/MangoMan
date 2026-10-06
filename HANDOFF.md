@@ -39,9 +39,39 @@ table updated with every change (date, item, what changed), newest first.
 A free, local-first AI router in Go. It pools every free model the user can
 reach (Groq, Cerebras, NVIDIA, OpenRouter, OpenCode Zen, Ollama), switches
 automatically when one runs out, and never sees prompts or keys. On top:
-16 skill packs (marketing, reports, documents, tech), advanced agents with a
+17 skill packs (marketing, reports, documents, tech), advanced agents with a
 signed creator marketplace, OpenCode as the coding engine (`mangoman code`),
 a QA agent, and **Guardian**, the self-healing system.
+
+## About the owner
+
+- **Why MangoMan exists:** to serve people left out of the AI tooling boom:
+  non-technical Indian users who cannot pay for AI or wire up free tiers.
+  Free, private and honest is the point. Judge every idea against it.
+- **How ideas grow:** the owner starts with a feature and grows it into a
+  system (Guardian began as a monitor and became a self-healing loop with a
+  permanent dev environment). When you see a bigger version of an idea,
+  propose it, in a table, and let the owner decide. Do not build it unasked.
+- **Honesty:** say so when something already exists, when a number is a
+  guess, and when a check could not be run.
+- **Guardian, in full:** every app gets a dev environment from day 1, next to
+  production, same code. The owner's own coding goes through dev too
+  (`mangoman code`, then `mangoman guardian ship`). Production gets only
+  tested changes, after the owner approves on Telegram.
+- **Data sharing is a deliberate call:** the free-model training notice
+  lives only in PRIVACY.md, with no accept switch.
+- **Not yet answered (ask the owner once, then record here):** timeline,
+  money situation, and what success means to them personally. Never guess.
+
+## Parked: do not reopen on your own
+
+| Idea | Where it stands |
+|---|---|
+| Public LLM for the general public (M5 general chat) | Parked 4 Oct. OpenCode stays the engine; every user brings their own keys. |
+| Chat history storage | Parked 3 Oct (proposed design is in the PRD). |
+| Cloud-drive style storage for made files (Cloudflare R2) and the Supabase or Cloudflare D1 options | Parked 3 Oct (options are in the PRD). |
+| M6 coding workspace screen | Later, after M5. |
+| Cloud mode | Only if at all, opt-in, split-key design. |
 
 ## Decisions already made (with reasons)
 
@@ -69,8 +99,8 @@ a QA agent, and **Guardian**, the self-healing system.
 - Router: failover, quotas learned live, skill floor, stickiness, provider
   priority, live model panel in the dashboard, load test (3,000 requests,
   300 at once, 0 failed).
-- 16 skill packs with builders and checkers; test sets for 6; 2 advanced
-  agents (amazon-listing-pro, google-ads-pro); signed `.mmagent` packages,
+- 17 skill packs with builders and checkers; test sets for 7; 2 advanced
+  agents (not sold yet: payments are not open) (amazon-listing-pro, google-ads-pro); signed `.mmagent` packages,
   sandbox, safety review, eval harness, registry (closed until a key exists).
 - `mangoman qa`, `review`, `tests`, `changelog`, `new`.
 - Guardian: watch, first aid, fix on own branch, QA writes tests (must fail
