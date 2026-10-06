@@ -1,6 +1,6 @@
 # MangoMan: Technical PRD
 
-Oct 6, 2026
+Oct 6, 2026 · @Denis
 
 MangoMan is a free, local-first AI router that pools every free model a builder can reach, switches automatically when one runs dry, and never holds their keys or sees their prompts.
 
@@ -78,7 +78,7 @@ How we answer the common questions:
 
 ## Feature comparison
 
-We lead on the three things no competitor combines: keys and prompts stay local, routing is free-first across every provider, and failover covers bad answers, not just errors. Competitor cells reflect public docs as of Sep 2026; "Partial" means limited to the vendor's own network or requiring manual setup.
+We lead on the three things no competitor combines: keys and prompts stay local, routing is free-first across every provider, and failover covers bad answers, not just errors. Competitor cells reflect public docs as of Sep 2026; "Partial" means limited to the vendor's own network or requiring manual setup. (P2), (P3), (P4) mark the roadmap phase in which a feature ships.
 
 | Feature | MangoMan | OpenRouter | LiteLLM | OpenCode Zen | Portkey | Cloudflare AI GW |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -109,8 +109,6 @@ We lead on the three things no competitor combines: keys and prompts stay local,
 | Plug-and-play agent marketplace | Yes (P3) | No | No | No | No | No |
 | Self-healing app monitor (Guardian) | Yes (built) | No | No | No | No | No |
 | Works offline | Yes (P4, local models) | No | Partial | No | Partial | No |
-
-(P2), (P3), (P4) mark the roadmap phase in which a feature ships.
 
 ## Feature list by layer
 
@@ -190,7 +188,7 @@ Every request passes through a smart layer that understands it before any model 
 
 **Rules:** never hide the user's original request; ask instead of guessing when it matters; verify by doing (run, render, recompute), not by asking a model whether its own work is good.
 
-**Decision brain engine (swappable slot):**
+### Decision brain engine (swappable slot)
 
 | Engine | Strength | Caveat |
 | --- | --- | --- |
@@ -198,7 +196,7 @@ Every request passes through a smart layer that understands it before any model 
 | Fast Groq model (gpt-oss-20b class) | Fast, generous free tier, already connected for most users | General model, less calibrated |
 | Small local model (Ollama, qwen3:4b class) | Private, offline, unlimited | Slower on weak machines, lower accuracy |
 
-**First skill packs:**
+### First skill packs
 
 | Skill pack | What it brings | How the result is checked |
 | --- | --- | --- |
@@ -224,7 +222,9 @@ Every skill an agency sells gets two tiers: a **free skill pack** anyone can use
 | Runs on | Free models through the router | Free models by default; any paid model or data source it needs is stated before purchase |
 | Price | Free | Monthly subscription set by the developer; MangoMan keeps a share (to decide) |
 
-**Agency skills to cover** (free packs roll out in waves; advanced agents follow per skill):
+### Agency skills to cover
+
+Free packs roll out in waves; advanced agents follow per skill.
 
 | Skill area | Free skill packs | Advanced agent idea |
 | --- | --- | --- |
@@ -238,7 +238,7 @@ Every skill an agency sells gets two tiers: a **free skill pack** anyone can use
 | Business documents | Proposal, quote, invoice, cover letter, meeting minutes | Proposal writer with pricing tables and past-work references |
 | Software | Simple web app, code review | QA agent, Guardian (built) |
 
-**How the marketplace works:**
+### How the marketplace works
 
 1. **Build.** Developers use our agent kit (or any runtime as a signed package) and declare permissions, tools, data sources and models.
 2. **Review.** Automated security scan, sandbox run and a quality eval on the skill's public test set; only agents that beat the free pack list as Advanced.
@@ -251,7 +251,7 @@ Every skill an agency sells gets two tiers: a **free skill pack** anyone can use
 
 **Phasing:** all 17 free packs are built. The agent kit, sandbox, test-set scoring and the first in-house advanced agent (Amazon listing pro) are built (3 Oct). Next: more test sets and in-house agents per skill area, then the marketplace (listing site, creator portal, review pipeline), then payments and payouts.
 
-**Agent kit as built (3 Oct):**
+### Agent kit as built (3 Oct)
 
 | Part | How it works |
 | --- | --- |
@@ -269,7 +269,7 @@ Still open: MangoMan's share of subscriptions, the marketplace's own signing key
 
 The router and skill packs are the engine. Most of our audience is not technical: teachers, students, job seekers, shop owners and small businesses across India, many of whom have only heard about AI from friends. M5 puts a simple chat app on top of the engine so anyone can make things with normal prompts, such as "I am a school teacher, make a lesson plan on photosynthesis for class 7, and a PPT".
 
-**Where it runs:** a website and a desktop app first, a mobile app later. The website also works in a phone browser. The local router stays for technical users.
+**Where it runs:** a website and a desktop app first, a mobile app later. The website also works in a phone browser. The local router stays for technical users. M5 is currently parked (see the build log).
 
 | Today (technical) | MangoMan app |
 | --- | --- |
@@ -286,7 +286,9 @@ The router and skill packs are the engine. Most of our audience is not technical
 
 **Responsibilities as a service:** we run servers and keep accounts, so we need a privacy policy that follows India's DPDP Act, abuse limits, and no ads or sale of data.
 
-**Chat history (proposed 3 Oct):** saved to the user's account and synced between web and desktop; the desktop app keeps a local copy that opens offline. Saved: messages, question answers and every file made, linked to its chat. Recent list by day, search, pin, a My files page, and carrying on an old chat. Long chats are summarised for the model behind the scenes. Users can rename, delete one or all, download everything, use a temporary chat that is never saved, and pick auto-delete (3 months, 1 year, never). Optional memory comes later. The local router still stores no prompts or answers.
+### Chat history (proposed 3 Oct)
+
+Saved to the user's account and synced between web and desktop; the desktop app keeps a local copy that opens offline. Saved: messages, question answers and every file made, linked to its chat. Recent list by day, search, pin, a My files page, and carrying on an old chat. Long chats are summarised for the model behind the scenes. Users can rename, delete one or all, download everything, use a temporary chat that is never saved, and pick auto-delete (3 months, 1 year, never). Optional memory comes later. The local router still stores no prompts or answers.
 
 | What | Where | Why |
 | --- | --- | --- |
@@ -303,9 +305,9 @@ Rendered files are kept 90 days and rebuilt from their recipe after that. Rough 
 
 **Mockups:** sign in, turn on free AI, home, quick questions, result with files, and two phone screens in Hindi, on the canvas "MangoMan App Mockups".
 
-## System architecture
+## System architecture and routing engine
 
-Everything that touches keys or prompts runs on the user's machine; our cloud only publishes data and receives opt-in outcome counts.
+Everything that touches keys or prompts runs on the user's machine; our cloud only publishes data and receives opt-in outcome counts. Only two things cross to our cloud: the signed catalogue (down) and opt-in outcome counts with no content (up). Prompts and keys go straight from the user's machine to each provider.
 
 ```mermaid
 flowchart TB
@@ -332,9 +334,7 @@ flowchart TB
   router -->|opt-in counts, no content| counts
 ```
 
-Only two things cross to our cloud: the signed catalogue (down) and opt-in outcome counts with no content (up). Prompts and keys go straight from the user's machine to each provider. The router is the only box that holds keys and sees prompts.
-
-## Routing engine
+The router is the only box that holds keys and sees prompts; the catalogue comes down and opt-in counts go up.
 
 Every request is classified, matched against the live catalogue, and sent to the highest-scoring free candidate that has quota left; local overhead target is under 20 ms p95.
 
@@ -507,7 +507,7 @@ For users who cannot install anything, a hosted router is offered only as a clea
 
 Residual risk: the key exists in plain form inside the enclave while in use, so this is strong but still weaker than local mode. Local mode remains the default.
 
-## User experience
+## User experience and technology stack
 
 Setup takes about five minutes; after that the router is invisible plumbing and the user keeps working in the tools they already use.
 
@@ -526,7 +526,7 @@ Setup takes about five minutes; after that the router is invisible plumbing and 
 
 The website and the installed app share an account and settings, never keys.
 
-## Technology stack
+### Technology stack
 
 The client is a single signed Go binary with few dependencies; our cloud is a thin, mostly serverless layer that serves data, not traffic.
 
@@ -550,7 +550,9 @@ The client is a single signed Go binary with few dependencies; our cloud is a th
 
 ## Phased roadmap
 
-Phase 1, the core router, is the product; later layers ship only after the gate before them is met. Timings are tentative and assume a 3-4 person team. Status: Phase 1 milestones M1 to M4 were built by October 2, 2026 (see Build status below); live beta testing with real users is the next step toward the Phase 1 gate.
+Phase 1, the core router, is the product; later layers ship only after the gate before them is met. Timings are tentative and assume a 3-4 person team. Status: Phase 1 milestones M1 to M4 were built by October 2, 2026 (see the build log); live beta testing with real users is the next step toward the Phase 1 gate.
+
+If Phase 0 interviews show builders rarely hit free limits, Phase 1 leads with the radar, data-policy filters and bad-answer failover rather than pooling.
 
 ```mermaid
 flowchart TB
@@ -576,11 +578,9 @@ Phases are not drawn to scale; a later phase ships only after the gate before it
 | Gate 2 to 3 | Phase 1 metrics held 2 months in a row. At least 3 tools used weekly by 20% or more of active installs. All 17 free packs pass the sample checks and score 85+ on real-model runs. Guardian's first real-model run completes with no unsafe action. Signing and sandbox reviewed by someone outside the team. |
 | Gate 3 to 4 | At least 10 paying agent subscribers and 3 outside developers with a live agent. No key or sandbox incidents. Agent refund rate under 5%. At least 5 teams ask for shared quotas (a waitlist counts). 2,000 weekly active installs. |
 
-If Phase 0 interviews show builders rarely hit free limits, Phase 1 leads with the radar, data-policy filters and bad-answer failover rather than pooling.
-
 ## Build status and change log
 
-Phase 1 milestones M1 to M4, decision brain v1 and all 17 skill packs (waves 1 to 5) are built and pushed. Next: real-model runs once the Cerebras and NVIDIA keys exist, a bug sweep, the beta on today's tool by about 16 Oct 2026, then M5 (the MangoMan app for everyone) and M6 (the coding workspace). This log records what was built and what changed in the plan, newest first.
+Phase 1 milestones M1 to M4, decision brain v1, all 17 skill packs (waves 1 to 5), the agent kit, Guardian and the QA agent are built and pushed. Next: real-model runs once the Cerebras and NVIDIA keys exist, a bug sweep, the beta on today's tool by about 16 Oct 2026, then M5 (the MangoMan app for everyone) and M6 (the coding workspace). This log records what was built and what changed in the plan, newest first.
 
 **Order of work (updated 6 Oct):** every free skill pack is done; next a full bug sweep (including 6 issues found while taking screenshots), then the beta on today's tool (about 16 Oct 2026), then M5, the MangoMan app for everyone (web and desktop first, mobile later), then M6, the coding workspace.
 
@@ -700,10 +700,9 @@ Phase 1 milestones M1 to M4, decision brain v1 and all 17 skill packs (waves 1 t
 - [Claude Code and LLM gateways (Anthropic docs)](https://code.claude.com/docs/en/llm-gateway)
 - [Codex CLI custom providers (Morph)](https://www.morphllm.com/codex-provider-configuration)
 - [Hermes Agent documentation (Nous Research)](https://hermes-agent.nousresearch.com/docs/)
-- [OpenRouter Ori Harness](https://openrouter.ai/docs/guides/ori/harness), [Ori Eval](https://openrouter.ai/docs/guides/ori/eval), [Spawn](https://openrouter.ai/spawn), [Agent SDK](https://openrouter.ai/docs/agent-sdk/overview)
+- OpenRouter Ori: [Harness](https://openrouter.ai/docs/guides/ori/harness), [Eval](https://openrouter.ai/docs/guides/ori/eval), [Spawn](https://openrouter.ai/spawn), [Agent SDK](https://openrouter.ai/docs/agent-sdk/overview)
 - [OpenRouter rate limits for free models](https://openrouter.ai/docs/api-reference/limits)
-- [OpenCode Zen free models](https://opencode.ai/docs/zen/), [OpenCode tools](https://opencode.ai/docs/tools/), [OpenCode providers](https://opencode.ai/docs/providers/), [OpenCode config](https://opencode.ai/docs/config/)
+- OpenCode: [Zen free models](https://opencode.ai/docs/zen/), [tools](https://opencode.ai/docs/tools/), [providers](https://opencode.ai/docs/providers/), [config](https://opencode.ai/docs/config/)
 - [OpenCode explained (Analytics Vidhya, Sep 2026)](https://www.analyticsvidhya.com/blog/2026/09/opencode-ai-explained/)
-- [Jev gateway (decision model for tool calls)](https://github.com/vinilana/jev-gateway), [Jev 1.13 Free overview](https://juliangoldie.com/jev-1-13-free/)
-- [Claude Code: other LLM gateways](https://code.claude.com/docs/en/llm-gateway)
+- Jev: [gateway](https://github.com/vinilana/jev-gateway), [1.13 Free overview](https://juliangoldie.com/jev-1-13-free/)
 - [Codex CLI custom model providers](https://codex.danielvaughan.com/2026/04/23/codex-cli-custom-model-providers-configuration-guide/)
