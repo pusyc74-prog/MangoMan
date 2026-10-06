@@ -1,6 +1,6 @@
 # MangoMan: Technical PRD
 
-Oct 2, 2026
+Oct 6, 2026
 
 MangoMan is a free, local-first AI router that pools every free model a builder can reach, switches automatically when one runs dry, and never holds their keys or sees their prompts.
 
@@ -107,7 +107,7 @@ We lead on the three things no competitor combines: keys and prompts stay local,
 | Team mode without sharing keys | Yes (P4) | No (shared org keys) | No (central keys) | No | No (central keys) | No |
 | Test generator, QA agent, code review | Yes (P2) | No | No | Yes (coding agent) | No | No |
 | Plug-and-play agent marketplace | Yes (P3) | No | No | No | No | No |
-| Self-healing app monitor (Guardian) | Yes (P3) | No | No | No | No | No |
+| Self-healing app monitor (Guardian) | Yes (built) | No | No | No | No | No |
 | Works offline | Yes (P4, local models) | No | Partial | No | Partial | No |
 
 (P2), (P3), (P4) mark the roadmap phase in which a feature ships.
@@ -159,7 +159,7 @@ The product is one platform in four layers; every layer runs on the user's machi
 - **Own agent kit** on LangGraph for agents we build and maintain.
 - **Safety rule:** every community agent is signed, sandboxed and declares its permissions (files, network hosts, tools) before install.
 
-### Layer 4: Guardian, the self-healing monitor (Phase 3)
+### Layer 4: Guardian, the self-healing monitor (built; first real-model run pending)
 
 1. **Monitor** uptime, error logs, crashes, slow endpoints and failed jobs of the developer's app.
 2. **Triage** with an AI agent that reads the error, stack trace and recent commits to find the likely cause.
@@ -236,7 +236,7 @@ Every skill an agency sells gets two tiers: a **free skill pack** anyone can use
 | Design and web | Landing page, brand kit, resume | Landing-page builder with A/B variants and speed checks |
 | Data and reporting | Data to dashboard, CEO deck, monthly client report | Monthly client reporting from connected data sources |
 | Business documents | Proposal, quote, invoice, cover letter, meeting minutes | Proposal writer with pricing tables and past-work references |
-| Software | Simple web app, code review | QA agent (P2), Guardian (P3) |
+| Software | Simple web app, code review | QA agent, Guardian (built) |
 
 **How the marketplace works:**
 
@@ -543,6 +543,7 @@ Phase 1 milestones M1 to M4, decision brain v1 and all 16 skill packs (waves 1 t
 
 | Date | Item | What changed |
 | --- | --- | --- |
+| 2026-10-06 | Handoff, PRD copy, decisions | HANDOFF.md and docs/PRD.md added to the repo for continuing in a new account. Decided: prompting keeps our structure, scripts and checkers; STE-style wording (one action per line, imperative, under 20 words, fixed terms) is a possible improvement, to be proven with the eval harness. Next build candidate: a website copy skill pack (brief, competitor research, messaging plan, sitemap, copy per page in one voice, self-critique and rewrite, checks for cliches, reading level, claims and SEO fields). Guardian marked built in the feature tables. Project B (superagents) is separate and not part of MangoMan. |
 | 2026-10-05 | Pending list built (23810f0, 85be424, f7341a7, 84a91f9) | Owner's coding through dev: mangoman code in a Guardian project opens a workspace (branch from dev); mangoman guardian ship queues it (QA tests, dev, approval; Guardian rewrites only if QA fails). mangoman new NAME starts an app with git, guardian.json and the dev branch from day 1. Production rollback keeps the work (commits copied to a fresh branch). Guardian: a fix's tests must fail on the code from before the fix; optional version address per environment checks the commit really deployed; deploy previews read from output (Vercel, Netlify; init detects netlify.toml); nightly masking also for JSON, JSON lines and CSV; dashboard Guardian section with Approve and Reject (registered projects only, rows stack on phones). Agents (P2): internal/review scan on every change before dev (secrets block; risky code and new dependencies flagged); mangoman review (scan plus model bug review), mangoman tests (QA agent writes tests, runs them), mangoman changelog (plain release notes into CHANGELOG.md). Load test (3,000 requests, 300 at once, one provider failing 1 in 10: 688/s, 0 failed) runs with every test run. The six screenshot issues were already fixed in the earlier sweep. Still open: measuring quality after a mid-task model switch (needs real model keys); removing the dashboard training labels (owner's call). |
 | 2026-10-04 | Permanent development environment (e03cd78) | Decided with the owner: every app gets a dev environment from day 1, running next to production all the time with the same code; own server or VPS: the same server at dev.yoursite.com; production data copied to dev every night with personal details masked; the owner's own changes take the same path as Guardian's fixes. Built: dev branch from the production branch in its own folder, deployed with dev.deploy (Vercel preview, second Docker copy, or own-server script). Each run merges production's new commits into dev and reports drift. Fixes and owner changes (guardian change, or a Telegram message confirmed with a button) are written on their own branch, get tests from the QA agent, are merged into dev, deployed and QA-tested there with no approval, and taken out again on failure; dev holds one change at a time, the rest queue. Approval merges dev into production, deploys and tests; on failure rollback, revert, dev reset, queued again. Nightly masked data copy: data.export SQL dump (pg\_dump --column-inserts, MySQL, SQLite) masked by column name (name, email, phone, address, Aadhaar, PAN, birth date) and by pattern inside text values, then data.import into dev's own database. Temporary per-fix copies removed. Not built yet: masking for non-SQL data; checking the deployed version (only code parity is checked); dashboard approvals. |
 | 2026-10-04 | Guardian becomes a self-healing loop (2e4a52e) | Decided with the owner: Guardian works without approval in development and asks only before production. Flow: watch (URL, log, command checks) > first aid (owner-listed fixes such as restart, kept on) > incident: Guardian finds the root cause and fixes it on branch guardian/ID in a separate git worktree > QA agent writes a regression test (non-test changes are undone) > tests and browser check against a development copy (dev.start on a free port, Docker, or dev.deploy preview such as Vercel; secret-looking variables stripped, owner's test values added) > up to 3 rounds, then needs\_you > when QA passes, approval request on Telegram (owner's own @BotFather bot, polled from the user's computer, only the owner's chat obeyed; Approve or Reject buttons; also mangoman guardian approve ID) > merge, prod.deploy, QA in production (checks plus browser) > on failure prod.rollback, revert, fresh copy, back to fixing. Reports at 08:00 and 20:00 daily, also on quiet days ("All good"); /report on Telegram. guardian init detects Vercel, Docker, npm and gitignores .guardian/. Not built yet: a development copy for every coding session in mangoman code; Netlify previews; checking that the QA test fails without the fix; approvals in the dashboard. |
