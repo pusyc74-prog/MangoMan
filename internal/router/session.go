@@ -109,6 +109,7 @@ type Outlook struct {
 	BackAt      time.Time `json:"back_at,omitzero"`       // when a strong model frees up, if known
 	WeakerUntil time.Time `json:"weaker_until,omitzero"`  // weak models allowed until then
 	WeakerOn    bool      `json:"weaker_always,omitzero"` // weak models always allowed
+	HasList     bool      `json:"has_list,omitzero"`      // My list is set: other models need permission
 }
 
 // Outlook previews the next request: a typical chat of the same kind as
@@ -129,14 +130,19 @@ func (rt *Router) Outlook() Outlook {
 		class = o.Last.Class
 	}
 	cands, info := rt.plan(&core.Request{EstTokens: 8000, AllowWeaker: true}, class)
+	fav, _ := rt.splitFavorites(cands)
+	o.HasList = len(rt.Cfg.GetFavorites()) > 0
 	o.StrongBusy = len(cands) > 0
 	for i, c := range cands {
 		if i < 3 {
 			o.Next = append(o.Next, c.Target())
 		}
-		if !c.Weak {
+		if !c.Weak && !o.HasList {
 			o.StrongBusy = false
 		}
+	}
+	if len(fav) > 0 {
+		o.StrongBusy = false
 	}
 	if o.StrongBusy {
 		o.BackAt = info.EarliestReset

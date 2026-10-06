@@ -99,6 +99,11 @@ a QA agent, and **Guardian**, the self-healing system.
 - Before go-live: measure real requests and tokens per coding task and per pack task on NVIDIA; tell the owner how many tasks a free user gets a day.
 - After launch: slim coding mode and a capacity meter. Heavy coding is not promised at launch; chat and packs are.
 
+## My list and OpenCode (built 6 Oct)
+
+- With a My list set, the router uses only those models. When all are busy or out of limits it stops and asks before using any other model (1 hour or always). No list: normal ranking.
+- `mangoman code` offers to download OpenCode (about 60 MB, official release, no Node) into MangoMan's folder when it is missing.
+
 ## Decisions already made (with reasons)
 
 | Decision | Why |

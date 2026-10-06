@@ -226,8 +226,12 @@ func (rt *Router) writeWeaker(w http.ResponseWriter, info planInfo) {
 	if info.EarliestReset.After(time.Now()) {
 		back = "at " + info.EarliestReset.Local().Format("15:04")
 	}
+	busy := "the strong free models are busy"
+	if len(rt.Cfg.GetFavorites()) > 0 {
+		busy = "your preferred models are busy"
+	}
 	core.WriteError(w, http.StatusServiceUnavailable, "only_weaker_models", fmt.Sprintf(
-		"the strong free models are busy and free up %s. To keep going now, allow a smaller model in the dashboard (mangoman dashboard), or connect Cerebras or NVIDIA, both free with large limits: mangoman keys add cerebras", back))
+		"%s and free up %s. To keep going now, allow other models in the dashboard (mangoman dashboard), or connect another free provider such as NVIDIA: mangoman keys add nvidia", busy, back))
 }
 
 func (rt *Router) writeNoCandidate(w http.ResponseWriter, info planInfo) {

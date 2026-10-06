@@ -609,6 +609,31 @@ func TestMyListFirstThenFallsThrough(t *testing.T) {
 	}
 }
 
+func TestMyListAsksBeforeLeaving(t *testing.T) {
+	// My list holds b only. When b is busy the router must stop and ask
+	// rather than use a, until the user allows other models.
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: okJSON("from a")}
+	b := &fake{id: "b", model: "m2", quality: 0.8, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	rt.Cfg.AllowWeaker = false
+	rt.Cfg.SetFavorites([]string{"m2"})
+	if w := do(t, rt, hello); w.Header().Get("X-MangoMan-Provider") != "b" {
+		t.Fatalf("My list entry should answer: %v", w.Header())
+	}
+	b.handler = status(429, map[string]string{"Retry-After": "600"})
+	w := do(t, rt, hello)
+	if w.Code != 503 || !strings.Contains(w.Body.String(), "your preferred models are busy") || a.calls.Load() != 0 {
+		t.Fatalf("should ask before leaving My list: %d %s (a calls %d)", w.Code, w.Body, a.calls.Load())
+	}
+	if o := rt.Outlook(); !o.StrongBusy || !o.HasList {
+		t.Fatalf("outlook should say the preferred models are busy: %+v", o)
+	}
+	rt.AllowWeakerFor(time.Hour)
+	if w := do(t, rt, hello); w.Header().Get("X-MangoMan-Provider") != "a" {
+		t.Fatalf("allowed for an hour, a should answer: %v %s", w.Header(), w.Body)
+	}
+}
+
 func TestMyListProviderPin(t *testing.T) {
 	// Same model on two providers; the list pins provider b.
 	a := &fake{id: "a", model: "m1", quality: 0.9, speed: 0.9, handler: okJSON("from a")}

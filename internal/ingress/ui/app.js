@@ -677,9 +677,9 @@ function renderNow(o) {
   $("now-next").textContent = next.length ? `Next if it runs out: ${next.map(modelName).join(", ")}` : o.next && o.next.length ? "" : "No model is free right now. Connect a provider below.";
   const allowed = o.weaker_always || o.weaker_until;
   $("now-ask").hidden = !o.strong_busy || allowed;
-  $("now-ask-text").textContent = `The strong free models are busy${o.back_at ? ` until ${hm(o.back_at)}` : ""}. A smaller model can carry on, with simpler answers. Or connect Cerebras or NVIDIA (free) below.`;
+  $("now-ask-text").textContent = `${o.has_list ? "Your preferred models are busy" : "The strong free models are busy"}${o.back_at ? ` until ${hm(o.back_at)}` : ""}. ${o.has_list ? "Other models can carry on, but answers may differ." : "A smaller model can carry on, with simpler answers."} Or connect another free provider such as NVIDIA below.`;
   $("now-weaker").hidden = !allowed;
-  $("now-weaker-text").textContent = o.weaker_always ? "Smaller models are allowed when the strong ones are busy." : allowed ? `Smaller models allowed until ${hm(o.weaker_until)}.` : "";
+  $("now-weaker-text").textContent = o.weaker_always ? (o.has_list ? "Other models are allowed when your preferred ones are busy." : "Smaller models are allowed when the strong ones are busy.") : allowed ? `${o.has_list ? "Other" : "Smaller"} models allowed until ${hm(o.weaker_until)}.` : "";
 }
 
 async function loadNow() {

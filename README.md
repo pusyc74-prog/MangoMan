@@ -74,7 +74,7 @@ Routing also uses measured speed: after two answers from a model, its real respo
 
 ## My list and new models
 
-**My list** is your ordered set of preferred models. Every request tries them first, top to bottom; when they are used up (rate limited, cooling down after errors, or missing a capability the request needs), MangoMan falls back to its normal best-free-model ranking.
+**My list** is your ordered set of preferred models. Every request tries them first, top to bottom; when they are used up (rate limited, cooling down after errors, or missing a capability the request needs), MangoMan stops and asks before using any model outside the list (dashboard: allow other models for 1 hour or always, or the `X-MangoMan-Allow-Weaker: 1` header). With no list set, it uses its normal best-free-model ranking.
 
 | Entry | Meaning |
 | --- | --- |
@@ -251,7 +251,7 @@ args = ["mcp"]
 
 Guardrails: only files inside the project are sent, never files that look like secrets (`.env`, keys, credentials), symlinks out of the project are refused, 200 KB per file and 600 KB per call. `free_review` excludes secrets files from the diff.
 
-**`mangoman code`** opens OpenCode already connected to MangoMan (no config files touched), starts the router for the session if it is not running, and turns on OpenCode's web search so it can research while it codes (`--no-web` to turn it off). Pick the model with `--model free/coder`, `strict/<model>` or `group/<name>`.
+**`mangoman code`** opens OpenCode already connected to MangoMan (no config files touched), starts the router for the session if it is not running, offers to download OpenCode into MangoMan's own folder if it is not installed (about 60 MB from its official GitHub release, asks first, no Node needed), and turns on OpenCode's web search so it can research while it codes (`--no-web` to turn it off). Pick the model with `--model free/coder`, `strict/<model>` or `group/<name>`.
 
 Checked end to end with the real tools: OpenCode 1.18 through `mangoman code`, and Claude Code 2.1 running on MangoMan and calling `free_status` through assist mode.
 

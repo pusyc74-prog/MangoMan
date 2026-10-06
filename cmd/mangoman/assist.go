@@ -18,6 +18,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/mcp"
+	"github.com/pusyc74-prog/mangoman/internal/opencode"
 	"github.com/pusyc74-prog/mangoman/internal/skills"
 )
 
@@ -114,10 +115,32 @@ func serveEnv() ([]string, error) {
 	return append(env, "MANGOMAN_PASSPHRASE="+pass), nil
 }
 
-const openCodeInstall = `OpenCode is not installed. Install it with one of:
+const openCodeInstall = `To install OpenCode yourself, use one of:
   curl -fsSL https://opencode.ai/install | bash
   npm install -g opencode-ai
 then run "mangoman code" again.`
+
+// offerOpenCode asks before downloading OpenCode into MangoMan's own folder.
+func offerOpenCode(home string) (string, error) {
+	if !stdinIsTerminal() {
+		return "", errors.New("opencode not found")
+	}
+	size := "about 60 MB"
+	if n := opencode.Size(); n > 0 {
+		size = fmt.Sprintf("%d MB", n>>20)
+	}
+	fmt.Printf("MangoMan's coding helper (OpenCode, free and open source) is not installed.\nDownload it now from its official GitHub page (%s)? [Y/n] ", size)
+	line, _ := stdin.ReadString('\n')
+	if a := strings.ToLower(strings.TrimSpace(line)); a != "" && a != "y" && a != "yes" {
+		return "", errors.New("opencode not installed")
+	}
+	fmt.Println("Downloading...")
+	p, err := opencode.Install(home)
+	if err == nil {
+		fmt.Println("Installed.")
+	}
+	return p, err
+}
 
 // cmdCode opens OpenCode wired to MangoMan, starting the router for the
 // session if it is not already running.
@@ -132,10 +155,16 @@ func cmdCode(args []string) error {
 	if err != nil {
 		return err
 	}
-	oc, err := exec.LookPath("opencode")
+	home, err := config.Dir()
 	if err != nil {
-		fmt.Println(openCodeInstall)
-		return errors.New("opencode not found")
+		return err
+	}
+	oc, err := opencode.Path(home)
+	if err != nil {
+		if oc, err = offerOpenCode(home); err != nil {
+			fmt.Println(openCodeInstall)
+			return err
+		}
 	}
 
 	var router *exec.Cmd

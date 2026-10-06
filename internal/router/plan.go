@@ -225,14 +225,16 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 	}
 	// My list first, in the user's order; then the router's own ranking,
 	// led by the model this chat already uses; then the best local model as
-	// the backstop, always kept last. Weak models only if the user allows.
+	// the backstop, always kept last. Weak models, and with a My list every
+	// model outside it, only if the user allows.
 	allowWeak := req.AllowWeaker || req.Internal || rt.allowWeaker()
 	stuck := rt.stuck(req)
 	fav, others := split(append(cloud, local...))
+	hasList := len(rt.Cfg.GetFavorites()) > 0
 	var lead, restCloud, restLocal []Candidate
 	for _, c := range others {
 		switch {
-		case c.Weak && !allowWeak:
+		case (c.Weak || hasList) && !allowWeak:
 			info.Weaker++
 		case c.Provider.Local:
 			restLocal = append(restLocal, c)

@@ -128,7 +128,7 @@ The product is one platform in four layers; every layer runs on the user's machi
 | Key health manager | Guided sign-up to 10+ free providers, key validation, expiry and revocation alerts | P1 |
 | Data-policy filters | Per-model labels (retention, training, jurisdiction); every provider and model on by default; optional per-user exclusions | P1 |
 | MCP assist mode | Paid main model (Claude, GPT) keeps control and offloads cheap work to free models through MCP tools | P1 |
-| My list | The user's ordered preferred models, tried first; when they are used up the router falls back to its own ranking. Entry = model name (any provider) or provider/model | P1 (built) |
+| My list | The user's ordered preferred models, tried first; when they are used up the router stops and asks before using any other model (allow for 1 hour or always). With no list it uses its own ranking. Entry = model name (any provider) or provider/model | P1 (built) |
 | Strict mode and model groups | For workflows that need consistent output: strict/\<model> uses only that model; group/\<name> uses only a tested set in the user's order. Never switches outside; returns 429 with the reset time when used up | P1 (built) |
 | Measured-speed routing | After two good answers a model's real response time replaces the catalogue estimate, so slow or overloaded models sink in the ranking | P1 (built) |
 | Multi-model answers | Asks 2-3 free models in parallel and picks the best or majority answer | P2 |
@@ -395,7 +395,7 @@ Chat switches models freely to keep answering; workflows need the same model eve
 
 | Model field | Uses | When all are used up |
 | --- | --- | --- |
-| `free/auto`, `free/coder` and so on | My list first, then the router's ranking, any model | Switches to another free model |
+| `free/auto`, `free/coder` and so on | My list first; with a list, other models only with the user's permission; with no list, the router's ranking | Switches to another free model (asks first when a list is set) |
 | `kimi-k3` (a model name) | That model on every provider first, then others | Switches to another model |
 | `strict/kimi-k3` | Only that model, on any provider that serves it | 429 with the time capacity returns |
 | `strict/groq/gpt-oss-120b` | Only that model on that provider | 429 |
@@ -588,6 +588,7 @@ Phase 1 milestones M1 to M4, decision brain v1, all 17 skill packs (waves 1 to 5
 
 | Date | Item | What changed |
 | --- | --- | --- |
+| 2026-10-06 | My list asks before leaving it; coding helper installs itself | Router: with a My list set, the router tries only those models; when all are busy, rate limited or out of tokens it stops and asks, like it already did for clearly weaker models (dashboard allows other models for 1 hour or always). With no list nothing changes. Dashboard wording and a test added. `mangoman code` no longer needs OpenCode installed first: it asks, then downloads OpenCode (about 60 MB, MIT, official GitHub release, no Node needed) into MangoMan's folder and starts it. Checked with the real download (OpenCode 1.18.34). |
 | 2026-10-06 | Free capacity and quality decisions | Free pool for coding is thin: Cerebras now needs a card (2 models, 5 requests a minute), Groq allows 8K tokens a minute and 200K a day, OpenRouter 50 requests a day; NVIDIA and OpenCode Zen carry coding. Decided: no step-splitting across models in the beta (one model per task, ask first for weaker ones, as built). Later, test with the eval harness whether small or local models can do unseen work (sorting, trimming tool output, script-checked cleanup) with a small score drop; never for the writing or the final answer. Local models only as a labelled fallback. Before go-live: measure real requests and tokens per coding task and per pack task on NVIDIA, then publish how many tasks a free user gets a day. After launch: a slim coding mode (smaller OpenCode instructions, trimmed context) and a capacity meter. Heavy coding is not promised at launch; chat and packs are the focus. |
 | 2026-10-06 | No day-wise launch plan | The owner keeps building at full pace and sets the go-live once the build is complete. Kept from the earlier plan: publish the builds CI already makes as a GitHub Release; beta users lead with the router and chat (skill packs need Python, so they come after, with a simple guide); any user count must be opt-in with PRIVACY.md updated in the same step, otherwise count downloads and stars; Guardian's first real run, payments, M5 and M6 wait until after launch. |
 | 2026-10-06 | Order of work: beta before M5 and M6 | The beta now ships on today's tool (terminal install, local dashboard, 17 packs) before go-live; the M5 app and the M6 workspace follow it. |
