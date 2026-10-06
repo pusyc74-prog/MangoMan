@@ -81,6 +81,15 @@ a QA agent, and **Guardian**, the self-healing system.
 | M6 coding workspace screen | Later, after M5. |
 | Cloud mode | Only if at all, opt-in, split-key design. |
 
+## 10-day launch plan (approved 6 Oct, start 7 Oct)
+
+- 7 Oct: publish the builds CI already makes (Windows, Mac Intel and M-series, Linux) as a GitHub Release.
+- Beta users start with the router and chat. Skill packs need Python, so they come after, with a simple guide.
+- A user count must be opt-in and PRIVACY.md updated in the same step (it says no analytics and no tracking). Otherwise count downloads and stars.
+- 13 Oct private beta (10 to 20 people); 16 Oct public launch, posted by the owner.
+- Waits until after launch: Guardian's first real run, payments, M5, M6.
+- Needed from the owner: Cerebras and NVIDIA keys as GitHub secrets (today), a Windows tester (by 8 Oct), MARKETPLACE_KEY (by 12 Oct), beta names or groups (by 13 Oct).
+
 ## Decisions already made (with reasons)
 
 | Decision | Why |
