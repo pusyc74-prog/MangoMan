@@ -171,6 +171,7 @@ func cmdCode(args []string) error {
 	fs := flag.NewFlagSet("code", flag.ContinueOnError)
 	model := fs.String("model", "free/coder", "model: free/coder, free/auto, strict/<model> or group/<name>")
 	noWeb := fs.Bool("no-web", false, "turn off OpenCode's web search")
+	as := fs.String("as", "", "use this person's local token (mangoman people), so usage shows per person")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -238,7 +239,13 @@ func cmdCode(args []string) error {
 		fmt.Printf("Started MangoMan for this session (log: %s).\n", logPath)
 	}
 
-	env := append(os.Environ(), "MANGOMAN_TOKEN="+cfg.Token)
+	token := cfg.Token
+	if *as != "" {
+		if token = cfg.People[*as]; token == "" {
+			return fmt.Errorf("no person %q: add them with mangoman people add %s", *as, *as)
+		}
+	}
+	env := append(os.Environ(), "MANGOMAN_TOKEN="+token)
 	rules := ""
 	if os.Getenv("OPENCODE_CONFIG_DIR") == "" {
 		if oc, err := codeSkillsDir(); err == nil {

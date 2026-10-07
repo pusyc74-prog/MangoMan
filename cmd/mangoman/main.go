@@ -46,6 +46,7 @@ Usage:
   mangoman keys add <provider>  store a provider key on this computer
   mangoman keys list            show providers and which keys are present
   mangoman keys rm <provider>   remove a stored key
+  mangoman people [add|rm NAME] one local token per person on a shared machine, for usage per person
   mangoman dashboard            open the dashboard in your browser
   mangoman list [add|rm|up|new]  My list: models tried first; new free models
   mangoman code [--model M]     open OpenCode on free models (starts the router if needed)
@@ -90,6 +91,8 @@ func main() {
 		err = cmdServe(os.Args[2:])
 	case "keys":
 		err = cmdKeys(os.Args[2:])
+	case "people":
+		err = cmdPeople(os.Args[2:])
 	case "dashboard", "ui":
 		err = cmdDashboard()
 	case "list", "mylist":
@@ -525,6 +528,50 @@ func cmdKeys(args []string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown keys command %q", args[0])
+}
+
+// cmdPeople manages one local token per person sharing this machine, so
+// mangoman usage can show requests per person.
+func cmdPeople(args []string) error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	if len(args) == 0 {
+		names := cfg.PersonNames()
+		if len(names) == 0 {
+			fmt.Println("No people yet. Add one: mangoman people add NAME")
+		}
+		for _, n := range names {
+			fmt.Println(n)
+		}
+		return nil
+	}
+	if len(args) < 2 {
+		return errors.New("usage: mangoman people [add|rm NAME]")
+	}
+	name, err := keys.TeamName(args[1])
+	if err != nil {
+		return err
+	}
+	switch args[0] {
+	case "add":
+		tok := config.NewToken()
+		cfg.SetPerson(name, tok)
+		if err := config.Save(cfg); err != nil {
+			return err
+		}
+		fmt.Printf("Added %s. Use this token in %s's tools instead of the main one (or run mangoman code --as %s):\n%s\nRestart mangoman serve to use it.\n", name, name, name, tok)
+		return nil
+	case "rm", "remove":
+		cfg.SetPerson(name, "")
+		if err := config.Save(cfg); err != nil {
+			return err
+		}
+		fmt.Println("Removed", name)
+		return nil
+	}
+	return fmt.Errorf("unknown people command %q", args[0])
 }
 
 // teamFlag reads "--team NAME" from args; "" when absent.

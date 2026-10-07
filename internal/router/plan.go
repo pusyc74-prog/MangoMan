@@ -342,6 +342,27 @@ func (rt *Router) keySlots(p catalogue.Provider) []keySlot {
 	return out
 }
 
+// privateFirst moves providers that do not train on data ahead of the others
+// within each model, for a request that seems to carry a key or password.
+// The order between models is unchanged, so the answer's quality is too.
+func (rt *Router) privateFirst(cs []Candidate) []Candidate {
+	first := map[string]int{} // model -> position of its first candidate
+	for i, c := range cs {
+		if _, ok := first[c.Model.Canonical]; !ok {
+			first[c.Model.Canonical] = i
+		}
+	}
+	out := slices.Clone(cs)
+	sort.SliceStable(out, func(i, j int) bool {
+		a, b := out[i], out[j]
+		if a.Model.Canonical != b.Model.Canonical {
+			return first[a.Model.Canonical] < first[b.Model.Canonical]
+		}
+		return rt.Cat.PolicyFor(a.Model).TrainsOnData == "no" && rt.Cat.PolicyFor(b.Model).TrainsOnData != "no"
+	})
+	return out
+}
+
 // HasKey reports whether this machine has a usable key for a provider, the
 // user's own or a teammate's.
 func (rt *Router) HasKey(p catalogue.Provider) bool { return len(rt.keySlots(p)) > 0 }

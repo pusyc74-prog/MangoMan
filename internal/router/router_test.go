@@ -1,6 +1,7 @@
 package router
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -44,7 +45,8 @@ type fake struct {
 	limits  catalogue.Limits
 	local   bool
 	prio    int
-	noTeam  bool // catalogue switch: team keys off for this provider
+	noTeam  bool   // catalogue switch: team keys off for this provider
+	trains  string // data policy: trains on data ("" = "no")
 	calls   atomic.Int32
 	srv     *httptest.Server
 }
@@ -110,7 +112,7 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 		}
 		cat.Providers = append(cat.Providers, catalogue.Provider{
 			ID: f.id, Name: f.id, BaseURL: f.srv.URL, Kind: "openai", NeedsKey: true, Speed: speed,
-			Policy: catalogue.DataPolicy{Retention: "none", TrainsOnData: "no", Jurisdiction: "US"},
+			Policy: catalogue.DataPolicy{Retention: "none", TrainsOnData: cmp.Or(f.trains, "no"), Jurisdiction: "US"},
 			Quirks: f.quirks, AccountLimits: f.account, Local: f.local, Priority: f.prio, NoTeamKeys: f.noTeam,
 		})
 		cat.Models = append(cat.Models, catalogue.Model{
@@ -1072,5 +1074,24 @@ func TestTeamKeysSwitchedOffForAProvider(t *testing.T) {
 		if k != "key-a" {
 			t.Fatalf("team keys are off for this provider, yet %s was used", k)
 		}
+	}
+}
+
+// A request carrying a key goes first to a provider that does not train on
+// data, for the same model; without a key the usual order holds.
+func TestSecretPrefersPrivateProvider(t *testing.T) {
+	a := &fake{id: "a", model: "m1", quality: 0.9, prio: 1, trains: "yes", handler: okJSON("from a")}
+	b := &fake{id: "b", model: "m1", quality: 0.9, prio: 2, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	if w := do(t, rt, hello); w.Header().Get("X-MangoMan-Provider") != "a" {
+		t.Fatalf("without a secret the usual order holds: %v", w.Header())
+	}
+	key := `{"model":"free/auto","messages":[{"role":"user","content":"debug this: GROQ_API_KEY=gsk_` + strings.Repeat("a1B2", 10) + `"}]}`
+	w := do(t, rt, key)
+	if w.Header().Get("X-MangoMan-Provider") != "b" || w.Header().Get("X-MangoMan-Secret") != "1" {
+		t.Fatalf("a request with a key should go to the provider that does not train: %v", w.Header())
+	}
+	if !strings.Contains(w.Body.String(), "from b") {
+		t.Fatal("the request must still be answered")
 	}
 }

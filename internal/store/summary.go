@@ -34,6 +34,10 @@ type Summary struct {
 	// Parts estimates where input tokens went across all requests, by kind
 	// (instructions, tool definitions, tool results...).
 	Parts map[string]int `json:"parts,omitempty"`
+	// Secrets counts requests that seemed to carry a key or password.
+	Secrets int `json:"secrets,omitempty"`
+	// People counts requests per person (mangoman people); others are not listed.
+	People map[string]int `json:"people,omitempty"`
 }
 
 // Summarize reads a usage log and aggregates events since a time.
@@ -70,6 +74,15 @@ func Summarize(path string, since time.Time) (Summary, error) {
 		}
 		r.Attempts++
 		r.Tokens += e.Tokens
+		if e.Secret {
+			s.Secrets++
+		}
+		if e.Person != "" {
+			if s.People == nil {
+				s.People = map[string]int{}
+			}
+			s.People[e.Person]++
+		}
 		for k, n := range e.Parts {
 			if s.Parts == nil {
 				s.Parts = map[string]int{}

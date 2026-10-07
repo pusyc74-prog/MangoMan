@@ -94,8 +94,8 @@ func (s *Server) guardHost(next http.Handler) http.Handler {
 	})
 }
 
-// auth accepts the local token as a bearer token or x-api-key header (the
-// latter is what Anthropic clients send).
+// auth accepts the local token, or a person's token (mangoman people), as a
+// bearer token or x-api-key header (the latter is what Anthropic clients send).
 func (s *Server) auth(next http.Handler) http.Handler {
 	want := []byte(s.Cfg.Token)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -103,11 +103,15 @@ func (s *Server) auth(next http.Handler) http.Handler {
 		if got == "" {
 			got = r.Header.Get("x-api-key")
 		}
-		if len(want) == 0 || subtle.ConstantTimeCompare([]byte(got), want) != 1 {
-			core.WriteError(w, http.StatusUnauthorized, "invalid_local_token", "missing or wrong local token: see `mangoman init` output")
+		if len(want) > 0 && subtle.ConstantTimeCompare([]byte(got), want) == 1 {
+			next.ServeHTTP(w, r)
 			return
 		}
-		next.ServeHTTP(w, r)
+		if name := s.Cfg.Person(got); got != "" && name != "" {
+			next.ServeHTTP(w, r.WithContext(core.WithPerson(r.Context(), name)))
+			return
+		}
+		core.WriteError(w, http.StatusUnauthorized, "invalid_local_token", "missing or wrong local token: see `mangoman init` output")
 	})
 }
 

@@ -6,9 +6,11 @@ package core
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -259,4 +261,29 @@ func (r *Request) TokenParts() map[string]int {
 		parts[key] += len(m) / 4
 	}
 	return parts
+}
+
+// secretRE matches the shapes of common API keys, tokens and private keys.
+// Shapes only: long, prefixed strings, so ordinary text and code rarely match.
+var secretRE = regexp.MustCompile(`nvapi-[A-Za-z0-9_-]{30,}|gsk_[A-Za-z0-9]{30,}|sk-or-v1-[a-f0-9]{40,}|` +
+	`sk-ant-[A-Za-z0-9_-]{30,}|sk-(?:proj-)?[A-Za-z0-9_-]{32,}|csk-[a-z0-9]{30,}|ghp_[A-Za-z0-9]{36}|` +
+	`github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|xox[baprs]-[A-Za-z0-9-]{10,}|` +
+	`mm-local-[a-f0-9]{48}|-----BEGIN [A-Z ]*PRIVATE KEY-----`)
+
+// HasSecret reports whether the request seems to carry an API key, token or
+// private key (pasted by the user, or read from a file by a coding tool).
+func (r *Request) HasSecret() bool { return secretRE.Match(r.Raw["messages"]) }
+
+type personKey struct{}
+
+// WithPerson marks a request context with the person who sent it (their
+// local token), for usage per person.
+func WithPerson(ctx context.Context, name string) context.Context {
+	return context.WithValue(ctx, personKey{}, name)
+}
+
+// Person is the name WithPerson set, or "".
+func Person(ctx context.Context) string {
+	name, _ := ctx.Value(personKey{}).(string)
+	return name
 }

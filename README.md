@@ -107,6 +107,10 @@ mangoman keys rm nvidia --team ravi
 
 On the dashboard, each provider has an **Add team key** button. Each team key shows whether it is working, resting or rejected, and its requests today. The live panel says whose key answered, and so does the `X-MangoMan-Team-Key` response header.
 
+**Usage per person.** `mangoman people add ravi` gives Ravi his own local token for his tools (or `mangoman code --as ravi`); `mangoman usage` then shows requests by person. `mangoman people rm ravi` removes it.
+
+**Keys pasted into a chat.** When a request seems to carry an API key, token or private key (pasted by you, or read from a file by a coding tool), MangoMan sends it unchanged, but to a provider that does not train on data first, for the same model. The response carries `X-MangoMan-Secret: 1` and `mangoman usage` counts these requests. The text is never altered, so code and answers stay correct.
+
 Each key stays under its owner's provider account and that provider's terms; some providers say a key is for its owner's use only. MangoMan shows this notice before a team key is saved. Team keys can be switched off for any provider from the signed catalogue (`no_team_keys`), without a new release. Different people working on their own devices is a separate, later feature (team mode).
 
 ## What M2 adds

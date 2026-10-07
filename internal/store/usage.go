@@ -26,6 +26,10 @@ type Event struct {
 	// Parts estimates where the request's input tokens went (instructions,
 	// tool definitions, tool results...). Set on the first attempt only.
 	Parts map[string]int `json:"parts,omitempty"`
+	// Secret: the request seemed to carry a key or password (first attempt).
+	Secret bool `json:"secret,omitempty"`
+	// Person who sent the request through their own local token (first attempt).
+	Person string `json:"person,omitempty"`
 }
 
 // BrainClass marks the decision brain's own calls. They use free quota, so

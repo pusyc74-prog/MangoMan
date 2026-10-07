@@ -123,6 +123,11 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		return
 	}
 	cands = rt.takeTurns(cands)
+	secret := req.HasSecret()
+	if secret {
+		cands = rt.privateFirst(cands)
+		w.Header().Set("X-MangoMan-Secret", "1")
+	}
 
 	var (
 		lastStatus   int
@@ -177,7 +182,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			Attempt: attempts, Stream: req.Stream, Tokens: res.tokens,
 		}
 		if attempts == 1 {
-			ev.Parts = req.TokenParts()
+			ev.Parts, ev.Secret, ev.Person = req.TokenParts(), secret, core.Person(r.Context())
 		}
 		rt.Log.Add(ev)
 		who := c.Target()

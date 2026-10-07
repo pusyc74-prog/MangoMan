@@ -15,7 +15,7 @@ func TestSummarize(t *testing.T) {
 	now := time.Now()
 	ev := []Event{
 		{Time: now.Add(-48 * time.Hour), RequestID: "old", Provider: "groq", Model: "m", Outcome: "ok", Attempt: 1},
-		{Time: now, RequestID: "r1", Provider: "groq", Model: "m", Outcome: "ok", Attempt: 1, LatencyMS: 100, Tokens: 15, Parts: map[string]int{"instructions": 9000, "user": 20}},
+		{Time: now, RequestID: "r1", Provider: "groq", Model: "m", Outcome: "ok", Attempt: 1, LatencyMS: 100, Tokens: 15, Parts: map[string]int{"instructions": 9000, "user": 20}, Secret: true, Person: "ravi"},
 		{Time: now, RequestID: "r2", Provider: "groq", Model: "m", Outcome: "rate_limited", Attempt: 1, LatencyMS: 20},
 		{Time: now, RequestID: "r2", Provider: "cerebras", Model: "m", Outcome: "ok", Attempt: 2, LatencyMS: 300},
 		{Time: now, RequestID: "r3", Provider: "groq", Model: "m", Outcome: "quality:empty", Attempt: 1},
@@ -35,6 +35,9 @@ func TestSummarize(t *testing.T) {
 		t.Fatalf("summary %+v", s)
 	}
 	g := s.Rows[0]
+	if s.Secrets != 1 || s.People["ravi"] != 1 {
+		t.Fatalf("secrets %d, people %v", s.Secrets, s.People)
+	}
 	if s.Parts["instructions"] != 9000 || s.Parts["user"] != 20 {
 		t.Fatalf("parts not summed: %v", s.Parts)
 	}

@@ -3,6 +3,7 @@ package config
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -50,6 +51,48 @@ type Config struct {
 	// provider, one per teammate: provider id -> names. The keys themselves
 	// live in the key store, never here.
 	TeamKeys map[string][]string `json:"team_keys,omitempty"`
+	// People are extra local tokens, one per person sharing this machine,
+	// so usage can be shown per person: name -> token. Like Token, they only
+	// guard the local endpoint.
+	People map[string]string `json:"people,omitempty"`
+}
+
+// Person returns the name whose local token this is ("" for none).
+func (c *Config) Person(token string) string {
+	mu.RLock()
+	defer mu.RUnlock()
+	for name, t := range c.People {
+		if subtle.ConstantTimeCompare([]byte(t), []byte(token)) == 1 {
+			return name
+		}
+	}
+	return ""
+}
+
+// SetPerson adds a person with a token, or removes them (token "").
+func (c *Config) SetPerson(name, token string) {
+	mu.Lock()
+	defer mu.Unlock()
+	if token == "" {
+		delete(c.People, name)
+		return
+	}
+	if c.People == nil {
+		c.People = map[string]string{}
+	}
+	c.People[name] = token
+}
+
+// PersonNames lists the people, sorted.
+func (c *Config) PersonNames() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	out := make([]string, 0, len(c.People))
+	for n := range c.People {
+		out = append(out, n)
+	}
+	sort.Strings(out)
+	return out
 }
 
 // GetTeamKeys returns the names of a provider's team keys, in the order

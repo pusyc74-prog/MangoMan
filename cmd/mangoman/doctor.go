@@ -260,6 +260,20 @@ func cmdUsage(args []string) error {
 	if s.BrainCalls > 0 {
 		fmt.Printf("The decision brain made %d calls of its own; they show in the table, not in the counts above.\n", s.BrainCalls)
 	}
+	if s.Secrets > 0 {
+		fmt.Printf("%d requests seemed to carry a key or password. They were sent unchanged, to providers that do not train on data where the same model allowed it.\n", s.Secrets)
+	}
+	if len(s.People) > 0 {
+		names := make([]string, 0, len(s.People))
+		for n := range s.People {
+			names = append(names, n)
+		}
+		sort.Slice(names, func(i, j int) bool { return s.People[names[i]] > s.People[names[j]] })
+		for i, n := range names {
+			names[i] = fmt.Sprintf("%s %d", n, s.People[n])
+		}
+		fmt.Println("Requests by person: " + strings.Join(names, ", ") + ".")
+	}
 	if line := partsLine(s.Parts); line != "" {
 		fmt.Println("Where the input went (estimated): " + line + ".")
 	}

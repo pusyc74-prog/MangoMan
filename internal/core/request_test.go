@@ -95,3 +95,34 @@ func TestTokenParts(t *testing.T) {
 		t.Fatalf("the long instructions should weigh most: %v", p)
 	}
 }
+
+func TestHasSecret(t *testing.T) {
+	msg := func(text string) *Request {
+		b, _ := json.Marshal(map[string]any{"model": "x", "messages": []map[string]string{{"role": "user", "content": text}}})
+		r, err := ParseChat(b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+	for _, s := range []string{
+		"my key is nvapi-" + strings.Repeat("Ab3_", 12),
+		"GROQ_API_KEY=gsk_" + strings.Repeat("a1B2", 10),
+		"-----BEGIN OPENSSH PRIVATE KEY-----\nabc",
+		"aws AKIAIOSFODNN7EXAMPLE here",
+	} {
+		if !msg(s).HasSecret() {
+			t.Errorf("missed a secret in %q", s[:20])
+		}
+	}
+	for _, s := range []string{
+		"func ask() { return sk-1 }",
+		"commit 3f2a9c1e5b7d4e8a9c217d4e5f6a8b90aa11bb22",
+		"use the task-runner and a skip-list",
+		"the price is Rs 780 a week",
+	} {
+		if msg(s).HasSecret() {
+			t.Errorf("false alarm on %q", s)
+		}
+	}
+}

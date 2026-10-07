@@ -227,3 +227,20 @@ func TestTeamKeysOnTheDashboard(t *testing.T) {
 		t.Fatalf("team key not removed: %d %+v store=%v", w.Code, p, st)
 	}
 }
+
+func TestPersonToken(t *testing.T) {
+	h, s := dashServer(t, mem{})
+	s.Cfg.SetPerson("ravi", "tok-ravi")
+	ok := map[string]string{"Authorization": "Bearer tok-ravi"}
+	if w := call(h, "GET", "/v1/models", "127.0.0.1:4141", ok, ""); w.Code != 200 {
+		t.Fatalf("a person's token should work: %d", w.Code)
+	}
+	bad := map[string]string{"Authorization": "Bearer tok-nobody"}
+	if w := call(h, "GET", "/v1/models", "127.0.0.1:4141", bad, ""); w.Code != 401 {
+		t.Fatalf("an unknown token must be refused: %d", w.Code)
+	}
+	s.Cfg.SetPerson("ravi", "")
+	if w := call(h, "GET", "/v1/models", "127.0.0.1:4141", ok, ""); w.Code != 401 {
+		t.Fatalf("a removed person's token must stop working: %d", w.Code)
+	}
+}
