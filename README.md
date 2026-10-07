@@ -282,7 +282,7 @@ Checked end to end with the real tools: OpenCode 1.18 through `mangoman code`, a
 
 Run it in your project folder. MangoMan starts the router if needed, starts OpenCode as a private local server (password known only to MangoMan) and opens the coding screen in your browser:
 
-- **Chat** on the left: say what to build. **Plan** explains the change first; **Build** makes it. **Stop** ends a step.
+- **Chat** on the left: say what to build. **Plan** explains the change first; **Build** makes it. **Stop** ends a step; **New chat** starts fresh (the files stay as they are).
 - **Approvals:** before any command that could change something (installs, deletes, scripts), a card asks **Allow**, **Always allow this kind** or **Deny**. Reading commands (`ls`, `git status`, `git diff`, `git log`) run without asking.
 - **Changes:** every file the AI writes or edits, old lines in red, new in green.
 - **Terminal:** every command it ran and its output; you can run your own.

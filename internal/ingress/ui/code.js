@@ -397,6 +397,14 @@ document.addEventListener("DOMContentLoaded", () => {
   $("mode-plan").addEventListener("click", () => setAgent("plan"));
   $("mode-build").addEventListener("click", () => setAgent("build"));
   $("stop").addEventListener("click", () => api(`${OC}/session/${st.session.id}/abort`, { method: "POST" }).catch(() => {}));
+  $("new-chat").addEventListener("click", async () => {
+    try { st.session = await api(`${OC}/session`, { method: "POST", body: JSON.stringify({ title: "MangoMan Code" }) }); }
+    catch (err) { note(`Could not start a new chat: ${err.message}`, true); return; }
+    st.msgs.clear(); st.calls.clear(); st.asked.clear();
+    $("log").replaceChildren();
+    busy(false);
+    $("prompt").focus();
+  });
   $("ship").addEventListener("click", async () => {
     if (!confirm("Send this work to QA in dev? You approve it before it reaches production.")) return;
     note("Sending to QA in dev…");
