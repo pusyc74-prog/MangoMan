@@ -76,6 +76,10 @@ func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Route
 
 const maxBody = 64 << 20
 
+// maxRetries is how many times the last candidate is asked again after a
+// stream died before it said anything.
+const maxRetries = 2
+
 // attemptResult says what happened on one candidate.
 type attemptResult struct {
 	done     bool          // response written to the client
@@ -122,9 +126,11 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		clientErrors int
 		sawRateLimit bool
 		attempts     int
+		retries      int
 		unreachable  = map[string]bool{} // providers whose host failed this request
 	)
-	for _, c := range cands {
+	for i := 0; i < len(cands); i++ {
+		c := cands[i]
 		if r.Context().Err() != nil {
 			return // client went away
 		}
@@ -194,6 +200,20 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 				core.WriteError(w, lastStatus, "upstream_rejected_request", lastMsg)
 				return
 			}
+		}
+		// A stream that died before sending a word, with nothing left to fall
+		// back to, is worth asking the same model again: a provider under load
+		// drops streams, and measured on real free models that hiccup killed
+		// whole tasks because strict mode and a short My list have nowhere to
+		// fail over to. Two tries, a second apart, then give up.
+		if res.outcome == "stream_error" && i == len(cands)-1 && retries < maxRetries {
+			retries++
+			select {
+			case <-r.Context().Done():
+				return
+			case <-time.After(time.Second):
+			}
+			i--
 		}
 	}
 

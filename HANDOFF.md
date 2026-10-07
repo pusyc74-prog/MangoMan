@@ -198,10 +198,23 @@ takes 4 to 6 requests and 30K to 70K tokens. A **heavy** one (website copy,
 SEO article, email campaign) takes 32 to 37 requests and 0.8M to 1.0M tokens.
 Against the free tiers, one heavy task is about five times Groq's whole daily
 token allowance and most of OpenRouter's 50 daily requests, so NVIDIA has to
-carry pack work. Scores on the cases that finished: email campaign 100,
-resume 98, SEO article 92, website copy 61 (cut by its time limit, not
-finished). Reports and per-case logs are on the **eval-reports** branch under
-`reports/pack-run/`.
+carry pack work. Reports, per-case logs and the router log are on the **eval-reports** branch
+under `reports/pack-run/`; clone that branch to read a result.
+
+Four runs so far, same seven packs, one case each. **Scores swing with
+whichever model answers**, which is the output consistency risk the owner
+raised: email campaign 100 in run 1 and 0 in run 3; ad copy 0 then 51. The
+run pinned to one model (`strict/nemotron-3-ultra-550b`) is the repeatable
+one: tasks finished in 75 to 295 seconds instead of running out of time, and
+e-commerce listing scored 79, email campaign 90, resume 90, SEO article 93.5.
+
+**Three packs still produce nothing: ad copy, social posts, website copy.**
+They fail after 4 or 5 requests because NVIDIA returns HTTP 200 and then
+"Service temporarily overloaded" inside the stream, or drops the stream part
+way. The retry added on 7 Oct covers a stream that dies before saying a word;
+a stream that breaks after the answer started cannot be taken back. Next step
+for these three: run them pinned, with the retry in, and read the per-case
+logs on eval-reports.
 
 ## Still open (not built)
 

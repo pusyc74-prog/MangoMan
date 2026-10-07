@@ -368,6 +368,31 @@ func TestStreamErrorBeforeFirstTokenFailsOver(t *testing.T) {
 	}
 }
 
+// With one model there is nothing to fail over to, so a stream that dies
+// before saying a word must be asked again instead of killing the request.
+func TestStreamErrorRetriesTheOnlyModel(t *testing.T) {
+	var calls atomic.Int32
+	flaky := func(w http.ResponseWriter, r *http.Request) {
+		if calls.Add(1) == 1 {
+			w.Header().Set("Content-Type", "text/event-stream")
+			fmt.Fprintf(w, "data: %s\n\n", roleChunk)
+			w.(http.Flusher).Flush()
+			if hj, ok := w.(http.Hijacker); ok {
+				c, _, _ := hj.Hijack()
+				c.Close()
+			}
+			return
+		}
+		sse(chunk("ok at last"), "[DONE]")(w, r)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: flaky}
+	rt := setup(t, a)
+	w := do(t, rt, helloStream)
+	if !strings.Contains(w.Body.String(), "ok at last") {
+		t.Fatalf("after %d calls got %v\n%s", calls.Load(), w.Header(), w.Body)
+	}
+}
+
 func TestStreamErrorEventFailsOver(t *testing.T) {
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: sse(`{"error":{"message":"overloaded"}}`)}
 	b := &fake{id: "b", model: "m2", quality: 0.3, handler: sse(chunk("ok"), "[DONE]")}
