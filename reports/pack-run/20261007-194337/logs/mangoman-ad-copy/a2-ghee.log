@@ -1,0 +1,79 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: 1 Litre Ghee: all-capital word COD in '10% off first order with FIRST10. Free delivery on orders above ₹1,500. UPI, cards, COD.'; 1 Litre Ghee: description 1 is 95 characters (90); 1 Litre Ghee: description 3 is 93 characters (90); A2 Ghee: all-capital word COD in 'Every batch has a QR code with its lab report. 500ml ₹1,250, 1L ₹2,350. UPI & COD accepted.'; A2 Ghee: description 4 is 91 characters (90); Bilona Ghee: all-capital word COD in 'Every batch lab tested with QR code on the jar. 500ml ₹1,250, 1L ₹2,350. UPI & COD.'; Bilona Ghee: description 1 is 104 characters (90); Bilona Ghee: description 2 is 95 characters (90)
+WARN  Google ads: A2 Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; A2 Gir Cow Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Bilona Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Buy A2 Ghee Online: fewer than 2 headlines contain a keyword; ads match searches better when they do; 1 Litre Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer First Order: description is 48 characters; phones cut it at about 30; Offer First Order: primary text is 329 characters; phones cut it at about 125; Quality & Trust: description is 48 characters; phones cut it at about 30; Quality & Trust: headline is 44 characters; phones cut it at about 40; Quality & Trust: primary text is 392 characters; phones cut it at about 125; Traditional Bilona Method: description is 48 characters; phones cut it at about 30; Traditional Bilona Method: primary text is 380 characters; phones cut it at about 125
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -1,7 +1,7 @@
+ {
+   "brand": "Gauveda",
+-  "allowed_caps": ["A2", "UPI", "QR", "GST"],
++  "allowed_caps": ["A2", "UPI", "QR", "GST", "COD"],
+   "facts": {
+     "price_500ml": "₹1,250",
+     "price_1l": "₹2,350",
+     "offer": "10% off first order with code FIRST10",
+
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: 1 Litre Ghee: description 1 is 95 characters (90); 1 Litre Ghee: description 3 is 93 characters (90); Bilona Ghee: description 1 is 104 characters (90); Bilona Ghee: description 2 is 95 characters (90); Buy A2 Ghee Online: description 1 is 97 characters (90); Buy A2 Ghee Online: description 2 is 97 characters (90); Buy A2 Ghee Online: description 3 is 98 characters (90)
+WARN  Google ads: A2 Gir Cow Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Bilona Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Buy A2 Ghee Online: fewer than 2 headlines contain a keyword; ads match searches better when they do; 1 Litre Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer First Order: description is 48 characters; phones cut it at about 30; Offer First Order: primary text is 317 characters; phones cut it at about 125; Quality & Trust: description is 48 characters; phones cut it at about 30; Quality & Trust: headline is 44 characters; phones cut it at about 40; Quality & Trust: primary text is 392 characters; phones cut it at about 125; Traditional Bilona Method: description is 48 characters; phones cut it at about 30; Traditional Bilona Method: primary text is 380 characters; phones cut it at about 125
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: 1 Litre Ghee: description 1 is 91 characters (90); 1 Litre Ghee: description 3 is 93 characters (90); Bilona Ghee: description 1 is 94 characters (90); Bilona Ghee: description 2 is 95 characters (90); Buy A2 Ghee Online: description 1 is 97 characters (90); Buy A2 Ghee Online: description 2 is 97 characters (90); Buy A2 Ghee Online: description 3 is 98 characters (90)
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer First Order: description is 37 characters; phones cut it at about 30; Offer First Order: primary text is 295 characters; phones cut it at about 125; Quality & Trust: description is 48 characters; phones cut it at about 30; Quality & Trust: headline is 44 characters; phones cut it at about 40; Quality & Trust: primary text is 332 characters; phones cut it at about 125; Traditional Bilona Method: description is 35 characters; phones cut it at about 30; Traditional Bilona Method: primary text is 323 characters; phones cut it at about 125
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.4fLyia4gAN/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m

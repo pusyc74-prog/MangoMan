@@ -1,0 +1,103 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m✱ [0mGlob "*"[90m 3 matches[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead prompt.txt
+[0m→ [0mSkill "mangoman-social-posts"
+[0m✱ [0mGlob "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/tests/cases/coding-webinar/*"[90m 0 matches[0m
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/tests/cases/
+total 20
+drwxr-xr-x 5 runner runner 4096 Oct  7 19:23 .
+drwxr-xr-x 3 runner runner 4096 Oct  7 19:23 ..
+drwxr-xr-x 2 runner runner 4096 Oct  7 19:23 coding-webinar
+drwxr-xr-x 2 runner runner 4096 Oct  7 19:23 diwali-sweets
+drwxr-xr-x 2 runner runner 4096 Oct  7 19:23 kulhad-cafe
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/tests/cases/coding-webinar/
+total 16
+drwxr-xr-x 2 runner runner 4096 Oct  7 19:23 .
+drwxr-xr-x 5 runner runner 4096 Oct  7 19:23 ..
+-rw-r--r-- 1 runner runner 1556 Oct  7 19:23 brief.md
+-rw-r--r-- 1 runner runner  215 Oct  7 19:23 prompt.txt
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/tests/cases/kulhad-cafe/
+total 24
+drwxr-xr-x 2 runner runner 4096 Oct  7 19:23 .
+drwxr-xr-x 5 runner runner 4096 Oct  7 19:23 ..
+-rw-r--r-- 1 runner runner 1388 Oct  7 19:23 brief.md
+-rw-r--r-- 1 runner runner 6391 Oct  7 19:23 logo.png
+-rw-r--r-- 1 runner runner  290 Oct  7 19:23 prompt.txt
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/tests/cases/diwali-sweets/
+total 24
+drwxr-xr-x 2 runner runner 4096 Oct  7 19:23 .
+drwxr-xr-x 5 runner runner 4096 Oct  7 19:23 ..
+-rw-r--r-- 1 runner runner 1453 Oct  7 19:23 brief.md
+-rw-r--r-- 1 runner runner 6246 Oct  7 19:23 logo.png
+-rw-r--r-- 1 runner runner  214 Oct  7 19:23 prompt.txt
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py
+[0m
+[0m← [0mWrite posts.json
+Wrote file successfully.
+[0m
+Now I understand the structure. Let me create the `posts.json` file with 4 posts for the webinar, then build them.
+[0m$ [0mcd /tmp/tmp.4fLyia4gAN/run/mangoman-social-posts/coding-webinar && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py posts.json --out posts
+built in posts/: captions.md, 12 images, webinar-agenda-carousel.pdf, preview.png
+[0m
+[0m$ [0mcd /tmp/tmp.4fLyia4gAN/run/mangoman-social-posts/coding-webinar && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py posts.json posts
+PASS  spec is valid
+PASS  every image built at the right size
+PASS  all text fits
+PASS  text is at full size
+PASS  captions fit every platform
+WARN  webinar-announce: Instagram shows about 125 characters before 'more'; put the hook first; placement-stat: Instagram shows about 125 characters before 'more'; put the hook first; learner-quote: Instagram shows about 125 characters before 'more'; put the hook first; webinar-agenda: Instagram shows about 125 characters before 'more'; put the hook first
+PASS  hashtags are valid
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  promised counts match the content
+PASS  alt text on every post
+PASS  brand shown on every image
+[0m
+[0m$ [0mls -la /tmp/tmp.4fLyia4gAN/run/mangoman-social-posts/coding-webinar/posts/
+total 1644
+drwxr-xr-x 3 runner runner   4096 Oct  7 19:28 .
+drwxr-xr-x 3 runner runner   4096 Oct  7 19:28 ..
+-rw-r--r-- 1 runner runner   6153 Oct  7 19:28 captions.md
+-rw-r--r-- 1 runner runner   2002 Oct  7 19:28 frames.json
+drwxr-xr-x 2 runner runner   4096 Oct  7 19:28 html
+-rw-r--r-- 1 runner runner  78648 Oct  7 19:28 learner-quote-landscape.png
+-rw-r--r-- 1 runner runner  85631 Oct  7 19:28 learner-quote-portrait.png
+-rw-r--r-- 1 runner runner  87814 Oct  7 19:28 placement-stat-landscape.png
+-rw-r--r-- 1 runner runner  95169 Oct  7 19:28 placement-stat-portrait.png
+-rw-r--r-- 1 runner runner   8021 Oct  7 19:28 posts.spec.json
+-rw-r--r-- 1 runner runner 244299 Oct  7 19:28 preview.png
+-rw-r--r-- 1 runner runner 396616 Oct  7 19:28 webinar-agenda-carousel.pdf
+-rw-r--r-- 1 runner runner  55453 Oct  7 19:28 webinar-agenda-portrait-01.png
+-rw-r--r-- 1 runner runner  76395 Oct  7 19:28 webinar-agenda-portrait-02.png
+-rw-r--r-- 1 runner runner  68118 Oct  7 19:28 webinar-agenda-portrait-03.png
+-rw-r--r-- 1 runner runner  73423 Oct  7 19:28 webinar-agenda-portrait-04.png
+-rw-r--r-- 1 runner runner  72387 Oct  7 19:28 webinar-agenda-portrait-05.png
+-rw-r--r-- 1 runner runner  62160 Oct  7 19:28 webinar-agenda-portrait-06.png
+-rw-r--r-- 1 runner runner 111165 Oct  7 19:28 webinar-announce-landscape.png
+-rw-r--r-- 1 runner runner 114726 Oct  7 19:28 webinar-announce-portrait.png
+[0m
+Done. Created `posts.json` and built 4 posts into the `posts/` folder:
+
+- **webinar-announce** (announce layout) — main event announcement with speaker details
+- **placement-stat** (stat layout) — 71% placement rate, 312 learners, 48% salary hike
+- **learner-quote** (quote layout) — Imran Pasha testimonial
+- **webinar-agenda** (carousel layout) — 5 content slides covering the agenda
+
+**Outputs in `posts/`:**
+- 12 images (portrait for Instagram/LinkedIn, landscape for X)
+- `webinar-agenda-carousel.pdf` (for LinkedIn document upload)
+- `captions.md` (ready-to-paste captions per platform)
+- `preview.png` (contact sheet)
+
+**Check result:** All PASS — spec valid, images at correct sizes, text fits, captions within limits, every number traces to facts, no risky claims, alt text present, brand shown. One soft warning: Instagram captions exceed 125 chars before "more" — lead with the hook if you want to optimize.

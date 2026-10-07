@@ -1,0 +1,60 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mSkill "mangoman-seo-article"
+[0m→ [0mRead brief.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mRead facts.md
+[0m→ [0mRead sources.md
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.4fLyia4gAN/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.4fLyia4gAN/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.4fLyia4gAN/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (641 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.4fLyia4gAN/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.4fLyia4gAN/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): section: Dental implant vs bridge: which is better for you?: 15
+PASS  641 words
+WARN  641 words against a target of 900
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description, first 100 words
+PASS  keyword used naturally (0.0% of words)
+WARN  title: aim for 30 to 60 characters: 67 characters
+WARN  description: aim for 120 to 160 characters: 162 characters
+PASS  sentences are easy to read (average 14 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+WARN  fewer than 2 links to your own pages (helps readers and search engines find related pages): 0
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article/article.md
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.4fLyia4gAN/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.4fLyia4gAN/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.4fLyia4gAN/run/mangoman-seo-article/dental-implants/article.json
+@@ -5,11 +5,11 @@
+ "date": "2026-10-07",
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+-  "title": "Dental Implant Cost in Bangalore: Prices, Process & What Affects It",
+-  "description": "Know the real cost of dental implants in Bangalore. We break down prices by brand, explain the 3-visit process, and compare implants vs bridges so you can decide.",
+-  "slug": "dental-implant-cost-bangalore",
++  "title": "Dental Implant Cost in Bangalore: Prices, Process & Brands",
++  "description": "Dental implant cost in Bangalore starts at ₹28,000. See prices by brand, the 3-visit process, and implant vs bridge comparison from Smile Square Dental Clinic.",
++  "slug": "dental-implant-cost-in-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+   "clinic_since": "2011",
+
+[0m
+[91m[1mError: [0mall free candidates are rate limited; retry after the reset or connect another provider

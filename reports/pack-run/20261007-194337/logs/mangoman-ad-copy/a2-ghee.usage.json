@@ -1,0 +1,49 @@
+{
+  "since": "2026-10-06T18:38:18.241161121Z",
+  "requests": 20,
+  "served": 15,
+  "failed_over": 0,
+  "brain_calls": 0,
+  "rows": [
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 19,
+      "ok": 14,
+      "rate_limited": 0,
+      "errors": 5,
+      "quality_fail": 0,
+      "tokens": 273917,
+      "p50_ms": 3895
+    },
+    {
+      "provider": "openrouter",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 5,
+      "ok": 0,
+      "rate_limited": 5,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 238
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3.5-lightning",
+      "attempts": 1,
+      "ok": 1,
+      "rate_limited": 0,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 4741,
+      "p50_ms": 132353
+    }
+  ],
+  "parts": {
+    "earlier_answers": 129300,
+    "instructions": 93107,
+    "tool_definitions": 61617,
+    "tool_results": 42722,
+    "user": 2337
+  }
+}

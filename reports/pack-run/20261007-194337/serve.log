@@ -1,0 +1,206 @@
+mangoman 2026/10/07 18:23:18 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 18:23:18 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 18:23:20 req=77c0235b257f attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:23:21 req=77c0235b257f attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:24:21 req=be70760b2fd7 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:24:22 req=be70760b2fd7 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:25:32 req=24168ccd55e5 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 18:25:47 req=7e14ac4eb610 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:25:57 req=b719b26081fc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:28:33 req=f5e7c8079103 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:28:34 req=ed3d3f5e8c23 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:28:35 req=ed3d3f5e8c23 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:29:35 req=bba117600846 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:29:36 req=bba117600846 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:30:41 req=17b2f76884cd attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:30:44 req=595b1565e7c5 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:30:47 req=cd9488dc69f2 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:31:55 req=73d6ffb98528 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:31:58 req=c853e17f7f07 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:32:04 req=26aa8b2f1e30 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:34:59 req=3e1197a5b17e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:35:03 req=3e5c9a8c7320 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:35:07 req=46076938d173 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:37:39 req=db6620d34fde attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:37:51 req=4fd3a53a6731 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:37:52 req=4baee8de4f04 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:37:52 req=4baee8de4f04 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:38:18 stopped
+mangoman 2026/10/07 18:38:18 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 18:38:18 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 18:38:21 req=7a527fbee431 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:38:22 req=7a527fbee431 attempt=2 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:38:24 req=7a527fbee431 attempt=3 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:38:53 req=88fdbc8a7e37 attempt=1 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:39:43 req=97e7ec010243 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 18:39:54 req=b0614af8e163 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:39:54 req=b0614af8e163 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:40:54 req=17dbac414beb attempt=1 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:41:59 req=458ce86dd46d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:42:11 req=a1a856ebfb7f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:44:35 req=afc943eaf318 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:44:46 req=f4acc3c38d1a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:44:46 req=81050510737c attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:44:47 req=81050510737c attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:45:52 req=6598ef0b0197 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:46:00 req=0e5c896416b8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:47:20 req=30bcfbeee9c1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:47:21 req=9347d106caeb attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:47:21 req=9347d106caeb attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:48:25 req=7656da44f0f8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:48:30 req=d7b8da87f64e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:48:31 req=246e6b596e55 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:48:31 req=246e6b596e55 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:49:34 req=f431d826e3ee attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:49:35 req=57e4d0561fba attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:49:36 req=57e4d0561fba attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:52:53 req=f6822818a583 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:53:02 req=2fc8b2968c47 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:53:08 req=4496cc85f463 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:53:18 req=b43130276a72 attempt=1 nvidia/nemotron-3-ultra-550b -> client_gone (0) 
+mangoman 2026/10/07 18:53:18 stopped
+mangoman 2026/10/07 18:53:19 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 18:53:19 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 18:53:31 req=9747a9090bc9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:53:31 req=78f146abef59 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:53:32 req=78f146abef59 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:54:32 req=14e49c56ed08 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:54:32 req=14e49c56ed08 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:55:45 req=23f87877423e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:55:46 req=b9ff2feef539 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:55:46 req=b9ff2feef539 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:56:47 req=b6dd9a301d77 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:56:47 req=b6dd9a301d77 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:57:36 req=ae8e2706883d attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 18:57:48 req=bf1108a06c3b attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:57:48 req=bf1108a06c3b attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 18:58:52 req=ae1a8e521a4b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 18:58:53 req=b0047789bb08 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 18:58:53 req=b0047789bb08 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:01:27 req=f9a4b9fb832a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:01:33 req=1679cf6f63f0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:01:40 req=9f91342fb3ec attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:01:40 req=9f91342fb3ec attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:02:44 req=5e9ed08de535 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:02:57 req=92f873ac8bee attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:02:58 req=7cbc187b6252 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:02:58 req=7cbc187b6252 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:03:59 req=f56944b5e16c attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:03:59 req=f56944b5e16c attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:05:08 req=7a8fbcea2a63 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:05:24 req=864cf0cd3e2a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:05:36 req=9ff7134c6224 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:05:36 stopped
+mangoman 2026/10/07 19:05:39 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 19:05:39 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 19:05:42 req=dbb92e04b2d9 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:05:42 req=dbb92e04b2d9 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:06:50 req=2c2af0469e7e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:06:51 req=34e60d7a272e attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:06:51 req=34e60d7a272e attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:07:15 req=1927c10a8dee attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 19:07:53 req=1529db3fe413 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:08:33 req=35b014d851fe attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:09:11 req=b6577e3d7de7 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:09:14 req=3bb2d9227c7a attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:09:14 req=3bb2d9227c7a attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:10:20 req=ee3ebf6f6d76 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:10:21 req=c8b74e825df3 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:10:21 req=c8b74e825df3 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:11:38 req=3935181c1b00 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:11:38 stopped
+mangoman 2026/10/07 19:11:41 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 19:11:41 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 19:11:46 req=72c9968befb8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:11:50 req=128192b7c4dd attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:13:22 req=c34f74d89b95 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 19:13:54 req=dbf7b0ec8c62 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:14:00 req=abb0b8454dce attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:14:08 req=c398b0d829ba attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:14:09 req=f44b5dc174ca attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:14:09 req=f44b5dc174ca attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:15:22 req=b227460d4bd3 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:15:23 req=20425799a2de attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:15:23 req=20425799a2de attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:16:23 req=4451e3cd63a1 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:16:24 req=4451e3cd63a1 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:17:24 req=93503a761017 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:17:25 req=93503a761017 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:18:37 req=b327ca490e10 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:18:38 req=45c0f261d7d5 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:18:38 req=45c0f261d7d5 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:19:39 req=00626a858787 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:19:39 req=00626a858787 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:20:40 req=69cfd344cd73 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:20:40 req=69cfd344cd73 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:21:41 req=96c803d3c2ed attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:21:41 req=96c803d3c2ed attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:22:41 req=48327f1549eb attempt=1 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:23:42 req=bd4e856cf5ef attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:23:42 req=bd4e856cf5ef attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:23:42 stopped
+mangoman 2026/10/07 19:23:42 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 19:23:42 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 19:23:46 req=de57009b6254 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:23:47 req=de57009b6254 attempt=2 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:23:52 req=de57009b6254 attempt=3 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:23:54 req=33e69eefea9e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:23:56 req=6d9a5346e03d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:23:59 req=581311980d60 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:24:00 req=d04c190ba341 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:24:01 req=d04c190ba341 attempt=2 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:24:03 req=d04c190ba341 attempt=3 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:24:49 req=118b12f835f7 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:24:58 req=f388ee3d77a2 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:24:59 req=95bd0732485e attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:24:59 req=95bd0732485e attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:25:04 req=1601b71a49c0 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 19:26:05 req=1e7d22cd251e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:26:08 req=0ac16e05e231 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:26:10 req=aa436bda9fa3 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:26:14 req=d7761907b2d2 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:26:17 req=9a072f2f6f0a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:27:57 req=53b07e49ba88 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:28:00 req=1e7c39528ac1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:28:16 req=3fe0442bab89 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:28:20 req=24b9524ff4f0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:28:29 req=1d8111e4eecc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:28:29 stopped
+mangoman 2026/10/07 19:28:37 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 19:28:37 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 19:28:54 req=729cddc81286 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:28:56 req=b5c5259d4f92 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:28:59 req=a08755c63312 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:29:03 req=9b88be144f41 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:29:08 req=eba1cc7531da attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:29:11 req=e7ec5a482525 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:29:15 req=531bdf653cdc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:30:06 req=b8d733a6abea attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 19:30:41 req=8c5ceb8e105b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:30:48 req=6f335d28bf6c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:30:48 req=c637dc9462af attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:30:49 req=c637dc9462af attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:31:52 req=cabd6ab9d2b7 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:31:53 req=ef66587e3749 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:31:53 req=ef66587e3749 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:34:13 req=5160d982612c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:34:18 req=b80d9123d10a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:34:21 req=45953cf199e2 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:36:38 req=9a3f38f7e805 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:36:45 req=28a509454d2b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:36:50 req=081dfbb66afc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:37:12 req=865aec409448 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:37:29 req=e400bc63dfc8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:37:32 req=bfdc6eec9682 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:39:15 req=261c0feb5a44 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:39:19 req=10134dc8e95a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:39:27 req=d0d4839e21ac attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:39:28 req=9bcee498c8d1 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:39:28 req=9bcee498c8d1 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:40:29 req=a81b2c1ca930 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:40:29 req=a81b2c1ca930 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:42:54 req=1e63674e0681 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:42:59 req=290d153562f9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:43:03 req=194ff808e9fd attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 19:43:37 req=1a6576f3b049 attempt=1 nvidia/nemotron-3-ultra-550b -> client_gone (0) 
+mangoman 2026/10/07 19:43:37 stopped
