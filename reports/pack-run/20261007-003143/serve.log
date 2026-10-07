@@ -1,0 +1,99 @@
+mangoman 2026/10/07 00:15:04 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:15:04 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:15:09 req=17d61fd22323 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:15:15 req=c49fc58a4675 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:16:28 req=7c7c749b2619 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/07 00:16:28 req=d222fc7533f6 attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/07 00:16:28 stopped
+mangoman 2026/10/07 00:16:29 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:16:29 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:16:36 req=843a3fd5301e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:16:43 req=e4f02afd12e3 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:17:34 req=3a32f8a4d16b attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 00:18:44 req=a1ecedd44626 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:18:47 req=29964166f834 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:18:50 req=1f8ebc9056dd attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:19:13 req=cc37139581ed attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:19:19 req=d32f50b8ffc4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:19:24 req=1edf6b8317ae attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:19:41 req=64744b42671f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:19:47 req=5373c48ad265 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:19:52 req=dac55b31c0e2 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:20:05 req=a0d1aeced84c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:20:12 req=b03c20ecdca7 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:20:23 req=122f9943f4eb attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:20:36 req=2f1ea6c19f5e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:20:42 req=03e435851f06 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:20:50 req=6fbb9f9c4d54 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:20:55 req=26168fc76e02 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:21:03 req=e3101efefaf7 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:21:07 req=5cb2ee9fe536 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:21:24 req=63ad47edd878 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:21:24 stopped
+mangoman 2026/10/07 00:21:26 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:21:26 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:21:33 req=abf1111932b7 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:21:33 req=f077fb65439f attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 00:21:36 req=f077fb65439f attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:22:31 req=1bd589a56fbe attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:22:32 req=fa7aadce80fd attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 00:22:38 req=fa7aadce80fd attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:22:51 req=490fc2aaab3a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:23:04 req=974d80c09aff attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:23:12 req=84facde58496 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:23:20 req=dd77ed7521e0 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 00:23:22 req=dd77ed7521e0 attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:23:26 req=ae49b248d2a5 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 00:23:28 req=872850de3f4c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:23:30 req=da5483c132e6 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:23:37 req=f17c35cfe65d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:23:37 stopped
+mangoman 2026/10/07 00:23:41 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:23:41 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:23:49 req=5e86fbbe05f8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:23:52 req=98f30fcb8ab8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:24:30 req=aa2546c2c680 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:24:32 req=0669d9436500 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:24:40 req=ad256610a743 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:24:41 req=f4d00ea8b1bd attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 00:24:44 req=f4d00ea8b1bd attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:25:17 req=834e16a0778e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:25:17 req=cc67aeec34fe attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/07 00:25:17 stopped
+mangoman 2026/10/07 00:25:20 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:25:20 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:25:32 req=8f94aa006c81 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:25:40 req=ad27c2ab2e5a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:25:41 req=117bda2e1ee6 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 00:26:36 req=117bda2e1ee6 attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:26:38 req=81b553b42620 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 00:26:51 req=81b553b42620 attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:27:00 req=2a1a33ccbccb attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:27:10 req=011e6a17784c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:27:16 req=d4d575eb5422 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:27:27 req=440c351113c1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:27:30 req=255bcc8b38ca attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:27:31 req=a2feddc685f4 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 00:27:33 req=a2feddc685f4 attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:27:45 req=cb7b385b773b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:27:59 req=eb7abe92f90f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:28:46 req=0d24746822fd attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 00:29:01 req=0a802c8bcad3 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/07 00:29:01 stopped
+mangoman 2026/10/07 00:29:01 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:29:01 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:29:05 req=3d582cda2d75 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 00:29:08 req=3d582cda2d75 attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:29:11 req=f9a5a7a656a1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:30:16 req=9396be7dd33f attempt=1 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/07 00:30:16 req=03df5c2667fd attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/07 00:30:16 stopped
+mangoman 2026/10/07 00:30:16 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:30:16 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:30:26 req=233b3c5bfe23 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:30:28 req=264190d20db0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:30:29 req=5bc83025165f attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 00:30:32 req=5bc83025165f attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:31:42 req=93f0c334db63 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/07 00:31:43 req=2821ad135a58 attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/07 00:31:43 stopped
