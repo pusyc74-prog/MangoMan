@@ -9,6 +9,7 @@ back your understanding before building anything.
 - Building MangoMan for **non-technical Indian users** (small businesses,
   agencies, creators). Plain words, no jargon, Hindi later.
 - Likes **crisp answers with tables**. No long essays.
+- **PRD updates are silent.** Keep updating both PRD copies with every change and commit them to Git, but do not mention them or show the PRD in replies. Share it only when the owner asks for it.
 - **Discusses before building.** When they say "let's discuss" or "before we
   build", answer and propose; do not code. When they say "start" or "build",
   build without asking again, test, commit, push.
