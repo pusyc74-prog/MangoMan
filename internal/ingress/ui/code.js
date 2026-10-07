@@ -356,7 +356,7 @@ function preview() {
   $("frames").replaceChildren(...names.map((n) => {
     const [w, h, label] = DEVICES[n];
     const scale = Math.min(1, (each - 20) / w);
-    const frame = el("iframe", { src: u, title: `${label} preview`, width: w, height: h, loading: "lazy", sandbox: "allow-scripts allow-forms allow-same-origin" });
+    const frame = el("iframe", { src: u, title: `${label} preview`, width: w, height: h, loading: "lazy", sandbox: "allow-scripts allow-forms allow-same-origin allow-popups allow-modals allow-downloads" });
     frame.style.transform = `scale(${scale})`;
     const shell = el("div", { class: "shell" }, frame);
     shell.style.width = `${w * scale}px`;

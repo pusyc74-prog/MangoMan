@@ -491,6 +491,7 @@ func cmdKeys(args []string) error {
 		}
 		if team != "" {
 			if err := setTeamKey(p.ID, team, true); err != nil {
+				_ = st.Delete(keys.Name(p.ID, team)) // a key nothing lists would never be used
 				return err
 			}
 			fmt.Printf("Stored %s's %s key in %s. Requests now take turns across the %s keys.\n", team, p.Name, keys.Where(st), p.Name)

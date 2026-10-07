@@ -123,9 +123,11 @@ func (s *Server) checkToken(next http.Handler, people bool) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		if name := s.Cfg.Person(got); people && got != "" && name != "" {
-			next.ServeHTTP(w, r.WithContext(core.WithPerson(r.Context(), name)))
-			return
+		if people && got != "" {
+			if name := s.Cfg.Person(got); name != "" {
+				next.ServeHTTP(w, r.WithContext(core.WithPerson(r.Context(), name)))
+				return
+			}
 		}
 		core.WriteError(w, http.StatusUnauthorized, "invalid_local_token", "missing or wrong local token: see `mangoman init` output")
 	})

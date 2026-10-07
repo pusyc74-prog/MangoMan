@@ -66,9 +66,13 @@ func openWorkspace(cfg *config.Config, oc string, env []string, dir, shipDir str
 	}
 	body, _ := json.Marshal(map[string]string{"url": base, "password": password, "dir": dir, "ship_dir": shipDir})
 	out, err := localSend(cfg, http.MethodPost, "/mangoman/code/attach", body)
+	if err != nil {
+		return fmt.Errorf("could not connect the coding screen to the router: %w", err)
+	}
 	var att struct{ ID string }
-	if err != nil || json.Unmarshal(out, &att) != nil {
-		return fmt.Errorf("could not connect the coding screen to the router: %v", err)
+	if json.Unmarshal(out, &att) != nil || att.ID == "" {
+		_, _ = localSend(cfg, http.MethodDelete, "/mangoman/code/attach", nil)
+		return fmt.Errorf("the running MangoMan is older than this command: restart mangoman serve and try again")
 	}
 	defer func() { _, _ = localSend(cfg, http.MethodDelete, "/mangoman/code/attach?id="+att.ID, nil) }()
 
@@ -138,6 +142,10 @@ func localSend(cfg *config.Config, method, path string, body []byte) ([]byte, er
 	}
 	defer resp.Body.Close()
 	out, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	if resp.StatusCode == http.StatusNotFound && !bytes.Contains(out, []byte("{")) {
+		// A plain 404 is a route this router does not have: it is older.
+		return out, fmt.Errorf("the running MangoMan is older than this command: restart mangoman serve and try again")
+	}
 	if resp.StatusCode >= 300 {
 		return out, fmt.Errorf("router answered HTTP %d: %s", resp.StatusCode, bytes.TrimSpace(out))
 	}
