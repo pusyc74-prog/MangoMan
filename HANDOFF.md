@@ -70,8 +70,27 @@ A session can also start a pack run without the Actions page:
       -f event_type=pack-run \
       -F 'client_payload[cases]=1' -F 'client_payload[case_timeout]=600'
 
-`client_payload` takes model, packs, variant, cases and case_timeout. Leave
-cases out for the full set of three per pack.
+`client_payload` takes model, packs, variant, cases, case_timeout and runner.
+Leave cases out for the full set of three per pack.
+
+## Self-hosted runner (once the repo is private)
+
+A private repo gets 2,000 free Actions minutes a month; heavy runs (pack runs,
+Mac and Windows tests) go to a runner on the owner's computer, which GitHub
+does not bill. **Never add a self-hosted runner while the repo is public**: a
+pull request from anyone could then run code on the owner's computer.
+
+Owner's steps (about 10 minutes, once):
+1. GitHub repo > Settings > Actions > Runners > New self-hosted runner; pick
+   the computer's system and run the commands shown (download, `./config.sh`
+   with the token shown, then `./run.sh`, or install it as a service).
+2. Linux or macOS works best: pack-run.sh is a bash script and uses
+   `timeout` (on macOS: `brew install coreutils`). The workflow installs Go,
+   Python, Node, OpenCode and the Chromium for Playwright by itself.
+3. The computer must be on and online while a run is going.
+
+Start a run on it: `client_payload[runner]=self-hosted` (or runner:
+self-hosted from the Actions page).
 
 ## Two standing rules the owner confirmed on 6 Oct
 

@@ -31,6 +31,10 @@ on:
         description: "seconds one case may take before it is cut (default 900)"
         required: false
         default: ""
+      runner:
+        description: "where to run: ubuntu-latest, or self-hosted (the owner's computer, once the repo is private)"
+        required: false
+        default: ubuntu-latest
   push:
     branches: [main]
     paths:
@@ -38,7 +42,7 @@ on:
       - "scripts/pack-run.sh"
   # Lets a session start a run without the Actions page, which it cannot
   # reach: POST /repos/<owner>/<repo>/dispatches with event_type pack-run and
-  # any of model, packs, cases, case_timeout in client_payload.
+  # any of model, packs, variant, cases, case_timeout, runner in client_payload.
   repository_dispatch:
     types: [pack-run]
 
@@ -51,7 +55,7 @@ concurrency:
 
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || github.event.client_payload.runner || 'ubuntu-latest' }}
     timeout-minutes: 180
     env:
       MANGOMAN_KEYSTORE: file
