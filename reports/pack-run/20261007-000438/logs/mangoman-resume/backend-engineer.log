@@ -1,0 +1,34 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead job_description.md
+[0m→ [0mRead candidate.md
+[0m→ [0mSkill "mangoman-resume"
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/tests/cases/backend-engineer/candidate.md
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/tests/cases/backend-engineer/job_description.md
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/tests/cases/backend-engineer/prompt.txt
+[0m
+[0m← [0mWrite resume.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/build.py /tmp/tmp.XvSEhTswao/run/mangoman-resume/backend-engineer/resume.json --template classic --out /tmp/tmp.XvSEhTswao/run/mangoman-resume/backend-engineer/resume
+built /tmp/tmp.XvSEhTswao/run/mangoman-resume/backend-engineer/resume.html, /tmp/tmp.XvSEhTswao/run/mangoman-resume/backend-engineer/resume.pdf, /tmp/tmp.XvSEhTswao/run/mangoman-resume/backend-engineer/resume.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/check.py /tmp/tmp.XvSEhTswao/run/mangoman-resume/backend-engineer/resume.json /tmp/tmp.XvSEhTswao/run/mangoman-resume/backend-engineer/resume.pdf --pages 1
+PASS  1 page as planned
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  the page is well filled
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  100% of bullets show a measurable result
+PASS  dates use one format
+[0m
+Done. Created `resume.json` and built `resume.pdf` (and `resume.html`, `resume.png`) in `/tmp/tmp.XvSEhTswao/run/mangoman-resume/backend-engineer/`.
+
+**Check results:** All pass — one page A4, ATS-readable, well-filled, every bullet starts with an action verb, no first person, concise, 100% of bullets have measurable results, consistent date format.
+
+The resume is tailored to the Chillar Pay SDE 2 Backend (Payments) role: highlights Java/Spring Boot microservices, Kafka (1.2M events/day), PostgreSQL/Redis, AWS/Docker, UPI/Razorpay payments (₹14 Cr/month), on-call ownership (P1s 7→2), and mentoring — with keywords matching the job description (microservices, Kafka, Redis, PostgreSQL, AWS, Docker, Kubernetes, gRPC, system design, payments, UPI, Grafana).

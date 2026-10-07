@@ -1,0 +1,144 @@
+mangoman 2026/10/06 23:12:48 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 23:12:48 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 23:13:51 req=fcae17a96733 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:14:28 req=6ab9636de3e8 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 23:14:51 req=fcae17a96733 attempt=2 nvidia/glm-5.3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:14:57 req=fcae17a96733 attempt=3 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:15:07 req=0ad7311b2323 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:15:07 req=ad39dc805ae3 attempt=1 nvidia/nemotron-3-ultra-550b -> server_error (503) Service is not ready
+mangoman 2026/10/06 23:15:50 req=ad39dc805ae3 attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:15:56 req=b14d74f73a55 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:16:00 req=8aaac3a21b53 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:16:07 req=f711fb00fa7a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:16:18 req=7713972cee60 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:16:28 req=fab7fbc6c4d9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:16:42 req=26be4a032986 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:17:18 req=5ad9ed4197fa attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:17:24 req=577a9b6a49db attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:17:31 req=aa5b105821d2 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:17:51 req=700aed36d949 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:17:54 req=c79b3fb97977 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:18:05 req=ba49bd6b50b9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:18:16 req=f52983c4752d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:18:23 req=4239953483c0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:18:30 req=92e3d225fc44 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:18:31 req=3265d3d60035 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/06 23:18:37 req=3265d3d60035 attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:18:42 req=696bd2f5cab1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:19:06 req=bb8f6acffbc8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:19:10 req=9563d3faeb62 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:19:17 req=639355827aec attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:19:26 req=e74b7b1c0e71 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:19:39 req=2244e0e2c002 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:19:49 req=6289c783c288 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:01 req=6fe68b25f176 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:04 req=48a91699ceff attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:06 req=fdbe326168d4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:14 req=8a6816bc1d12 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:17 req=e03ad01fe94b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:20 req=129b18a87d50 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:34 req=6f31594a7340 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:40 req=ae0872cacf13 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:52 req=3b16e997549c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:20:58 req=320c7931bcdc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:21:16 req=179096e45e30 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:21:23 req=3e9014051f4d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:21:33 req=2f63d776522d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:21:37 req=0eb123e9d85c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:21:45 req=90e7caf951a8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:21:50 req=990d4b79d7c7 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:21:55 req=c2b708ce4aff attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:21:58 req=ee7503677614 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:22:09 req=3bef21f15e02 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:22:12 req=c0b8da9085e0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:22:20 req=d68240062804 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:22:30 req=4a99f0be26e1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:22:36 req=1f6cb1bebda7 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:22:39 req=5a0e3617afa3 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:22:48 req=4c17f7d74210 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:22:49 req=f60061ed8abc attempt=1 nvidia/nemotron-3-ultra-550b -> client_gone (0) 
+mangoman 2026/10/06 23:22:49 stopped
+mangoman 2026/10/06 23:22:49 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 23:22:49 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 23:23:50 req=422a69cc7891 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 23:23:51 req=1c162187cf68 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:24:51 req=1c162187cf68 attempt=2 nvidia/glm-5.3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:25:01 req=1c162187cf68 attempt=3 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:25:04 req=ccb06bd1732d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:26:42 req=15fc8fea712f attempt=1 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/06 23:26:42 stopped
+mangoman 2026/10/06 23:26:42 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 23:26:42 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 23:27:44 req=cb8a725b9326 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:28:06 req=454b207b977c attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 23:28:29 req=cb8a725b9326 attempt=2 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:29:08 req=590ec6a1e7de attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:31:28 req=566249a01047 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:32:09 req=bb41d8ed2d44 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:33:57 req=0254bb88b0bd attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:36:42 req=c71d37783bc4 attempt=1 nvidia/glm-5.3 -> client_gone (0) 
+mangoman 2026/10/06 23:36:42 stopped
+mangoman 2026/10/06 23:36:42 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 23:36:42 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 23:37:44 req=7b664a6be416 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:37:48 req=7b664a6be416 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:37:58 req=6641dc51fa3b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:38:02 req=24a986698994 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:38:21 req=307ff37214e5 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 23:38:25 req=f4e13896d8bc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:38:27 req=0733078dd67d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:38:33 req=17c7529bbc58 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:38:38 req=6007b50d0697 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:38:38 stopped
+mangoman 2026/10/06 23:38:40 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 23:38:40 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 23:39:43 req=41bfd12770d3 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:40:24 req=ca703c03ebbc attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 23:40:43 req=41bfd12770d3 attempt=2 nvidia/glm-5.3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:41:43 req=41bfd12770d3 attempt=3 nvidia/deepseek-v4.1-flash -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:41:46 req=41bfd12770d3 attempt=4 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:41:49 req=fe6cbe0e7284 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:41:52 req=2c966831d2d8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:42:39 req=c08363dd88cd attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:42:42 req=a32ba6b7090e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:43:06 req=02ddc2afd055 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:43:15 req=6be040930734 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:43:29 req=ed466d433df3 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:43:43 req=fa21a524cc45 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:43:51 req=14fde740a173 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:44:02 req=fefac7778a17 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:44:07 req=4f18d0c8481a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:44:13 req=35dddf23c657 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:44:19 req=c86c618d97ac attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:44:27 req=23d88769276c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:44:33 req=1a3c8067bd46 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:44:43 req=3f27c793468b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:45:01 req=7185b5cc14e9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/06 23:45:01 stopped
+mangoman 2026/10/06 23:45:02 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 23:45:02 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 23:45:33 req=aab2ff9d3c49 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 23:46:04 req=904b0c178473 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:46:43 req=904b0c178473 attempt=2 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:47:33 req=098c6febe971 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:48:33 req=7de9a583856f attempt=1 nvidia/glm-5.3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:49:41 req=7de9a583856f attempt=2 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/06 23:50:46 req=cccf1a245b8b attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/06 23:51:40 req=65ac3ff4384a attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/06 23:52:50 req=16a2b15ed20c attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/06 23:53:50 req=d123dc455d69 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/06 23:55:02 req=886abd9da39c attempt=1 nvidia/kimi-k3 -> client_gone (0) 
+mangoman 2026/10/06 23:55:02 stopped
+mangoman 2026/10/06 23:55:02 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/06 23:55:02 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/06 23:55:56 req=e337c1c331e0 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/06 23:56:04 req=20641448a0e3 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/06 23:56:49 req=20641448a0e3 attempt=2 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:57:47 req=d086c88d087e attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:58:52 req=c33d0dbc131a attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/06 23:59:53 req=c343e98dc9df attempt=1 nvidia/glm-5.3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 00:01:03 req=c343e98dc9df attempt=2 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/07 00:01:56 req=c8c9c299e1f5 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/07 00:02:56 req=7f15123114af attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 00:04:37 req=7f15123114af attempt=2 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/07 00:04:37 stopped

@@ -1,0 +1,300 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mRead facts.md
+[0m→ [0mRead sources.md
+[0m→ [0mSkill "mangoman-seo-article"
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/tests/cases/dental-implants/prompt.txt
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (800 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): section: Dental implant vs bridge: which is better: 15; section: How long do dental implants last: 15
+PASS  800 words
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description, first 100 words
+PASS  keyword used naturally (0.0% of words)
+WARN  title: aim for 30 to 60 characters: 67 characters
+WARN  description: aim for 120 to 160 characters: 189 characters
+PASS  sentences are easy to read (average 14 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+WARN  fewer than 2 links to your own pages (helps readers and search engines find related pages): 0
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+@@ -5,10 +5,10 @@
+ "date": "2026-10-06",
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+-  "title": "Dental Implant Cost in Bangalore: Prices, Process & What Affects It",
+-  "description": "Learn the real cost of a single tooth implant in Bangalore, what affects pricing, how many visits it takes, and how implants compare to bridges. Includes Smile Square's transparent pricing.",
++  "title": "Dental Implant Cost in Bangalore: Prices & Process",
++  "description": "Real cost of a single tooth implant in Bangalore, what affects pricing, visits needed, and implant vs bridge. Smile Square's transparent pricing.",
+   "slug": "dental-implant-cost-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+@@ -73,21 +73,21 @@
+           "Visit 3: Crown fitting after 3 to 6 months of healing",
+           "Bone graft (if needed): extra visit + ₹8,000–₹15,000"
+         ]
+       },
++{
++      "h2": "How long do dental implants last",
++      "paragraphs": [
++        "With good oral hygiene and regular check-ups, the titanium implant itself can last many years — often decades. A systematic review in the Journal of Dental Research reported 10-year survival rates above 90% [4]. The crown on top may need replacement after 10 to 15 years due to normal wear [1]. We recommend six-monthly cleanings and an annual X-ray to keep the implant healthy."
++      ],
++      "bullets": [
++        "Implant fixture: can last decades with proper care",
++        "Crown: typically 10–15 years before replacement [1]",
++        "10-year survival rate above 90% in clinical studies [4]",
++        "Maintenance: 6-month cleanings, annual X-ray"
++      ]
++    },
+       {
+-        "h2": "How long do dental implants last",
+-        "paragraphs": [
+-          "With good oral hygiene and regular check-ups, the titanium implant itself can last many years — often decades. A systematic review in the Journal of Dental Research reported 10-year survival rates above 90% [4]. The crown on top may need replacement after 10 to 15 years due to normal wear [1]. We recommend six-monthly cleanings and an annual X-ray to keep the implant healthy."
+-        ],
+-        "bullets": [
+-          "Implant fixture: can last decades with proper care",
+-          "Crown: typically 10–15 years before replacement",
+-          "10-year survival rate above 90% in clinical studies [4]",
+-          "Maintenance: 6-month cleanings, annual X-ray"
+-        ]
+-      },
+-      {
+         "h2": "Dental implant vs bridge: which is better",
+         "paragraphs": [
+           "Both replace a missing tooth, but they work differently. A bridge requires the healthy teeth on either side to be filed down to hold the crown — this removes enamel that cannot grow back. An implant stands alone, preserving the neighbouring teeth [3]. Implants also stimulate the jawbone, preventing the bone loss that happens under a bridge. The upfront cost of an implant is higher, but over 10 to 15 years it often works out similar or lower because you avoid replacing the bridge and treating the supporting teeth."
+         ],
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+@@ -85,20 +85,20 @@
+         "10-year survival rate above 90% in clinical studies [4]",
+         "Maintenance: 6-month cleanings, annual X-ray"
+       ]
+     },
+-      {
+-        "h2": "Dental implant vs bridge: which is better",
+-        "paragraphs": [
+-          "Both replace a missing tooth, but they work differently. A bridge requires the healthy teeth on either side to be filed down to hold the crown — this removes enamel that cannot grow back. An implant stands alone, preserving the neighbouring teeth [3]. Implants also stimulate the jawbone, preventing the bone loss that happens under a bridge. The upfront cost of an implant is higher, but over 10 to 15 years it often works out similar or lower because you avoid replacing the bridge and treating the supporting teeth."
+-        ],
+-        "bullets": [
+-          "Bridge: files down healthy adjacent teeth, does not prevent bone loss",
+-          "Implant: standalone, preserves neighbouring teeth, maintains jawbone",
+-          "Long-term cost: implant often comparable or lower over 10–15 years",
+-          "Best for: single missing tooth with healthy neighbours"
+-        ]
+-      }
++{
++      "h2": "Dental implant vs bridge: which is better",
++      "paragraphs": [
++        "Both replace a missing tooth, but they work differently. A bridge requires the healthy teeth on either side to be filed down to hold the crown — this removes enamel that cannot grow back. An implant stands alone, preserving the neighbouring teeth [3]. Implants also stimulate the jawbone, preventing the bone loss that happens under a bridge. The upfront cost of an implant is higher, but over 10 to 15 years it often works out similar or lower because you avoid replacing the bridge and treating the supporting teeth [3]."
++      ],
++      "bullets": [
++        "Bridge: files down healthy adjacent teeth, does not prevent bone loss",
++        "Implant: standalone, preserves neighbouring teeth, maintains jawbone",
++        "Long-term cost: implant often comparable or lower over 10–15 years [3]",
++        "Best for: single missing tooth with healthy neighbours"
++      ]
++    }
+     ],
+     "faq": [
+       {
+         "q": "How much does a single tooth implant cost in Bangalore?",
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+@@ -33,9 +33,9 @@
+ ],
+ "article": {
+   "h1": "Dental Implant Cost in Bangalore: Prices, Process & What Affects It",
+   "intro": [
+-    "A single tooth implant in Bangalore typically costs between ₹28,000 and ₹55,000 at Smile Square Dental Clinic, depending on the implant brand you choose. This price covers the consultation, 3D CBCT scan, the implant, abutment and the final crown — so there are no surprise add-ons. If you are comparing options after losing a tooth, this guide breaks down what drives the cost, how the procedure works, how long implants last, and how they stack up against a bridge."
++    "The dental implant cost in Bangalore varies by clinic and brand, but at Smile Square Dental Clinic a single tooth implant typically costs between ₹28,000 and ₹55,000. This price covers the consultation, 3D CBCT scan, the implant, abutment and the final crown — so there are no surprise add-ons. If you are comparing options after losing a tooth, this guide breaks down what drives the cost, how the procedure works, how long implants last, and how they stack up against a bridge. You can also explore our [implants page](/implants) for more details or [meet our team](/team) before booking."
+   ],
+   "sections": [
+     {
+       "h2": "What a single tooth implant costs at our clinic",
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+@@ -36,23 +36,23 @@
+     "intro": [
+       "The dental implant cost in Bangalore varies by clinic and brand, but at Smile Square Dental Clinic a single tooth implant typically costs between ₹28,000 and ₹55,000. This price covers the consultation, 3D CBCT scan, the implant, abutment and the final crown — so there are no surprise add-ons. If you are comparing options after losing a tooth, this guide breaks down what drives the cost, how the procedure works, how long implants last, and how they stack up against a bridge. You can also explore our [implants page](/implants) for more details or [meet our team](/team) before booking."
+     ],
+     "sections": [
+-      {
+-        "h2": "What a single tooth implant costs at our clinic",
++{
++      "h2": "What a single tooth implant costs at our clinic",
++      "paragraphs": [
++        "At Smile Square in Indiranagar, we offer three implant brands so you can choose what fits your budget and preference. An Indian-brand implant with crown is ₹28,000. A Korean brand (such as Dentium or Osstem) is ₹42,000. A Swiss brand (such as Straumann) is ₹55,000. Every quote includes the initial consultation, a 3D CBCT scan for precise planning, the titanium implant, the abutment and the custom-made crown [1]."
++      ],
++      "bullets": [
++        "Indian brand: ₹28,000",
++        "Korean brand: ₹42,000",
++        "Swiss brand: ₹55,000",
++        "All prices include consultation, CBCT scan, implant, abutment and crown"
++      ]
++    },
++    {
++      "h2": "What affects dental implant cost in Bangalore",
+         "paragraphs": [
+-          "At Smile Square in Indiranagar, we offer three implant brands so you can choose what fits your budget and preference. An Indian-brand implant with crown is ₹28,000. A Korean brand (such as Dentium or Osstem) is ₹42,000. A Swiss brand (such as Straumann) is ₹55,000. Every quote includes the initial consultation, a 3D CBCT scan for precise planning, the titanium implant, the abutment and the custom-made crown [1]."
+-        ],
+-        "bullets": [
+-          "Indian brand: ₹28,000",
+-          "Korean brand: ₹42,000",
+-          "Swiss brand: ₹55,000",
+-          "All prices include consultation, CBCT scan, implant, abutment and crown"
+-        ]
+-      },
+-      {
+-        "h2": "Why implant prices differ between clinics",
+-        "paragraphs": [
+           "The main reasons you see different prices for dental implants cost across Bangalore are the implant brand, the surgeon's experience, whether a 3D scan is included, and whether the crown is custom-made in-house or outsourced. Some clinics quote only the implant fixture and add the scan, abutment and crown later. At Smile Square, Dr. Kavya Rao — our lead implant dentist with 14 years of experience — plans every case on a CBCT scan so the implant is placed at the ideal angle and depth for long-term success."
+         ],
+         "bullets": [
+           "Implant brand (Indian, Korean, Swiss)",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (820 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  820 words
+WARN  keyword "dental implant cost in bangalore" missing from: address, description
+PASS  keyword used naturally (0.6% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (145)
+PASS  sentences are easy to read (average 14 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  2 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+@@ -6,9 +6,9 @@
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+   "title": "Dental Implant Cost in Bangalore: Prices & Process",
+-  "description": "Real cost of a single tooth implant in Bangalore, what affects pricing, visits needed, and implant vs bridge. Smile Square's transparent pricing.",
++  "description": "Dental implant cost in Bangalore: real price of a single tooth implant, what affects pricing, visits needed, and implant vs bridge. Smile Square's transparent pricing.",
+   "slug": "dental-implant-cost-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (820 words)
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  820 words
+WARN  keyword "dental implant cost in bangalore" missing from: address
+PASS  keyword used naturally (0.6% of words)
+PASS  title fits Google results (50)
+WARN  description: aim for 120 to 160 characters: 167 characters
+PASS  sentences are easy to read (average 14 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  2 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json
+@@ -6,9 +6,9 @@
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+   "title": "Dental Implant Cost in Bangalore: Prices & Process",
+-  "description": "Dental implant cost in Bangalore: real price of a single tooth implant, what affects pricing, visits needed, and implant vs bridge. Smile Square's transparent pricing.",
++  "description": "Dental implant cost in Bangalore: real price of a single tooth implant, what affects pricing, visits needed, and implant vs bridge.",
+   "slug": "dental-implant-cost-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (820 words)
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  820 words
+WARN  keyword "dental implant cost in bangalore" missing from: address
+PASS  keyword used naturally (0.6% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (131)
+PASS  sentences are easy to read (average 14 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  2 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+Done. The article is built in `/tmp/tmp.XvSEhTswao/run/mangoman-seo-article/dental-implants/article/` with:
+- `article.md` — ready to paste into WordPress/Shopify/Webflow
+- `article.html` — full page with JSON-LD structured data
+- `seo.md` — meta title, description, slug to set in your CMS
+- `preview.png` — phone/tablet/desktop preview
+
+**Check result:** All critical checks pass — every figure sourced or from your facts, keyword in title/opening/subheading, 820 words, readable on phone, 2 internal links (/implants, /team), 5 FAQs, structured data included.
+
+The only remaining warning is "keyword missing from address" — your slug `dental-implant-cost-bangalore` contains all keyword words; the checker expects the exact phrase, but this is fine for SEO.

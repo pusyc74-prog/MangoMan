@@ -1,0 +1,40 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m
+[0m$ [0mls -la /tmp/tmp.XvSEhTswao/run/mangoman-social-posts/coding-webinar
+total 20
+drwxr-xr-x 2 runner runner 4096 Oct  6 23:45 .
+drwxr-xr-x 3 runner runner 4096 Oct  6 23:45 ..
+-rw-r--r-- 1 runner runner 1556 Oct  6 23:45 brief.md
+-rw-r--r-- 1 runner runner  215 Oct  6 23:45 prompt.txt
+-rw-r--r-- 1 runner runner  444 Oct  6 23:46 run.log
+[0m
+[0m→ [0mSkill "mangoman-social-posts"
+[0m
+[0m$ [0mls /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/ && wc -l /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/*.py
+brandkit.py
+build_posts.py
+check_posts.py
+checks.py
+render.py
+tracenum.py
+vizlib.py
+  290 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/brandkit.py
+  525 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py
+  222 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py
+   67 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/checks.py
+  220 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/render.py
+   50 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/tracenum.py
+  421 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/vizlib.py
+ 1795 total
+[0m
+Skill loaded. Let me check the build script to understand the spec format before writing posts.json.
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/brandkit.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/checks.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/tracenum.py

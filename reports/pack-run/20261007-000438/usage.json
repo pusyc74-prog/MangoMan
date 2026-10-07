@@ -1,0 +1,75 @@
+{
+  "since": "2026-10-06T00:04:38.845027028Z",
+  "requests": 107,
+  "served": 102,
+  "failed_over": 11,
+  "brain_calls": 0,
+  "rows": [
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 81,
+      "ok": 76,
+      "rate_limited": 0,
+      "errors": 4,
+      "quality_fail": 0,
+      "tokens": 1872944,
+      "p50_ms": 7251
+    },
+    {
+      "provider": "nvidia",
+      "model": "glm-5.3",
+      "attempts": 16,
+      "ok": 10,
+      "rate_limited": 0,
+      "errors": 5,
+      "quality_fail": 0,
+      "tokens": 164792,
+      "p50_ms": 60000
+    },
+    {
+      "provider": "nvidia",
+      "model": "kimi-k3",
+      "attempts": 16,
+      "ok": 7,
+      "rate_limited": 0,
+      "errors": 8,
+      "quality_fail": 0,
+      "tokens": 160197,
+      "p50_ms": 60002
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3.5-lightning",
+      "attempts": 7,
+      "ok": 7,
+      "rate_limited": 0,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 27623,
+      "p50_ms": 81865
+    },
+    {
+      "provider": "openrouter",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 2,
+      "ok": 2,
+      "rate_limited": 0,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 40237,
+      "p50_ms": 43355
+    },
+    {
+      "provider": "nvidia",
+      "model": "deepseek-v4.1-flash",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 0,
+      "errors": 1,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 60000
+    }
+  ]
+}
