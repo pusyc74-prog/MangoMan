@@ -95,6 +95,10 @@ type Overview struct {
 	Brain     *brain.Stats `json:"brain,omitempty"`
 	// TeamKeyNotice is shown before a team key is saved.
 	TeamKeyNotice string `json:"team_key_notice"`
+	// Free is how many tasks a day each connected provider's free limits
+	// allow, worked out with TaskCost.
+	Free     []FreeRow `json:"free"`
+	TaskCost TaskCosts `json:"task_cost"`
 }
 
 func (s *Server) dashRoutes(mux *http.ServeMux) {
@@ -188,16 +192,28 @@ func (s *Server) overview(w http.ResponseWriter, _ *http.Request) {
 		ov.Providers = append(ov.Providers, s.providerStatus(p, counts[p.ID]))
 	}
 
+	// One model's use today across all its keys. It is resting only when
+	// every key is, and then until the first one is back.
 	quotas := map[string]quota.Status{}
+	now := time.Now()
 	for _, q := range rt.Quota.Snapshot() {
-		quotas[q.Key.Provider+"/"+q.Key.Model] = q
+		k := q.Key.Provider + "/" + q.Key.Model
+		sum, seen := quotas[k]
+		sum.ReqToday += q.ReqToday
+		sum.TokToday += q.TokToday
+		switch {
+		case !q.BlockedUntil.After(now):
+			sum.BlockedUntil = time.Time{}
+		case !seen || (!sum.BlockedUntil.IsZero() && q.BlockedUntil.Before(sum.BlockedUntil)):
+			sum.BlockedUntil = q.BlockedUntil
+		}
+		quotas[k] = sum
 	}
 	health := map[string]int{}
 	snaps := rt.Health.Snapshot()
 	for i, h := range snaps {
 		health[h.Target] = i
 	}
-	now := time.Now()
 	for _, m := range models {
 		p, _ := rt.Cat.Provider(m.Provider)
 		pol := rt.Cat.PolicyFor(m)
@@ -250,6 +266,7 @@ func (s *Server) overview(w http.ResponseWriter, _ *http.Request) {
 		}
 		ov.Models = append(ov.Models, dm)
 	}
+	ov.Free, ov.TaskCost = freeAI(ov.Providers, ov.Models, rt.Cat), taskCost
 	writeJSON(w, ov)
 }
 

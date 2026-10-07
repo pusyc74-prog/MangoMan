@@ -668,6 +668,35 @@ function renderModels(ov, act) {
     : "No connected models. Connect a provider above.";
 }
 
+// ---------- free AI ----------
+
+function renderFree(ov) {
+  const rows = ov.free || [];
+  $("free-block").hidden = rows.length === 0;
+  if (!rows.length) return;
+  const names = Object.fromEntries(ov.providers.map((p) => [p.id, p.name]));
+  const count = (n, r) => (n < 0 ? "No daily limit found" : n === 0 && r.tpm ? `0: its requests are bigger than its ${NUM.format(r.tpm)} tokens a minute` : NUM.format(n));
+  $("free").tBodies[0].replaceChildren(...rows.map((r) => {
+    const lim = [];
+    if (r.rpd) lim.push(`${NUM.format(r.rpd)} requests a day`);
+    if (r.tpd) lim.push(`${NUM.format(r.tpd)} tokens a day`);
+    if (!lim.length) lim.push(r.rpm ? `No daily limit found; up to ${NUM.format(r.rpm)} requests a minute` : "Not published");
+    return el("tr", {},
+      el("td", {}, el("i", { class: "dot", style: { background: color(r.provider) } }), names[r.provider] || r.provider),
+      el("td", { class: "r" }, NUM.format(r.keys)),
+      el("td", { title: `On ${r.model}, the model with the most room` }, lim.join(", ")),
+      el("td", { class: "r" }, count(r.big_tasks, r)),
+      el("td", { class: "r" }, count(r.small_tasks, r)));
+  }));
+  const open = rows.filter((r) => r.big_tasks < 0).map((r) => names[r.provider] || r.provider);
+  const big = rows.reduce((s, r) => s + Math.max(0, r.big_tasks), 0);
+  $("free-sub").textContent = open.length
+    ? `${open.join(" and ")} ${open.length > 1 ? "publish" : "publishes"} no daily limit, so how much you get there depends on how fast it answers.`
+    : `About ${NUM.format(big)} big tasks a day across your connections. MangoMan moves to the next one when a limit is reached.`;
+  const c = ov.task_cost;
+  $("free-how").textContent = `How this is worked out: a big task (ads, a product listing, an SEO article, a website's copy) used about ${NUM.format(c.big_requests)} requests and ${NUM.format(c.big_tokens)} tokens; a small one (an email campaign, a resume, social posts) about ${NUM.format(c.small_requests)} requests and ${NUM.format(c.small_tokens)} tokens, ${c.measured}. Limits are each provider's published free limits, or what it told MangoMan, for all your keys together. Your numbers will vary with the model and the task.`;
+}
+
 // ---------- recent requests ----------
 
 function renderRecent(ov, act) {
@@ -759,6 +788,7 @@ async function load() {
     renderHead(ov, act);
     loadNow();
     renderBoard(ov, act);
+    renderFree(ov);
     renderMyList(ov);
     renderBrain(ov);
     await loadAgents();

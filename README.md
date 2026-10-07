@@ -64,13 +64,14 @@ It also runs daily at 08:00 IST in quick mode, which catches provider changes ea
 `mangoman dashboard` opens a local page (served by the router, nothing loaded from the internet) that shows:
 
 - Which providers are connected, not connected, turned off or rejecting their key, with Connect, Remove key and Turn off/on in each row
+- How much free AI you get each day: for each connected provider, its free limits across all your keys and about how many big and small skill tasks they allow, with the method
 - Requests per hour for the last 24 hours, by provider
 - Every model: state (ready, rate limited, cooling down), requests, success rate, typical speed, tokens, free limit (catalogue or reported by the provider) and whether your data may be used for training
 - Recent requests with their outcome (never their content)
 
 The page gets the local token through the URL fragment, which browsers never send to servers or logs, and runs under a strict content security policy. Requests from other websites are refused.
 
-Routing also uses measured speed: after two answers from a model, its real response time replaces the catalogue estimate, so slow models sink in the ranking.
+Routing also uses measured speed: after two timed answers from a model, its real response time replaces the catalogue estimate, so slow models sink in the ranking.
 
 ## My list and new models
 
