@@ -32,6 +32,12 @@ back your understanding before building anything.
 
 ## The repo is public (7 Oct)
 
+**Switch the repo back to private before the first release or the beta**
+(the owner's decision, 7 Oct: public only while we build, for the free
+minutes). Then: Linux-only checks on GitHub, heavy runs on a self-hosted
+runner on the owner's computer, and releases from a separate public repo that
+holds only the compiled app.
+
 The owner made the repo public on 7 Oct, after the private repo's free
 Actions minutes ran out and every job was refused ("recent account payments
 have failed or your spending limit needs to be increased"). Public repos get
