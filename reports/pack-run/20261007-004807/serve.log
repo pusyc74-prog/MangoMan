@@ -1,0 +1,32 @@
+mangoman 2026/10/07 00:41:34 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:41:34 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:41:43 req=9ee8350f2497 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:41:49 req=c5aa3a98d747 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:43:04 req=b258e9cbf48e attempt=1 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/07 00:43:04 req=bb26217cfca8 attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/07 00:43:04 stopped
+mangoman 2026/10/07 00:43:04 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:43:04 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:43:10 req=a5fb11674c7f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:43:13 req=6597ba0ffa27 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:43:18 req=7ee46466e302 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:44:18 req=e86f94defb97 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:44:22 req=00f87efdb07a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:44:31 req=3a934f5b289d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:45:23 req=4baaed1dc47c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:45:59 req=1ca97831d06d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:46:03 req=0488a7ed3a74 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:46:14 req=78e1376ad01a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:46:16 req=3e456cecc209 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:46:20 req=a710bc29e765 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:46:26 req=d008afa09414 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:46:26 req=8efb139c5ac6 attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/07 00:46:26 stopped
+mangoman 2026/10/07 00:46:33 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 00:46:33 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 00:46:46 req=109b28dfbc11 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:46:54 req=7485712b6f40 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:47:00 req=6a6e4fd5a776 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 00:48:07 req=01a5c3a44a30 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/07 00:48:07 req=2e11157b2dee attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/07 00:48:07 stopped

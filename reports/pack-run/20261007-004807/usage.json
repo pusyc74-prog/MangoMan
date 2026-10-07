@@ -1,0 +1,31 @@
+{
+  "since": "2026-10-06T00:48:08.287057216Z",
+  "requests": 23,
+  "served": 18,
+  "failed_over": 0,
+  "brain_calls": 0,
+  "rows": [
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 20,
+      "ok": 18,
+      "rate_limited": 0,
+      "errors": 2,
+      "quality_fail": 0,
+      "tokens": 295707,
+      "p50_ms": 5372
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3.5-lightning",
+      "attempts": 3,
+      "ok": 0,
+      "rate_limited": 0,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 9901,
+      "p50_ms": 91480
+    }
+  ]
+}
