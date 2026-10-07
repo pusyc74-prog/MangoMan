@@ -30,6 +30,16 @@ back your understanding before building anything.
   doctor.yml (twice a day), agent-eval.yml, pack-run.yml (real-model pack
   runs, by hand only).
 
+## The repo is public (7 Oct)
+
+The owner made the repo public on 7 Oct, after the private repo's free
+Actions minutes ran out and every job was refused ("recent account payments
+have failed or your spending limit needs to be increased"). Public repos get
+standard runners free. History was scanned for keys first: none. Never commit
+a key, a .env file or a signing key. **Before starting anything that uses
+paid or limited resources (Actions minutes, API credits), say what it costs
+and what limit it could hit, before running it.**
+
 ## Watching CI from a session
 
 The GitHub Actions API is blocked from the session's network, so
