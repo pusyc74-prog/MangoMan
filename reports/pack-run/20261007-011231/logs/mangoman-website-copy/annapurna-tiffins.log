@@ -1,0 +1,246 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m→ [0mSkill "mangoman-website-copy"
+[0m
+[0m$ [0mpython3 scripts/brief_gate.py facts.md --pages 4
+python3: can't open file '/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/tests/ste/scripts/brief_gate.py': [Errno 2] No such file or directory
+[0m
+[0m✱ [0mGlob "**/brief_gate.py"[90m 0 matches[0m
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/tests/ste/
+total 12
+drwxr-xr-x 2 runner runner 4096 Oct  7 01:03 .
+drwxr-xr-x 4 runner runner 4096 Oct  7 01:03 ..
+-rw-r--r-- 1 runner runner 2315 Oct  7 01:03 SKILL.md
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/
+total 28
+drwxr-xr-x  4 runner runner 4096 Oct  7 01:03 .
+drwxr-xr-x 19 runner runner 4096 Oct  7 01:03 ..
+-rw-r--r--  1 runner runner    4 Oct  7 01:03 .mangoman-pack
+-rw-r--r--  1 runner runner 6190 Oct  7 01:03 SKILL.md
+drwxr-xr-x  2 runner runner 4096 Oct  7 01:03 scripts
+drwxr-xr-x  4 runner runner 4096 Oct  7 01:03 tests
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/
+total 80
+drwxr-xr-x 2 runner runner  4096 Oct  7 01:03 .
+drwxr-xr-x 4 runner runner  4096 Oct  7 01:03 ..
+-rwxr-xr-x 1 runner runner 11509 Oct  7 01:03 brandkit.py
+-rwxr-xr-x 1 runner runner  1979 Oct  7 01:03 brief_gate.py
+-rwxr-xr-x 1 runner runner  7372 Oct  7 01:03 build_copy.py
+-rwxr-xr-x 1 runner runner  6826 Oct  7 01:03 check_copy.py
+-rwxr-xr-x 1 runner runner  2452 Oct  7 01:03 checks.py
+-rwxr-xr-x 1 runner runner  8276 Oct  7 01:03 render.py
+-rwxr-xr-x 1 runner runner  2326 Oct  7 01:03 tracenum.py
+-rwxr-xr-x 1 runner runner 18954 Oct  7 01:03 vizlib.py
+[0m
+[0m$ [0mpython3 scripts/brief_gate.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/facts.md --pages 4
+PASS  15 facts for 4 pages
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 scripts/build_copy.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json --out /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+site.json problems:
+- brand is required
+- promise is required
+- url must be the site address starting with https://
+- page ?: slug is lowercase words joined by dashes
+- page ?: name is required
+- page ?: meta.title and meta.description are required
+- page ?: cta needs a label and an href
+- page ?: slug is lowercase words joined by dashes
+- page ?: name is required
+- page ?: meta.title and meta.description are required
+- page ?: cta needs a label and an href
+- page ?: slug is lowercase words joined by dashes
+- page ?: name is required
+- page ?: meta.title and meta.description are required
+- page ?: cta needs a label and an href
+- page ?: slug is lowercase words joined by dashes
+- page ?: name is required
+- page ?: meta.title and meta.description are required
+- page ?: cta needs a label and an href
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 scripts/build_copy.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json --out /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+Built 4 pages into /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+[0m
+[0m$ [0mpython3 scripts/check_copy.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+PASS  spec is valid
+PASS  all output files exist
+FAIL  numbers not in the facts: 12; 160; 240; 26; 3,200; 43210; 780; 98765
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 7.8 words
+FAIL  keyword missing: about: keyword 'Annapurna Tiffins story' in neither title nor h1; home: keyword 'tiffin delivery Pune' in neither title nor h1; menu: keyword 'home-style vegetarian menu' in neither title nor h1; plans: keyword 'weekly tiffin plan' in neither title nor h1
+WARN  search fit: about: keyword not in the description; about: keyword not in the first 100 words; home: keyword not in the description; home: keyword not in the first 100 words; menu: keyword not in the description; menu: keyword not in the first 100 words; plans: keyword not in the description; plans: keyword not in the first 100 words
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+WARN  pages nobody links to: about; menu; plans
+WARN  sentences repeated across pages: Cold-pressed groundnut oil, no ajinomoto; Message us on WhatsApp at 98765 43210.
+PASS  no thin pages
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/checks.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/vizlib.py[90m [limit=100, offset=1][0m
+[0m✱ [0mGrep "def numbers_in"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts · 1 match[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/vizlib.py[90m [limit=30, offset=385][0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/tracenum.py
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 scripts/build_copy.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json --out /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+Built 4 pages into /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+[0m
+[0m$ [0mpython3 scripts/check_copy.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+PASS  spec is valid
+PASS  all output files exist
+FAIL  numbers not in the facts: 43210; 98765
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+WARN  voice words never used: warm
+PASS  average sentence is 7.9 words
+PASS  each page has its keyword in the title or h1
+WARN  search fit: about: title is 70 characters (30 to 60); home: title is 70 characters (30 to 60); menu: title is 70 characters (30 to 60); plans: title is 73 characters (30 to 60)
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: Message us on WhatsApp at 98765 43210.
+PASS  no thin pages
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 scripts/build_copy.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json --out /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+Built 4 pages into /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+[0m
+[0m$ [0mpython3 scripts/check_copy.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 7.9 words
+PASS  each page has its keyword in the title or h1
+WARN  search fit: menu: title is 61 characters (30 to 60); plans: title is 62 characters (30 to 60)
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+PASS  no sentence repeated across pages
+PASS  no thin pages
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -108,9 +108,9 @@
+ "name": "Menu",
+ "goal": "View menu and start a plan on WhatsApp",
+ "keyword": "home-style vegetarian menu",
+ "meta": {
+-  "title": "Home-Style Vegetarian Menu | Daily Tiffin | Annapurna Tiffins",
++  "title": "Home-Style Vegetarian Menu | Daily Tiffin | Annapurna",
+   "description": "See what's in today's home-style vegetarian menu. Four rotis, dry sabzi, dal or curry, rice and Sunday sweet. Jain option available."
+ },
+ "cta": {
+   "label": "Start on WhatsApp",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -164,9 +164,9 @@
+ "name": "Plans",
+ "goal": "Choose a plan and start on WhatsApp",
+ "keyword": "weekly tiffin plan",
+ "meta": {
+-  "title": "Weekly Tiffin Plan & Monthly Plan | Prices | Annapurna Tiffins",
++  "title": "Weekly Tiffin Plan & Monthly Plan | Prices | Annapurna",
+   "description": "Weekly tiffin plan at Rs 780 for 6 lunches. Monthly plan at Rs 3,200 for 26 lunches. Delivered 12 to 1 pm. Order by 8 pm."
+ },
+ "cta": {
+   "label": "Start on WhatsApp",
+
+[0m
+[0m$ [0mpython3 scripts/build_copy.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json --out /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+Built 4 pages into /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+[0m
+[0m$ [0mpython3 scripts/check_copy.py /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site.json /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 7.9 words
+PASS  each page has its keyword in the title or h1
+PASS  titles, descriptions and keyword placement fit
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+PASS  no sentence repeated across pages
+PASS  no thin pages
+[0m
+[0m$ [0mls -la /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site/
+total 36
+drwxr-xr-x 3 runner runner  4096 Oct  7 01:08 .
+drwxr-xr-x 3 runner runner  4096 Oct  7 01:08 ..
+drwxr-xr-x 2 runner runner  4096 Oct  7 01:08 copy
+-rw-r--r-- 1 runner runner  5005 Oct  7 01:12 pages.csv
+-rw-r--r-- 1 runner runner 12011 Oct  7 01:12 pages.json
+-rw-r--r-- 1 runner runner   588 Oct  7 01:12 sitemap.md
+[0m
+[0m$ [0mls -la /tmp/tmp.bY7b41lS2m/run/mangoman-website-copy/annapurna-tiffins/site/copy/
+total 24
+drwxr-xr-x 2 runner runner 4096 Oct  7 01:08 .
+drwxr-xr-x 3 runner runner 4096 Oct  7 01:08 ..
+-rw-r--r-- 1 runner runner  868 Oct  7 01:12 about.md
+-rw-r--r-- 1 runner runner  872 Oct  7 01:12 home.md
+-rw-r--r-- 1 runner runner 1085 Oct  7 01:12 menu.md
+-rw-r--r-- 1 runner runner 1013 Oct  7 01:12 plans.md
+[0m
+[0m→ [0mRead site/sitemap.md
+Done. All checks pass. Created:
+
+**`site.json`** — spec with brand, promise, voice, facts, competitors, 4 pages  
+**`site/`** folder with:
+- `copy/home.md`, `copy/menu.md`, `copy/plans.md`, `copy/about.md` — page copy ready for CMS
+- `pages.csv` — title, description, h1, button, body per page
+- `pages.json` — structured sections for landing page pack
+- `sitemap.md` — goals, keywords, internal links (see above)
+
+Each page has: hero, keyword in title/h1, unique title (30–60 chars) and description (70–160 chars), consistent "Start on WhatsApp" button, internal links to other pages, and a CTA section. Numbers trace to `facts.md`. No competitor phrasing, avoided words, or clichés.
