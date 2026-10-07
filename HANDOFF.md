@@ -30,6 +30,13 @@ back your understanding before building anything.
   doctor.yml (twice a day), agent-eval.yml, pack-run.yml (real-model pack
   runs, by hand only).
 
+## M5 parked (7 Oct)
+
+M5 (the app for everyone) is parked by the owner: teachers and shop owners
+cannot bring their own keys, and serving them without keys needs servers and
+a paid AI allowance. Do not start it unless the owner reopens it. M6 (coding
+workspace) is under discussion instead.
+
 ## The repo is public (7 Oct)
 
 **Switch the repo back to private before the first release or the beta**
