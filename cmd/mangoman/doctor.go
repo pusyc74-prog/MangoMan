@@ -260,6 +260,9 @@ func cmdUsage(args []string) error {
 	if s.BrainCalls > 0 {
 		fmt.Printf("The decision brain made %d calls of its own; they show in the table, not in the counts above.\n", s.BrainCalls)
 	}
+	if line := partsLine(s.Parts); line != "" {
+		fmt.Println("Where the input went (estimated): " + line + ".")
+	}
 	fmt.Println()
 	tw := tabwriter.NewWriter(os.Stdout, 0, 2, 2, ' ', 0)
 	fmt.Fprintln(tw, "PROVIDER\tMODEL\tATTEMPTS\tOK\tRATE LIMITED\tERRORS\tBAD ANSWERS\tTOKENS\tP50 MS")
@@ -267,4 +270,26 @@ func cmdUsage(args []string) error {
 		fmt.Fprintf(tw, "%s\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\n", r.Provider, r.Model, r.Attempts, rate(r.OK, r.Attempts), r.RateLimited, r.Errors, r.QualityFail, r.Tokens, r.P50MS)
 	}
 	return tw.Flush()
+}
+
+// partsLine turns the input breakdown into "instructions 40%, ...", largest
+// first.
+func partsLine(parts map[string]int) string {
+	total := 0
+	for _, n := range parts {
+		total += n
+	}
+	if total == 0 {
+		return ""
+	}
+	keys := make([]string, 0, len(parts))
+	for k := range parts {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return parts[keys[i]] > parts[keys[j]] })
+	out := make([]string, 0, len(keys))
+	for _, k := range keys {
+		out = append(out, fmt.Sprintf("%s %d%%", strings.ReplaceAll(k, "_", " "), parts[k]*100/total))
+	}
+	return strings.Join(out, ", ")
 }

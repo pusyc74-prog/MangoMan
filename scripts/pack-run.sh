@@ -15,7 +15,8 @@
 # Needs: provider keys in MANGOMAN_HOME, opencode on PATH, and the pack
 # dependencies (pandas, Pillow, python-pptx, python-docx, pypdf, playwright).
 # Prints a Markdown table of pack, case, score, requests, tokens and seconds,
-# writes each case's output to pack-run-logs/<pack>/<case>.log, and exits 1 if
+# writes each case's output to pack-run-logs/<pack>/<case>.log and the usage so
+# far (with where the input tokens went) to <case>.usage.json, and exits 1 if
 # any case scored below 50.
 set -u
 cd "$(dirname "$0")/.."
@@ -87,6 +88,7 @@ print(int(n < 50), s.get("score", 0), (s.get("notes") or "").replace("|", "/"))
     echo "| $pack | $name | $score | $((r1 - r0)) | $((t1 - t0)) | $secs |"
     mkdir -p "$repo/pack-run-logs/$pack"
     tail -c 200000 "$d/run.log" > "$repo/pack-run-logs/$pack/$name.log"
+    "$M" usage --json --days 1 > "$repo/pack-run-logs/$pack/$name.usage.json" 2>/dev/null
     [ "$bad" = 1 ] && { low=1; echo "      $name: $notes" >&2; }
   done
 done

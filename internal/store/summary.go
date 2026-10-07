@@ -31,6 +31,9 @@ type Summary struct {
 	FailedOver int       `json:"failed_over"` // served, but not on the first attempt
 	BrainCalls int       `json:"brain_calls"` // decision brain calls, not in the counts above
 	Rows       []Row     `json:"rows"`
+	// Parts estimates where input tokens went across all requests, by kind
+	// (instructions, tool definitions, tool results...).
+	Parts map[string]int `json:"parts,omitempty"`
 }
 
 // Summarize reads a usage log and aggregates events since a time.
@@ -67,6 +70,12 @@ func Summarize(path string, since time.Time) (Summary, error) {
 		}
 		r.Attempts++
 		r.Tokens += e.Tokens
+		for k, n := range e.Parts {
+			if s.Parts == nil {
+				s.Parts = map[string]int{}
+			}
+			s.Parts[k] += n
+		}
 		r.lat = append(r.lat, e.LatencyMS)
 		rs, ok := reqs[e.RequestID]
 		if !ok {

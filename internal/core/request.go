@@ -230,3 +230,33 @@ func (r *Request) BodyWith(upstreamModel string, u Upstream) (body []byte, added
 	body, err = json.Marshal(out)
 	return body, addedUsage, err
 }
+
+// TokenParts estimates, in tokens, where a request's input goes: the
+// instructions (system), the tool definitions, the user's messages, the
+// model's own earlier turns (with the tool calls it made) and tool results
+// read back. Counts only, never content.
+func (r *Request) TokenParts() map[string]int {
+	parts := map[string]int{}
+	if v, ok := r.Raw["tools"]; ok {
+		parts["tool_definitions"] = len(v) / 4
+	}
+	var msgs []json.RawMessage
+	_ = json.Unmarshal(r.Raw["messages"], &msgs)
+	for _, m := range msgs {
+		var h struct {
+			Role string `json:"role"`
+		}
+		_ = json.Unmarshal(m, &h)
+		key := "user"
+		switch h.Role {
+		case "system", "developer":
+			key = "instructions"
+		case "assistant":
+			key = "earlier_answers"
+		case "tool":
+			key = "tool_results"
+		}
+		parts[key] += len(m) / 4
+	}
+	return parts
+}

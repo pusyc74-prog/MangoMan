@@ -76,3 +76,22 @@ func TestBodyWithQuirks(t *testing.T) {
 		t.Fatal("stream_options on non-stream request")
 	}
 }
+
+func TestTokenParts(t *testing.T) {
+	body := `{"model":"x","tools":[{"type":"function","function":{"name":"read","parameters":{"type":"object"}}}],
+	"messages":[{"role":"system","content":"` + strings.Repeat("rule ", 400) + `"},
+	{"role":"user","content":"write my resume"},
+	{"role":"assistant","content":null,"tool_calls":[{"id":"1","type":"function","function":{"name":"read","arguments":"{\"path\":\"cv.md\"}"}}]},
+	{"role":"tool","tool_call_id":"1","content":"` + strings.Repeat("line ", 200) + `"}]}`
+	r, err := ParseChat([]byte(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := r.TokenParts()
+	if p["instructions"] < 400 || p["tool_results"] < 200 || p["tool_definitions"] == 0 || p["earlier_answers"] == 0 || p["user"] == 0 {
+		t.Fatalf("every kind of input should be counted: %v", p)
+	}
+	if p["instructions"] <= p["tool_results"] {
+		t.Fatalf("the long instructions should weigh most: %v", p)
+	}
+}

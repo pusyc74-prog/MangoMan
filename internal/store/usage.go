@@ -23,6 +23,9 @@ type Event struct {
 	Tokens    int       `json:"tokens,omitempty"` // total, from usage or estimated
 	Attempt   int       `json:"attempt"`
 	Stream    bool      `json:"stream"`
+	// Parts estimates where the request's input tokens went (instructions,
+	// tool definitions, tool results...). Set on the first attempt only.
+	Parts map[string]int `json:"parts,omitempty"`
 }
 
 // BrainClass marks the decision brain's own calls. They use free quota, so

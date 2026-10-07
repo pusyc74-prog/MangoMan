@@ -171,11 +171,15 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			}
 			rt.Health.Observe(c, res.outcome, good, lat)
 		}
-		rt.Log.Add(store.Event{
+		ev := store.Event{
 			Time: start, RequestID: id, Provider: c.Provider.ID, Model: c.Model.Canonical, Class: logClass,
 			Outcome: res.outcome, Status: res.status, LatencyMS: time.Since(start).Milliseconds(),
 			Attempt: attempts, Stream: req.Stream, Tokens: res.tokens,
-		})
+		}
+		if attempts == 1 {
+			ev.Parts = req.TokenParts()
+		}
+		rt.Log.Add(ev)
 		who := c.Target()
 		if k := c.teamKey(); k != "" {
 			who += " (team key " + k + ")"
