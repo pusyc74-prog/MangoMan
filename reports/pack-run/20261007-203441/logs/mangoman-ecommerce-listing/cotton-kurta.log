@@ -1,0 +1,33 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ecommerce-listing"
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m→ [0mRead competitors.md
+[0m→ [0mRead current_listing.md
+[0m
+[0m$ [0mls /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/ && ls /tmp/tmp.L8EOyGf6br/run/mangoman-ecommerce-listing/cotton-kurta/
+brandkit.py
+build_listing.py
+check_listing.py
+checks.py
+render.py
+tracenum.py
+vizlib.py
+competitors.md
+current_listing.md
+facts.md
+prompt.txt
+run.log
+search_terms.csv
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/checks.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/tracenum.py
+[0m→ [0mRead prompt.txt
+[0m✱ [0mGrep "def numbers_in"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts · 1 match[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/vizlib.py[90m [offset=385, limit=25][0m

@@ -1,0 +1,59 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-website-copy"
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m
+[0m$ [0mpython3 scripts/brief_gate.py facts.md --pages 4
+python3: can't open file '/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/tests/ste/scripts/brief_gate.py': [Errno 2] No such file or directory
+[0m
+[0m✱ [0mGlob "**/brief_gate.py"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy · 1 match[0m
+[0m
+[0m$ [0mpython3 scripts/brief_gate.py /tmp/tmp.L8EOyGf6br/run/mangoman-website-copy/annapurna-tiffins/facts.md --pages 4
+PASS  15 facts for 4 pages
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py
+Gate passes. Now let me check the build/check scripts to understand the site.json format.
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/checks.py
+[0m✱ [0mGlob "**/*"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy · 25 matches[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/SKILL.md
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/tracenum.py
+[0m
+[0m$ [0mgrep -n "def numbers_in" -A 30 scripts/vizlib.py
+390:def numbers_in(obj):
+391-    """Every number inside a spec (for tracing text back to computed values)."""
+392-    out = []
+393-    if isinstance(obj, bool):
+394-        return out
+395-    if isinstance(obj, (int, float)):
+396-        out.append(float(obj))
+397-    elif isinstance(obj, dict):
+398-        for v in obj.values():
+399-            out += numbers_in(v)
+400-    elif isinstance(obj, list):
+401-        for v in obj:
+402-            out += numbers_in(v)
+403-    return out
+404-
+405-
+406-def run_analysis(script):
+407-    """Run the user's analysis script and return the JSON spec it prints."""
+408-    res = subprocess.run([sys.executable, script], capture_output=True, text=True, timeout=600,
+409-                         cwd=os.path.dirname(os.path.abspath(script)) or ".")
+410-    if res.returncode != 0:
+411-        sys.exit("analysis failed:\n" + res.stderr[-4000:])
+412-    out, dec = res.stdout, json.JSONDecoder()
+413-    for i, ch in enumerate(out):  # the first complete JSON object, ignoring other prints
+414-        if ch == "{":
+415-            try:
+416-                obj = dec.raw_decode(out, i)[0]
+417-            except json.JSONDecodeError:
+418-                continue
+419-            if isinstance(obj, dict):
+420-                return obj
+[0m

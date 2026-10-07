@@ -1,0 +1,120 @@
+mangoman 2026/10/07 19:46:14 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 19:46:14 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 19:47:17 req=debc38783d88 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 19:47:30 req=debc38783d88 attempt=2 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:47:49 req=fd81c783cb80 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:47:58 req=5cd1a2ed79f3 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:47:59 req=6057f01bfc23 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:48:00 req=c7768d7dbb15 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:48:01 req=11c55ca294a1 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:48:54 req=caab9ef3eb7e attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 19:50:10 req=5af856478401 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:52:30 req=641d27205e1b attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:52:30 stopped
+mangoman 2026/10/07 19:52:30 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 19:52:30 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 19:53:33 req=acd314e17486 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 19:53:33 req=acd314e17486 attempt=2 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:53:34 req=acd314e17486 attempt=3 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:53:35 req=acd314e17486 attempt=4 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:53:36 req=8b462c2c57a6 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:53:45 req=008c01e2bfd8 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:53:46 req=d2a8a94c8cf9 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:53:48 req=476feb5d4d54 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:53:54 req=7bedb4ba55e6 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:53:58 req=6a92f45882ca attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:53:59 req=c46f3ea61faa attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:54:58 req=4cdb3fd75d5d attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 19:56:30 req=f9917af86b0b attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:56:30 stopped
+mangoman 2026/10/07 19:56:30 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 19:56:30 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 19:57:33 req=03a721851866 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 19:57:33 req=03a721851866 attempt=2 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 19:57:34 req=03a721851866 attempt=3 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 19:57:42 req=03a721851866 attempt=4 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:57:43 req=c6c63743ff2a attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:57:53 req=357b335815ea attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:57:54 req=18efd35bf8fc attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:57:57 req=7b4cdebe0d9b attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:57:59 req=a39e70d07b59 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:58:01 req=a0a6cbdf6ed1 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:58:03 req=8ede65069caf attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:58:07 req=4cefd4fa289a attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 19:58:35 req=332c3e4921c2 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:58:36 req=50f976455fa5 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:58:40 req=90181a9e21e7 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 19:59:30 req=674aa1a7c2b9 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:00:59 req=7073b0a6721d attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:01:05 req=45ca2f8265e1 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:01:13 req=73993e87f7c8 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:01:26 req=f94581b6c233 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:01:27 req=e1d1808863bd attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:01:33 req=021006826f8b attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:01:33 stopped
+mangoman 2026/10/07 20:01:36 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 20:01:36 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 20:02:39 req=7aa626b64845 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 20:02:49 req=7aa626b64845 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 20:02:50 req=43c0ca47cabc attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 20:02:50 req=43c0ca47cabc attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 20:03:38 req=c55e55fbb04f attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 20:03:50 req=43c0ca47cabc attempt=3 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 20:03:51 req=43c0ca47cabc attempt=4 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:04:56 req=7841a040b342 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:04:57 req=75abea0fd390 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:05:05 req=04d4d5a8ccbd attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:05:30 req=52151c885f41 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:05:37 req=c7651a688228 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:08:34 req=200a5f62c4ff attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:08:35 stopped
+mangoman 2026/10/07 20:08:35 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 20:08:35 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 20:09:37 req=d5f0a18a7a26 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 20:09:38 req=d5f0a18a7a26 attempt=2 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 20:09:38 req=d5f0a18a7a26 attempt=3 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 20:09:39 req=d5f0a18a7a26 attempt=4 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:09:41 req=b74bbb373062 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:10:20 req=5c20488a0e52 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:10:23 req=fdcc70e2c874 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:10:46 req=428d7675a113 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 20:11:19 req=7e4938f81f7b attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:17:28 req=a409d5dad43a attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:17:28 stopped
+mangoman 2026/10/07 20:17:28 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 20:17:28 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 20:18:31 req=c27a2b3d1dc3 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 20:18:36 req=c27a2b3d1dc3 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/07 20:18:36 req=464768a52a5f attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 20:18:36 req=464768a52a5f attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 20:19:29 req=d9da359f47e7 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 20:19:36 req=464768a52a5f attempt=3 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 20:19:39 req=464768a52a5f attempt=4 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:21:20 req=8f42ae2a7ac4 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:21:25 req=a10c7de256d9 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:21:29 req=c83ac888e9eb attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:21:31 req=a77fa2fbf2bd attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:21:32 req=760338e76860 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:22:48 req=cd9ae871c623 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:23:21 req=2dd1cae97c7a attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:23:22 req=bca1bcdc4b70 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:26:41 req=c85ff442b253 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:26:42 stopped
+mangoman 2026/10/07 20:26:42 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.5)
+mangoman 2026/10/07 20:26:42 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/07 20:27:30 req=e0da00b09570 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/07 20:27:45 req=d5a137529c29 attempt=1 nvidia/kimi-k3 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/07 20:27:45 req=d5a137529c29 attempt=2 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/07 20:27:45 req=d5a137529c29 attempt=3 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/07 20:28:03 req=d5a137529c29 attempt=4 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:28:05 req=968d72be2c1a attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:28:06 req=49c3cea5f931 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:28:07 req=9fce2d6e43e3 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:28:09 req=9cdaa2d2cea8 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:28:10 req=c1a91b6b858a attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:28:12 req=58f151718127 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:28:13 req=6d3bac0bb168 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:28:16 req=9542596b91f0 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:28:50 req=d9b4b5408899 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:34:41 req=c9d272bc2566 attempt=1 nvidia/glm-5.3 -> ok (200) 
+mangoman 2026/10/07 20:34:41 stopped

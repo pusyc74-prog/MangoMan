@@ -1,0 +1,20 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mSkill "mangoman-social-posts"
+This matches the mangoman-social-posts skill. Loading it now.
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py
+The brief is complete — no logo, navy/orange, 4 posts across LinkedIn, Instagram, X. Let me study the skill's scripts to match the schema exactly before writing `posts.json`.
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/checks.py
+[0m✱ [0mGlob "**/*.json"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts · 0 matches[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py
+Let me look at the checker, brandkit, and an example posts.json from the test cases to match conventions exactly.
+[0m✱ [0mGrep "CURATED|MOTIFS|TYPES|def resolve_spec|def brand_problems"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/brandkit.py · 12 matches[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/brandkit.py[90m [offset=1, limit=140][0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/brandkit.py[90m [offset=141, limit=150][0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/tracenum.py
+[0m✱ [0mGrep "def numbers_in"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts · 1 match[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/vizlib.py[90m [limit=30, offset=385][0m

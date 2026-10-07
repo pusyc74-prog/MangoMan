@@ -1,0 +1,40 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m
+[0m$ [0mls -la
+total 28
+drwxr-xr-x 2 runner runner 4096 Oct  7 19:46 .
+drwxr-xr-x 3 runner runner 4096 Oct  7 19:46 ..
+-rw-r--r-- 1 runner runner  576 Oct  7 19:46 facts.md
+-rw-r--r-- 1 runner runner  616 Oct  7 19:46 landing.md
+-rw-r--r-- 1 runner runner  436 Oct  7 19:46 prompt.txt
+-rw-r--r-- 1 runner runner  455 Oct  7 19:47 run.log
+-rw-r--r-- 1 runner runner  547 Oct  7 19:46 search_terms.csv
+[0m
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m
+[0m$ [0mls /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/ /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/:
+SKILL.md
+scripts
+tests
+
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/:
+brandkit.py
+build_ads.py
+check_ads.py
+checks.py
+render.py
+tracenum.py
+vizlib.py
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/checks.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/tracenum.py
