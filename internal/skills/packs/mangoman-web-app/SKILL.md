@@ -1,7 +1,7 @@
 ---
 name: mangoman-web-app
 description: Build a small single-file web app (calculator, tracker, form, quiz, booking or order tool, internal dashboard) that works on phones and laptops, keeps its data in the browser, uses the user's brand, and is tested in a real browser with scripted scenarios before delivery. Use when the user asks for a simple app, a tool, a calculator, a tracker, a form that does something, or a prototype they can open and use.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

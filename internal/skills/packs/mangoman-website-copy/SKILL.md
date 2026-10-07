@@ -1,7 +1,7 @@
 ---
 name: mangoman-website-copy
 description: Research and write the copy for a whole website (home, product or service pages, about, contact) with a sitemap, page titles, descriptions and buttons, delivered as Markdown per page plus a CSV for the CMS, checked before delivery. Use when the user asks for website content, site copy, web pages text, a sitemap, or "write my website".
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: mangoman-seo-article
 description: Research and write an SEO blog article (with meta title, description, address, FAQ and structured data) that is accurate, cited and easy to read, delivered as a page and as text ready to paste into WordPress, Shopify or Webflow, checked before publishing. Use when the user asks for a blog post, SEO article, content for their website, a guide or how-to article, or meta titles and descriptions.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

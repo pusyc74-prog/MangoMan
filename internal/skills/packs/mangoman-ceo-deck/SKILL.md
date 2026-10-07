@@ -1,7 +1,7 @@
 ---
 name: mangoman-ceo-deck
 description: Turn raw data or an analysis into a CEO or board-ready slide deck (PowerPoint, PDF and web) with an answer-first story and verified numbers. Use when the user asks for a presentation, deck, slides, board pack, monthly or quarterly review, or a CEO summary of data.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.2"

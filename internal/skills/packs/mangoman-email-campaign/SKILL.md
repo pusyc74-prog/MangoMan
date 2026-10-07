@@ -1,7 +1,7 @@
 ---
 name: mangoman-email-campaign
 description: Write and build a branded email campaign or sequence (welcome series, launch, offer, newsletter, abandoned cart, win-back) as ready-to-send HTML emails with plain-text versions, merge tags for the user's email tool, and a send schedule, checked before sending. Use when the user asks for marketing emails, an email campaign, newsletter, drip or nurture sequence, or emails for Mailchimp, Klaviyo, Brevo or MailerLite.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

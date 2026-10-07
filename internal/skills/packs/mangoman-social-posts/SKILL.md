@@ -1,7 +1,7 @@
 ---
 name: mangoman-social-posts
 description: Create a branded set of social media posts (images in the right size for each platform, captions, hashtags and alt text) for Instagram, LinkedIn, Facebook, X, Threads or WhatsApp status, checked before delivery. Use when the user asks for social media posts, a content calendar's creatives, Instagram or LinkedIn posts, a carousel, stories, or a launch or festive campaign.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.1"

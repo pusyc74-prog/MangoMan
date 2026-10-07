@@ -1,7 +1,7 @@
 ---
 name: mangoman-website-copy
 description: Write the copy for a whole website, with a sitemap, titles, descriptions and buttons. Use when the user asks for website content, site copy or a sitemap.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0-ste"

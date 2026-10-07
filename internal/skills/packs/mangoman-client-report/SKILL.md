@@ -1,7 +1,7 @@
 ---
 name: mangoman-client-report
 description: Turn a client's data (sales, ads, website, social or any export) into a monthly or weekly performance report (A4 PDF) with KPIs against the last period, charts with takeaway headlines, wins, issues and next month's plan, every number computed and checked. Use when the user asks for a client report, monthly report, MIS report, performance report, campaign report or a weekly update from data.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

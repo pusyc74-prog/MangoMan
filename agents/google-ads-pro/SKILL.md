@@ -1,7 +1,7 @@
 ---
 name: google-ads-pro
 description: Write or improve Google search ads using the advertiser's own search term report (or Keyword Planner ideas), with the converting searches ranked, wasted spend found and blocked by safe negative keywords, ad groups by theme with match types, headlines that cover the demand and a before-and-after score. Use when the user wants Google search ads, keywords or negative keywords and has a search term report or keyword ideas.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman-agent
   version: "1.0"

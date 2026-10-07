@@ -1,0 +1,21 @@
+MangoMan
+Copyright (c) 2026 the MangoMan owner. All rights reserved.
+
+This software, including its source code, skill packs, agents, scripts,
+catalogue data and documentation, is proprietary.
+
+1. You may install and use MangoMan, including its skill packs and agents,
+   for your own work.
+2. You may not copy, modify, redistribute, sublicense, sell or resell any
+   part of it, or use it to build a competing product, unless the owner
+   gives written permission.
+3. Seeing the source code, for example while the repository is public, gives
+   no right to use it beyond point 1.
+4. Third-party components keep their own licences. OpenCode (MIT) is
+   downloaded separately from its official release; Go modules are listed in
+   go.mod with their own licences.
+5. MangoMan is provided "as is", without warranty of any kind. The owner is
+   not liable for any damage arising from its use.
+
+Agents published on the MangoMan marketplace by other creators are licensed
+by their creators, as stated in each agent's own files.

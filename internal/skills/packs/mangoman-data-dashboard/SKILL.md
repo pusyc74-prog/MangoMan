@@ -1,7 +1,7 @@
 ---
 name: mangoman-data-dashboard
 description: Turn raw data (CSV, Excel, JSON exports) into an executive-quality interactive dashboard with verified numbers. Use when the user shares data and asks for a dashboard, an analysis, charts, a report on the numbers, or "what does this data say".
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

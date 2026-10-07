@@ -1,7 +1,7 @@
 ---
 name: mangoman-meeting-minutes
 description: Turn a meeting transcript, recording notes or rough notes into clear minutes (summary, decisions, actions with owners and due dates, discussion, open questions) as a PDF, paste-ready text and an action list, checked so nothing is invented. Use when the user asks for meeting minutes, MoM, meeting notes, a meeting summary, action items or a follow-up email after a meeting.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: mangoman-ecommerce-listing
 description: Write or optimise product listings for Amazon (India or US), Flipkart, Meesho and Shopify (title, bullets, description, backend search terms, A+ content, SEO fields and an image plan), exported as ready-to-paste text and import CSVs and checked against marketplace rules. Use when the user asks for an Amazon listing, product title or bullets, a Flipkart or Meesho listing, a Shopify product page, listing optimisation, or keywords for a product.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: mangoman-landing-page
 description: Build a fast, mobile-first one-page website (landing page) for a business, product, launch or event, with the user's brand, a lead form that sends to WhatsApp, email or a form service, and search and sharing tags, checked on phone, tablet and desktop before delivery. Use when the user asks for a landing page, a one-page website, a product or launch page, a page for an ad campaign, or a simple site for their business.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

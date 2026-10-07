@@ -593,6 +593,7 @@ Phase 1 milestones M1 to M4, decision brain v1, all 17 skill packs (waves 1 to 5
 
 | Date | Item | What changed |
 | --- | --- | --- |
+| 2026-10-07 | Licence fixed; PDFs with unreadable numbers fixed | Licence: all 17 packs, the short-step variant and both in-house agents said Apache-2.0, which let anyone copy and resell them, and the code had no licence. Now LICENSE says all rights reserved (use inside MangoMan only; no copying, changing, reselling or building a competitor), and every pack and agent points to it. Creators' marketplace agents keep their own licences. Bug found by the pack regression on a machine with the Inter font: Chromium writes Inter's alternate digits and dashes into the PDF without a way back to the real characters, so invoice numbers and amounts looked right but could not be copied, searched or read by accounting software. Inter is a common brand font, so any PDF pack could be hit. The shared PDF renderer now reads back every PDF it makes and, if the text is unreadable, prints it again with those font features off. All 19 pack checks pass. |
 | 2026-10-07 | M5 parked again | The owner parked M5: the target users (teachers, shop owners) cannot bring their own NVIDIA or other keys, and serving them without their own keys needs servers and a paid AI allowance, which the zero budget does not allow. M6 (the coding workspace) is being discussed next. |
 | 2026-10-07 | Repo public while building, private before release | The private repo's free Actions minutes ran out and every job was refused; the owner made the repo public so building and checks stay free (history scanned first: no keys). Decided: it goes back to private before the first release or the beta. Then Linux-only checks on GitHub, heavy runs on a self-hosted runner on the owner's computer, and releases from a separate public repo with only the compiled app. Found: all 17 packs say Apache-2.0, which lets anyone copy and resell them, and there is no licence file for the rest of the code. |
 | 2026-10-07 | Where the input tokens go | Every request now records, as counts only and never content, how its input splits: instructions, tool definitions, the user's messages, the model's earlier turns and tool results. `mangoman usage` shows the split, and each pack run keeps it per case. This is step 1 before any token saving: measure first, and ship a saving only if pack scores hold. |
@@ -686,7 +687,7 @@ Phase 1 milestones M1 to M4, decision brain v1, all 17 skill packs (waves 1 to 5
 ### Open questions
 
 - [ ] Product name: MangoMan for now; confirm the final name
-- [ ] Licence: open-source the router client (Apache-2.0 or MIT) and publish the catalogue data openly?
+- [x] Licence: decided 7 Oct, proprietary for now (LICENSE, all rights reserved; packs and agents free to use inside MangoMan only). Open-sourcing can be revisited later.
 - [ ] Per-provider terms review, starting with OpenCode Zen use outside OpenCode, and free-tier commercial-use clauses
 - [ ] Team and funding: staffed from the parent company or a separate venture?
 - [ ] Timing of Cloud mode, if at all

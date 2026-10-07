@@ -1,7 +1,7 @@
 ---
 name: mangoman-ad-copy
 description: Write paid ad copy for Google search ads (responsive search ads with keywords and negatives) and Meta ads (Facebook and Instagram), exported for Google Ads Editor and checked against character limits and ad policies. Use when the user asks for ad copy, Google Ads, search ads, Facebook or Instagram ads, Meta ads, ad headlines, or keywords for a campaign.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: mangoman-proposal
 description: Write a branded business proposal or quotation (PDF plus editable Word file) with scope, timeline, pricing with GST computed exactly, payment schedule, terms and a sign-off, checked before sending. Use when the user asks for a proposal, quotation, quote, pitch document, statement of work, scope of work, estimate or a client offer.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
   version: "1.0"

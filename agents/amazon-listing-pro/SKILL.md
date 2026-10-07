@@ -1,7 +1,7 @@
 ---
 name: amazon-listing-pro
 description: Rewrite or optimise an Amazon listing using the seller's own search term report (Sponsored Products or Brand Analytics), competitor listings and the current listing, with keyword research by orders and clicks, a title led by the top search, backend search terms filled to the limit and a before-and-after score. Use when the user wants to improve an Amazon listing's ranking or sales and has a search term report or keyword data.
-license: Apache-2.0
+license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman-agent
   version: "1.0"

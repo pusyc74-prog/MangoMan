@@ -54,8 +54,39 @@ def _url(path):
     return "file://" + os.path.abspath(path)
 
 
+# Some fonts (Inter is the common one) put their alternate digits and dashes
+# into the PDF with no way back to the real characters when Chromium uses an
+# OpenType feature such as tabular digits: the page looks right, but copying,
+# searching or reading the text gives private symbol codes. If that happens,
+# the PDF is printed again with those font features off.
+PLAIN_FONTS = ("<style>*{font-variant-numeric:normal!important;font-variant-ligatures:none!important;"
+               "font-feature-settings:'calt' 0,'case' 0,'liga' 0!important}</style>")
+
+
+def _unreadable(pdf_path):
+    return any("\ue000" <= ch <= "\uf8ff" for ch in pdf_text(pdf_path))
+
+
 def html_to_pdf(html_path, pdf_path):
-    """Print an HTML file to PDF using its own @page CSS. Returns the engine name."""
+    """Print an HTML file to PDF using its own @page CSS. Returns the engine name.
+    The PDF's text stays readable (see PLAIN_FONTS)."""
+    used = _print(html_path, pdf_path)
+    if not _unreadable(pdf_path):
+        return used
+    with open(html_path, encoding="utf-8") as f:
+        html = f.read()
+    at = html.lower().find("</head>")
+    html = html[:at] + PLAIN_FONTS + html[at:] if at >= 0 else PLAIN_FONTS + html
+    plain = os.path.join(os.path.dirname(os.path.abspath(html_path)), ".plain-" + os.path.basename(html_path))
+    try:
+        with open(plain, "w", encoding="utf-8") as f:
+            f.write(html)
+        return _print(plain, pdf_path)
+    finally:
+        os.remove(plain)
+
+
+def _print(html_path, pdf_path):
     if _playwright():
         from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
