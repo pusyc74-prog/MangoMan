@@ -63,6 +63,12 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		}
 		committed = true
 		firstOut = time.Since(started)
+		// The answer is on its way to the client, so there is no other model
+		// to fall back to any more. A long pause now is worth waiting out
+		// rather than killing the answer: measured on real free models, a
+		// model writing a long structured answer goes quiet for over a
+		// minute, and cutting it there lost whole tasks.
+		body.grow(rt.StreamStall)
 	}
 	finishEvent := func() {
 		if event.Len() == 0 {
@@ -265,6 +271,16 @@ func newIdleReader(r io.Reader, d time.Duration, cancel context.CancelFunc) *idl
 	ir := &idleReader{r: r, timeout: d}
 	ir.timer = time.AfterFunc(d, func() { ir.fired.Store(true); cancel() })
 	return ir
+}
+
+// grow lengthens the gap allowed from here on. Called on the reading
+// goroutine, so timeout needs no lock.
+func (i *idleReader) grow(d time.Duration) {
+	if d <= i.timeout {
+		return
+	}
+	i.timeout = d
+	i.timer.Reset(d)
 }
 
 func (i *idleReader) Read(p []byte) (int, error) {

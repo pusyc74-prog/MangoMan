@@ -46,6 +46,11 @@ type Router struct {
 	// first minute is not thinking, it is not going to answer, and waiting
 	// longer only spends the request's time.
 	StreamIdle time.Duration
+	// StreamStall is the gap allowed once the answer has started. It is
+	// longer than StreamIdle because by then the answer is already going to
+	// the client and there is no other model to fall back to, so waiting
+	// out a long pause beats killing the answer.
+	StreamStall time.Duration
 	// NonStreamTimeout caps one non-streaming attempt.
 	NonStreamTimeout time.Duration
 	// Brain makes typed decisions where the rules are unsure; nil = off.
@@ -70,6 +75,7 @@ func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Route
 		Logf:             func(string, ...any) {},
 		Health:           NewHealth(),
 		StreamIdle:       60 * time.Second,
+		StreamStall:      180 * time.Second,
 		NonStreamTimeout: 180 * time.Second,
 	}
 }

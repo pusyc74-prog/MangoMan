@@ -368,6 +368,29 @@ func TestStreamErrorBeforeFirstTokenFailsOver(t *testing.T) {
 	}
 }
 
+// Once the answer has started there is nothing to fail over to, so a long
+// pause in the middle must be waited out, not cut off at the gap limit.
+func TestStallAfterFirstWordsIsWaitedOut(t *testing.T) {
+	pause := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		fmt.Fprintf(w, "data: %s\n\n", chunk("first words"))
+		w.(http.Flusher).Flush()
+		select {
+		case <-r.Context().Done():
+			return
+		case <-time.After(400 * time.Millisecond):
+		}
+		sse(chunk(" and the rest"), "[DONE]")(w, r)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: pause}
+	rt := setup(t, a)
+	rt.StreamIdle, rt.StreamStall = 100*time.Millisecond, 3*time.Second
+	w := do(t, rt, helloStream)
+	if !strings.Contains(w.Body.String(), "and the rest") {
+		t.Fatalf("the answer was cut off mid-stream: %s", w.Body)
+	}
+}
+
 // With one model there is nothing to fail over to, so a stream that dies
 // before saying a word must be asked again instead of killing the request.
 func TestStreamErrorRetriesTheOnlyModel(t *testing.T) {
