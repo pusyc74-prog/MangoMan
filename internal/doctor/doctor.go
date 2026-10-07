@@ -110,8 +110,18 @@ type Report struct {
 type Doctor struct {
 	Cat     *catalogue.Catalogue
 	Keys    *keys.Resolver
+	Team    func(provider string) []string // teammates' key names; nil = none
 	Client  *providers.Client
 	Version string
+}
+
+// Key returns the key to check a provider with: your own, else a teammate's.
+func (d *Doctor) Key(provider string) string {
+	var team []string
+	if d.Team != nil {
+		team = d.Team(provider)
+	}
+	return d.Keys.First(provider, team)
 }
 
 func in(list []string, v string) bool {
@@ -256,7 +266,7 @@ func (l *lockedWriter) Write(b []byte) (int, error) {
 func (d *Doctor) checkProvider(ctx context.Context, p catalogue.Provider, cases []conformance.Case, o Options, pr *ProviderReport, requests *atomic.Int64) {
 	key := ""
 	if p.NeedsKey {
-		k, _ := d.Keys.Get(p.ID)
+		k := d.Key(p.ID)
 		if k == "" {
 			pr.Status = StatusNoKey
 			return

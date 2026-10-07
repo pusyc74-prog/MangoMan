@@ -35,6 +35,7 @@ type Entry struct {
 type Radar struct {
 	Cat      *catalogue.Catalogue
 	Keys     *keys.Resolver
+	Team     func(provider string) []string // teammates' key names; nil = none
 	List     Lister
 	Excluded func(provider string) bool
 	Path     string // where entries persist; empty = memory only
@@ -119,7 +120,11 @@ func (r *Radar) Scan(ctx context.Context) (int, error) {
 		}
 		k := ""
 		if p.NeedsKey {
-			if k, _ = r.Keys.Get(p.ID); k == "" {
+			var team []string
+			if r.Team != nil {
+				team = r.Team(p.ID)
+			}
+			if k = r.Keys.First(p.ID, team); k == "" {
 				continue
 			}
 		}

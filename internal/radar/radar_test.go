@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -129,5 +130,24 @@ func TestProviderConnectedLaterGetsItsOwnBaseline(t *testing.T) {
 		if it.Provider == "nv" && it.New {
 			t.Fatalf("%s flagged new", it.Upstream)
 		}
+	}
+}
+
+func TestTeamKeyAloneIsScanned(t *testing.T) {
+	var used []string
+	r := &Radar{Cat: testCat(t), Keys: keys.NewResolver(mem{"nv#ravi": "k-ravi"}, nil),
+		Team: func(p string) []string {
+			if p == "nv" {
+				return []string{"ravi"}
+			}
+			return nil
+		},
+		List: func(_ context.Context, p catalogue.Provider, k string) ([]string, error) {
+			used = append(used, p.ID+"="+k)
+			return []string{"nv/a"}, nil
+		}}
+	r.Scan(context.Background())
+	if !slices.Contains(used, "nv=k-ravi") || len(used) != 1 {
+		t.Fatalf("scanned with %v, want only nv with the teammate's key", used)
 	}
 }

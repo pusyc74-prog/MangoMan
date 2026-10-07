@@ -59,7 +59,7 @@ func cmdDoctor(args []string) error {
 	if err != nil {
 		return err
 	}
-	d := &doctor.Doctor{Cat: cat, Keys: keys.NewResolver(st, envMap(cat)), Client: providers.NewClient(), Version: version}
+	d := &doctor.Doctor{Cat: cat, Keys: keys.NewResolver(st, envMap(cat)), Team: teamOf(cat, cfg), Client: providers.NewClient(), Version: version}
 	o := doctor.Options{Providers: splitList(*prov), Models: splitList(*model), Cases: splitList(*cases), Excluded: cfg.Excluded, Progress: os.Stdout, Timeout: *timeout, ListOnly: splitList(*listOnly),
 		// A cloud CI runner never has Ollama; name it with --provider to check it anyway.
 		SkipLocal: os.Getenv("GITHUB_ACTIONS") == "true"}
@@ -71,7 +71,7 @@ func cmdDoctor(args []string) error {
 	total := 0
 	var ids []string
 	for p, n := range plan {
-		if k, _ := d.Keys.Get(p); k == "" {
+		if d.Key(p) == "" {
 			if prv, ok := cat.Provider(p); ok && prv.NeedsKey {
 				continue
 			}

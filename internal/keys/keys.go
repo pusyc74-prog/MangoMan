@@ -145,6 +145,19 @@ func (r *Resolver) Get(provider string) (string, Source) {
 	return v, FromStore
 }
 
+// First returns the user's own key for a provider, else the first teammate's
+// key that is still usable. team lists the teammates' names.
+func (r *Resolver) First(provider string, team []string) string {
+	k, _ := r.Get(provider)
+	for _, name := range team {
+		if k != "" {
+			break
+		}
+		k, _ = r.Get(Name(provider, name))
+	}
+	return k
+}
+
 // Disable drops a cached key, for example after a 401.
 func (r *Resolver) Disable(provider string) {
 	r.mu.Lock()

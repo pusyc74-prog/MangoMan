@@ -327,7 +327,7 @@ func cmdServe(args []string) error {
 	}
 	discover()
 
-	rd := &radar.Radar{Cat: cat, Keys: rt.Keys, List: rt.Client.ListModels, Excluded: cfg.Excluded,
+	rd := &radar.Radar{Cat: cat, Keys: rt.Keys, Team: teamOf(cat, cfg), List: rt.Client.ListModels, Excluded: cfg.Excluded,
 		Path: dir + string(os.PathSeparator) + "radar.json"}
 	if err := rd.Load(); err != nil {
 		logger.Printf("radar state ignored: %v", err)
@@ -839,5 +839,16 @@ func loadCustomModels(cat *catalogue.Catalogue, cfg *config.Config) {
 		if _, ok := cat.Provider(m.Provider); ok {
 			cat.AddModel(cat.DiscoveredModel(m.Provider, m.Upstream))
 		}
+	}
+}
+
+// teamOf lists the teammates' keys for a provider, none when the provider
+// does not allow team keys.
+func teamOf(cat *catalogue.Catalogue, cfg *config.Config) func(string) []string {
+	return func(id string) []string {
+		if p, ok := cat.Provider(id); !ok || p.NoTeamKeys {
+			return nil
+		}
+		return cfg.GetTeamKeys(id)
 	}
 }
