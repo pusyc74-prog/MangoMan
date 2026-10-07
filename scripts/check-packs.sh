@@ -7,6 +7,8 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 go build -o "$work/mm" ./cmd/mangoman || exit 1
 "$work/mm" skills install --dir "$work/skills" > /dev/null || exit 1
+# Installed packs leave their tests out; the agent checks below score with them.
+for t in internal/skills/packs/*/tests; do cp -r "$t" "$work/skills/$(basename "$(dirname "$t")")/"; done
 export MANGOMAN_HOME="$work/home" M="$work/mm" AG="$PWD/agents"
 fail=0
 run() { # name, then the build and check commands (S = this pack's scripts folder)

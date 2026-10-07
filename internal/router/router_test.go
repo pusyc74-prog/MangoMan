@@ -1156,3 +1156,25 @@ func TestSilentOnlyModelNotRetried(t *testing.T) {
 		t.Fatalf("a silent model was asked %d times", n)
 	}
 }
+
+// Measured on real free models: a coding model ended some turns with only
+// its reasoning, no words and no tool call, and the agent stopped the task.
+func TestReasoningOnlyStreamIsNoAnswer(t *testing.T) {
+	think := `{"choices":[{"index":0,"delta":{"reasoning_content":"let me think"},"finish_reason":null}]}`
+	stop := `{"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}`
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: sse(think, stop, "[DONE]")}
+	rt := setup(t, a)
+	do(t, rt, helloStream)
+	for _, s := range rt.Health.Snapshot() {
+		if s.Target == "a/m1" && (s.LastOut != "no_answer" || s.OK != 0) {
+			t.Fatalf("reasoning alone counted as an answer: %+v", s)
+		}
+	}
+	// Reasoning followed by words is a normal answer.
+	b := &fake{id: "b", model: "m2", quality: 0.9, handler: sse(think, chunk("done"), stop, "[DONE]")}
+	rt = setup(t, b)
+	do(t, rt, helloStream)
+	if s := rt.Health.Snapshot(); len(s) != 1 || s[0].LastOut != "ok" {
+		t.Fatalf("got %+v", s)
+	}
+}

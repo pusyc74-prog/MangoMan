@@ -12,6 +12,7 @@ import (
 
 	"github.com/pusyc74-prog/mangoman/internal/agents"
 	"github.com/pusyc74-prog/mangoman/internal/config"
+	"github.com/pusyc74-prog/mangoman/internal/skills"
 )
 
 const agentsUsage = `Usage:
@@ -234,13 +235,20 @@ func cmdEval(dir string, args []string) error {
 	if err != nil {
 		return err
 	}
-	oc, err := codeSkillsDir()
-	if err != nil {
+	if _, err := codeSkillsDir(); err != nil { // installs the pack and agent for the runner
 		return err
 	}
 	cases := flagValue(args, "--cases")
 	if cases == "" {
-		cases = filepath.Join(oc, "skills", m.Skill, "tests")
+		// The pack's test set comes from the binary: installed packs leave
+		// it out so the model never sees the scorer.
+		if cases, err = os.MkdirTemp("", "mangoman-cases-"); err != nil {
+			return err
+		}
+		defer os.RemoveAll(cases)
+		if err := skills.Tests(m.Skill, cases); err != nil {
+			return fmt.Errorf("no test set for %s: %w", m.Skill, err)
+		}
 	}
 	runner := strings.Fields(flagValue(args, "--runner"))
 	if len(runner) == 0 {

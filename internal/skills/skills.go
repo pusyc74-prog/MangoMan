@@ -122,23 +122,11 @@ func Install(dir string) (installed []string, skipped []string, err error) {
 				return installed, skipped, err
 			}
 		}
-		root := path.Join("packs", p.Name)
-		werr := fs.WalkDir(packsFS, root, func(fp string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			rel := strings.TrimPrefix(strings.TrimPrefix(fp, root), "/")
-			target := filepath.Join(dest, filepath.FromSlash(rel))
-			if d.IsDir() {
-				return os.MkdirAll(target, 0o755)
-			}
-			if strings.Contains(rel, "__pycache__") {
-				return nil
-			}
-			return writeFrom(fp, target)
-		})
-		if werr != nil {
-			return installed, skipped, werr
+		// The test cases and their scoring stay out: measured on real runs,
+		// a model that finds them reads the scorer instead of doing the task,
+		// which costs the user tokens and games the score.
+		if err := copyTree(path.Join("packs", p.Name), dest, "tests"); err != nil {
+			return installed, skipped, err
 		}
 		if err := CopyShared(filepath.Join(dest, "scripts")); err != nil {
 			return installed, skipped, err
@@ -149,6 +137,37 @@ func Install(dir string) (installed []string, skipped []string, err error) {
 		installed = append(installed, dest)
 	}
 	return installed, skipped, nil
+}
+
+// Tests writes a pack's test cases and scorer into dest, for scoring an
+// agent against its pack (mangoman agents eval).
+func Tests(name, dest string) error {
+	return copyTree(path.Join("packs", name, "tests"), dest, "")
+}
+
+// copyTree writes an embedded folder into dest, leaving out Python caches
+// and the top-level folder named skip.
+func copyTree(root, dest, skip string) error {
+	return fs.WalkDir(packsFS, root, func(fp string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel := strings.TrimPrefix(strings.TrimPrefix(fp, root), "/")
+		if skip != "" && (rel == skip || strings.HasPrefix(rel, skip+"/")) {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		target := filepath.Join(dest, filepath.FromSlash(rel))
+		if d.IsDir() {
+			return os.MkdirAll(target, 0o755)
+		}
+		if strings.Contains(rel, "__pycache__") {
+			return nil
+		}
+		return writeFrom(fp, target)
+	})
 }
 
 // CopyShared writes the shared Python helpers (render, vizlib, brandkit,

@@ -51,6 +51,17 @@ func TestInstallUpdateRemove(t *testing.T) {
 			t.Fatalf("missing %s", f)
 		}
 	}
+	// Test cases and the scorer stay out of reach of the model.
+	if _, err := os.Stat(filepath.Join(deck, "tests")); err == nil {
+		t.Fatal("tests installed with the pack")
+	}
+	cases := t.TempDir()
+	if err := Tests("mangoman-resume", cases); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(cases, "score.py")); err != nil {
+		t.Fatal("Tests did not write the scorer")
+	}
 	// Updating replaces our own folders.
 	os.WriteFile(filepath.Join(deck, "stale.txt"), []byte("x"), 0o644)
 	if _, _, err := Install(dir); err != nil {

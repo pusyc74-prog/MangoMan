@@ -44,6 +44,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		event     bytes.Buffer // current event
 		committed bool
 		sawDone   bool
+		answered  bool // content or a tool call reached the client
 		outChars  int
 		usageTot  int
 		finish    string
@@ -100,6 +101,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 					} else {
 						d := parseDelta(data)
 						outChars += d.chars
+						answered = answered || d.answer
 						if d.usage > 0 {
 							usageTot = d.usage
 						}
@@ -181,7 +183,12 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 	}
 	rt.Breakers.Success(c.Target())
 	out := "ok"
-	if finish == "length" && req.MaxTokens == 0 {
+	switch {
+	case !answered:
+		// Only reasoning, then the end: an agent sees no words and no tool
+		// call and stops the task. Logged as a failure so the model sinks.
+		out = "no_answer"
+	case finish == "length" && req.MaxTokens == 0:
 		out = "ok_truncated" // already streamed; logged for the quality score
 	}
 	return attemptResult{done: true, outcome: out, status: 200, tokens: tokens, firstOut: firstOut}
@@ -204,6 +211,7 @@ func sseData(line []byte) ([]byte, bool) {
 
 type delta struct {
 	meaningful bool
+	answer     bool // content or a tool call, not only reasoning
 	chars      int
 	finish     string
 	usage      int
@@ -241,14 +249,15 @@ func parseDelta(data []byte) delta {
 		d.usageOnly = len(ch.Choices) == 0
 	}
 	for _, c := range ch.Choices {
-		for _, s := range []*string{c.Delta.Content, c.Delta.Reasoning, c.Delta.ReasoningContent} {
+		for i, s := range []*string{c.Delta.Content, c.Delta.Reasoning, c.Delta.ReasoningContent} {
 			if s != nil && strings.TrimSpace(*s) != "" {
 				d.meaningful = true
+				d.answer = d.answer || i == 0
 				d.chars += len(*s)
 			}
 		}
 		if len(c.Delta.ToolCalls) > 0 {
-			d.meaningful = true
+			d.meaningful, d.answer = true, true
 			for _, tc := range c.Delta.ToolCalls {
 				d.chars += len(tc)
 			}
