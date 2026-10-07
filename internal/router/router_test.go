@@ -421,6 +421,29 @@ func TestStreamErrorRetriesTheOnlyModel(t *testing.T) {
 	}
 }
 
+// Measured on real free models: the model was overloaded and its only other
+// provider was out of its daily limit, which ended whole tasks.
+func TestOverloadedModelAskedAgainWhenTheOthersAreLimited(t *testing.T) {
+	var calls atomic.Int32
+	flaky := func(w http.ResponseWriter, r *http.Request) {
+		if calls.Add(1) == 1 {
+			sse(`{"error":{"message":"Service temporarily overloaded"}}`)(w, r)
+			return
+		}
+		sse(chunk("ok at last"), "[DONE]")(w, r)
+	}
+	limited := func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, `{"error":{"message":"free-models-per-day"}}`, http.StatusTooManyRequests)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: flaky}
+	b := &fake{id: "b", model: "m2", quality: 0.3, handler: limited}
+	rt := setup(t, a, b)
+	w := do(t, rt, helloStream)
+	if !strings.Contains(w.Body.String(), "ok at last") || calls.Load() != 2 {
+		t.Fatalf("after %d calls got %v\n%s", calls.Load(), w.Header(), w.Body)
+	}
+}
+
 func TestStreamErrorEventFailsOver(t *testing.T) {
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: sse(`{"error":{"message":"overloaded"}}`)}
 	b := &fake{id: "b", model: "m2", quality: 0.3, handler: sse(chunk("ok"), "[DONE]")}

@@ -3,6 +3,7 @@ package quota
 import (
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -71,6 +72,11 @@ func TestParseReset(t *testing.T) {
 	h.Set("Retry-After", "12")
 	if RetryAfter(h) != 12*time.Second {
 		t.Fatal("Retry-After seconds")
+	}
+	h = http.Header{}
+	h.Set("X-RateLimit-Reset", strconv.FormatInt(time.Now().Add(5*time.Hour).UnixMilli(), 10))
+	if d := RetryAfter(h); d < 4*time.Hour || d > 5*time.Hour {
+		t.Fatalf("OpenRouter reset time: %v", d)
 	}
 	if RetryAfter(http.Header{}) != time.Minute {
 		t.Fatal("default retry")

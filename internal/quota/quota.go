@@ -307,8 +307,10 @@ func RetryAfter(h http.Header) time.Duration {
 			}
 		}
 	}
-	for _, kind := range []string{"requests", "tokens"} {
-		if d := ParseReset(h.Get("x-ratelimit-reset-" + kind)); d > 0 {
+	// OpenRouter sends one plain reset time (unix ms); for its daily free
+	// limit that is hours away, not the one-minute default.
+	for _, name := range []string{"x-ratelimit-reset-requests", "x-ratelimit-reset-tokens", "x-ratelimit-reset"} {
+		if d := ParseReset(h.Get(name)); d > 0 {
 			return d
 		}
 	}

@@ -82,8 +82,8 @@ func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Route
 
 const maxBody = 64 << 20
 
-// maxRetries is how many times the last candidate is asked again after a
-// stream died before it said anything.
+// maxRetries is how many times, per request, a candidate whose stream died
+// before it said anything is asked again.
 const maxRetries = 2
 
 // attemptResult says what happened on one candidate.
@@ -140,6 +140,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		attempts     int
 		retries      int
 		unreachable  = map[string]bool{} // providers whose host failed this request
+		asked        = map[string]bool{} // candidates already tried, to pause before asking again
 	)
 	for i := 0; i < len(cands); i++ {
 		c := cands[i]
@@ -154,6 +155,15 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		}
 		if !rt.Breakers.Allow(c.Target()) {
 			continue
+		}
+		if k := c.Target() + "|" + c.keyName(); asked[k] {
+			select {
+			case <-r.Context().Done():
+				return
+			case <-time.After(time.Second):
+			}
+		} else {
+			asked[k] = true
 		}
 		attempts++
 		start := time.Now()
@@ -225,19 +235,14 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 				return
 			}
 		}
-		// A stream that died before sending a word, with nothing left to fall
-		// back to, is worth asking the same model again: a provider under load
-		// drops streams, and measured on real free models that hiccup killed
-		// whole tasks because strict mode and a short My list have nowhere to
-		// fail over to. Two tries, a second apart, then give up.
-		if res.outcome == "stream_error" && i == len(cands)-1 && retries < maxRetries {
+		// A stream that died before sending a word is worth asking again
+		// once the others have had their turn: a provider under load drops
+		// streams ("Service temporarily overloaded"), and measured on real
+		// free models that hiccup killed whole tasks when the only other
+		// choice was out of its daily limit. Two tries per request.
+		if res.outcome == "stream_error" && retries < maxRetries {
 			retries++
-			select {
-			case <-r.Context().Done():
-				return
-			case <-time.After(time.Second):
-			}
-			i--
+			cands = append(cands, c)
 		}
 	}
 
