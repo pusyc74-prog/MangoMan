@@ -1,0 +1,113 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mRead facts.md
+[0m→ [0mRead sources.md
+[0m→ [0mSkill "mangoman-seo-article"
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (671 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): conclusion: 90%; intro: ₹20,000, ₹60,000; section: Dental implant vs bridge: which is better for you?: 15; section: Dental implant vs bridge: which is better for you?: 15, 20; section: How long do dental implants last?: 12, 15
+PASS  671 words
+WARN  671 words against a target of 900
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description
+PASS  keyword used naturally (0.7% of words)
+WARN  title: aim for 30 to 60 characters: 67 characters
+PASS  description fits Google results (150)
+PASS  sentences are easy to read (average 15 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+WARN  fewer than 2 links to your own pages (helps readers and search engines find related pages): 0
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article.json
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (732 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): section: Dental implant vs bridge: which is better for you?: 15
+PASS  732 words
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address
+PASS  keyword used naturally (0.7% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (142)
+PASS  sentences are easy to read (average 15 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (753 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  753 words
+WARN  keyword "dental implant cost in bangalore" missing from: address
+PASS  keyword used naturally (1.3% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (142)
+PASS  sentences are easy to read (average 15 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (873 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.DEX1lGFrfp/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  873 words
+WARN  keyword "dental implant cost in bangalore" missing from: address
+PASS  keyword used naturally (1.1% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (142)
+PASS  sentences are easy to read (average 15 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+All checks pass. The article is built in the `article` folder with:
+- **article.md** — ready to paste into WordPress/Shopify/Webflow
+- **article.html** — full page with structured data
+- **seo.md** — meta title, description, slug for your CMS
+- **preview.png** — visual preview
+
+**Summary:** 873 words, keyword in title/H1/opening/subheading/FAQ, 3 internal links (/book, /implants, /team), every number sourced or from your facts, 5 FAQs, structured data included.

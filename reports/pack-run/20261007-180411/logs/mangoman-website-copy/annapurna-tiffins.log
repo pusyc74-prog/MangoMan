@@ -1,0 +1,81 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mmkdir -p /tmp/tmp.DEX1lGFrfp/run/mangoman-website-copy/annapurna-tiffins/site
+(no output)
+[0m
+[0m← [0mWrite site/index.html
+Wrote file successfully.
+[0m
+[0m← [0mWrite site/menu.html
+Wrote file successfully.
+[0m
+[0m← [0mWrite site/plans.html
+Wrote file successfully.
+[0m
+[0m← [0mWrite site/about.html
+Wrote file successfully.
+[0m
+[0m← [0mWrite site/styles.css
+Wrote file successfully.
+[0m
+[0m$ [0mls -la /tmp/tmp.DEX1lGFrfp/run/mangoman-website-copy/annapurna-tiffins/site/
+total 48
+drwxr-xr-x 2 runner runner  4096 Oct  7 18:02 .
+drwxr-xr-x 3 runner runner  4096 Oct  7 17:56 ..
+-rw-r--r-- 1 runner runner  4118 Oct  7 18:00 about.html
+-rw-r--r-- 1 runner runner  3895 Oct  7 17:57 index.html
+-rw-r--r-- 1 runner runner  4511 Oct  7 17:58 menu.html
+-rw-r--r-- 1 runner runner  4713 Oct  7 18:00 plans.html
+-rw-r--r-- 1 runner runner 11276 Oct  7 18:02 styles.css
+[0m
+[0m$ [0mhead -30 /tmp/tmp.DEX1lGFrfp/run/mangoman-website-copy/annapurna-tiffins/site/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annapurna Tiffins — Home-cooked lunch delivered to your desk</title>
+  <meta name="description" content="Fresh vegetarian tiffins from our kitchen in Baner, Pune. Daily delivery 12–1 pm. Weekly plan Rs 780. Monthly Rs 3,200. Order on WhatsApp.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="/" class="logo" aria-label="Annapurna Tiffins home">
+        <span class="logo-text">Annapurna Tiffins</span>
+      </a>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="/menu" class="nav-link">Menu</a>
+        <a href="/plans" class="nav-link">Plans</a>
+        <a href="/about" class="nav-link">About</a>
+      </nav>
+      <a href="https://wa.me/919876543210" class="btn btn-primary header-cta" target="_blank" rel="noopener">Order on WhatsApp</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1 class="hero-title">Home-cooked lunch, delivered to your desk</h1>
+        <p class="hero-subtitle">Fresh vegetarian tiffins from our kitchen in Baner. No ajinomoto. Cold-pressed groundnut oil. Menu changes daily.</p>
+        <a href="https://wa.me/919876543210" class="btn btn-primary btn-large" target="_blank" rel="noopener">Start your weekly plan on WhatsApp</a>
+[0m
+Done. Created `site.json` spec and built the site in `site/` with four pages:
+
+- **index.html** — Home: hero, trust signals, menu preview, plans preview, WhatsApp CTA
+- **menu.html** — Menu: tiffin contents, sample week (7 days), Jain note, WhatsApp CTA
+- **plans.html** — Plans: weekly (Rs 780) & monthly (Rs 3,200) cards, inclusions, FAQ, WhatsApp CTA
+- **about.html** — About: Savita's story, values, kitchen details, WhatsApp CTA
+- **styles.css** — Shared mobile-first stylesheet
+
+All copy uses warm "mother's kitchen" voice, plain words, avoids "cheap" and "gourmet", and drives to WhatsApp (98765 43210).
