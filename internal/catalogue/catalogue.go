@@ -66,6 +66,10 @@ type Provider struct {
 	// Discover says which models in the provider's live list count as free
 	// chat models for the new-model radar.
 	Discover Discover `json:"discover,omitempty"`
+	// NoTeamKeys turns team keys off for this provider: only the user's own
+	// key is used. A switch in the signed catalogue, so it can be flipped
+	// for everyone without a new release if a provider objects.
+	NoTeamKeys bool `json:"no_team_keys,omitempty"`
 }
 
 // Discover is a provider's radar rule.

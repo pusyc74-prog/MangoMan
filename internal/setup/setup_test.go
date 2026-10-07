@@ -106,13 +106,13 @@ func TestWizardOffersOllamaModel(t *testing.T) {
 
 func TestConnectKeyErrors(t *testing.T) {
 	cat, _ := catalogue.Seed()
-	if _, err := ConnectKey(context.Background(), cat, mem{}, nil, "nope", "k"); err == nil {
+	if _, err := ConnectKey(context.Background(), cat, mem{}, nil, "nope", "", "k"); err == nil {
 		t.Fatal("unknown provider accepted")
 	}
-	if _, err := ConnectKey(context.Background(), cat, mem{}, nil, "ollama", "k"); err == nil {
+	if _, err := ConnectKey(context.Background(), cat, mem{}, nil, "ollama", "", "k"); err == nil {
 		t.Fatal("keyless provider accepted a key")
 	}
-	if _, err := ConnectKey(context.Background(), cat, mem{}, nil, "groq", "  "); err == nil {
+	if _, err := ConnectKey(context.Background(), cat, mem{}, nil, "groq", "", "  "); err == nil {
 		t.Fatal("empty key accepted")
 	}
 }

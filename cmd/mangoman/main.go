@@ -30,6 +30,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/providers"
 	"github.com/pusyc74-prog/mangoman/internal/radar"
 	"github.com/pusyc74-prog/mangoman/internal/router"
+	"github.com/pusyc74-prog/mangoman/internal/setup"
 	"github.com/pusyc74-prog/mangoman/internal/store"
 )
 
@@ -305,7 +306,7 @@ func cmdServe(args []string) error {
 		if _, err := st.Get(p.ID); err != nil && !errors.Is(err, keys.ErrNotFound) {
 			return fmt.Errorf("cannot read keys (%s): %w", st.Name(), err)
 		}
-		if k, _ := rt.Keys.Get(p.ID); k != "" {
+		if rt.HasKey(p) {
 			connected++
 		}
 	}
@@ -406,13 +407,20 @@ func cmdKeys(args []string) error {
 				}
 			}
 			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", p.ID, state, p.Policy.Label(), p.SignupURL)
+			for _, n := range teamNames(p.ID) {
+				state := "missing"
+				if k, _ := res.Get(keys.Name(p.ID, n)); k != "" {
+					state = "present"
+				}
+				fmt.Fprintf(tw, "  team: %s\t%s\t\t\n", n, state)
+			}
 		}
 		fmt.Printf("Key store: %s\n\n", st.Name())
 		return tw.Flush()
 
 	case "add":
 		if len(args) < 2 {
-			return errors.New("usage: mangoman keys add <provider> [--stdin] [--no-check]")
+			return errors.New("usage: mangoman keys add <provider> [--team NAME] [--stdin] [--no-check]")
 		}
 		p, ok := cat.Provider(args[1])
 		if !ok {
@@ -422,6 +430,10 @@ func cmdKeys(args []string) error {
 			return fmt.Errorf("%s needs no key", p.Name)
 		}
 		fromStdin, check := false, true
+		team, err := teamFlag(args[2:])
+		if err != nil {
+			return err
+		}
 		for _, a := range args[2:] {
 			switch a {
 			case "--stdin":
@@ -429,6 +441,12 @@ func cmdKeys(args []string) error {
 			case "--no-check":
 				check = false
 			}
+		}
+		if team != "" {
+			if p.NoTeamKeys {
+				return fmt.Errorf("team keys are turned off for %s", p.Name)
+			}
+			fmt.Println(setup.TeamKeyNotice)
 		}
 		var key string
 		if fromStdin {
@@ -439,7 +457,11 @@ func cmdKeys(args []string) error {
 			key = strings.TrimSpace(line)
 		} else {
 			fmt.Printf("Get a free key at %s\n", p.SignupURL)
-			key, err = readSecret(fmt.Sprintf("Paste your %s key: ", p.Name))
+			who := "your"
+			if team != "" {
+				who = team + "'s"
+			}
+			key, err = readSecret(fmt.Sprintf("Paste %s %s key: ", who, p.Name))
 			if err != nil {
 				return err
 			}
@@ -461,30 +483,81 @@ func cmdKeys(args []string) error {
 		if err != nil {
 			return err
 		}
-		if err := st.Set(p.ID, key); err != nil {
+		if err := st.Set(keys.Name(p.ID, team), key); err != nil {
 			return fmt.Errorf("could not store key: %w", err)
+		}
+		if team != "" {
+			if err := setTeamKey(p.ID, team, true); err != nil {
+				return err
+			}
+			fmt.Printf("Stored %s's %s key in %s. Requests now take turns across the %s keys. Restart `mangoman serve` to use it.\n", team, p.Name, keys.Where(st), p.Name)
+			return nil
 		}
 		fmt.Printf("Stored %s key in %s. Restart `mangoman serve` to use it.\n", p.Name, keys.Where(st))
 		return nil
 
 	case "rm", "remove":
 		if len(args) < 2 {
-			return errors.New("usage: mangoman keys rm <provider>")
+			return errors.New("usage: mangoman keys rm <provider> [--team NAME]")
+		}
+		team, err := teamFlag(args[2:])
+		if err != nil {
+			return err
 		}
 		st, err := openStore()
 		if err != nil {
 			return err
 		}
-		if err := st.Delete(args[1]); err != nil {
+		if err := st.Delete(keys.Name(args[1], team)); err != nil && (team == "" || !errors.Is(err, keys.ErrNotFound)) {
 			if errors.Is(err, keys.ErrNotFound) {
 				return fmt.Errorf("no stored key for %s", args[1])
 			}
 			return err
 		}
+		if team != "" {
+			if err := setTeamKey(args[1], team, false); err != nil {
+				return err
+			}
+			fmt.Printf("Removed %s's key for %s\n", team, args[1])
+			return nil
+		}
 		fmt.Println("Removed key for", args[1])
 		return nil
 	}
 	return fmt.Errorf("unknown keys command %q", args[0])
+}
+
+// teamFlag reads "--team NAME" from args; "" when absent.
+func teamFlag(args []string) (string, error) {
+	for i, a := range args {
+		if a == "--team" {
+			if i+1 >= len(args) {
+				return "", errors.New("--team needs a name, for example --team ravi")
+			}
+			return keys.TeamName(args[i+1])
+		}
+	}
+	return "", nil
+}
+
+// teamNames lists a provider's team keys from the config; none if there is
+// no config yet.
+func teamNames(provider string) []string {
+	cfg, err := config.Load()
+	if err != nil {
+		return nil
+	}
+	return cfg.GetTeamKeys(provider)
+}
+
+// setTeamKey records (on) or forgets a team key's name in the config.
+func setTeamKey(provider, name string, on bool) error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	cfg.SetTeamKey(provider, name, on)
+	return config.Save(cfg)
 }
 
 func localGet(cfg *config.Config, path string) (*http.Response, error) {

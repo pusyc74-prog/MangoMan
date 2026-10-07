@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -43,6 +44,7 @@ type fake struct {
 	limits  catalogue.Limits
 	local   bool
 	prio    int
+	noTeam  bool // catalogue switch: team keys off for this provider
 	calls   atomic.Int32
 	srv     *httptest.Server
 }
@@ -92,7 +94,8 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 		// HTTP/2, as real providers speak: all requests share one connection.
 		f.srv = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			f.calls.Add(1)
-			if r.Header.Get("Authorization") != "Bearer key-"+f.id {
+			// Own key "key-<id>", team keys "key-<id>-<name>".
+			if a := r.Header.Get("Authorization"); a != "Bearer key-"+f.id && !strings.HasPrefix(a, "Bearer key-"+f.id+"-") {
 				http.Error(w, "bad key", 401)
 				return
 			}
@@ -108,7 +111,7 @@ func setup(t *testing.T, fakes ...*fake) *Router {
 		cat.Providers = append(cat.Providers, catalogue.Provider{
 			ID: f.id, Name: f.id, BaseURL: f.srv.URL, Kind: "openai", NeedsKey: true, Speed: speed,
 			Policy: catalogue.DataPolicy{Retention: "none", TrainsOnData: "no", Jurisdiction: "US"},
-			Quirks: f.quirks, AccountLimits: f.account, Local: f.local, Priority: f.prio,
+			Quirks: f.quirks, AccountLimits: f.account, Local: f.local, Priority: f.prio, NoTeamKeys: f.noTeam,
 		})
 		cat.Models = append(cat.Models, catalogue.Model{
 			Canonical: f.model, Provider: f.id, Upstream: f.model + "-up", Free: true, Context: 32000,
@@ -972,5 +975,102 @@ func TestProviderPriorityAndRoom(t *testing.T) {
 	big := `{"max_tokens":7000,"messages":[{"role":"user","content":"b"}]}`
 	if got := do(t, rt, big).Header().Get("X-MangoMan-Provider"); got != "z" {
 		t.Fatalf("tight model should go after a roomy one, got %s", got)
+	}
+}
+
+// addTeamKey adds a teammate's key for provider id, as the dashboard does.
+func addTeamKey(t *testing.T, rt *Router, id, name string) {
+	t.Helper()
+	if err := rt.Keys.Store().Set(keys.Name(id, name), "key-"+id+"-"+name); err != nil {
+		t.Fatal(err)
+	}
+	rt.Cfg.SetTeamKey(id, name, true)
+}
+
+// keyRecorder answers every request and records which key was used.
+func keyRecorder(seen *[]string, mu *sync.Mutex) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		*seen = append(*seen, strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "))
+		mu.Unlock()
+		okJSON("hi")(w, r)
+	}
+}
+
+func TestTeamKeysTakeTurns(t *testing.T) {
+	var seen []string
+	var mu sync.Mutex
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: keyRecorder(&seen, &mu)}
+	rt := setup(t, a)
+	addTeamKey(t, rt, "a", "ravi")
+	addTeamKey(t, rt, "a", "asha")
+	for range 6 {
+		if w := do(t, rt, hello); w.Code != 200 {
+			t.Fatalf("got %d %s", w.Code, w.Body)
+		}
+	}
+	count := map[string]int{}
+	for _, k := range seen {
+		count[k]++
+	}
+	if len(seen) != 6 || count["key-a"] != 2 || count["key-a-ravi"] != 2 || count["key-a-asha"] != 2 {
+		t.Fatalf("keys should take turns, two requests each: %v", seen)
+	}
+}
+
+func TestTeamKeyTakesOverTheSameModel(t *testing.T) {
+	ownFull := func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") == "Bearer key-a" {
+			status(429, map[string]string{"Retry-After": "60"})(w, r)
+			return
+		}
+		okJSON("from ravi")(w, r)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: ownFull}
+	b := &fake{id: "b", model: "m2", quality: 0.5, handler: okJSON("other model")}
+	rt := setup(t, a, b)
+	addTeamKey(t, rt, "a", "ravi")
+	for range 3 {
+		w := do(t, rt, hello)
+		if w.Header().Get("X-MangoMan-Model") != "m1" || w.Header().Get("X-MangoMan-Team-Key") != "ravi" {
+			t.Fatalf("a full key should hand over to the teammate's key on the same model: %v %s", w.Header(), w.Body)
+		}
+	}
+}
+
+func TestRejectedTeamKeyLeavesTheOthers(t *testing.T) {
+	ravi := func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") == "Bearer key-a-ravi" {
+			status(401, nil)(w, r)
+			return
+		}
+		okJSON("ok")(w, r)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: ravi}
+	rt := setup(t, a)
+	addTeamKey(t, rt, "a", "ravi")
+	for range 3 {
+		if w := do(t, rt, hello); w.Code != 200 || w.Header().Get("X-MangoMan-Provider") != "a" {
+			t.Fatalf("one bad team key must not take the provider down: %d %v", w.Code, w.Header())
+		}
+	}
+	if !rt.Keys.Rejected("a#ravi") || rt.Keys.Rejected("a") {
+		t.Fatal("only Ravi's key should be marked rejected")
+	}
+}
+
+func TestTeamKeysSwitchedOffForAProvider(t *testing.T) {
+	var seen []string
+	var mu sync.Mutex
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: keyRecorder(&seen, &mu), noTeam: true}
+	rt := setup(t, a)
+	addTeamKey(t, rt, "a", "ravi")
+	for range 4 {
+		do(t, rt, hello)
+	}
+	for _, k := range seen {
+		if k != "key-a" {
+			t.Fatalf("team keys are off for this provider, yet %s was used", k)
+		}
 	}
 }

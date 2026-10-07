@@ -1,6 +1,7 @@
 package router
 
 import (
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/catalogue"
 	"github.com/pusyc74-prog/mangoman/internal/classify"
 	"github.com/pusyc74-prog/mangoman/internal/core"
+	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/quota"
 )
 
@@ -33,6 +35,18 @@ const weakGap = 0.12
 
 // Target is the breaker key for a candidate.
 func (c Candidate) Target() string { return c.Model.ID() }
+
+// teamKey is the teammate whose key this candidate uses, or "" for the
+// user's own key.
+func (c Candidate) teamKey() string {
+	if c.QKey.Account == keys.Own {
+		return ""
+	}
+	return c.QKey.Account
+}
+
+// keyName is the key store entry this candidate's key came from.
+func (c Candidate) keyName() string { return keys.Name(c.Provider.ID, c.QKey.Account) }
 
 // Weights tune the score per task class:
 // score = Q*wq + A*wa + H*wh - L*wl
@@ -99,14 +113,10 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			continue
 		}
 		info.Considered++
-		key := ""
-		if p.NeedsKey {
-			k, src := rt.Keys.Get(p.ID)
-			if src == "" || k == "" {
-				info.NoKey++
-				continue
-			}
-			key = k
+		slots := rt.keySlots(p)
+		if len(slots) == 0 {
+			info.NoKey++
+			continue
 		}
 		capsOK := !(req.HasTools() && !m.Has("tools") ||
 			req.WantsJSON && !m.Has("json") ||
@@ -118,57 +128,61 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			}
 			continue
 		}
-		c := Candidate{Model: m, Provider: p, Key: key, QKey: quota.Key{Provider: p.ID, Account: "default", Model: m.Canonical}, q: m.QualityFor(class)}
-		// The best skill among models that could take this request at all,
-		// even if busy now: the bar for calling a model weak.
-		top = max(top, c.q)
-		// A request bigger than a whole minute's token allowance is always
-		// refused (Groq's free tier: 8,000), so do not spend an attempt on it.
-		size := m.Context
-		if l := rt.Quota.Effective(c.QKey, m.Limits); l.TPM > 0 {
-			if need > l.TPM {
-				info.DoesNotFit++
-				info.OverMinute++
-				info.MinuteCap = max(info.MinuteCap, l.TPM)
+		// One candidate per key: each has its own limits, so a teammate's key
+		// takes over the same model when another key is used up.
+		for _, s := range slots {
+			c := Candidate{Model: m, Provider: p, Key: s.key, QKey: quota.Key{Provider: p.ID, Account: s.account, Model: m.Canonical}, q: m.QualityFor(class)}
+			// The best skill among models that could take this request at all,
+			// even if busy now: the bar for calling a model weak.
+			top = max(top, c.q)
+			// A request bigger than a whole minute's token allowance is always
+			// refused (Groq's free tier: 8,000), so do not spend an attempt on it.
+			size := m.Context
+			if l := rt.Quota.Effective(c.QKey, m.Limits); l.TPM > 0 {
+				if need > l.TPM {
+					info.DoesNotFit++
+					info.OverMinute++
+					info.MinuteCap = max(info.MinuteCap, l.TPM)
+					continue
+				}
+				if size == 0 || l.TPM < size {
+					size = l.TPM
+				}
+			}
+			c.tight = size > 0 && size < 2*need
+			state := rt.Breakers.StateOf(c.Target())
+			if state == breaker.Open {
+				info.BreakerOpen++
 				continue
 			}
-			if size == 0 || l.TPM < size {
-				size = l.TPM
+			if ok, reset := rt.allow(c, req.EstTokens); !ok {
+				info.QuotaBlocked++
+				if info.EarliestReset.IsZero() || reset.Before(info.EarliestReset) {
+					info.EarliestReset = reset
+				}
+				continue
 			}
-		}
-		c.tight = size > 0 && size < 2*need
-		state := rt.Breakers.StateOf(c.Target())
-		if state == breaker.Open {
-			info.BreakerOpen++
-			continue
-		}
-		if ok, reset := rt.allow(c, req.EstTokens); !ok {
-			info.QuotaBlocked++
-			if info.EarliestReset.IsZero() || reset.Before(info.EarliestReset) {
-				info.EarliestReset = reset
+			w, ok := classWeights[class]
+			if !ok {
+				w = defaultWeights
 			}
-			continue
-		}
-		w, ok := classWeights[class]
-		if !ok {
-			w = defaultWeights
-		}
-		health := 1.0
-		if r, ok := rt.Health.Rate(c.Target()); ok {
-			health = r
-		}
-		if state == breaker.HalfOpen {
-			health /= 2
-		}
-		speed := p.Speed
-		if measured, ok := rt.Health.Speed(c.Target()); ok {
-			speed = measured
-		}
-		c.Score = w.Q*c.q + w.A*rt.share(c) + w.H*health - w.L*(1-speed)
-		if p.Local {
-			local = append(local, c)
-		} else {
-			cloud = append(cloud, c)
+			health := 1.0
+			if r, ok := rt.Health.Rate(c.Target()); ok {
+				health = r
+			}
+			if state == breaker.HalfOpen {
+				health /= 2
+			}
+			speed := p.Speed
+			if measured, ok := rt.Health.Speed(c.Target()); ok {
+				speed = measured
+			}
+			c.Score = w.Q*c.q + w.A*rt.share(c) + w.H*health - w.L*(1-speed)
+			if p.Local {
+				local = append(local, c)
+			} else {
+				cloud = append(cloud, c)
+			}
 		}
 	}
 
@@ -299,6 +313,63 @@ func sameModelFirst(cs []Candidate) []Candidate {
 				used[j] = true
 				out = append(out, cs[j])
 			}
+		}
+	}
+	return out
+}
+
+type keySlot struct{ account, key string }
+
+// keySlots lists the keys this machine has for a provider: the user's own
+// first, then each team key in the order it was added. A provider that needs
+// no key has one empty slot; one with no usable key has none.
+func (rt *Router) keySlots(p catalogue.Provider) []keySlot {
+	if !p.NeedsKey {
+		return []keySlot{{account: keys.Own}}
+	}
+	var out []keySlot
+	if k, _ := rt.Keys.Get(p.ID); k != "" {
+		out = append(out, keySlot{keys.Own, k})
+	}
+	if p.NoTeamKeys {
+		return out
+	}
+	for _, name := range rt.Cfg.GetTeamKeys(p.ID) {
+		if k, _ := rt.Keys.Get(keys.Name(p.ID, name)); k != "" {
+			out = append(out, keySlot{name, k})
+		}
+	}
+	return out
+}
+
+// HasKey reports whether this machine has a usable key for a provider, the
+// user's own or a teammate's.
+func (rt *Router) HasKey(p catalogue.Provider) bool { return len(rt.keySlots(p)) > 0 }
+
+// takeTurns spreads requests across the keys of one model: each request
+// starts on the next key in turn, so no teammate's key always goes first and
+// keys reach their limits less often. The order between models is unchanged.
+func (rt *Router) takeTurns(cs []Candidate) []Candidate {
+	pos := map[string][]int{}
+	for i, c := range cs {
+		pos[c.Target()] = append(pos[c.Target()], i)
+	}
+	out := slices.Clone(cs)
+	for t, idx := range pos {
+		if len(idx) < 2 {
+			continue
+		}
+		// Rotate from a fixed order (by key name): the ranking order moves as
+		// each key's remaining limit changes, and rotating a moving order
+		// would not give each key its turn.
+		group := make([]Candidate, len(idx))
+		for j, i := range idx {
+			group[j] = cs[i]
+		}
+		sort.Slice(group, func(a, b int) bool { return group[a].QKey.Account < group[b].QKey.Account })
+		n := rt.turn(t)
+		for j, i := range idx {
+			out[i] = group[(j+n)%len(group)]
 		}
 	}
 	return out

@@ -6,6 +6,8 @@ package keys
 import (
 	"errors"
 	"os"
+	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/zalando/go-keyring"
@@ -69,6 +71,31 @@ func Where(s Store) string {
 		return "this computer's keychain"
 	}
 	return "an encrypted file on this computer"
+}
+
+// Own is the account name of the user's own key for a provider. A team key
+// carries the teammate's name instead.
+const Own = "default"
+
+// Name is the store entry for a key: the provider id for the user's own key,
+// provider#name for a team key.
+func Name(provider, account string) string {
+	if account == "" || account == Own {
+		return provider
+	}
+	return provider + "#" + account
+}
+
+var teamNameRE = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,19}$`)
+
+// TeamName checks and normalises a teammate's name for a team key: lower
+// case letters, digits and dashes, up to 20 characters.
+func TeamName(s string) (string, error) {
+	s = strings.ToLower(strings.TrimSpace(s))
+	if !teamNameRE.MatchString(s) || s == Own {
+		return "", errors.New("a team key needs a short name: letters, digits and dashes, up to 20 characters (for example ravi)")
+	}
+	return s, nil
 }
 
 // Source says where a resolved key came from.

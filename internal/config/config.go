@@ -46,6 +46,41 @@ type Config struct {
 	// AllowWeaker lets the router fall to clearly weaker models when the
 	// strong ones are used up, instead of stopping to ask. Off by default.
 	AllowWeaker bool `json:"allow_weaker,omitempty"`
+	// TeamKeys names the extra keys added on this machine for each
+	// provider, one per teammate: provider id -> names. The keys themselves
+	// live in the key store, never here.
+	TeamKeys map[string][]string `json:"team_keys,omitempty"`
+}
+
+// GetTeamKeys returns the names of a provider's team keys, in the order
+// they were added.
+func (c *Config) GetTeamKeys(provider string) []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return append([]string(nil), c.TeamKeys[provider]...)
+}
+
+// SetTeamKey adds (on) or removes a team key's name for a provider.
+func (c *Config) SetTeamKey(provider, name string, on bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	var out []string
+	for _, n := range c.TeamKeys[provider] {
+		if n != name {
+			out = append(out, n)
+		}
+	}
+	if on {
+		out = append(out, name)
+	}
+	if len(out) == 0 {
+		delete(c.TeamKeys, provider)
+		return
+	}
+	if c.TeamKeys == nil {
+		c.TeamKeys = map[string][]string{}
+	}
+	c.TeamKeys[provider] = out
 }
 
 // GetAllowWeaker reports the AllowWeaker setting.

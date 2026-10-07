@@ -16,6 +16,20 @@ type session struct {
 	chats       map[[16]byte]chat
 	weakerUntil time.Time
 	last        Used
+	turns       map[string]int // per model: whose key goes first next (team keys)
+}
+
+// turn returns how far to rotate a model's keys for this request, and moves
+// the turn on for the next one.
+func (rt *Router) turn(target string) int {
+	rt.sess.mu.Lock()
+	defer rt.sess.mu.Unlock()
+	if rt.sess.turns == nil {
+		rt.sess.turns = map[string]int{}
+	}
+	n := rt.sess.turns[target]
+	rt.sess.turns[target] = n + 1
+	return n
 }
 
 type chat struct {
@@ -29,6 +43,7 @@ type Used struct {
 	Model    string    `json:"model"`
 	Class    string    `json:"class"`
 	Weak     bool      `json:"weak"`
+	Key      string    `json:"key,omitempty"` // the teammate whose key answered; empty for your own
 	Time     time.Time `json:"time"`
 }
 
@@ -72,7 +87,7 @@ func (rt *Router) answered(req *core.Request, c Candidate, class string) {
 	rt.sess.mu.Lock()
 	defer rt.sess.mu.Unlock()
 	if !req.Internal {
-		rt.sess.last = Used{Provider: c.Provider.ID, Model: c.Model.Canonical, Class: class, Weak: c.Weak, Time: time.Now()}
+		rt.sess.last = Used{Provider: c.Provider.ID, Model: c.Model.Canonical, Class: class, Weak: c.Weak, Key: c.teamKey(), Time: time.Now()}
 	}
 	k, ok := chatKey(req)
 	if !ok {

@@ -39,7 +39,7 @@ type DashProvider struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Status      string `json:"status"`
-	KeySource   string `json:"key_source,omitempty"` // "store" or "env"
+	KeySource   string `json:"key_source,omitempty"` // "store", "env" or "team" (teammates' keys only)
 	EnvVar      string `json:"env_var,omitempty"`
 	SignupURL   string `json:"signup_url,omitempty"`
 	Policy      string `json:"data_policy"`
@@ -48,6 +48,11 @@ type DashProvider struct {
 	Local       bool   `json:"local,omitempty"`
 	NeedsKey    bool   `json:"needs_key"`
 	BreakerOpen int    `json:"models_unavailable,omitempty"`
+	// TeamKeys are teammates' keys added on this machine; requests take
+	// turns across them and the user's own key.
+	TeamKeys []DashTeamKey `json:"team_keys,omitempty"`
+	// NoTeamKeys: team keys are switched off for this provider.
+	NoTeamKeys bool `json:"no_team_keys,omitempty"`
 }
 
 // DashModel is one row of the models table.
@@ -87,6 +92,8 @@ type Overview struct {
 	Favorites []string     `json:"favorites"`
 	NewModels int          `json:"new_models"` // radar items marked new
 	Brain     *brain.Stats `json:"brain,omitempty"`
+	// TeamKeyNotice is shown before a team key is saved.
+	TeamKeyNotice string `json:"team_key_notice"`
 }
 
 func (s *Server) dashRoutes(mux *http.ServeMux) {
@@ -98,6 +105,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /mangoman/activity", s.auth(http.HandlerFunc(s.activity)))
 	mux.Handle("POST /mangoman/keys", s.auth(http.HandlerFunc(s.addKey)))
 	mux.Handle("DELETE /mangoman/keys/{provider}", s.auth(http.HandlerFunc(s.removeKey)))
+	mux.Handle("DELETE /mangoman/keys/{provider}/team/{name}", s.auth(http.HandlerFunc(s.removeTeamKey)))
 	mux.Handle("POST /mangoman/providers/{provider}/exclude", s.auth(http.HandlerFunc(s.setExcluded)))
 	mux.Handle("GET /mangoman/now", s.auth(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, s.Router.Outlook()) })))
 	mux.Handle("POST /mangoman/weaker", s.auth(http.HandlerFunc(s.setWeaker)))
@@ -124,7 +132,8 @@ func securityHeaders(next http.Handler) http.Handler {
 func (s *Server) providerStatus(p catalogue.Provider, modelCount int) DashProvider {
 	pol := p.Policy
 	d := DashProvider{ID: p.ID, Name: p.Name, SignupURL: p.SignupURL, Policy: pol.Label(), Trains: pol.TrainsOnData,
-		Models: modelCount, Local: p.Local, NeedsKey: p.NeedsKey, EnvVar: s.Router.Keys.EnvName(p.ID)}
+		Models: modelCount, Local: p.Local, NeedsKey: p.NeedsKey, EnvVar: s.Router.Keys.EnvName(p.ID),
+		TeamKeys: s.teamKeys(p), NoTeamKeys: p.NoTeamKeys}
 	switch {
 	case s.Cfg.Excluded(p.ID):
 		d.Status = PSExcluded
@@ -141,13 +150,23 @@ func (s *Server) providerStatus(p catalogue.Provider, modelCount int) DashProvid
 			d.Status = PSNotConnected
 		}
 	}
+	// Teammates' keys alone are enough to use the provider.
+	if d.Status == PSNotConnected && !p.NoTeamKeys {
+		for _, t := range d.TeamKeys {
+			if t.Status != TKRejected && t.Status != TKMissing {
+				d.Status, d.KeySource = PSConnected, "team"
+				break
+			}
+		}
+	}
 	return d
 }
 
 func (s *Server) overview(w http.ResponseWriter, _ *http.Request) {
 	rt := s.Router
 	ov := Overview{Version: s.Version, UptimeS: int(time.Since(s.Started).Seconds()), Catalogue: rt.Cat.Version, Port: s.port(),
-		Favorites: nonNil(s.Cfg.GetFavorites()), NewModels: s.radarView().NewCount, Brain: s.brainStats()}
+		Favorites: nonNil(s.Cfg.GetFavorites()), NewModels: s.radarView().NewCount, Brain: s.brainStats(),
+		TeamKeyNotice: setup.TeamKeyNotice}
 	if st := rt.Keys.Store(); st != nil {
 		ov.KeyStore = st.Name()
 	}
@@ -273,10 +292,19 @@ func (s *Server) addKey(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Provider string `json:"provider"`
 		Key      string `json:"key"`
+		Team     string `json:"team,omitempty"` // a teammate's name for a team key
 	}
 	if err := readJSON(r, &in); err != nil {
-		core.WriteError(w, http.StatusBadRequest, "bad_request", "send {\"provider\":..., \"key\":...}")
+		core.WriteError(w, http.StatusBadRequest, "bad_request", "send {\"provider\":..., \"key\":..., \"team\": optional name}")
 		return
+	}
+	if in.Team != "" {
+		name, err := keys.TeamName(in.Team)
+		if err != nil {
+			core.WriteError(w, http.StatusBadRequest, "bad_team_name", err.Error())
+			return
+		}
+		in.Team = name
 	}
 	st := s.Router.Keys.Store()
 	if st == nil {
@@ -289,12 +317,19 @@ func (s *Server) addKey(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
-	p, err := setup.ConnectKey(ctx, s.Router.Cat, st, validate, in.Provider, in.Key)
+	p, err := setup.ConnectKey(ctx, s.Router.Cat, st, validate, in.Provider, in.Team, in.Key)
 	if err != nil {
 		core.WriteError(w, http.StatusUnprocessableEntity, "key_not_connected", err.Error())
 		return
 	}
-	s.Router.Keys.Forget(p.ID)
+	s.Router.Keys.Forget(keys.Name(p.ID, in.Team))
+	if in.Team != "" {
+		s.Cfg.SetTeamKey(p.ID, in.Team, true)
+		if err := s.save(); err != nil {
+			core.WriteError(w, http.StatusInternalServerError, "config_not_saved", err.Error())
+			return
+		}
+	}
 	writeJSON(w, s.providerStatus(p, s.modelCount(p.ID)))
 }
 

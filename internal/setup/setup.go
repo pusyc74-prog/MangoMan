@@ -22,8 +22,9 @@ import (
 // Validator checks a key with its provider.
 type Validator func(ctx context.Context, p catalogue.Provider, key string) error
 
-// ConnectKey validates a key with the provider and stores it locally.
-func ConnectKey(ctx context.Context, cat *catalogue.Catalogue, store keys.Store, validate Validator, providerID, key string) (catalogue.Provider, error) {
+// ConnectKey validates a key with the provider and stores it locally. team
+// is "" for the user's own key, or a teammate's name for a team key.
+func ConnectKey(ctx context.Context, cat *catalogue.Catalogue, store keys.Store, validate Validator, providerID, team, key string) (catalogue.Provider, error) {
 	p, ok := cat.Provider(providerID)
 	if !ok {
 		return p, fmt.Errorf("unknown provider %q", providerID)
@@ -42,7 +43,10 @@ func ConnectKey(ctx context.Context, cat *catalogue.Catalogue, store keys.Store,
 			return p, err
 		}
 	}
-	if err := store.Set(p.ID, key); err != nil {
+	if team != "" && p.NoTeamKeys {
+		return p, fmt.Errorf("team keys are turned off for %s", p.Name)
+	}
+	if err := store.Set(keys.Name(p.ID, team), key); err != nil {
 		return p, fmt.Errorf("could not store key: %w", err)
 	}
 	return p, nil
@@ -158,7 +162,7 @@ func (w *Wizard) Run(ctx context.Context) Result {
 				break
 			}
 			w.say("      Checking with %s... ", p.Name)
-			if _, err := ConnectKey(ctx, w.Cat, w.Store, w.Validate, p.ID, key); err != nil {
+			if _, err := ConnectKey(ctx, w.Cat, w.Store, w.Validate, p.ID, "", key); err != nil {
 				w.say("failed: %v\n", err)
 				continue
 			}
@@ -246,3 +250,7 @@ func plural(n int, one, many string) string {
 	}
 	return many
 }
+
+// TeamKeyNotice is shown before a team key is saved, on the dashboard and
+// in the CLI.
+const TeamKeyNotice = "Team keys. Each person's key stays under their own provider account and that provider's terms. Some providers say a key is for its owner's use only. By adding a key here, its owner accepts that risk. A provider can be switched to own keys only at any time."

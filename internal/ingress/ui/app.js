@@ -5,7 +5,7 @@
 
 const ORDER = ["groq", "cerebras", "nvidia", "openrouter", "zen", "ollama"];
 const NUM = new Intl.NumberFormat();
-const state = { token: "", overview: null, activity: null, radar: null, filter: "used", open: new Set(), drawer: false };
+const state = { token: "", overview: null, activity: null, radar: null, filter: "used", open: new Set(), openTeam: new Set(), drawer: false };
 
 function $(id) { return document.getElementById(id); }
 
@@ -142,7 +142,7 @@ function providerTraffic(act) {
 function stateFor(p) {
   switch (p.status) {
     case "connected":
-      return { lamp: "on", text: p.key_source === "env" ? `Connected through ${p.env_var}` : "Connected" };
+      return { lamp: "on", text: p.key_source === "env" ? `Connected through ${p.env_var}` : p.key_source === "team" ? "Connected through team keys" : "Connected" };
     case "running": return { lamp: "on", text: "Running on this computer" };
     case "key_rejected": return { lamp: "bad", text: "Key rejected, needs a new one" };
     case "excluded": return { lamp: "", text: "Turned off" };
@@ -174,7 +174,8 @@ function renderBoard(ov, act) {
 
     if (p.status === "connected") {
       actions.push(toggle("Turn off", () => setExcluded(p.id, true)));
-      if (p.key_source !== "env") actions.push(toggle("Remove key", () => removeKey(p)));
+      if (p.key_source === "store") actions.push(toggle("Remove key", () => removeKey(p)));
+      if (p.key_source === "team") actions.push(toggle("Add my key", () => { state.open.add(p.id); renderBoard(state.overview, state.activity); }));
     } else if (p.status === "excluded") {
       actions.push(toggle("Turn on", () => setExcluded(p.id, false)));
     } else if (p.local) {
@@ -185,6 +186,10 @@ function renderBoard(ov, act) {
         type: "button", class: "primary", "aria-expanded": String(state.open.has(p.id)),
         onclick: () => { state.open.has(p.id) ? state.open.delete(p.id) : state.open.add(p.id); renderBoard(state.overview, state.activity); },
       }, label));
+    }
+
+    if (p.needs_key && !p.no_team_keys && p.status !== "excluded") {
+      actions.push(toggle("Add team key", () => { state.openTeam.has(p.id) ? state.openTeam.delete(p.id) : state.openTeam.add(p.id); renderBoard(state.overview, state.activity); }));
     }
 
     const row = el("li", { class: "line" + (off ? " off" : "") },
@@ -198,6 +203,8 @@ function renderBoard(ov, act) {
         el("div", { class: "actions" }, actions)));
 
     if (state.open.has(p.id) && p.needs_key) row.append(connectPanel(p));
+    if ((p.team_keys || []).length) row.append(teamList(p));
+    if (state.openTeam.has(p.id)) row.append(teamPanel(p));
     return row;
   }));
 }
@@ -228,6 +235,59 @@ function connectPanel(p) {
       el("a", { class: "link", href: p.signup_url, target: "_blank", rel: "noopener noreferrer" }, p.name),
       `, then paste it here. It is checked with ${p.name} and saved in ${state.overview.key_store === "os-keychain" ? "this computer's keychain" : "an encrypted file on this computer"}.`),
     form, msg);
+}
+
+// ---------- team keys ----------
+
+const TEAM_STATE = {
+  working: "working", resting: "resting", rejected: "key rejected, needs a new one", missing: "key missing, add it again",
+};
+
+function teamList(p) {
+  return el("ul", { class: "team-keys", "aria-label": `${p.name} team keys` }, p.team_keys.map((k) =>
+    el("li", {},
+      el("span", { class: "lamp " + (k.status === "working" ? "on" : k.status === "resting" ? "" : "bad"), "aria-hidden": "true" }),
+      el("b", {}, k.name),
+      ` ${TEAM_STATE[k.status] || k.status}${k.status === "resting" && k.rests_until ? ` until ${hm(k.rests_until)}` : ""}, ${plural(k.requests_today, "request", "requests")} today `,
+      el("button", { type: "button", class: "ghost", onclick: () => removeTeamKey(p, k.name) }, "Remove"))));
+}
+
+function teamPanel(p) {
+  const name = el("input", { type: "text", autocomplete: "off", spellcheck: "false", maxlength: "20", placeholder: "Teammate's name, e.g. ravi", "aria-label": "Teammate's name" });
+  const key = el("input", { type: "password", autocomplete: "off", spellcheck: "false", placeholder: `Paste their ${p.name} key`, "aria-label": `Teammate's ${p.name} API key` });
+  const agree = el("input", { type: "checkbox", id: `agree-${p.id}` });
+  const msg = el("p", { class: "msg", role: "status" });
+  const btn = el("button", { type: "submit", class: "primary" }, "Add team key");
+  const form = el("form", {
+    onsubmit: async (e) => {
+      e.preventDefault();
+      if (!name.value.trim() || !key.value.trim()) { msg.className = "msg err"; msg.textContent = "Give a name and a key."; return; }
+      if (!agree.checked) { msg.className = "msg err"; msg.textContent = "Tick the box once the key's owner has agreed."; return; }
+      btn.disabled = true; msg.className = "msg"; msg.textContent = `Checking with ${p.name}…`;
+      try {
+        await api("/mangoman/keys", { method: "POST", body: JSON.stringify({ provider: p.id, key: key.value.trim(), team: name.value.trim() }) });
+        key.value = "";
+        state.openTeam.delete(p.id);
+        await load();
+      } catch (err) {
+        msg.className = "msg err"; msg.textContent = `Not added: ${err.message}`;
+        btn.disabled = false;
+      }
+    },
+  }, name, key, btn);
+  setTimeout(() => name.focus(), 0);
+  return el("div", { class: "connect" },
+    el("p", {}, `Add a teammate's own ${p.name} key. Requests take turns across every ${p.name} key on this computer, so the team gets more free use of the same models.`),
+    el("p", { class: "notice" }, state.overview.team_key_notice),
+    el("label", { class: "agree", for: `agree-${p.id}` }, agree, " The key's owner has read this and agreed."),
+    form, msg);
+}
+
+async function removeTeamKey(p, name) {
+  if (!confirm(`Remove ${name}'s ${p.name} key from this computer?`)) return;
+  try { await api(`/mangoman/keys/${encodeURIComponent(p.id)}/team/${encodeURIComponent(name)}`, { method: "DELETE" }); }
+  catch (err) { alert(err.message); }
+  await load();
 }
 
 async function setExcluded(id, excluded) {
@@ -671,7 +731,7 @@ function modelName(target) { const [p, ...m] = target.split("/"); return `${m.jo
 
 function renderNow(o) {
   if (o.last) {
-    $("now-model").replaceChildren(o.last.model, " ", el("small", {}, `on ${o.last.provider}, last answer at ${hm(o.last.time)}${o.last.weak ? ", a smaller model" : ""}`));
+    $("now-model").replaceChildren(o.last.model, " ", el("small", {}, `on ${o.last.provider}${o.last.key ? ` (${o.last.key}'s key)` : ""}, last answer at ${hm(o.last.time)}${o.last.weak ? ", a smaller model" : ""}`));
   }
   const next = (o.next || []).filter((t) => !o.last || t !== `${o.last.provider}/${o.last.model}`).slice(0, 2);
   $("now-next").textContent = next.length ? `Next if it runs out: ${next.map(modelName).join(", ")}` : o.next && o.next.length ? "" : "No model is free right now. Connect a provider below.";

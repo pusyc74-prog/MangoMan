@@ -194,3 +194,36 @@ func TestGuardianApprovals(t *testing.T) {
 		t.Fatalf("only approve and reject: %d", w.Code)
 	}
 }
+
+func TestTeamKeysOnTheDashboard(t *testing.T) {
+	st := mem{}
+	h, s := dashServer(t, st)
+	// Bad names and bad keys are refused before anything is saved.
+	if w := call(h, "POST", "/mangoman/keys", "127.0.0.1:4141", authz, `{"provider":"zen","key":"k","team":"Ravi Kumar!"}`); w.Code != 400 {
+		t.Fatalf("bad name: %d %s", w.Code, w.Body)
+	}
+	if w := call(h, "POST", "/mangoman/keys", "127.0.0.1:4141", authz, `{"provider":"zen","key":"bad","team":"ravi"}`); w.Code != 422 || len(s.Cfg.GetTeamKeys("zen")) != 0 {
+		t.Fatalf("rejected key must not be listed: %d %v", w.Code, s.Cfg.GetTeamKeys("zen"))
+	}
+	// A teammate's key alone connects the provider.
+	w := call(h, "POST", "/mangoman/keys", "127.0.0.1:4141", authz, `{"provider":"zen","key":"zen-ravi","team":"Ravi"}`)
+	var p DashProvider
+	if err := json.Unmarshal(w.Body.Bytes(), &p); err != nil || w.Code != 200 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	if st["zen#ravi"] != "zen-ravi" || p.Status != PSConnected || p.KeySource != "team" ||
+		len(p.TeamKeys) != 1 || p.TeamKeys[0].Name != "ravi" || p.TeamKeys[0].Status != TKWorking {
+		t.Fatalf("team key not shown as connected: %+v store=%v", p, st)
+	}
+	var ov Overview
+	_ = json.Unmarshal(call(h, "GET", "/mangoman/overview", "127.0.0.1:4141", authz, "").Body.Bytes(), &ov)
+	if ov.TeamKeyNotice == "" {
+		t.Fatal("the dashboard needs the team key notice")
+	}
+	// Removing it takes it out of the store and the list.
+	w = call(h, "DELETE", "/mangoman/keys/zen/team/ravi", "127.0.0.1:4141", authz, "")
+	_ = json.Unmarshal(w.Body.Bytes(), &p)
+	if _, ok := st["zen#ravi"]; ok || len(s.Cfg.GetTeamKeys("zen")) != 0 || p.Status != PSNotConnected {
+		t.Fatalf("team key not removed: %d %+v store=%v", w.Code, p, st)
+	}
+}

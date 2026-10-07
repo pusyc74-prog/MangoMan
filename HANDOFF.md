@@ -137,6 +137,24 @@ a QA agent, and **Guardian**, the self-healing system.
 - Before go-live: measure real requests and tokens per coding task and per pack task on NVIDIA; tell the owner how many tasks a free user gets a day.
 - After launch: slim coding mode and a capacity meter. Heavy coding is not promised at launch; chat and packs are.
 
+## Team keys (built 7 Oct)
+
+Several people working from **one computer** each add their own key, for any
+provider: `mangoman keys add <provider> --team NAME`, or Add team key on the
+dashboard. Requests take turns across every key of a model; a key at its limit
+rests and the next one carries on with the same model. Keys are stored as
+`provider#name` in the key store; the names are in config.json `team_keys`.
+The catalogue field `no_team_keys` switches it off for a provider without a
+release.
+
+The owner decided this after we read the terms together: every provider bans
+one person making many accounts (not this case), but NVIDIA and Groq say a key
+is for its owner's use. So a notice is shown and the key's owner accepts the
+risk. OmniRoute already does the same openly. Do not reopen this decision.
+
+This is **not** Phase 4 team mode, where each person is on their own device and
+keys are never shared. Keep the two apart.
+
 ## My list and OpenCode (built 6 Oct)
 
 - With a My list set, the router uses only those models. When all are busy or out of limits it stops and asks before using any other model (1 hour or always). No list: normal ranking.

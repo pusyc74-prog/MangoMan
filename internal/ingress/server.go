@@ -160,10 +160,8 @@ func (s *Server) models(w http.ResponseWriter, _ *http.Request) {
 		if !ok || s.Cfg.Excluded(p.ID) || !m.Free {
 			continue
 		}
-		if p.NeedsKey {
-			if k, _ := s.Router.Keys.Get(p.ID); k == "" {
-				continue
-			}
+		if !s.Router.HasKey(p) {
+			continue
 		}
 		byModel[m.Canonical] = append(byModel[m.Canonical], p.ID)
 	}
@@ -206,6 +204,8 @@ func (s *Server) status(w http.ResponseWriter, _ *http.Request) {
 		if p.NeedsKey {
 			if k, src := s.Router.Keys.Get(p.ID); k != "" {
 				st.Connected, st.KeySource = true, string(src)
+			} else if s.Router.HasKey(p) {
+				st.Connected, st.KeySource = true, "team"
 			}
 		} else {
 			st.Connected = counts[p.ID] > 0

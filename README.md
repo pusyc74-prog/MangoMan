@@ -54,7 +54,7 @@ It also runs daily at 08:00 IST in quick mode, which catches provider changes ea
 | Quota | Per provider, account, model: requests and tokens per minute and per day; pre-flight check; corrected from rate-limit headers; survives restarts |
 | Keys | OS keychain; encrypted file fallback; env var overrides; validated on add |
 | Catalogue | Embedded seed with limits and per-provider data policy labels; Ed25519 verification ready for the live feed (M5) |
-| CLI | `init`, `serve`, `keys add/list/rm`, `status`, `models`, `test`, `version` |
+| CLI | `init`, `serve`, `keys add/list/rm` (with `--team NAME` for team keys), `status`, `models`, `test`, `version` |
 | Usage log | `usage.jsonl`: outcome, latency, tokens per attempt. Never prompt or answer content |
 
 ## Setup wizard and dashboard
@@ -93,6 +93,21 @@ mangoman list add openrouter/acme/model:free   # add one of those
 ```
 
 On the dashboard: the My list section (reorder, remove, add from a picker), a star on every row of the models table, and the New models drawer with Check now.
+
+## Team keys (several people on one machine)
+
+When a team works from one computer, each person can add their own key for any provider. Requests take turns across every key of a provider, so the team gets more free use of the same models. When one key reaches its limit it rests until its reset, and the next key carries on with the same model, so answers stay consistent. A rejected key drops out on its own; the others keep working.
+
+```sh
+mangoman keys add nvidia --team ravi       # Ravi's NVIDIA key
+mangoman keys add zen --team asha          # works for every provider
+mangoman keys list                         # team keys are listed under each provider
+mangoman keys rm nvidia --team ravi
+```
+
+On the dashboard, each provider has an **Add team key** button. Each team key shows whether it is working, resting or rejected, and its requests today. The live panel says whose key answered, and so does the `X-MangoMan-Team-Key` response header.
+
+Each key stays under its owner's provider account and that provider's terms; some providers say a key is for its owner's use only. MangoMan shows this notice before a team key is saved. Team keys can be switched off for any provider from the signed catalogue (`no_team_keys`), without a new release. Different people working on their own devices is a separate, later feature (team mode).
 
 ## What M2 adds
 

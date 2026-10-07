@@ -122,6 +122,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		rt.writeNoCandidate(w, info)
 		return
 	}
+	cands = rt.takeTurns(cands)
 
 	var (
 		lastStatus   int
@@ -140,7 +141,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		if r.Context().Err() != nil {
 			return // client went away
 		}
-		if unreachable[c.Provider.ID] {
+		if unreachable[c.Provider.ID] || unreachable[c.keyName()] {
 			continue
 		}
 		if ok, _ := rt.allow(c, req.EstTokens); !ok {
@@ -175,7 +176,11 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			Outcome: res.outcome, Status: res.status, LatencyMS: time.Since(start).Milliseconds(),
 			Attempt: attempts, Stream: req.Stream, Tokens: res.tokens,
 		})
-		rt.Logf("req=%s attempt=%d %s -> %s (%d) %s", id, attempts, c.Target(), res.outcome, res.status, res.errMsg)
+		who := c.Target()
+		if k := c.teamKey(); k != "" {
+			who += " (team key " + k + ")"
+		}
+		rt.Logf("req=%s attempt=%d %s -> %s (%d) %s", id, attempts, who, res.outcome, res.status, res.errMsg)
 		if res.done {
 			if strings.HasPrefix(res.outcome, "ok") {
 				rt.answered(req, c, class)
@@ -185,10 +190,14 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		if res.outcome == "rate_limited" {
 			sawRateLimit = true
 		}
-		if res.outcome == "network_error" || res.outcome == "key_rejected" {
-			// The provider itself is down or our key is bad: its other models
-			// would fail the same way, so skip them for this request.
+		switch res.outcome {
+		case "network_error":
+			// The provider itself is down: its other models and keys would
+			// fail the same way, so skip them for this request.
 			unreachable[c.Provider.ID] = true
+		case "key_rejected":
+			// This key is bad, not the provider: a teammate's key still works.
+			unreachable[c.keyName()] = true
 		}
 		if res.badBody != nil && fallbackBody == nil {
 			fallbackBody, fallbackWhy, fallbackCand = res.badBody, res.badWhy, c
@@ -305,6 +314,9 @@ func (rt *Router) setHeaders(w http.ResponseWriter, c Candidate, class string, a
 	if c.Weak {
 		h.Set("X-MangoMan-Weaker", "1")
 	}
+	if k := c.teamKey(); k != "" {
+		h.Set("X-MangoMan-Team-Key", k)
+	}
 }
 
 // attempt sends the request to one candidate.
@@ -399,7 +411,7 @@ func (rt *Router) upstreamError(resp *http.Response, c Candidate) attemptResult 
 		res.outcome = "rate_limited"
 	case s == http.StatusUnauthorized:
 		// Key invalid or revoked: stop using it until the user fixes it.
-		rt.Keys.Disable(c.Provider.ID)
+		rt.Keys.Disable(c.keyName())
 		res.outcome = "key_rejected"
 	case s == http.StatusForbidden:
 		// A 403 is usually about this one model (OpenRouter: "only available
