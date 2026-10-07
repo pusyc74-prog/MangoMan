@@ -208,13 +208,16 @@ run pinned to one model (`strict/nemotron-3-ultra-550b`) is the repeatable
 one: tasks finished in 75 to 295 seconds instead of running out of time, and
 e-commerce listing scored 79, email campaign 90, resume 90, SEO article 93.5.
 
-**Three packs still produce nothing: ad copy, social posts, website copy.**
-They fail after 4 or 5 requests because NVIDIA returns HTTP 200 and then
-"Service temporarily overloaded" inside the stream, or drops the stream part
-way. The retry added on 7 Oct covers a stream that dies before saying a word;
-a stream that breaks after the answer started cannot be taken back. Next step
-for these three: run them pinned, with the retry in, and read the per-case
-logs on eval-reports.
+**Every pack now works on a real free model**, pinned to one model: website
+copy 100.0, social posts 95.6, SEO article 93.5, email campaign 90, resume
+90, ad copy 79.1, e-commerce listing 79. Two router bugs had to be fixed to
+get there (see the PRD build log for 7 Oct): a stream that died before saying
+a word is now asked again when there is nothing to fail over to, and the gap
+allowed mid-answer grows to 180 seconds once the answer has started.
+
+**Still unmeasured:** NVIDIA's daily ceiling. Its first 429 came at the end
+of the last run, so the limit is real. Measure it before promising users a
+number of tasks a day.
 
 ## Still open (not built)
 
