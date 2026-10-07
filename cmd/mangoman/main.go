@@ -49,7 +49,7 @@ Usage:
   mangoman people [add|rm NAME] one local token per person on a shared machine, for usage per person
   mangoman dashboard            open the dashboard in your browser
   mangoman list [add|rm|up|new]  My list: models tried first; new free models
-  mangoman code [--model M]     open OpenCode on free models (starts the router if needed)
+  mangoman code [--model M] [--ui]  open OpenCode on free models; --ui opens the coding screen in the browser
   mangoman mcp                  assist mode: MCP server for Claude Code and Codex
   mangoman skills [install|remove]  list or install the skill packs
   mangoman agents [install|remove|exec|eval|new|pack]  advanced agents

@@ -57,6 +57,17 @@ const skillRule = "MangoMan skill packs are installed. Before you start, check w
 	"If one does, load it first with the skill tool and follow it. Its scripts build and check the files, " +
 	"so never write by hand a file that a skill's script builds.\n"
 
+// How mangoman code shows OpenCode.
+const (
+	modeTUI = iota // OpenCode's own terminal screen
+	modeRun        // unattended: mangoman code run ...
+	modeUI         // the coding screen in the browser: mangoman code --ui
+)
+
+// uiAllowed are commands the coding screen runs without asking: they only
+// read. Everything else is shown with Allow and Deny first.
+var uiAllowed = []string{"ls*", "pwd", "git status*", "git diff*", "git log*"}
+
 // unattendedOff are OpenCode tools switched off in a run with nobody
 // watching (mangoman code run ...). Across the real pack runs no model used
 // them, and "question" would wait for an answer nobody gives. Each costs
@@ -64,9 +75,8 @@ const skillRule = "MangoMan skill packs are installed. Before you start, check w
 var unattendedOff = map[string]bool{"question": false, "task": false, "todowrite": false, "webfetch": false}
 
 // openCodeConfig is OpenCode's inline config. rules is the skill rule file
-// ("" when the packs are not loaded); unattended marks a run with nobody
-// watching.
-func openCodeConfig(cfg *config.Config, model, rules string, unattended bool) string {
+// ("" when the packs are not loaded); mode is how OpenCode is shown.
+func openCodeConfig(cfg *config.Config, model, rules string, mode int) string {
 	models := map[string]any{
 		"free/coder": map[string]any{"name": "Free coder", "limit": map[string]int{"context": 65536, "output": 8192}},
 		"free/auto":  map[string]any{"name": "Free auto", "limit": map[string]int{"context": 65536, "output": 8192}},
@@ -96,15 +106,25 @@ func openCodeConfig(cfg *config.Config, model, rules string, unattended bool) st
 	if rules != "" {
 		c["instructions"] = []string{rules}
 	}
-	if unattended {
+	if mode == modeRun {
 		c["tools"] = unattendedOff
+	}
+	bash := map[string]string{"*": "allow"}
+	if mode == modeUI {
+		// The coding screen asks before any command that could change
+		// something (installs, deletes, scripts); the user can allow a kind
+		// of command for the rest of the session.
+		bash["*"] = "ask"
+		for _, p := range uiAllowed {
+			bash[p] = "allow"
+		}
 	}
 	if ad, err := agentsDir(); err == nil {
 		// Agent scripts run only through mangoman agents exec (the sandbox).
 		// Best effort: the patterns match the command's text.
-		c["permission"] = map[string]any{"bash": map[string]string{"*": "allow", "*" + ad + "*": "deny",
-			"*mangoman/agents/*": "deny", "*agents/*/scripts/*": "deny"}}
+		bash["*"+ad+"*"], bash["*mangoman/agents/*"], bash["*agents/*/scripts/*"] = "deny", "deny", "deny"
 	}
+	c["permission"] = map[string]any{"bash": bash}
 	b, _ := json.Marshal(c)
 	return string(b)
 }
@@ -172,6 +192,7 @@ func cmdCode(args []string) error {
 	model := fs.String("model", "free/coder", "model: free/coder, free/auto, strict/<model> or group/<name>")
 	noWeb := fs.Bool("no-web", false, "turn off OpenCode's web search")
 	as := fs.String("as", "", "use this person's local token (mangoman people), so usage shows per person")
+	ui := fs.Bool("ui", false, "open the coding screen in the browser instead of the terminal")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -260,7 +281,14 @@ func cmdCode(args []string) error {
 	} else {
 		fmt.Println("OPENCODE_CONFIG_DIR is set; MangoMan skill packs not added there (mangoman skills install --dir to add them).")
 	}
-	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, rules, fs.Arg(0) == "run"))
+	mode := modeTUI
+	switch {
+	case *ui:
+		mode = modeUI
+	case fs.Arg(0) == "run":
+		mode = modeRun
+	}
+	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, rules, mode))
 	if !*noWeb {
 		// OpenCode's web search (via Exa) lets it research while it codes.
 		env = append(env, "OPENCODE_ENABLE_EXA=1")
@@ -275,11 +303,10 @@ func cmdCode(args []string) error {
 	}
 	fmt.Printf("Opening OpenCode on MangoMan free models (%s). Web search %s. Skill packs: %s.\n", *model, map[bool]string{true: "off", false: "on"}[*noWeb], packs)
 
-	cmd := exec.Command(oc, fs.Args()...)
-	cmd.Stdin, cmd.Stdout, cmd.Stderr, cmd.Env = os.Stdin, os.Stdout, os.Stderr, env
 	// In a project Guardian looks after, your coding happens in a copy made
 	// from dev, never in production's code; ship it when it is ready.
-	if _, err := os.Stat("guardian.json"); err == nil && fs.Arg(0) != "run" {
+	workDir, shipDir := "", ""
+	if _, err := os.Stat("guardian.json"); err == nil && mode != modeRun {
 		g, err := loadGuardian("guardian.json")
 		if err != nil {
 			return err
@@ -288,9 +315,16 @@ func cmdCode(args []string) error {
 		if err != nil {
 			return fmt.Errorf("could not make your workspace from dev: %w", err)
 		}
-		cmd.Dir = dir
+		workDir = dir
+		shipDir, _ = os.Getwd()
 		fmt.Printf("Working in a copy of dev on branch %s.\nWhen it is ready: mangoman guardian ship (QA tests it in dev, then you approve it for production).\n", branch)
 	}
+	if mode == modeUI {
+		return openWorkspace(cfg, oc, env, workDir, shipDir)
+	}
+	cmd := exec.Command(oc, fs.Args()...)
+	cmd.Stdin, cmd.Stdout, cmd.Stderr, cmd.Env = os.Stdin, os.Stdout, os.Stderr, env
+	cmd.Dir = workDir
 	// Ctrl-C belongs to OpenCode while it runs. A terminate or hang-up
 	// (closing the terminal) is passed on, so OpenCode ends and the router
 	// started above is stopped by the deferred cleanup instead of lingering.

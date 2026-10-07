@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MangoMan Code</title>
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="code.css">
+<script src="code.js" defer></script>
+</head>
+<body class="code">
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"></span>
+    <h1>MangoMan Code</h1>
+  </div>
+  <p class="runline" id="where">Connecting…</p>
+  <div class="modes" role="group" aria-label="How to work">
+    <button type="button" id="mode-plan" class="ghost" aria-pressed="false" title="Plan first: it explains what it will change and waits for you">Plan</button>
+    <button type="button" id="mode-build" class="ghost" aria-pressed="true" title="Build: it makes the changes">Build</button>
+  </div>
+  <button type="button" class="ghost" id="stop" hidden>Stop</button>
+  <button type="button" class="primary" id="ship" hidden title="QA tests it in dev, then you approve it for production">Ship</button>
+</header>
+
+<p class="msg err" id="offline" hidden></p>
+
+<main class="ws" id="ws" hidden>
+  <section class="chat" aria-label="Chat">
+    <ol class="log" id="log" aria-live="polite"></ol>
+    <p class="busy" id="busy" hidden><span class="dot" aria-hidden="true"></span><span id="busy-text">Working…</span></p>
+    <form class="composer" id="composer">
+      <textarea id="prompt" rows="3" placeholder="Say what to build or change, for example: add a contact form to the home page" aria-label="Message"></textarea>
+      <button type="submit" class="primary" id="send">Send</button>
+    </form>
+  </section>
+
+  <section class="side" aria-label="Changes, terminal and preview">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tab-changes" aria-selected="true" aria-controls="pane-changes">Changes <span class="count" id="changes-count"></span></button>
+      <button type="button" role="tab" id="tab-terminal" aria-selected="false" aria-controls="pane-terminal">Terminal</button>
+      <button type="button" role="tab" id="tab-preview" aria-selected="false" aria-controls="pane-preview">Preview</button>
+    </div>
+
+    <div class="pane" role="tabpanel" id="pane-changes" aria-labelledby="tab-changes">
+      <p class="dim" id="changes-empty">No changes yet. Files the AI writes or edits show here, old lines in red and new lines in green.</p>
+      <div id="changes"></div>
+    </div>
+
+    <div class="pane" role="tabpanel" id="pane-terminal" aria-labelledby="tab-terminal" hidden>
+      <div class="term" id="term"></div>
+      <form class="runbox" id="runbox">
+        <input id="cmd" type="text" autocomplete="off" spellcheck="false" placeholder="Run a command yourself, for example npm test" aria-label="Command">
+        <button type="submit" class="ghost">Run</button>
+      </form>
+    </div>
+
+    <div class="pane" role="tabpanel" id="pane-preview" aria-labelledby="tab-preview" hidden>
+      <form class="urlbar" id="urlbar">
+        <input id="url" type="url" autocomplete="off" spellcheck="false" placeholder="http://localhost:3000" aria-label="App address">
+        <button type="submit" class="ghost">Show</button>
+      </form>
+      <div class="devices" role="group" aria-label="Screen size">
+        <button type="button" class="ghost" data-device="phone" aria-pressed="true">Phone</button>
+        <button type="button" class="ghost" data-device="tablet" aria-pressed="false">Tablet</button>
+        <button type="button" class="ghost" data-device="laptop" aria-pressed="false">Laptop</button>
+        <button type="button" class="ghost" data-device="all" aria-pressed="false">All three</button>
+      </div>
+      <div class="frames" id="frames"><p class="dim">Start your app (ask the AI: "run the app"), and its address shows here by itself. Or type it above.</p></div>
+      <p class="dim small" id="phone-hint"></p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

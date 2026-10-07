@@ -54,7 +54,7 @@ It also runs daily at 08:00 IST in quick mode, which catches provider changes ea
 | Quota | Per provider, account, model: requests and tokens per minute and per day; pre-flight check; corrected from rate-limit headers; survives restarts |
 | Keys | OS keychain; encrypted file fallback; env var overrides; validated on add |
 | Catalogue | Embedded seed with limits and per-provider data policy labels; Ed25519 verification ready for the live feed (M5) |
-| CLI | `init`, `serve`, `keys add/list/rm` (with `--team NAME` for team keys), `status`, `models`, `test`, `version` |
+| CLI | `init`, `serve`, `keys add/list/rm` (with `--team NAME` for team keys), `people`, `code [--ui]`, `status`, `models`, `test`, `version` |
 | Usage log | `usage.jsonl`: outcome, latency, tokens per attempt. Never prompt or answer content |
 
 ## Setup wizard and dashboard
@@ -277,6 +277,19 @@ Checked end to end with the real tools: OpenCode 1.18 through `mangoman code`, a
 **Local models:** Ollama serves a small context by default, too small for coding agents' instructions. Start Ollama with `OLLAMA_CONTEXT_LENGTH=32768` (or more) and MangoMan uses that size.
 
 **Tray icon: deferred.** A tray needs native GUI libraries on macOS and Linux, which would end the single cross-platform binary built without C toolchains. The dashboard and `mangoman code` cover "is it running" for now; the tray returns with the desktop app.
+
+## Coding screen (M6): `mangoman code --ui`
+
+Run it in your project folder. MangoMan starts the router if needed, starts OpenCode as a private local server (password known only to MangoMan) and opens the coding screen in your browser:
+
+- **Chat** on the left: say what to build. **Plan** explains the change first; **Build** makes it. **Stop** ends a step.
+- **Approvals:** before any command that could change something (installs, deletes, scripts), a card asks **Allow**, **Always allow this kind** or **Deny**. Reading commands (`ls`, `git status`, `git diff`, `git log`) run without asking.
+- **Changes:** every file the AI writes or edits, old lines in red, new in green.
+- **Terminal:** every command it ran and its output; you can run your own.
+- **Preview:** your app in a phone, tablet or laptop frame (or all three), picked up from the address it prints. The address for your phone on the same Wi-Fi is shown too; for an Expo app, scan its QR code with Expo Go.
+- **Ship** (Guardian projects): your work happens in a copy made from dev; Ship sends it to QA in dev, then you approve it for production.
+
+Press Ctrl-C in the terminal to close the workspace. The screen talks only to the local router, which checks the local token and passes calls to OpenCode.
 
 ## Decision brain (smart layer, part 1)
 

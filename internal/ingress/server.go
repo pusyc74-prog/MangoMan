@@ -46,6 +46,8 @@ type Server struct {
 	Radar *radar.Radar
 	// Brain is the decision brain (also set on the router); nil = none.
 	Brain *brain.Brain
+
+	code codeState // the attached coding workspace, if any
 }
 
 // Handler returns the HTTP handler with all checks applied.
@@ -60,6 +62,7 @@ func (s *Server) Handler() http.Handler {
 	s.formatRoutes(mux)
 	mux.Handle("GET /mangoman/status", s.auth(http.HandlerFunc(s.status)))
 	s.dashRoutes(mux)
+	s.codeRoutes(mux)
 	return s.guardHost(mux)
 }
 
