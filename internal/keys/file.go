@@ -21,8 +21,13 @@ type FileStore struct {
 	passphrase func() (string, error)
 	mu         sync.Mutex
 	pass       string            // remembered after the first successful use
-	keys       map[string]string // decrypted once, then kept in memory
-	err        error             // a failed unlock, returned without asking again
+	keys       map[string]string // decrypted, kept in memory while the file is unchanged
+	// sum is the hash of the file as it was when keys was read or written.
+	// Another process (the command line while the router runs) may change the
+	// file; then the copy in memory is stale and is read again before use, or
+	// a later save would write the old keys back over the new ones.
+	sum [32]byte
+	err error // a failed unlock, returned without asking again
 }
 
 const pbkdf2Iter = 600_000
@@ -69,20 +74,26 @@ func (f *FileStore) derive(salt []byte) (cipher.AEAD, error) {
 	return cipher.NewGCM(block)
 }
 
-// load returns the decrypted keys. The file is decrypted once; a wrong
-// passphrase fails every later call at once instead of asking again.
+// load returns the decrypted keys. The file is decrypted again only when it
+// changed on disk; a wrong passphrase fails every later call at once instead
+// of asking again.
 func (f *FileStore) load() (map[string]string, error) {
-	if f.keys != nil || f.err != nil {
-		return f.keys, f.err
+	if f.err != nil {
+		return nil, f.err
 	}
 	data, err := os.ReadFile(f.path)
 	if os.IsNotExist(err) {
-		f.keys = map[string]string{}
+		f.keys, f.sum = map[string]string{}, [32]byte{}
 		return f.keys, nil
 	}
 	if err != nil {
 		return nil, err
 	}
+	sum := sha256.Sum256(data)
+	if f.keys != nil && sum == f.sum {
+		return f.keys, nil
+	}
+	f.keys = nil
 	var env envelope
 	if err := json.Unmarshal(data, &env); err != nil {
 		return nil, fmt.Errorf("key file corrupt: %w", err)
@@ -103,7 +114,7 @@ func (f *FileStore) load() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	f.keys = m
+	f.keys, f.sum = m, sum
 	return m, nil
 }
 
@@ -134,7 +145,11 @@ func (f *FileStore) save(m map[string]string) error {
 	if err := os.WriteFile(tmp, data, 0o600); err != nil {
 		return err
 	}
-	return os.Rename(tmp, f.path)
+	if err := os.Rename(tmp, f.path); err != nil {
+		return err
+	}
+	f.sum = sha256.Sum256(data)
+	return nil
 }
 
 func (f *FileStore) Get(p string) (string, error) {

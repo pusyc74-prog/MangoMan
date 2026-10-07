@@ -493,7 +493,7 @@ func cmdKeys(args []string) error {
 			if err := setTeamKey(p.ID, team, true); err != nil {
 				return err
 			}
-			fmt.Printf("Stored %s's %s key in %s. Requests now take turns across the %s keys. Restart `mangoman serve` to use it.\n", team, p.Name, keys.Where(st), p.Name)
+			fmt.Printf("Stored %s's %s key in %s. Requests now take turns across the %s keys.\n", team, p.Name, keys.Where(st), p.Name)
 			return nil
 		}
 		fmt.Printf("Stored %s key in %s. Restart `mangoman serve` to use it.\n", p.Name, keys.Where(st))
@@ -557,16 +557,36 @@ func cmdPeople(args []string) error {
 	switch args[0] {
 	case "add":
 		tok := config.NewToken()
-		cfg.SetPerson(name, tok)
-		if err := config.Save(cfg); err != nil {
-			return err
+		if routerUp(cfg) {
+			// The running router keeps its own copy of the settings; change it
+			// there, or its next save would drop this person.
+			out, err := localSend(cfg, http.MethodPost, "/mangoman/people/"+name, nil)
+			if err != nil {
+				return err
+			}
+			var p struct{ Token string }
+			if err := json.Unmarshal(out, &p); err != nil || p.Token == "" {
+				return fmt.Errorf("the router did not return a token")
+			}
+			tok = p.Token
+		} else {
+			cfg.SetPerson(name, tok)
+			if err := config.Save(cfg); err != nil {
+				return err
+			}
 		}
-		fmt.Printf("Added %s. Use this token in %s's tools instead of the main one (or run mangoman code --as %s):\n%s\nRestart mangoman serve to use it.\n", name, name, name, tok)
+		fmt.Printf("Added %s. Use this token in %s's tools instead of the main one (or run mangoman code --as %s):\n%s\n", name, name, name, tok)
 		return nil
 	case "rm", "remove":
-		cfg.SetPerson(name, "")
-		if err := config.Save(cfg); err != nil {
-			return err
+		if routerUp(cfg) {
+			if _, err := localSend(cfg, http.MethodDelete, "/mangoman/people/"+name, nil); err != nil {
+				return err
+			}
+		} else {
+			cfg.SetPerson(name, "")
+			if err := config.Save(cfg); err != nil {
+				return err
+			}
 		}
 		fmt.Println("Removed", name)
 		return nil
@@ -597,10 +617,20 @@ func teamNames(provider string) []string {
 	return cfg.GetTeamKeys(provider)
 }
 
-// setTeamKey records (on) or forgets a team key's name in the config.
+// setTeamKey records (on) or forgets a team key's name. When the router is
+// running the change goes through it: it keeps its own copy of the settings,
+// and its next save would otherwise undo this one.
 func setTeamKey(provider, name string, on bool) error {
 	cfg, err := config.Load()
 	if err != nil {
+		return err
+	}
+	if routerUp(cfg) {
+		method := http.MethodPost
+		if !on {
+			method = http.MethodDelete
+		}
+		_, err := localSend(cfg, method, "/mangoman/keys/"+provider+"/team/"+name, nil)
 		return err
 	}
 	cfg.SetTeamKey(provider, name, on)

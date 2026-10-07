@@ -10,9 +10,9 @@ import (
 )
 
 func (s *Server) formatRoutes(mux *http.ServeMux) {
-	mux.Handle("POST /v1/messages", s.auth(http.HandlerFunc(s.messages)))
-	mux.Handle("POST /v1/messages/count_tokens", s.auth(http.HandlerFunc(s.countTokens)))
-	mux.Handle("POST /v1/responses", s.auth(http.HandlerFunc(s.responses)))
+	mux.Handle("POST /v1/messages", s.modelAuth(http.HandlerFunc(s.messages)))
+	mux.Handle("POST /v1/messages/count_tokens", s.modelAuth(http.HandlerFunc(s.countTokens)))
+	mux.Handle("POST /v1/responses", s.modelAuth(http.HandlerFunc(s.responses)))
 }
 
 // readBody reads a request body; ok is false after an error was written.

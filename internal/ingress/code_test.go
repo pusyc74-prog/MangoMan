@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -29,11 +30,13 @@ func TestCodeWorkspaceProxy(t *testing.T) {
 	if w := call(h, "POST", "/mangoman/code/attach", "127.0.0.1:4141", authz, `{"url":"http://example.com:80","password":"x","dir":"/p"}`); w.Code != 400 {
 		t.Fatalf("a remote address must be refused: %d", w.Code)
 	}
-	if w := call(h, "POST", "/mangoman/code/attach", "127.0.0.1:4141", authz, `{"url":"`+oc.URL+`","password":"secret","dir":"/p"}`); w.Code != 204 {
+	w := call(h, "POST", "/mangoman/code/attach", "127.0.0.1:4141", authz, `{"url":"`+oc.URL+`","password":"secret","dir":"/p"}`)
+	var att struct{ ID string }
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &att) != nil || att.ID == "" {
 		t.Fatalf("attach: %d %s", w.Code, w.Body)
 	}
 	// Calls pass through with OpenCode's password, never the router token.
-	w := call(h, "GET", "/mangoman/code/oc/vcs/diff?mode=git", "127.0.0.1:4141", authz, "")
+	w = call(h, "GET", "/mangoman/code/oc/vcs/diff?mode=git", "127.0.0.1:4141", authz, "")
 	if w.Code != 200 || gotPath != "/vcs/diff?mode=git" || strings.Contains(gotAuth, "tok") {
 		t.Fatalf("proxy: %d path %q auth %q", w.Code, gotPath, gotAuth)
 	}
@@ -49,7 +52,12 @@ func TestCodeWorkspaceProxy(t *testing.T) {
 	if w := call(h, "POST", "/mangoman/code/ship", "127.0.0.1:4141", authz, ""); w.Code != 409 {
 		t.Fatalf("ship without Guardian: %d", w.Code)
 	}
-	call(h, "DELETE", "/mangoman/code/attach", "127.0.0.1:4141", authz, "")
+	// Someone else's id (an older workspace closing) must not detach this one.
+	call(h, "DELETE", "/mangoman/code/attach?id=old", "127.0.0.1:4141", authz, "")
+	if w := call(h, "GET", "/mangoman/code/oc/session", "127.0.0.1:4141", authz, ""); w.Code != 200 {
+		t.Fatalf("a wrong id detached the workspace: %d", w.Code)
+	}
+	call(h, "DELETE", "/mangoman/code/attach?id="+att.ID, "127.0.0.1:4141", authz, "")
 	if w := call(h, "GET", "/mangoman/code/oc/session", "127.0.0.1:4141", authz, ""); w.Code != 503 {
 		t.Fatalf("after detach: %d", w.Code)
 	}

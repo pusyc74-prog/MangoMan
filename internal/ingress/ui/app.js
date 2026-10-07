@@ -142,7 +142,7 @@ function providerTraffic(act) {
 function stateFor(p) {
   switch (p.status) {
     case "connected":
-      return { lamp: "on", text: p.key_source === "env" ? `Connected through ${p.env_var}` : p.key_source === "team" ? "Connected through team keys" : "Connected" };
+      return { lamp: "on", text: p.key_source === "env" ? `Connected through ${p.env_var}` : p.key_source === "team" ? (p.own_rejected ? "Connected through team keys. Your own key was rejected" : "Connected through team keys") : "Connected" };
     case "running": return { lamp: "on", text: "Running on this computer" };
     case "key_rejected": return { lamp: "bad", text: "Key rejected, needs a new one" };
     case "excluded": return { lamp: "", text: "Turned off" };
@@ -175,7 +175,7 @@ function renderBoard(ov, act) {
     if (p.status === "connected") {
       actions.push(toggle("Turn off", () => setExcluded(p.id, true)));
       if (p.key_source === "store") actions.push(toggle("Remove key", () => removeKey(p)));
-      if (p.key_source === "team") actions.push(toggle("Add my key", () => { state.open.add(p.id); renderBoard(state.overview, state.activity); }));
+      if (p.key_source === "team") actions.push(toggle(p.own_rejected ? "Replace my key" : "Add my key", () => { state.open.add(p.id); renderBoard(state.overview, state.activity); }));
     } else if (p.status === "excluded") {
       actions.push(toggle("Turn on", () => setExcluded(p.id, false)));
     } else if (p.local) {

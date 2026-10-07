@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
 )
 
@@ -24,6 +25,7 @@ import (
 
 // codeBackend is the attached OpenCode server.
 type codeBackend struct {
+	id       string // given at attach; only the same id can detach it
 	url      *url.URL
 	password string
 	dir      string // the folder OpenCode works in
@@ -68,7 +70,7 @@ func (s *Server) codeAttach(w http.ResponseWriter, r *http.Request) {
 		core.WriteError(w, http.StatusBadRequest, "bad_url", "the OpenCode server must be on http://127.0.0.1:<port>")
 		return
 	}
-	b := &codeBackend{url: u, password: in.Password, dir: in.Dir, shipDir: in.ShipDir}
+	b := &codeBackend{id: config.NewToken(), url: u, password: in.Password, dir: in.Dir, shipDir: in.ShipDir}
 	b.proxy = &httputil.ReverseProxy{
 		Rewrite: func(pr *httputil.ProxyRequest) {
 			pr.SetURL(u)
@@ -84,12 +86,17 @@ func (s *Server) codeAttach(w http.ResponseWriter, r *http.Request) {
 	s.code.mu.Lock()
 	s.code.b = b
 	s.code.mu.Unlock()
-	w.WriteHeader(http.StatusNoContent)
+	writeJSON(w, map[string]string{"id": b.id})
 }
 
-func (s *Server) codeDetach(w http.ResponseWriter, _ *http.Request) {
+// codeDetach closes the workspace only if it is still the one that id
+// attached: a second mangoman code --ui replaces the first, and the first
+// closing must not take the second down with it.
+func (s *Server) codeDetach(w http.ResponseWriter, r *http.Request) {
 	s.code.mu.Lock()
-	s.code.b = nil
+	if s.code.b != nil && s.code.b.id == r.URL.Query().Get("id") {
+		s.code.b = nil
+	}
 	s.code.mu.Unlock()
 	w.WriteHeader(http.StatusNoContent)
 }

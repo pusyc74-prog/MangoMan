@@ -1095,3 +1095,41 @@ func TestSecretPrefersPrivateProvider(t *testing.T) {
 		t.Fatal("the request must still be answered")
 	}
 }
+
+// Your own key being rejected must not stop a teammate's key for the same
+// provider from answering.
+func TestOwnKeyRejectedTeamKeyStillWorks(t *testing.T) {
+	ownBad := func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") == "Bearer key-a" {
+			status(401, nil)(w, r)
+			return
+		}
+		okJSON("from ravi")(w, r)
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: ownBad}
+	rt := setup(t, a)
+	addTeamKey(t, rt, "a", "ravi")
+	for range 2 {
+		w := do(t, rt, `{"model":"strict/m1","messages":[{"role":"user","content":"hi"}]}`)
+		if w.Code != 200 || w.Header().Get("X-MangoMan-Team-Key") != "ravi" {
+			t.Fatalf("the teammate's key should answer: %d %v %s", w.Code, w.Header(), w.Body)
+		}
+	}
+}
+
+// A model silent past the limit before its first word is not asked again:
+// waiting three times over only delays the error.
+func TestSilentOnlyModelNotRetried(t *testing.T) {
+	stall := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.(http.Flusher).Flush()
+		<-r.Context().Done()
+	}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: stall}
+	rt := setup(t, a)
+	rt.StreamIdle = 200 * time.Millisecond
+	do(t, rt, helloStream)
+	if n := a.calls.Load(); n != 1 {
+		t.Fatalf("a silent model was asked %d times", n)
+	}
+}

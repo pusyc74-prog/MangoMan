@@ -220,10 +220,18 @@ func TestTeamKeysOnTheDashboard(t *testing.T) {
 	if ov.TeamKeyNotice == "" {
 		t.Fatal("the dashboard needs the team key notice")
 	}
+	// Your own key turned down: still connected through the team, and it says so.
+	s.Router.Keys.Disable("zen")
+	zen, _ := s.Router.Cat.Provider("zen")
+	if p := s.providerStatus(zen, 0); p.Status != PSConnected || p.KeySource != "team" || !p.OwnRejected {
+		t.Fatalf("own key rejected with team keys working: %+v", p)
+	}
 	// Removing it takes it out of the store and the list.
+	// Without the team key, the rejected own key shows again.
 	w = call(h, "DELETE", "/mangoman/keys/zen/team/ravi", "127.0.0.1:4141", authz, "")
+	p = DashProvider{}
 	_ = json.Unmarshal(w.Body.Bytes(), &p)
-	if _, ok := st["zen#ravi"]; ok || len(s.Cfg.GetTeamKeys("zen")) != 0 || p.Status != PSNotConnected {
+	if _, ok := st["zen#ravi"]; ok || len(s.Cfg.GetTeamKeys("zen")) != 0 || p.Status != PSKeyRejected || len(p.TeamKeys) != 0 {
 		t.Fatalf("team key not removed: %d %+v store=%v", w.Code, p, st)
 	}
 }
@@ -234,6 +242,12 @@ func TestPersonToken(t *testing.T) {
 	ok := map[string]string{"Authorization": "Bearer tok-ravi"}
 	if w := call(h, "GET", "/v1/models", "127.0.0.1:4141", ok, ""); w.Code != 200 {
 		t.Fatalf("a person's token should work: %d", w.Code)
+	}
+	// A person's token reaches only the models: not settings, keys or the workspace.
+	for _, path := range []string{"/mangoman/overview", "/mangoman/code/info", "/mangoman/status"} {
+		if w := call(h, "GET", path, "127.0.0.1:4141", ok, ""); w.Code != 401 {
+			t.Fatalf("a person's token must not open %s: %d", path, w.Code)
+		}
 	}
 	bad := map[string]string{"Authorization": "Bearer tok-nobody"}
 	if w := call(h, "GET", "/v1/models", "127.0.0.1:4141", bad, ""); w.Code != 401 {

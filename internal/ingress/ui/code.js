@@ -336,7 +336,9 @@ function findURLs(text) {
     const u = m[0].replace("0.0.0.0", "localhost").replace(/[.,;]$/, "");
     if (st.urls.has(u)) continue;
     st.urls.add(u);
-    if (!$("url").value) { $("url").value = u; preview(); }
+    // Only fill the box: the app loads when you open Preview or press Show,
+    // so a page the AI started never runs in your browser unasked.
+    if (!$("url").value) { $("url").value = u; phoneHint(); }
   }
 }
 
@@ -354,7 +356,7 @@ function preview() {
   $("frames").replaceChildren(...names.map((n) => {
     const [w, h, label] = DEVICES[n];
     const scale = Math.min(1, (each - 20) / w);
-    const frame = el("iframe", { src: u, title: `${label} preview`, width: w, height: h, loading: "lazy" });
+    const frame = el("iframe", { src: u, title: `${label} preview`, width: w, height: h, loading: "lazy", sandbox: "allow-scripts allow-forms allow-same-origin" });
     frame.style.transform = `scale(${scale})`;
     const shell = el("div", { class: "shell" }, frame);
     shell.style.width = `${w * scale}px`;

@@ -200,6 +200,17 @@ func cmdCode(args []string) error {
 	if err != nil {
 		return err
 	}
+	// Checked before anything starts, so a wrong name costs nothing.
+	token := cfg.Token
+	if *as != "" {
+		name, err := keys.TeamName(*as)
+		if token = ""; err == nil {
+			token = cfg.People[name]
+		}
+		if token == "" {
+			return fmt.Errorf("no person %q: add them with mangoman people add %s", *as, *as)
+		}
+	}
 	home, err := config.Dir()
 	if err != nil {
 		return err
@@ -260,12 +271,6 @@ func cmdCode(args []string) error {
 		fmt.Printf("Started MangoMan for this session (log: %s).\n", logPath)
 	}
 
-	token := cfg.Token
-	if *as != "" {
-		if token = cfg.People[*as]; token == "" {
-			return fmt.Errorf("no person %q: add them with mangoman people add %s", *as, *as)
-		}
-	}
 	env := append(os.Environ(), "MANGOMAN_TOKEN="+token)
 	rules := ""
 	if os.Getenv("OPENCODE_CONFIG_DIR") == "" {

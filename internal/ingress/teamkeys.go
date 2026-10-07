@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/catalogue"
+	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
 )
@@ -85,4 +86,63 @@ func (s *Server) removeTeamKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, s.providerStatus(p, s.modelCount(id)))
+}
+
+// registerTeamKey records a team key the command line already stored, so a
+// running router uses it at once and never saves its config without it.
+func (s *Server) registerTeamKey(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("provider")
+	if _, ok := s.Router.Cat.Provider(id); !ok {
+		core.WriteError(w, http.StatusNotFound, "unknown_provider", "unknown provider "+id)
+		return
+	}
+	name, err := keys.TeamName(r.PathValue("name"))
+	if err != nil {
+		core.WriteError(w, http.StatusBadRequest, "bad_team_name", err.Error())
+		return
+	}
+	s.Router.Keys.Forget(keys.Name(id, name))
+	if k, _ := s.Router.Keys.Get(keys.Name(id, name)); k == "" {
+		core.WriteError(w, http.StatusNotFound, "no_team_key", "no stored key for "+name)
+		return
+	}
+	s.Cfg.SetTeamKey(id, name, true)
+	if err := s.save(); err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "config_not_saved", err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// People: one local token per person on a shared machine (mangoman people).
+// Changed through the running router when it is up, so it never saves an
+// old copy of the list over a newer one.
+
+func (s *Server) addPerson(w http.ResponseWriter, r *http.Request) {
+	name, err := keys.TeamName(r.PathValue("name"))
+	if err != nil {
+		core.WriteError(w, http.StatusBadRequest, "bad_name", err.Error())
+		return
+	}
+	tok := config.NewToken()
+	s.Cfg.SetPerson(name, tok)
+	if err := s.save(); err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "config_not_saved", err.Error())
+		return
+	}
+	writeJSON(w, map[string]string{"name": name, "token": tok})
+}
+
+func (s *Server) removePerson(w http.ResponseWriter, r *http.Request) {
+	name, err := keys.TeamName(r.PathValue("name"))
+	if err != nil {
+		core.WriteError(w, http.StatusBadRequest, "bad_name", err.Error())
+		return
+	}
+	s.Cfg.SetPerson(name, "")
+	if err := s.save(); err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "config_not_saved", err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

@@ -110,3 +110,28 @@ func TestMissingKeyAndWrongPassphraseAskOnce(t *testing.T) {
 		t.Fatalf("wrong passphrase asked %d times", asks)
 	}
 }
+
+// Two stores on one file (the router and the command line): a key one adds
+// must be seen by the other, and the other's next save must not drop it.
+func TestFileStoreSeesOtherWriters(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "keys.enc")
+	pass := func() (string, error) { return "a long passphrase", nil }
+	router, cli := NewFileStore(path, pass), NewFileStore(path, pass)
+	if err := router.Set("groq", "g1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := cli.Set("nvidia#asha", "n1"); err != nil {
+		t.Fatal(err)
+	}
+	if v, err := router.Get("nvidia#asha"); err != nil || v != "n1" {
+		t.Fatalf("router did not see the new key: %q %v", v, err)
+	}
+	if err := router.Set("zen", "z1"); err != nil {
+		t.Fatal(err)
+	}
+	for _, k := range []string{"groq", "nvidia#asha", "zen"} {
+		if _, err := cli.Get(k); err != nil {
+			t.Fatalf("%s lost after the other store saved: %v", k, err)
+		}
+	}
+}

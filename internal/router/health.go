@@ -23,6 +23,7 @@ type TargetStats struct {
 	Samples   int       `json:"samples"`
 	OK        int       `json:"ok"`
 	Failed    int       `json:"failed"`
+	Timed     int       `json:"timed"`      // attempts that gave a latency
 	LatencyMS float64   `json:"latency_ms"` // moving average: time to first output (streams) or full answer
 	LastUsed  time.Time `json:"last_used"`
 	LastOut   string    `json:"last_outcome"`
@@ -52,6 +53,7 @@ func (h *Health) Observe(c Candidate, outcome string, ok bool, latency time.Dura
 	// Any latency given is counted, success or not. The caller decides
 	// which failures were slow enough to say something about speed.
 	if latency > 0 {
+		s.Timed++
 		ms := float64(latency.Milliseconds())
 		if s.LatencyMS == 0 {
 			s.LatencyMS = ms
@@ -70,7 +72,7 @@ func (h *Health) Speed(target string) (float64, bool) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	s, ok := h.m[target]
-	if !ok || s.Samples < 2 || s.LatencyMS == 0 {
+	if !ok || s.Timed < 2 {
 		return 0, false
 	}
 	return 1 / (1 + s.LatencyMS/2000), true

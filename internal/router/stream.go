@@ -156,6 +156,11 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 			if readErr != nil {
 				msg = readErr.Error()
 			}
+			if body.fired.Load() {
+				// Silent past the limit before saying a word: not a dropped
+				// stream worth asking again, a model that is not answering.
+				return attemptResult{outcome: "timeout", status: 200, errMsg: "no answer within " + rt.StreamIdle.String()}
+			}
 			return attemptResult{outcome: "stream_error", status: 200, errMsg: msg}
 		}
 		// Clean end with no output at all: an empty answer.

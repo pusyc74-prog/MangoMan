@@ -128,6 +128,22 @@ jobs:
           cp -r pack-run-logs "$out/logs" 2>/dev/null || true
           cp "$MANGOMAN_HOME/serve.log" "$out/" 2>/dev/null || true
           go run ./cmd/mangoman usage --json --days 1 > "$out/usage.json" || true
+          # The branch is public: blank out any key a log may have caught.
+          python3 - "$out" <<'PY'
+          import os, pathlib, sys
+          keys = [os.environ.get(k, "") for k in ("GROQ_API_KEY", "CEREBRAS_API_KEY",
+                  "OPENROUTER_API_KEY", "NVIDIA_API_KEY", "OPENCODE_ZEN_API_KEY")]
+          keys = [k for k in keys if len(k) >= 8]
+          for f in pathlib.Path(sys.argv[1]).rglob("*"):
+              if not f.is_file():
+                  continue
+              text = f.read_bytes().decode("utf-8", "replace")
+              clean = text
+              for k in keys:
+                  clean = clean.replace(k, "[key hidden]")
+              if clean != text:
+                  f.write_text(clean)
+          PY
           cd ../reports
           git add -A
           git commit -q -m "pack run $MODEL${VARIANT:+ ($VARIANT)} $stamp (run ${{ github.run_id }})" || exit 0

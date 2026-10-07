@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -64,10 +65,12 @@ func openWorkspace(cfg *config.Config, oc string, env []string, dir, shipDir str
 		return fmt.Errorf("%w; see %s", err, logPath)
 	}
 	body, _ := json.Marshal(map[string]string{"url": base, "password": password, "dir": dir, "ship_dir": shipDir})
-	if err := localSend(cfg, http.MethodPost, "/mangoman/code/attach", body); err != nil {
-		return fmt.Errorf("could not connect the coding screen to the router: %w", err)
+	out, err := localSend(cfg, http.MethodPost, "/mangoman/code/attach", body)
+	var att struct{ ID string }
+	if err != nil || json.Unmarshal(out, &att) != nil {
+		return fmt.Errorf("could not connect the coding screen to the router: %v", err)
 	}
-	defer func() { _ = localSend(cfg, http.MethodDelete, "/mangoman/code/attach", nil) }()
+	defer func() { _, _ = localSend(cfg, http.MethodDelete, "/mangoman/code/attach?id="+att.ID, nil) }()
 
 	page := fmt.Sprintf("http://127.0.0.1:%d/ui/code.html", cfg.Port)
 	// The token travels in the URL fragment, which browsers never send to a
@@ -123,18 +126,20 @@ func waitHealthy(base, password string, exited <-chan error) error {
 	return fmt.Errorf("OpenCode's server did not start")
 }
 
-// localSend calls the running router with the local token.
-func localSend(cfg *config.Config, method, path string, body []byte) error {
+// localSend calls the running router with the local token and returns the
+// answer's body.
+func localSend(cfg *config.Config, method, path string, body []byte) ([]byte, error) {
 	req, _ := http.NewRequest(method, fmt.Sprintf("http://127.0.0.1:%d%s", cfg.Port, path), bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+cfg.Token)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := (&http.Client{Timeout: 5 * time.Second}).Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	out, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("router answered HTTP %d", resp.StatusCode)
+		return out, fmt.Errorf("router answered HTTP %d: %s", resp.StatusCode, bytes.TrimSpace(out))
 	}
-	return nil
+	return out, nil
 }

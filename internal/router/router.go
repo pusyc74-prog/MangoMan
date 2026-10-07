@@ -146,7 +146,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		if r.Context().Err() != nil {
 			return // client went away
 		}
-		if unreachable[c.Provider.ID] || unreachable[c.keyName()] {
+		if unreachable[c.Provider.ID] || unreachable["key:"+c.keyName()] {
 			continue
 		}
 		if ok, _ := rt.allow(c, req.EstTokens); !ok {
@@ -206,7 +206,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			unreachable[c.Provider.ID] = true
 		case "key_rejected":
 			// This key is bad, not the provider: a teammate's key still works.
-			unreachable[c.keyName()] = true
+			unreachable["key:"+c.keyName()] = true
 		}
 		if res.badBody != nil && fallbackBody == nil {
 			fallbackBody, fallbackWhy, fallbackCand = res.badBody, res.badWhy, c

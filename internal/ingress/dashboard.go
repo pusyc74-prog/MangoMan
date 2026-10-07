@@ -39,7 +39,8 @@ type DashProvider struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Status      string `json:"status"`
-	KeySource   string `json:"key_source,omitempty"` // "store", "env" or "team" (teammates' keys only)
+	KeySource   string `json:"key_source,omitempty"`   // "store", "env" or "team" (teammates' keys only)
+	OwnRejected bool   `json:"own_rejected,omitempty"` // connected through team keys while your own key is turned down
 	EnvVar      string `json:"env_var,omitempty"`
 	SignupURL   string `json:"signup_url,omitempty"`
 	Policy      string `json:"data_policy"`
@@ -106,6 +107,9 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /mangoman/keys", s.auth(http.HandlerFunc(s.addKey)))
 	mux.Handle("DELETE /mangoman/keys/{provider}", s.auth(http.HandlerFunc(s.removeKey)))
 	mux.Handle("DELETE /mangoman/keys/{provider}/team/{name}", s.auth(http.HandlerFunc(s.removeTeamKey)))
+	mux.Handle("POST /mangoman/keys/{provider}/team/{name}", s.auth(http.HandlerFunc(s.registerTeamKey)))
+	mux.Handle("POST /mangoman/people/{name}", s.auth(http.HandlerFunc(s.addPerson)))
+	mux.Handle("DELETE /mangoman/people/{name}", s.auth(http.HandlerFunc(s.removePerson)))
 	mux.Handle("POST /mangoman/providers/{provider}/exclude", s.auth(http.HandlerFunc(s.setExcluded)))
 	mux.Handle("GET /mangoman/now", s.auth(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, s.Router.Outlook()) })))
 	mux.Handle("POST /mangoman/weaker", s.auth(http.HandlerFunc(s.setWeaker)))
@@ -151,10 +155,12 @@ func (s *Server) providerStatus(p catalogue.Provider, modelCount int) DashProvid
 			d.Status = PSNotConnected
 		}
 	}
-	// Teammates' keys alone are enough to use the provider.
-	if d.Status == PSNotConnected && !p.NoTeamKeys {
+	// Teammates' keys alone are enough to use the provider, even when your
+	// own key was turned down (the router still uses theirs).
+	if (d.Status == PSNotConnected || d.Status == PSKeyRejected) && !p.NoTeamKeys {
 		for _, t := range d.TeamKeys {
 			if t.Status != TKRejected && t.Status != TKMissing {
+				d.OwnRejected = d.Status == PSKeyRejected
 				d.Status, d.KeySource = PSConnected, "team"
 				break
 			}

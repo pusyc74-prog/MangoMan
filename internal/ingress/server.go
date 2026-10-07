@@ -57,8 +57,8 @@ func (s *Server) Handler() http.Handler {
 		w.Header().Set("Content-Type", "text/plain")
 		_, _ = io.WriteString(w, "ok\n")
 	})
-	mux.Handle("POST /v1/chat/completions", s.auth(http.HandlerFunc(s.chat)))
-	mux.Handle("GET /v1/models", s.auth(http.HandlerFunc(s.models)))
+	mux.Handle("POST /v1/chat/completions", s.modelAuth(http.HandlerFunc(s.chat)))
+	mux.Handle("GET /v1/models", s.modelAuth(http.HandlerFunc(s.models)))
 	s.formatRoutes(mux)
 	mux.Handle("GET /mangoman/status", s.auth(http.HandlerFunc(s.status)))
 	s.dashRoutes(mux)
@@ -97,9 +97,22 @@ func (s *Server) guardHost(next http.Handler) http.Handler {
 	})
 }
 
-// auth accepts the local token, or a person's token (mangoman people), as a
-// bearer token or x-api-key header (the latter is what Anthropic clients send).
+// auth accepts only the owner's local token, as a bearer token or
+// x-api-key header (the latter is what Anthropic clients send). It guards
+// the dashboard, settings, keys and the coding workspace.
 func (s *Server) auth(next http.Handler) http.Handler {
+	return s.checkToken(next, false)
+}
+
+// modelAuth also accepts a person's token (mangoman people), and marks the
+// request with their name for usage per person. It guards only the model
+// endpoints (/v1/...): a person can use the models, not run the owner's
+// workspace or change settings.
+func (s *Server) modelAuth(next http.Handler) http.Handler {
+	return s.checkToken(next, true)
+}
+
+func (s *Server) checkToken(next http.Handler, people bool) http.Handler {
 	want := []byte(s.Cfg.Token)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got := strings.TrimSpace(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "))
@@ -110,7 +123,7 @@ func (s *Server) auth(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		if name := s.Cfg.Person(got); got != "" && name != "" {
+		if name := s.Cfg.Person(got); people && got != "" && name != "" {
 			next.ServeHTTP(w, r.WithContext(core.WithPerson(r.Context(), name)))
 			return
 		}

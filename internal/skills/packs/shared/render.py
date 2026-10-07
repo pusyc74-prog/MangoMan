@@ -64,26 +64,37 @@ PLAIN_FONTS = ("<style>*{font-variant-numeric:normal!important;font-variant-liga
 
 
 def _unreadable(pdf_path):
-    return any("\ue000" <= ch <= "\uf8ff" for ch in pdf_text(pdf_path))
+    return sum("\ue000" <= ch <= "\uf8ff" for ch in pdf_text(pdf_path))
 
 
 def html_to_pdf(html_path, pdf_path):
     """Print an HTML file to PDF using its own @page CSS. Returns the engine name.
     The PDF's text stays readable (see PLAIN_FONTS)."""
     used = _print(html_path, pdf_path)
-    if not _unreadable(pdf_path):
+    bad = _unreadable(pdf_path)
+    if not bad:
         return used
     with open(html_path, encoding="utf-8") as f:
         html = f.read()
     at = html.lower().find("</head>")
     html = html[:at] + PLAIN_FONTS + html[at:] if at >= 0 else PLAIN_FONTS + html
+    # Kept next to the original so its images and styles still load.
     plain = os.path.join(os.path.dirname(os.path.abspath(html_path)), ".plain-" + os.path.basename(html_path))
+    plain_pdf = pdf_path + ".plain.pdf"
     try:
         with open(plain, "w", encoding="utf-8") as f:
             f.write(html)
-        return _print(plain, pdf_path)
+        again = _print(plain, plain_pdf)
+        # Icon fonts use private codes on purpose; keep the plain print only
+        # if it really reads better.
+        if _unreadable(plain_pdf) < bad:
+            os.replace(plain_pdf, pdf_path)
+            used = again
+        return used
     finally:
-        os.remove(plain)
+        for f in (plain, plain_pdf):
+            if os.path.exists(f):
+                os.remove(f)
 
 
 def _print(html_path, pdf_path):
