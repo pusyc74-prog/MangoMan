@@ -49,7 +49,24 @@ func routerUp(cfg *config.Config) bool {
 }
 
 // openCodeConfig is the inline OpenCode config that points it at MangoMan.
-func openCodeConfig(cfg *config.Config, model string) string {
+// skillRule is added to OpenCode's instructions when the skill packs are
+// loaded. Measured on real runs: about once in 35 tasks the model wrote the
+// files by hand instead of opening the matching pack, so none of the pack's
+// rules or checks ran and the result failed.
+const skillRule = "MangoMan skill packs are installed. Before you start, check whether a skill fits the task. " +
+	"If one does, load it first with the skill tool and follow it. Its scripts build and check the files, " +
+	"so never write by hand a file that a skill's script builds.\n"
+
+// unattendedOff are OpenCode tools switched off in a run with nobody
+// watching (mangoman code run ...). Across the real pack runs no model used
+// them, and "question" would wait for an answer nobody gives. Each costs
+// tokens on every request just by being listed.
+var unattendedOff = map[string]bool{"question": false, "task": false, "todowrite": false, "webfetch": false}
+
+// openCodeConfig is OpenCode's inline config. rules is the skill rule file
+// ("" when the packs are not loaded); unattended marks a run with nobody
+// watching.
+func openCodeConfig(cfg *config.Config, model, rules string, unattended bool) string {
 	models := map[string]any{
 		"free/coder": map[string]any{"name": "Free coder", "limit": map[string]int{"context": 65536, "output": 8192}},
 		"free/auto":  map[string]any{"name": "Free auto", "limit": map[string]int{"context": 65536, "output": 8192}},
@@ -75,6 +92,12 @@ func openCodeConfig(cfg *config.Config, model string) string {
 		}},
 		"model":       "mangoman/" + model,
 		"small_model": "mangoman/free/fast",
+	}
+	if rules != "" {
+		c["instructions"] = []string{rules}
+	}
+	if unattended {
+		c["tools"] = unattendedOff
 	}
 	if ad, err := agentsDir(); err == nil {
 		// Agent scripts run only through mangoman agents exec (the sandbox).
@@ -215,19 +238,22 @@ func cmdCode(args []string) error {
 		fmt.Printf("Started MangoMan for this session (log: %s).\n", logPath)
 	}
 
-	env := append(os.Environ(),
-		"MANGOMAN_TOKEN="+cfg.Token,
-		"OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model),
-	)
+	env := append(os.Environ(), "MANGOMAN_TOKEN="+cfg.Token)
+	rules := ""
 	if os.Getenv("OPENCODE_CONFIG_DIR") == "" {
 		if oc, err := codeSkillsDir(); err == nil {
 			env = append(env, "OPENCODE_CONFIG_DIR="+oc)
+			rules = filepath.Join(oc, "mangoman-rules.md")
+			if err := os.WriteFile(rules, []byte(skillRule), 0o644); err != nil {
+				rules = ""
+			}
 		} else {
 			fmt.Println("Skill packs not loaded:", err)
 		}
 	} else {
 		fmt.Println("OPENCODE_CONFIG_DIR is set; MangoMan skill packs not added there (mangoman skills install --dir to add them).")
 	}
+	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, rules, fs.Arg(0) == "run"))
 	if !*noWeb {
 		// OpenCode's web search (via Exa) lets it research while it codes.
 		env = append(env, "OPENCODE_ENABLE_EXA=1")
