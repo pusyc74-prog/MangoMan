@@ -20,7 +20,8 @@ type Event struct {
 	Outcome   string    `json:"outcome"` // ok, rate_limited, error, timeout, quality:<reason>, ...
 	Status    int       `json:"status,omitempty"`
 	LatencyMS int64     `json:"latency_ms"`
-	Tokens    int       `json:"tokens,omitempty"` // total, from usage or estimated
+	FirstMS   int64     `json:"first_ms,omitempty"` // streams: until the first word of the answer
+	Tokens    int       `json:"tokens,omitempty"`   // total, from usage or estimated
 	Attempt   int       `json:"attempt"`
 	Stream    bool      `json:"stream"`
 	// Parts estimates where the request's input tokens went (instructions,

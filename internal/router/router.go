@@ -316,7 +316,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		ev := store.Event{
 			Time: start, RequestID: id, Provider: c.Provider.ID, Model: c.Model.Canonical, Class: logClass,
 			Outcome: res.outcome, Status: res.status, LatencyMS: time.Since(start).Milliseconds(),
-			Attempt: attempts, Stream: req.Stream, Tokens: res.tokens,
+			Attempt: attempts, Stream: req.Stream, Tokens: res.tokens, FirstMS: res.firstOut.Milliseconds(),
 		}
 		if attempts == 1 {
 			ev.Parts, ev.Secret, ev.Person = req.TokenParts(), secret, core.Person(r.Context())
@@ -326,7 +326,12 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		if k := c.teamKey(); k != "" {
 			who += " (team key " + k + ")"
 		}
-		rt.Logf("req=%s attempt=%d %s -> %s (%d) %s", id, attempts, who, res.outcome, res.status, res.errMsg)
+		first := ""
+		if res.firstOut > 0 {
+			// Measured to set StreamIdle: how long answers that do arrive take to start.
+			first = fmt.Sprintf(" first word after %.1fs", res.firstOut.Seconds())
+		}
+		rt.Logf("req=%s attempt=%d %s -> %s (%d)%s %s", id, attempts, who, res.outcome, res.status, first, res.errMsg)
 		switch {
 		case overloaded(res):
 			rt.markBusy(c.Target(), busyFor)
