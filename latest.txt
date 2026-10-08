@@ -3,22 +3,30 @@ Requests go straight from this machine to each provider with your keys; nothing 
 
   groq        up to 13 requests
   nvidia      up to 37 requests
-  openrouter  up to 0 requests
+  openrouter  up to 25 requests
 
+openrouter  nemotron-3-ultra-550b      basic:- stream:- tools:- json:-
+openrouter  nemotron-3-super-120b      basic:- stream:- tools:- json:-
+openrouter  nemotron-3.5-lightning     basic:- stream:- tools:- json:-
 groq        gpt-oss-120b               basic:P stream:P tools:P json:P
+openrouter  gemma-4-31b                basic:- stream:- tools:- json:-
+openrouter  gemma-4-26b-a4b            basic:- stream:- tools:- json:-
 nvidia      gpt-oss-20b                basic:P stream:P tools:P json:P
+openrouter  laguna-xs-2.1              basic:- stream:- tools:- json:-
 groq        gpt-oss-20b                basic:P stream:P tools:P json:P
+openrouter  laguna-s-2.1               basic:- stream:- tools:- json:-
 groq        qwen3.8-27b                basic:P stream:P tools:P json:P
-nvidia      kimi-k3                    basic:P stream:P tools:P json:P
+openrouter  north-mini-code            basic:- stream:- tools:- json:-
+nvidia      kimi-k3                    basic:P stream:- tools:- json:-
 nvidia      deepseek-v4.1-flash        basic:F stream:- tools:- json:-
 nvidia      glm-5.3-flash              basic:P stream:P tools:P json:P
 nvidia      nemotron-3-ultra-550b      basic:- stream:- tools:- json:-
 nvidia      nemotron-3-super-120b      basic:P stream:P tools:P json:P
 nvidia      nemotron-3.5-lightning     basic:P stream:P tools:P json:P
 nvidia      gemma-4-31b                basic:P stream:P tools:P json:P
-nvidia      laguna-xs-2.1              basic:F stream:F tools:P json:P
+nvidia      laguna-xs-2.1              basic:P stream:P tools:P json:F
 
-Done in 5m54s, 44 requests.
+Done in 4m8s, 51 requests.
 
 PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
 cerebras    no_key  0              0                         0
@@ -27,24 +35,32 @@ nvidia      ok      80             0                         0
 openrouter  ok      467            0                         8
 zen         no_key  0              0                         0
 
-PROVIDER  MODEL                   PASS  WARN  FAIL  SKIP  VERDICT
-groq      gpt-oss-120b            4     0     0     0     ready
-groq      gpt-oss-20b             4     0     0     0     ready
-groq      qwen3.8-27b             4     0     0     0     ready
-nvidia    gpt-oss-20b             4     0     0     0     ready
-nvidia    kimi-k3                 4     0     0     0     ready
-nvidia    deepseek-v4.1-flash     0     0     1     3     needs work
-nvidia    glm-5.3-flash           4     0     0     0     ready
-nvidia    nemotron-3-ultra-550b   0     0     0     4     not tested
-nvidia    nemotron-3-super-120b   4     0     0     0     ready
-nvidia    nemotron-3.5-lightning  4     0     0     0     ready
-nvidia    gemma-4-31b             4     0     0     0     ready
-nvidia    laguna-xs-2.1           2     0     2     0     needs work
+PROVIDER    MODEL                   PASS  WARN  FAIL  SKIP  VERDICT
+groq        gpt-oss-120b            4     0     0     0     ready
+groq        gpt-oss-20b             4     0     0     0     ready
+groq        qwen3.8-27b             4     0     0     0     ready
+nvidia      gpt-oss-20b             4     0     0     0     ready
+nvidia      kimi-k3                 1     0     0     3     ready
+nvidia      deepseek-v4.1-flash     0     0     1     3     needs work
+nvidia      glm-5.3-flash           4     0     0     0     ready
+nvidia      nemotron-3-ultra-550b   0     0     0     4     not tested
+nvidia      nemotron-3-super-120b   4     0     0     0     ready
+nvidia      nemotron-3.5-lightning  4     0     0     0     ready
+nvidia      gemma-4-31b             4     0     0     0     ready
+nvidia      laguna-xs-2.1           3     0     1     0     needs work
+openrouter  nemotron-3-ultra-550b   0     0     0     4     not tested
+openrouter  nemotron-3-super-120b   0     0     0     4     not tested
+openrouter  nemotron-3.5-lightning  0     0     0     4     not tested
+openrouter  gemma-4-31b             0     0     0     4     not tested
+openrouter  gemma-4-26b-a4b         0     0     0     4     not tested
+openrouter  laguna-xs-2.1           0     0     0     4     not tested
+openrouter  laguna-s-2.1            0     0     0     4     not tested
+openrouter  north-mini-code         0     0     0     4     not tested
 
 Notes:
   FAIL nvidia/deepseek-v4.1-flash basic: no complete answer within 1m0s
-  FAIL nvidia/laguna-xs-2.1 basic: HTTP 503: ResourceExhausted: Worker local total request limit reached (33/32)
-  FAIL nvidia/laguna-xs-2.1 stream: error in body: ResourceExhausted: Worker local total request limit reached (33/32)
+  FAIL nvidia/laguna-xs-2.1 json: HTTP 503: ResourceExhausted: Worker local total request limit reached (84/32)
+  HEADERS openrouter: catalogue has no rate_headers rules for this provider; headers seen: x-ratelimit-limit, x-ratelimit-remaining, x-ratelimit-reset
   RADAR openrouter: 8 free models not in the catalogue, e.g. apodex/apodex-1.1-mini:free, dots-studio/dots-3-note-preview:free, inclusionai/ling-3.0-flash-sante:free
 
 Full report: doctor-report.json
