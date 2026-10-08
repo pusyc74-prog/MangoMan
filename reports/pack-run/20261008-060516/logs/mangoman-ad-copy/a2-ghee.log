@@ -1,0 +1,197 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee: all-capital word COD in 'Pay UPI or COD'; A2 Ghee: description 1 is 98 characters (90); A2 Ghee: description 2 is 98 characters (90); A2 Ghee: description 3 is 91 characters (90); A2 Ghee: description 4 is 94 characters (90); A2 Gir Cow Ghee: all-capital word COD in 'Delivered India-wide in 3 to 6 days. UPI, cards, COD. No wholesale, no franchise. Pure home delivery.'; A2 Gir Cow Ghee: all-capital word COD in 'UPI COD Accepted'; A2 Gir Cow Ghee: description 1 is 101 characters (90)
+WARN  Google ads: A2 Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Buy A2 Ghee Online: fewer than 2 headlines contain a keyword; ads match searches better when they do; Gir Cow Ghee 1 Litre: fewer than 2 headlines contain a keyword; ads match searches better when they do
+FAIL  numbers not in facts (ask the user, or remove them): 500
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -1,7 +1,7 @@
+ {
+   "brand": "Gauveda",
+-  "allowed_caps": ["A2", "UPI", "QR"],
++  "allowed_caps": ["A2", "UPI", "QR", "COD"],
+   "facts": {
+     "price_500ml": "₹1,250",
+     "price_1l": "₹2,350",
+     "offer": "10% off first order with code FIRST10",
+
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Gir Cow Ghee: description 1 is 97 characters (90); A2 Gir Cow Ghee: description 2 is 93 characters (90); Bilona Ghee: description 1 is 92 characters (90); Bilona Ghee: description 2 is 98 characters (90); Bilona Ghee: description 3 is 97 characters (90); Bilona Ghee: description 4 is 94 characters (90); Gir Cow Ghee 1 Litre: description 1 is 93 characters (90); Gir Cow Ghee 1 Litre: description 2 is 96 characters (90)
+WARN  Google ads: Gir Cow Ghee 1 Litre: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Bilona Ghee: description 1 is 92 characters (90); Gir Cow Ghee 1 Litre: description 1 is 93 characters (90); Gir Cow Ghee 1 Litre: description 2 is 96 characters (90); Gir Cow Ghee 1 Litre: description 3 is 95 characters (90); Gir Cow Ghee 1 Litre: description 4 is 97 characters (90)
+WARN  Google ads: Gir Cow Ghee 1 Litre: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Gir Cow Ghee 1 Litre: description 1 is 93 characters (90); Gir Cow Ghee 1 Litre: description 2 is 96 characters (90); Gir Cow Ghee 1 Litre: description 3 is 95 characters (90); Gir Cow Ghee 1 Litre: description 4 is 97 characters (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -192,12 +192,12 @@
+         "Gauveda 1 Litre",
+         "Order 1 Litre Now"
+       ],
+       "descriptions": [
+-        "1 litre A2 Gir cow ghee, bilona method. ₹2,350. Lab report on QR. Free delivery above ₹1,500.",
++        "1 litre A2 Gir cow ghee, bilona. ₹2,350. Lab report on QR. Free delivery above ₹1,500.",
+         "From 140 Gir cows. Hand-churned curd, wood-fire heated. Glass jar, family size. 10% off FIRST10.",
+-        "Delivered across India in 3 to 6 days. Pay UPI, card or COD. Every batch tested, report on jar.",
+-        "Best value 1 litre A2 ghee. Own herd, small batches, no wholesale. Order 1 litre glass jar today."
++        "Delivered India in 3 to 6 days. Pay UPI, card or COD. Every batch tested, report on jar.",
++        "Best value 1 litre A2 ghee. Own herd, small batches, no wholesale. Order 1 litre glass jar."
+       ]
+     }
+   ]
+ }
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Gir Cow Ghee 1 Litre: description 2 is 96 characters (90); Gir Cow Ghee 1 Litre: description 4 is 91 characters (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -193,9 +193,9 @@
+     "Order 1 Litre Now"
+   ],
+   "descriptions": [
+     "1 litre A2 Gir cow ghee, bilona. ₹2,350. Lab report on QR. Free delivery above ₹1,500.",
+-    "From 140 Gir cows. Hand-churned curd, wood-fire heated. Glass jar, family size. 10% off FIRST10.",
++    "From 140 Gir cows. Hand-churned curd, wood-fire heated. Glass jar, family size. 10% off.",
+     "Delivered India in 3 to 6 days. Pay UPI, card or COD. Every batch tested, report on jar.",
+     "Best value 1 litre A2 ghee. Own herd, small batches, no wholesale. Order 1 litre glass jar."
+   ]
+ }
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Gir Cow Ghee 1 Litre: description 4 is 91 characters (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -195,9 +195,9 @@
+       "descriptions": [
+         "1 litre A2 Gir cow ghee, bilona. ₹2,350. Lab report on QR. Free delivery above ₹1,500.",
+         "From 140 Gir cows. Hand-churned curd, wood-fire heated. Glass jar, family size. 10% off.",
+         "Delivered India in 3 to 6 days. Pay UPI, card or COD. Every batch tested, report on jar.",
+-        "Best value 1 litre A2 ghee. Own herd, small batches, no wholesale. Order 1 litre glass jar."
++        "Best value 1 litre A2 ghee. Own herd, small batches. Order 1 litre glass jar today."
+       ]
+     }
+   ]
+ }
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m$ [0mls -la /tmp/tmp.JKDpixHWZ3/run/mangoman-ad-copy/a2-ghee/ads/
+total 32
+drwxr-xr-x 2 runner runner 4096 Oct  8 05:30 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 05:30 ..
+-rw-r--r-- 1 runner runner 6154 Oct  8 05:36 ads.md
+-rw-r--r-- 1 runner runner 4310 Oct  8 05:36 google_ads.csv
+-rw-r--r-- 1 runner runner 5067 Oct  8 05:36 google_keywords.csv
+[0m
+Done. Created Google Search ads with 5 ad groups based on your search terms report:
+
+1. **A2 Ghee** - broad intent keywords
+2. **A2 Gir Cow Ghee** - breed-specific
+3. **Bilona Ghee** - method-based
+4. **Buy A2 Ghee Online** - high purchase intent
+5. **Gir Cow Ghee 1 Litre** - size-specific
+
+Each ad group has 15 headlines (≤30 chars), 4 descriptions (≤90 chars), keywords with phrase/exact match, and negative keywords (jobs, machine, recipe, wholesale, franchise, organic, etc.).
+
+Files in `ads/`:
+- `ads.md` - readable spec
+- `google_ads.csv` - import into Google Ads Editor (Account → Import → From file)
+- `google_keywords.csv` - keywords for import
+
+All checks pass: character limits, editorial rules, numbers from facts, no risky claims.

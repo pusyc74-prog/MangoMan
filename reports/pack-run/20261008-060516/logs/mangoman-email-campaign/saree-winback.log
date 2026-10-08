@@ -1,0 +1,81 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead audience.md
+[0m→ [0mSkill "mangoman-email-campaign"
+[0m
+[0m← [0mWrite campaign.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/build_emails.py campaign.json --out emails
+spec problems:
+- theme must be one of ink, forest, coral, ocean, plum, emerald, royal, nordic, wine, clay, graphite, cobalt
+[0m
+[0m← [0mEdit campaign.json
+Index: /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/saree-winback/campaign.json
+===================================================================
+--- /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/saree-winback/campaign.json
++++ /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/saree-winback/campaign.json
+@@ -3,9 +3,9 @@
+ "goal": "Win back past customers who haven't ordered in over a year",
+ "audience": "1,900 past buyers opted in, women 30-60 in Chennai, Bengaluru, Hyderabad",
+ "esp": "klaviyo",
+ "brand": {"name": "Kanchi Weaves"},
+-"theme": "editorial",
++"theme": "clay",
+ "sender": {
+   "name": "Kanchi Weaves",
+   "legal_name": "Kanchi Weaves LLP",
+   "address": "22 Gandhi Road, Kanchipuram, Tamil Nadu 631501, India"
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/build_emails.py campaign.json --out emails
+built emails: 3 emails (.html and .txt), sequence.md, assets/, previews
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/check_emails.py campaign.json emails
+PASS  spec is valid
+PASS  every email built
+PASS  every email has an unsubscribe link (klaviyo)
+PASS  every email shows the sender's postal address
+PASS  every email under Gmail's 102 KB clipping size
+PASS  plain-text versions present
+PASS  subject lines are not overlong
+PASS  subject lines 15 to 60 characters (fit a phone)
+PASS  preview text 35 to 140 characters and adds to the subject
+PASS  every link is a real https, mailto or tel link
+PASS  every number comes from the facts the user gave
+PASS  no placeholder text
+PASS  no spam-trigger phrases
+PASS  no shouting in subject lines
+PASS  exclamation marks used sparingly
+PASS  emoji used sparingly in subjects
+PASS  no risky claims
+PASS  one clear action per email
+PASS  text-to-image balance is healthy
+PASS  no local images
+PASS  no sideways scrolling on a phone
+PASS  every image loads in the preview
+PASS  buttons are easy to tap
+PASS  text is readable on a phone
+[0m
+Done. Created `campaign.json` and built 3 emails in `emails/`:
+
+**Emails:**
+- `we-miss-you` (Day 0, 20 Oct) — Personal note from the weaving family, introduces new collection
+- `whats-new` (Day 4, 24 Oct) — Details on 40 new silk sarees + cotton handlooms
+- `final-offer` (Day 8, 28 Oct) — ₹500 off with code COMEBACK500, valid until 15 Nov
+
+**Outputs in `emails/`:**
+- `*.html` — Klaviyo-ready HTML (paste into Template → HTML)
+- `*.txt` — Plain-text versions
+- `sequence.md` — Schedule, subjects, previews, A/B alternatives
+- `assets/` — Images to upload (set `assets_base_url` in Klaviyo)
+- `preview/` — Desktop & phone screenshots
+
+**Check result:** All 23 checks PASS (unsubscribe + address in every email, under Gmail clipping limit, links work, phone layout fits, every number from your facts).
+
+Send a test to yourself first, then load into Klaviyo.

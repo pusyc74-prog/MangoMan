@@ -1,0 +1,151 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead audience.md
+[0m→ [0mSkill "mangoman-email-campaign"
+[0m
+[0m← [0mWrite campaign.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/build_emails.py /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/emails
+spec problems:
+- theme must be one of ink, forest, coral, ocean, plum, emerald, royal, nordic, wine, clay, graphite, cobalt
+- email 4 (final-nudge) block 6: a text needs text
+[0m
+[0m← [0mEdit campaign.json
+Index: /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json
+===================================================================
+--- /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json
++++ /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json
+@@ -3,9 +3,9 @@
+ "goal": "New newsletter sign-ups book their first class at the studio",
+ "audience": "Working professionals 25-45 near Koregaon Park and Kalyani Nagar, many first-time yoga students",
+ "esp": "brevo",
+ "brand": {"name": "Prana Yoga Studio", "logo": null},
+-"theme": "calm",
++"theme": "forest",
+ "sender": {
+   "name": "Prana Yoga Studio",
+   "legal_name": "Prana Yoga Studio",
+   "address": "2nd floor, 41 North Main Road, Koregaon Park, Pune, Maharashtra 411001, India"
+
+[0m
+[0m← [0mEdit campaign.json
+Index: /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json
+===================================================================
+--- /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json
++++ /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json
+@@ -94,9 +94,9 @@
+   {"type": "heading", "text": "A spot is waiting for you", "level": 1},
+   {"type": "text", "text": ["Hi {first_name},", "We keep classes small — max 15 students — so everyone gets attention. That means spots fill up, especially the beginner-friendly batches."]},
+   {"type": "text", "text": ["Your first class is still free. No card needed, no commitment. Just pick a time and show up."]},
+   {"type": "button", "label": "Book my free class", "href": "https://pranayoga.in/trial"},
+-  {"type": "text", "text": ["Quick reminder of what's included:", "• Mats, blocks, straps provided", "• Changing room and lockers", "• Led by Anjali (12 years experience)", "• Beginner batches Tue/Thu 7:45 am", "• Just bring water and comfortable clothes"]},
++  {"type": "list", "items": ["Mats, blocks, straps provided", "Changing room and lockers", "Led by Anjali (12 years experience)", "Beginner batches Tue/Thu 7:45 am", "Just bring water and comfortable clothes"]},
+   {"type": "text", "text": ["\"I came for my back and stayed for the calm.\" — Rohan K., Kalyani Nagar", "", "We'd love to welcome you to the studio."]},
+   {"type": "divider"},
+   {"type": "text", "text": ["Namaste,", "Team Prana Yoga", "Prana Yoga Studio, Koregaon Park, Pune"]}
+ ]
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/build_emails.py /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/emails
+spec problems:
+- email 4 (final-nudge) block 6: a text needs text
+[0m
+[0m→ [0mRead campaign.json
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/check_emails.py /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/emails 2>&1 || true
+FAIL  spec problems: email 4 (final-nudge) block 6: a text needs text
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/checks.py
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/build_emails.py
+[0m
+[0m← [0mEdit campaign.json
+Index: /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json
+===================================================================
+--- /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json
++++ /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json
+@@ -95,9 +95,9 @@
+     {"type": "text", "text": ["Hi {first_name},", "We keep classes small — max 15 students — so everyone gets attention. That means spots fill up, especially the beginner-friendly batches."]},
+     {"type": "text", "text": ["Your first class is still free. No card needed, no commitment. Just pick a time and show up."]},
+     {"type": "button", "label": "Book my free class", "href": "https://pranayoga.in/trial"},
+     {"type": "list", "items": ["Mats, blocks, straps provided", "Changing room and lockers", "Led by Anjali (12 years experience)", "Beginner batches Tue/Thu 7:45 am", "Just bring water and comfortable clothes"]},
+-    {"type": "text", "text": ["\"I came for my back and stayed for the calm.\" — Rohan K., Kalyani Nagar", "", "We'd love to welcome you to the studio."]},
++    {"type": "text", "text": ["\"I came for my back and stayed for the calm.\" — Rohan K., Kalyani Nagar", "We'd love to welcome you to the studio."]},
+     {"type": "divider"},
+     {"type": "text", "text": ["Namaste,", "Team Prana Yoga", "Prana Yoga Studio, Koregaon Park, Pune"]}
+   ]
+ }
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/build_emails.py /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json --out /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/emails
+built /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/emails: 4 emails (.html and .txt), sequence.md, assets/, previews
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/check_emails.py /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/campaign.json /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/emails
+PASS  spec is valid
+PASS  every email built
+PASS  every email has an unsubscribe link (brevo)
+PASS  every email shows the sender's postal address
+PASS  every email under Gmail's 102 KB clipping size
+PASS  plain-text versions present
+PASS  subject lines are not overlong
+PASS  subject lines 15 to 60 characters (fit a phone)
+PASS  preview text 35 to 140 characters and adds to the subject
+PASS  every link is a real https, mailto or tel link
+PASS  every number comes from the facts the user gave
+PASS  no placeholder text
+PASS  no spam-trigger phrases
+PASS  no shouting in subject lines
+PASS  exclamation marks used sparingly
+PASS  emoji used sparingly in subjects
+PASS  no risky claims
+PASS  one clear action per email
+PASS  text-to-image balance is healthy
+PASS  no local images
+PASS  no sideways scrolling on a phone
+PASS  every image loads in the preview
+PASS  buttons are easy to tap
+PASS  text is readable on a phone
+[0m
+[0m$ [0mls -la /tmp/tmp.JKDpixHWZ3/run/mangoman-email-campaign/yoga-welcome/emails/
+total 80
+drwxr-xr-x 4 runner runner 4096 Oct  8 06:04 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 06:04 ..
+-rw-r--r-- 1 runner runner 7884 Oct  8 06:04 address-concerns.html
+-rw-r--r-- 1 runner runner  939 Oct  8 06:04 address-concerns.txt
+drwxr-xr-x 2 runner runner 4096 Oct  8 06:04 assets
+-rw-r--r-- 1 runner runner 9369 Oct  8 06:04 campaign.spec.json
+-rw-r--r-- 1 runner runner 7982 Oct  8 06:04 final-nudge.html
+-rw-r--r-- 1 runner runner  857 Oct  8 06:04 final-nudge.txt
+drwxr-xr-x 2 runner runner 4096 Oct  8 06:04 preview
+-rw-r--r-- 1 runner runner 1578 Oct  8 06:04 sequence.md
+-rw-r--r-- 1 runner runner 7748 Oct  8 06:04 teacher-schedule.html
+-rw-r--r-- 1 runner runner 1138 Oct  8 06:04 teacher-schedule.txt
+-rw-r--r-- 1 runner runner 6400 Oct  8 06:04 welcome-promise.html
+-rw-r--r-- 1 runner runner  892 Oct  8 06:04 welcome-promise.txt
+[0m
+[0m→ [0mRead emails/sequence.md
+Done. Created the 4-email welcome series in `emails/`:
+
+**Sequence:**
+| Email | Send | Subject |
+|-------|------|---------|
+| 1 | Day 1 | Welcome to Prana Yoga — your first class is free |
+| 2 | Day 4 | Not flexible? Never done yoga? You'll fit right in |
+| 3 | Day 8 | Meet Anjali — and find a batch that fits your week |
+| 4 | Day 13 | Your free class is waiting — spots are limited |
+
+**Files generated:**
+- `emails/*.html` — ready to paste into Brevo (Code editor)
+- `emails/*.txt` — plain-text versions
+- `emails/sequence.md` — schedule, subjects, A/B alternatives
+- `emails/preview/` — desktop & mobile screenshots
+- `emails/assets/` — placeholder assets folder (no images used)
+
+**All checks pass:** unsubscribe + address in every email, under Gmail clipping limit, links work, phone layout fits, every number traced to your facts.
+
+To load in Brevo: **Campaign → Create → Code your own → Paste HTML**. Send a test to yourself first.
