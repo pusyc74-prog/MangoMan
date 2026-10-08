@@ -1,0 +1,186 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m→ [0mSkill "mangoman-website-copy"
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/brief_gate.py /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/facts.md --pages 4
+PASS  13 facts for 4 pages
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json --out /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site
+site.json problems:
+- page : slug is lowercase words joined by dashes
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+===================================================================
+--- /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
++++ /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+@@ -39,9 +39,9 @@
+   }
+ ],
+ "pages": [
+   {
+-    "slug": "",
++    "slug": "home",
+     "name": "Home",
+     "goal": "Get the visitor to book a first visit",
+     "keyword": "physiotherapy clinic Jaipur",
+     "meta": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json --out /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site
+Built 4 pages into /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 9.0 words
+FAIL  keyword missing: about: keyword 'Dr Anita Sharma physiotherapist Jaipur' in neither title nor h1; contact: keyword 'book physiotherapy appointment Jaipur' in neither title nor h1; home: keyword 'physiotherapy clinic Jaipur' in neither title nor h1; services: keyword 'physiotherapy services Jaipur' in neither title nor h1
+WARN  search fit: about: keyword not in the description; about: keyword not in the first 100 words; contact: keyword not in the description; contact: keyword not in the first 100 words; home: keyword not in the description; home: keyword not in the first 100 words; services: keyword not in the description; services: keyword not in the first 100 words
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+WARN  pages nobody links to: about; contact; services
+WARN  sentences repeated across pages: 45 minutes with Dr Sharma.; Call or WhatsApp 99290 45566.; First visit 45 minutes for Rs 600.
+PASS  no thin pages
+[0m
+[0m→ [0mRead site.json
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json --out /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site
+Built 4 pages into /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 9.1 words
+PASS  each page has its keyword in the title or h1
+WARN  search fit: about: title is 66 characters (30 to 60); contact: description is 161 characters (70 to 160); home: description is 175 characters (70 to 160); home: title is 61 characters (30 to 60); services: description is 162 characters (70 to 160); services: title is 66 characters (30 to 60)
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: Call or WhatsApp 99290 45566.; First visit 45 minutes for Rs 600.
+PASS  no thin pages
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+===================================================================
+--- /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
++++ /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+@@ -44,10 +44,10 @@
+ "name": "Home",
+ "goal": "Get the visitor to book a first visit",
+ "keyword": "physiotherapy clinic Jaipur",
+ "meta": {
+-  "title": "Sharma Physio Care: Physiotherapy Clinic Jaipur - Expert Care",
+-  "description": "Physiotherapy clinic Jaipur with Dr Anita Sharma, 14 years experience. Personal care for back pain, neck pain, knee pain and sports injuries. Book your first visit for Rs 600."
++  "title": "Sharma Physio Care: Physiotherapy Clinic Jaipur",
++  "description": "Physiotherapy clinic Jaipur with Dr Anita Sharma, 14 years experience. Personal care for back, neck, knee pain and sports injuries. First visit Rs 600."
+ },
+ "cta": {
+   "label": "Book first visit",
+   "href": "https://wa.me/919929045566"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+===================================================================
+--- /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
++++ /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+@@ -140,10 +140,10 @@
+ "name": "Services",
+ "goal": "Show the range of conditions treated and how sessions work",
+ "keyword": "physiotherapy services Jaipur",
+ "meta": {
+-  "title": "Physiotherapy Services Jaipur: Back, Neck, Knee, Shoulder & Sports",
+-  "description": "Physiotherapy services Jaipur by Dr Anita Sharma: back pain, neck pain, knee pain, shoulder pain, sports injuries and post-surgery recovery. Sessions from Rs 500."
++  "title": "Physiotherapy Services Jaipur: Back, Neck, Knee, Shoulder",
++  "description": "Physiotherapy services Jaipur by Dr Anita Sharma: back, neck, knee, shoulder pain, sports injuries and post-surgery recovery. Sessions from Rs 500."
+ },
+ "cta": {
+   "label": "Book first visit",
+   "href": "https://wa.me/919929045566"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+===================================================================
+--- /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
++++ /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+@@ -235,9 +235,9 @@
+ "name": "About",
+ "goal": "Build trust by showing Dr Sharma's qualifications and approach",
+ "keyword": "Dr Anita Sharma physiotherapist Jaipur",
+ "meta": {
+-  "title": "About Dr Anita Sharma: Physiotherapist Jaipur, 14 Years Experience",
++  "title": "About Dr Anita Sharma: Physiotherapist Jaipur",
+   "description": "Dr Anita Sharma, physiotherapist Jaipur with MPT in orthopaedics and 14 years experience. Treats every patient personally at Sharma Physio Care, Malviya Nagar."
+ },
+ "cta": {
+   "label": "Book first visit",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+===================================================================
+--- /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
++++ /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+@@ -307,9 +307,9 @@
+ "goal": "Make it easy to book a first visit by phone or WhatsApp",
+ "keyword": "book physiotherapy appointment Jaipur",
+ "meta": {
+   "title": "Book Physiotherapy Appointment Jaipur - Sharma Physio Care",
+-  "description": "Book physiotherapy appointment Jaipur at Sharma Physio Care. First visit Rs 600 for 45 minutes. Call or WhatsApp 99290 45566. Open Mon-Sat 9am-7pm. Free parking."
++  "description": "Book physiotherapy appointment Jaipur at Sharma Physio Care. First visit Rs 600 for 45 minutes. Call or WhatsApp 99290 45566. Open Mon-Sat 9am-7pm."
+ },
+ "cta": {
+   "label": "Book first visit",
+   "href": "https://wa.me/919929045566"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+===================================================================
+--- /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
++++ /tmp/tmp.afnUGC6jHj/run/mangoman-website-copy/sharma-physio/site.json
+@@ -120,9 +120,9 @@
+ {
+   "type": "text",
+   "headline": "Why patients choose us",
+   "body": [
+-    "Dr Sharma treats you at every session — no handoffs to assistants. Exercise sheets with pictures go home with you so you can practice between visits. The clinic has free parking in front. Home visits are available within 8 km for Rs 1,000 a session. See our [services](/services) or learn [about Dr Sharma](/about)."
++    "Dr Sharma treats you at every session — no handoffs to assistants. Exercise sheets with pictures go home with you so you can practice between visits. The clinic has free parking in front. Home visits are available within 8 km for Rs 1,000 a session. See our [services](/services) or learn [about Dr Sharma](/about). Book by phone or WhatsApp on 99290 45566."
+   ]
+ },
+ {
+   "type": "cta",
+
+[0m
+[0m✗ [0mEdit site.json failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+[0m✱ [0mGrep "First visit 45 minutes for Rs 600. Call or WhatsApp"[90m in . · 4 matches[0m
