@@ -69,7 +69,9 @@ func TestCommandRunning(t *testing.T) {
 	if !commandRunning(os.Getpid()) {
 		t.Fatal("a running command was not seen")
 	}
-	if !languageServer("typescript-lang") || !languageServer("vscode-json-lan") || !languageServer("pyright") || languageServer("npm") || languageServer("python3") {
+	if !languageServer("node /usr/lib/node_modules/typescript-language-server/lib/cli.mjs --stdio") ||
+		!languageServer("node /x/vscode-json-languageserver --stdio") || !languageServer("node /x/pyright-langserver --stdio") ||
+		languageServer("npm install") || languageServer("python3 scripts/build_ads.py ads.json") {
 		t.Fatal("language server names")
 	}
 }

@@ -1,0 +1,92 @@
+name: workspace-check
+
+# Drives the coding screen (mangoman code --ui) through one small task on a
+# real free model, in a browser, and publishes the report and screenshots to
+# the eval-reports branch under reports/workspace/. Run it by hand or by
+# dispatch, never on a schedule: it uses real free-tier requests and about
+# 15 minutes of Actions minutes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "model for the coding screen (free/coder, strict/<model>)"
+        default: free/coder
+      runner:
+        description: "ubuntu-latest, or self-hosted for the runner on the owner's computer"
+        required: false
+        default: ubuntu-latest
+  # POST /repos/<owner>/<repo>/dispatches with event_type workspace-check and
+  # any of model, runner in client_payload.
+  repository_dispatch:
+    types: [workspace-check]
+
+permissions:
+  contents: write # only to publish the report to the eval-reports branch
+
+concurrency:
+  group: workspace-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ${{ inputs.runner || github.event.client_payload.runner || 'ubuntu-latest' }}
+    timeout-minutes: 30
+    env:
+      MANGOMAN_KEYSTORE: file
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      OPENCODE_ZEN_API_KEY: ${{ secrets.OPENCODE_ZEN_API_KEY }}
+      MODEL: ${{ inputs.model || github.event.client_payload.model || 'free/coder' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tools
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+          export MANGOMAN_HOME="$RUNNER_TEMP/mangoman"
+          echo "MANGOMAN_HOME=$MANGOMAN_HOME" >> "$GITHUB_ENV"
+          go build -o bin/mangoman ./cmd/mangoman
+          bin/mangoman init > /dev/null
+          # Its own port: on the self-hosted runner the owner's MangoMan has 4141.
+          python3 -c "import json,os;p=os.environ['MANGOMAN_HOME']+'/config.json';c=json.load(open(p));c['port']=4199;json.dump(c,open(p,'w'))"
+          scripts/install-opencode.sh
+      - name: Open the coding screen and do one task
+        run: |
+          bin/mangoman serve > "$RUNNER_TEMP/serve.log" 2>&1 &
+          for i in $(seq 31); do [ "$i" = 31 ] && { echo "MangoMan did not start"; exit 1; }; curl -sf http://127.0.0.1:4199/healthz > /dev/null && break; sleep 1; done
+          proj="$RUNNER_TEMP/project"
+          mkdir -p "$proj" && cd "$proj"
+          git init -q && echo "# Test project" > README.md && git add . && git -c user.email=ci@example.com -c user.name=ci commit -qm start
+          "$GITHUB_WORKSPACE/bin/mangoman" code --no-web --ui --model "$MODEL" > "$RUNNER_TEMP/code.log" 2>&1 &
+          for i in $(seq 61); do [ "$i" = 61 ] && { cat "$RUNNER_TEMP/code.log"; exit 1; }; grep -q "Working in" "$RUNNER_TEMP/code.log" && break; sleep 1; done
+          cd "$GITHUB_WORKSPACE"
+          token=$(python -c "import json,os;print(json.load(open(os.environ['MANGOMAN_HOME']+'/config.json'))['token'])")
+          python scripts/workspace-check.py "http://127.0.0.1:4199/ui/code.html#token=$token" "$proj" ws-out 600 | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Publish the report to the eval-reports branch
+        if: always()
+        run: |
+          [ -s ws-out/report.md ] || exit 0
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports 2>/dev/null || true
+          git worktree add ../reports origin/eval-reports
+          (cd ../reports && git switch -C eval-reports)
+          out="../reports/reports/workspace/$stamp"
+          mkdir -p "$out"
+          cp ws-out/* "$out/"
+          cp "$RUNNER_TEMP/serve.log" "$RUNNER_TEMP/code.log" "$out/" 2>/dev/null || true
+          cp "$MANGOMAN_HOME/workspace.log" "$out/" 2>/dev/null || true
+          python3 scripts/mask-keys.py "$out"
+          cd ../reports
+          git add -A
+          git commit -q -m "workspace check $MODEL $stamp (run ${{ github.run_id }})" || exit 0
+          git push origin eval-reports

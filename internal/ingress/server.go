@@ -248,7 +248,11 @@ func (s *Server) status(w http.ResponseWriter, _ *http.Request) {
 // began or ended (mangoman code run's watchdog).
 func (s *Server) busy(w http.ResponseWriter, _ *http.Request) {
 	n, idle := s.Router.Busy()
-	writeJSON(w, map[string]any{"in_flight": n, "idle_s": int(idle.Seconds())})
+	out := map[string]any{"in_flight": n, "idle_s": int(idle.Seconds())}
+	if a, ok := s.Router.Trying(); ok {
+		out["now"], out["waiting_s"] = a, int(time.Since(a.Since).Seconds())
+	}
+	writeJSON(w, out)
 }
 
 func writeJSON(w http.ResponseWriter, v any) {

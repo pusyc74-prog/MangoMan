@@ -102,6 +102,8 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
 .block { padding-top: 36px; }
 .block-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
 .sub { margin: 0; color: var(--ink-2); font-size: 14px; }
+.credit { margin: 16px 0 0; color: var(--muted); font-size: 13px; }
+.credit a { color: inherit; }
 
 /* Connections: the switchboard */
 .board { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; }

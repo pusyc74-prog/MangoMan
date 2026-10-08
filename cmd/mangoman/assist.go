@@ -346,11 +346,17 @@ func cmdCode(args []string) error {
 		}
 		err = cmd.Wait()
 		close(done)
+		if errors.Is(err, exec.ErrWaitDelay) {
+			err = nil // OpenCode ended; only something it started still holds the output
+		}
 		// Measured on real free models: a model that goes quiet in the middle
 		// of an answer is cut off by the router, and OpenCode then ends the
 		// whole task; and once OpenCode sat for 17 minutes doing nothing at
 		// all. Nobody is watching a run, so pick the task up again in the
 		// same session, twice at most.
+		if mode == modeRun && stalled.Load() && resumes >= 2 {
+			return errors.New("the task stalled three times; the free models may be overloaded, try again in a few minutes")
+		}
 		if mode == modeRun && resumes < 2 {
 			switch {
 			case stalled.Load():
@@ -424,28 +430,32 @@ func watchStall(cfg *config.Config, p *os.Process, done <-chan struct{}, stalled
 // (Windows) it cannot tell, so it says yes and the watchdog never stops a
 // task. A command that hangs is ended by OpenCode's own command time limit.
 func commandRunning(pid int) bool {
-	out, err := exec.Command("pgrep", "-l", "-P", strconv.Itoa(pid)).Output()
+	// Full command lines: a language server started as "node .../pyright"
+	// shows only as node by name. Linux pgrep takes -a, macOS -lf.
+	out, err := exec.Command("pgrep", "-a", "-P", strconv.Itoa(pid)).Output()
 	var ee *exec.ExitError
+	if errors.As(err, &ee) && ee.ExitCode() > 1 {
+		out, err = exec.Command("pgrep", "-lf", "-P", strconv.Itoa(pid)).Output()
+	}
 	if errors.As(err, &ee) && ee.ExitCode() == 1 {
 		return false // no children
 	}
 	if err != nil {
 		return true
 	}
-	for _, line := range strings.Split(string(out), "\n") {
-		if f := strings.Fields(line); len(f) == 2 && !languageServer(f[1]) {
+	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if _, cmdline, ok := strings.Cut(line, " "); ok && !languageServer(cmdline) {
 			return true
 		}
 	}
 	return false
 }
 
-// languageServer reports whether a process name looks like one of the
-// language servers OpenCode starts for code files. pgrep cuts names at 15
-// characters (typescript-language-server shows as typescript-lang).
-func languageServer(name string) bool {
-	for _, s := range []string{"-lan", "lsp", "pyright", "gopls", "analyzer", "clangd", "vscode"} {
-		if strings.Contains(name, s) {
+// languageServer reports whether a command line is one of the language
+// servers OpenCode starts for code files.
+func languageServer(cmdline string) bool {
+	for _, s := range []string{"language-server", "languageserver", "langserver", "-lsp", "pyright", "gopls", "rust-analyzer", "clangd"} {
+		if strings.Contains(cmdline, s) {
 			return true
 		}
 	}

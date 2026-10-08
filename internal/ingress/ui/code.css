@@ -15,7 +15,7 @@ body.code { padding: 0 16px 16px; }
 }
 
 .ws {
-  display: grid; gap: 16px; height: calc(100vh - 92px); min-height: 480px;
+  display: grid; gap: 16px; height: calc(100vh - 128px); min-height: 480px;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
 }
 .chat, .side {
@@ -90,3 +90,4 @@ body.code { padding: 0 16px 16px; }
   .chat { height: 70vh; }
   .side { min-height: 60vh; }
 }
+.code .credit { margin: 10px 0 0; }

@@ -153,6 +153,14 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			state := rt.Breakers.StateOf(c.Target())
 			if state == breaker.Open {
 				info.BreakerOpen++
+				// A model cooling off after errors is back in seconds. Counting
+				// it here keeps the wait we tell clients short: measured once,
+				// with NVIDIA's model cooling off and OpenRouter used up until
+				// its daily reset, a coding agent was told to wait hours and
+				// sat for 17 minutes doing nothing.
+				if t := rt.Breakers.OpenUntil(c.Target()); !t.IsZero() && (info.EarliestReset.IsZero() || t.Before(info.EarliestReset)) {
+					info.EarliestReset = t
+				}
 				continue
 			}
 			if ok, reset := rt.allow(c, req.EstTokens); !ok {

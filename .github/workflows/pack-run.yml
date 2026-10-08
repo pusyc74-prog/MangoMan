@@ -63,9 +63,7 @@ jobs:
       MODEL: ${{ inputs.model || github.event.client_payload.model || 'free/coder' }}
       PACKS: ${{ inputs.packs || github.event.client_payload.packs }}
       VARIANT: ${{ inputs.variant || github.event.client_payload.variant }}
-      # A push that changes this workflow or the script runs a cheap smoke run
-      # instead of the full set: one case per pack, ten minutes each.
-      CASES: ${{ inputs.cases || github.event.client_payload.cases || (github.event_name == 'push' && '1' || '') }}
+      CASES: ${{ inputs.cases || github.event.client_payload.cases }}
       CASE_TIMEOUT: ${{ inputs.case_timeout || github.event.client_payload.case_timeout || '900' }}
     steps:
       - uses: actions/checkout@v4
@@ -75,19 +73,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
       - name: Install tools
         run: |
           pip install pandas pillow python-pptx python-docx pypdf playwright
           python -m playwright install --with-deps chromium
-          npm install -g opencode-ai
       - name: Set up MangoMan
         run: |
           export MANGOMAN_HOME="$RUNNER_TEMP/mangoman"
           echo "MANGOMAN_HOME=$MANGOMAN_HOME" >> "$GITHUB_ENV"
           go run ./cmd/mangoman init > /dev/null
+          # Its own port: on the self-hosted runner the owner's MangoMan has 4141.
+          python3 -c "import json,os;p=os.environ['MANGOMAN_HOME']+'/config.json';c=json.load(open(p));c['port']=4199;json.dump(c,open(p,'w'))"
+          # The OpenCode release users get, not whatever npm has newest.
+          scripts/install-opencode.sh
       - name: Run the packs
         timeout-minutes: 160
         run: |
@@ -124,22 +122,8 @@ jobs:
           cp -r pack-run-logs "$out/logs" 2>/dev/null || true
           cp "$MANGOMAN_HOME/serve.log" "$out/" 2>/dev/null || true
           go run ./cmd/mangoman usage --json --days 1 > "$out/usage.json" || true
-          # The branch is public: blank out any key a log may have caught.
-          python3 - "$out" <<'PY'
-          import os, pathlib, sys
-          keys = [os.environ.get(k, "") for k in ("GROQ_API_KEY", "CEREBRAS_API_KEY",
-                  "OPENROUTER_API_KEY", "NVIDIA_API_KEY", "OPENCODE_ZEN_API_KEY")]
-          keys = [k for k in keys if len(k) >= 8]
-          for f in pathlib.Path(sys.argv[1]).rglob("*"):
-              if not f.is_file():
-                  continue
-              text = f.read_bytes().decode("utf-8", "replace")
-              clean = text
-              for k in keys:
-                  clean = clean.replace(k, "[key hidden]")
-              if clean != text:
-                  f.write_text(clean)
-          PY
+          # Blank out any key a log may have caught.
+          python3 scripts/mask-keys.py "$out"
           cd ../reports
           git add -A
           git commit -q -m "pack run $MODEL${VARIANT:+ ($VARIANT)} $stamp (run ${{ github.run_id }})" || exit 0

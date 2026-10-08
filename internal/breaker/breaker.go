@@ -115,6 +115,17 @@ func (s *Set) Release(k string) {
 	}
 }
 
+// OpenUntil returns when an open breaker lets a probe through again; zero
+// when it is not open.
+func (s *Set) OpenUntil(k string) time.Time {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if e, ok := s.m[k]; ok && s.now().Before(e.openUntil) {
+		return e.openUntil
+	}
+	return time.Time{}
+}
+
 // StateOf returns the current state of a target.
 func (s *Set) StateOf(k string) State {
 	s.mu.Lock()

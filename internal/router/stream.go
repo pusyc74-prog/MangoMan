@@ -46,12 +46,14 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		committed bool
 		sawDone   bool
 		answered  bool // content or a tool call reached the client
-		garbled   bool
 		outChars  int
 		usageTot  int
 		finish    string
 	)
 	commit := func() {
+		if !req.Internal {
+			rt.active.set(req, func(a *Attempt) { a.Answering = true })
+		}
 		rt.setHeaders(w, c, class, n)
 		h := w.Header()
 		h.Set("Content-Type", "text/event-stream")
@@ -104,7 +106,22 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 						d := parseDelta(data)
 						outChars += d.chars
 						answered = answered || d.answer
-						garbled = garbled || d.garbled
+						if d.garbled {
+							// Measured on NVIDIA (GLM 5.3, then Kimi K3): a broken chat
+							// template turns answers into noise with tokens like <|close|>
+							// in them, and an agent then ends the task. Stop it here:
+							// before the answer has started the next model takes over;
+							// after, the client gets an error and an unattended run picks
+							// the task up again.
+							rt.Breakers.Failure(c.Target())
+							if !committed {
+								return attemptResult{outcome: "garbled", status: 200, errMsg: "garbled answer"}
+							}
+							rt.record(c, req.EstTokens+outChars/4)
+							msg := "the model's answer came out garbled; stopped it"
+							writeStreamError(w, flusher, msg)
+							return attemptResult{done: true, outcome: "garbled", status: 200, errMsg: msg}
+						}
 						if d.usage > 0 {
 							usageTot = d.usage
 						}
@@ -187,11 +204,6 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 	rt.Breakers.Success(c.Target())
 	out := "ok"
 	switch {
-	case garbled:
-		// Measured on a free model whose chat template was broken: its
-		// answers came out as noise with tokens like <|close|> in them. Too
-		// late to fail over, but logged as a failure so the model sinks.
-		out = "garbled"
 	case !answered:
 		// Only reasoning, then the end: an agent sees no words and no tool
 		// call and stops the task. Logged as a failure so the model sinks.

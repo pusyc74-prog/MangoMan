@@ -69,6 +69,14 @@ reachable, which is why the pack run publishes its report, its per-case logs
 and the router log to the **eval-reports** branch: clone that branch to read
 a result.
 
+The coding screen has its own real-model check, `workspace-check.yml`
+(dispatch event `workspace-check`, payload model and runner): it opens
+`mangoman code --ui` in a browser, gives it one small task, answers approvals
+with Allow and publishes the report and screenshots to eval-reports under
+`reports/workspace/`. Both it and pack-run install the pinned OpenCode with
+`scripts/install-opencode.sh` (the version users get) and use port 4199, so
+they do not clash with the owner's own MangoMan on a self-hosted runner.
+
 A session can also start a pack run without the Actions page:
 
     gh api -X POST repos/pusyc74-prog/MangoMan/dispatches \
@@ -92,7 +100,8 @@ Owner's steps (about 10 minutes, once):
    with the token shown, then `./run.sh`, or install it as a service).
 2. Linux or macOS works best: pack-run.sh is a bash script and uses
    `timeout` (on macOS: `brew install coreutils`). The workflow installs Go,
-   Python, Node, OpenCode and the Chromium for Playwright by itself.
+   Python, the tested OpenCode release and the Chromium for Playwright by
+   itself.
 3. The computer must be on and online while a run is going.
 
 Start a run on it: `client_payload[runner]=self-hosted` (or runner:

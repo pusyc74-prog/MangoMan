@@ -289,6 +289,7 @@ Run it in your project folder. MangoMan starts the router if needed, starts Open
 - **Terminal:** every command it ran and its output; you can run your own.
 - **Preview:** your app in a phone, tablet or laptop frame (or all three), picked up from the address it prints. The address for your phone on the same Wi-Fi is shown too; for an Expo app, scan its QR code with Expo Go.
 - **Ship** (Guardian projects): your work happens in a copy made from dev; Ship sends it to QA in dev, then you approve it for production.
+- **While it waits:** the screen says which free model it is waiting on and why it switched ("Kimi K3 was busy, so MangoMan switched to Nemotron 3 Ultra"). If nothing at all happens for a minute (no answer coming, no command running, nothing waiting for you), it restarts the step, twice at most. `mangoman code run` does the same for unattended runs.
 
 Press Ctrl-C in the terminal to close the workspace. The screen talks only to the local router, which checks the local token and passes calls to OpenCode.
 
@@ -420,6 +421,13 @@ nightly QA (`.github/workflows/qa.yml`) runs every test with the race
 detector, clicks through the dashboard and has Guardian watch the router,
 then opens an issue when anything fails.
 
+## Credits
+
+The coding engine behind `mangoman code` and the coding screen is
+[OpenCode](https://github.com/anomalyco/opencode), open source under the MIT
+licence (Copyright (c) 2025 opencode). MangoMan downloads the tested release
+from OpenCode's own releases and runs it on your computer.
+
 ## Privacy
 
 MangoMan runs on your computer and never receives your prompts or keys.
@@ -430,4 +438,4 @@ used for training. See [PRIVACY.md](PRIVACY.md).
 
 1. **Marketplace:** listing page, creator portal and review pipeline, then payments (Razorpay Route, Stripe Connect) and payouts.
 2. **More advanced agents and test sets**, one per skill area.
-3. **MangoMan app for everyone (M5)** and the coding workspace (M6).
+3. **MangoMan app for everyone (M5)**, parked for now: teachers and other first-time users cannot bring their own keys yet.

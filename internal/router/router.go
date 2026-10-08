@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -62,10 +63,97 @@ type Router struct {
 }
 
 // activity counts the requests in flight and when one last began or ended,
-// so mangoman code run can tell a task that is working from one that froze.
+// so mangoman code run can tell a task that is working from one that froze,
+// and keeps the attempt being waited on, for the coding screen.
 type activity struct {
 	inFlight atomic.Int64
 	last     atomic.Int64 // unix nanoseconds
+	hold     atomic.Int64 // unix nanoseconds: a client was told to wait until then
+	mu       sync.Mutex
+	now      map[*core.Request]*Attempt // per request in flight; side requests (titles) run alongside
+}
+
+// maxHold caps how long a told-to-wait client counts as busy: past that,
+// the stall watchdogs may restart it rather than wait out a long reset.
+const maxHold = 2 * time.Minute
+
+// waitUntil notes that a client was told to come back at t.
+func (a *activity) waitUntil(t time.Time) {
+	if limit := time.Now().Add(maxHold); t.After(limit) {
+		t = limit
+	}
+	a.hold.Store(t.UnixNano())
+}
+
+// Attempt is the model a request is waiting on right now.
+type Attempt struct {
+	Model     string    `json:"model"`
+	Provider  string    `json:"provider"`
+	Number    int       `json:"attempt"`
+	Since     time.Time `json:"since"`
+	Answering bool      `json:"answering"`       // its answer has started
+	After     string    `json:"after,omitempty"` // the model given up on just before
+	Why       string    `json:"why,omitempty"`   // busy, slow, garbled or failed
+}
+
+func (a *activity) set(req *core.Request, f func(*Attempt)) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.now == nil {
+		a.now = map[*core.Request]*Attempt{}
+	}
+	at := a.now[req]
+	if at == nil {
+		at = &Attempt{}
+		a.now[req] = at
+	}
+	f(at)
+}
+
+func (a *activity) done(req *core.Request) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	delete(a.now, req)
+}
+
+// Trying returns the attempt being waited on: of the requests in flight,
+// the one waiting longest for an answer to start, else the latest. ok is
+// false when nothing is in flight.
+func (rt *Router) Trying() (Attempt, bool) {
+	rt.active.mu.Lock()
+	defer rt.active.mu.Unlock()
+	var best *Attempt
+	for _, a := range rt.active.now {
+		switch {
+		case best == nil:
+			best = a
+		case a.Answering != best.Answering:
+			if !a.Answering {
+				best = a
+			}
+		case !a.Answering && a.Since.Before(best.Since): // waiting longest
+			best = a
+		case a.Answering && a.Since.After(best.Since): // latest
+			best = a
+		}
+	}
+	if best == nil {
+		return Attempt{}, false
+	}
+	return *best, true
+}
+
+// giveUpWord says in one word why a model was given up on, for the screen.
+func giveUpWord(res attemptResult) string {
+	switch {
+	case overloaded(res), res.outcome == "rate_limited":
+		return "busy"
+	case res.outcome == "timeout":
+		return "slow"
+	case res.outcome == "garbled":
+		return "garbled"
+	}
+	return "failed"
 }
 
 func (a *activity) mark(d int64) {
@@ -74,9 +162,15 @@ func (a *activity) mark(d int64) {
 }
 
 // Busy returns the requests in flight and how long ago one began or ended
-// (since the router started, if none yet).
+// (since the router started, if none yet). While a client was told to wait
+// for a reset (up to maxHold), it counts as just active: waiting is not a
+// stall.
 func (rt *Router) Busy() (int64, time.Duration) {
-	return rt.active.inFlight.Load(), time.Since(time.Unix(0, rt.active.last.Load()))
+	idle := time.Since(time.Unix(0, rt.active.last.Load()))
+	if time.Now().UnixNano() < rt.active.hold.Load() {
+		idle = 0
+	}
+	return rt.active.inFlight.Load(), idle
 }
 
 // Brain is the decision brain as the router uses it (package brain).
@@ -124,7 +218,7 @@ type attemptResult struct {
 // Handle serves one Chat Completions request end to end.
 func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Request) {
 	rt.active.mark(1)
-	defer rt.active.mark(-1)
+	defer func() { rt.active.done(req); rt.active.mark(-1) }()
 	id := newID()
 	if r.Header.Get("X-MangoMan-Allow-Weaker") == "1" {
 		req.AllowWeaker = true
@@ -191,7 +285,16 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		}
 		attempts++
 		start := time.Now()
+		if !req.Internal {
+			n := attempts
+			rt.active.set(req, func(a *Attempt) {
+				*a = Attempt{Model: c.Model.Canonical, Provider: c.Provider.ID, Number: n, Since: start, After: a.After, Why: a.Why}
+			})
+		}
 		res := rt.attempt(w, r, req, c, class, id, attempts)
+		if !res.done && !req.Internal {
+			rt.active.set(req, func(a *Attempt) { a.After, a.Why = c.Model.Canonical, giveUpWord(res) })
+		}
 		rt.Breakers.Release(c.Target())
 		if res.outcome != "client_gone" {
 			lat := res.firstOut
@@ -224,6 +327,12 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			who += " (team key " + k + ")"
 		}
 		rt.Logf("req=%s attempt=%d %s -> %s (%d) %s", id, attempts, who, res.outcome, res.status, res.errMsg)
+		switch {
+		case overloaded(res):
+			rt.markBusy(c.Target(), busyFor)
+		case res.outcome == "garbled":
+			rt.markBusy(c.Target(), garbledFor)
+		}
 		if res.done {
 			if strings.HasPrefix(res.outcome, "ok") {
 				rt.answered(req, c, class)
@@ -232,9 +341,6 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		}
 		if res.outcome == "rate_limited" {
 			sawRateLimit = true
-		}
-		if overloaded(res) {
-			rt.markBusy(c.Target())
 		}
 		switch res.outcome {
 		case "network_error":
@@ -293,6 +399,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		if reset.IsZero() {
 			reset = time.Now().Add(time.Minute)
 		}
+		rt.active.waitUntil(reset)
 		core.WriteExhausted(w, reset, "all free candidates are rate limited; retry after the reset or connect another provider")
 		return
 	}
@@ -324,6 +431,7 @@ func (rt *Router) writeNoCandidate(w http.ResponseWriter, info planInfo) {
 	case info.Weaker > 0:
 		rt.writeWeaker(w, info)
 	case info.QuotaBlocked > 0 && info.EarliestReset.After(time.Now()):
+		rt.active.waitUntil(info.EarliestReset)
 		core.WriteExhausted(w, info.EarliestReset, "free capacity is used up on every connected provider; it returns at the next reset")
 	case info.Considered > 0 && info.NoKey == info.Considered:
 		core.WriteError(w, http.StatusServiceUnavailable, "no_providers_connected", "no provider keys found: run `mangoman keys add groq` (or another provider)")

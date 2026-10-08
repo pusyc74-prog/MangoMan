@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -1184,10 +1185,23 @@ func TestReasoningOnlyStreamIsNoAnswer(t *testing.T) {
 func TestLeakedControlTokensAreGarbled(t *testing.T) {
 	stop := `{"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}`
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: sse(chunk("考生 skill盖 sudo"), chunk("<|close|> Reiframe"), stop, "[DONE]")}
-	rt := setup(t, a)
-	do(t, rt, helloStream)
-	if s := rt.Health.Snapshot(); len(s) != 1 || s[0].LastOut != "garbled" || s[0].OK != 0 {
-		t.Fatalf("got %+v", s)
+	b := &fake{id: "b", model: "m2", quality: 0.3, handler: sse(chunk("from b"), "[DONE]")}
+	rt := setup(t, a, b)
+	w := do(t, rt, helloStream)
+	// Stopped mid-answer: the client gets an error, never the leaked token.
+	if body := w.Body.String(); strings.Contains(body, "<|close|>") || !strings.Contains(body, "upstream_stream_error") {
+		t.Fatalf("garbled answer not stopped:\n%s", body)
+	}
+	// The garbling model is tried last from now on.
+	if w := do(t, rt, helloStream); w.Header().Get("X-MangoMan-Provider") != "b" {
+		t.Fatalf("garbling model still first: %v", w.Header())
+	}
+	// Garbage in the very first words: the next model answers this request.
+	c := &fake{id: "c", model: "m3", quality: 0.9, handler: sse(chunk("<|sep|> noise"), "[DONE]")}
+	d := &fake{id: "d", model: "m4", quality: 0.3, handler: sse(chunk("from d"), "[DONE]")}
+	rt = setup(t, c, d)
+	if w := do(t, rt, helloStream); !strings.Contains(w.Body.String(), "from d") {
+		t.Fatalf("no fail-over:\n%s", w.Body)
 	}
 }
 
@@ -1237,5 +1251,63 @@ func TestBusyCountsRequests(t *testing.T) {
 	do(t, rt, hello)
 	if n, idle := rt.Busy(); n != 0 || idle > time.Second {
 		t.Fatalf("in flight %d, idle %v", n, idle)
+	}
+}
+
+func TestTryingSaysWhichModelAndWhy(t *testing.T) {
+	var rt *Router
+	var seen Attempt
+	var inFlight bool
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: sse(`{"error":{"message":"Service temporarily overloaded"}}`)}
+	b := &fake{id: "b", model: "m2", quality: 0.3, handler: func(w http.ResponseWriter, r *http.Request) {
+		seen, inFlight = rt.Trying()
+		sse(chunk("from b"), "[DONE]")(w, r)
+	}}
+	rt = setup(t, a, b)
+	do(t, rt, helloStream)
+	if !inFlight || seen.Model != "m2" || seen.Number != 2 || seen.After != "m1" || seen.Why != "busy" || seen.Answering {
+		t.Fatalf("got %+v (in flight %v)", seen, inFlight)
+	}
+	if _, ok := rt.Trying(); ok {
+		t.Fatal("nothing should be in flight after the answer")
+	}
+}
+
+func TestTryingPrefersTheRequestStillWaiting(t *testing.T) {
+	rt := setup(t)
+	title, main := &core.Request{}, &core.Request{}
+	now := time.Now()
+	rt.active.set(main, func(a *Attempt) {
+		*a = Attempt{Model: "big", Since: now.Add(-20 * time.Second), After: "other", Why: "busy"}
+	})
+	rt.active.set(title, func(a *Attempt) { *a = Attempt{Model: "small", Since: now, Answering: true} })
+	rt.active.inFlight.Store(2)
+	if a, ok := rt.Trying(); !ok || a.Model != "big" || a.After != "other" {
+		t.Fatalf("got %+v", a)
+	}
+	rt.active.done(main)
+	if a, _ := rt.Trying(); a.Model != "small" {
+		t.Fatalf("got %+v", a)
+	}
+}
+
+// Measured once: NVIDIA's model was cooling off after errors and OpenRouter
+// was used up until its daily reset, so the client was told to wait hours
+// and a coding task sat for 17 minutes. The wait is now the cool-off.
+func TestRetryAfterCountsModelsCoolingOff(t *testing.T) {
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: status(500, nil)}
+	b := &fake{id: "b", model: "m2", quality: 0.3, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	for i := 0; i < 3; i++ {
+		rt.Breakers.Failure("a/m1")
+	}
+	rt.Quota.Block(quota.Key{Provider: "b", Account: keys.Own, Model: "m2"}, time.Now().Add(5*time.Hour))
+	w := do(t, rt, hello)
+	secs, _ := strconv.Atoi(w.Header().Get("Retry-After"))
+	if w.Code != http.StatusTooManyRequests || secs < 1 || secs > 5*60 {
+		t.Fatalf("%d, Retry-After %q", w.Code, w.Header().Get("Retry-After"))
+	}
+	if _, idle := rt.Busy(); idle != 0 {
+		t.Fatalf("a client told to wait counts as a stall: idle %v", idle)
 	}
 }

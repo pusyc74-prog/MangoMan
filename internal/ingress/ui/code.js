@@ -12,6 +12,11 @@ const st = {
   asked: new Set(),  // permission and question ids already shown
   calls: new Map(),  // tool call id -> its element in the chat, so a request to approve shows next to it
   urls: new Set(), device: "phone",
+  working: false, busyText: "Working…",
+  running: new Set(),  // tool steps still running (a command can take minutes)
+  waiting: new Set(),  // approvals and questions waiting for you
+  restarts: 0,         // stalls restarted since your last message
+  restartedAt: 0,      // a restart needs a minute of its own before the next
 };
 
 function $(id) { return document.getElementById(id); }
@@ -116,6 +121,7 @@ function showPart(p) {
     if (node) node.replaceWith(fresh); else m.el.append(fresh);
     m.parts.set(p.id, fresh);
     st.calls.set(p.callID, fresh);
+    if (p.state?.status === "running" || p.state?.status === "pending") st.running.add(p.id); else st.running.delete(p.id);
     if (p.tool === "bash") terminal(p);
     if (p.state?.status === "completed" && /^(write|edit|patch)$/.test(p.tool)) refreshChanges();
   }
@@ -157,15 +163,73 @@ async function send(text) {
       method: "POST", body: JSON.stringify({ agent: st.agent, parts: [{ type: "text", text }] }),
     });
     $("prompt").value = "";
+    st.restarts = 0;
     busy(true);
   } catch (err) { note(`Not sent: ${err.message}`, true); }
   $("send").disabled = false;
 }
 
 function busy(on, text) {
+  st.working = on;
+  st.busyText = text || "Working…";
   $("busy").hidden = !on;
   $("stop").hidden = !on;
-  $("busy-text").textContent = text || "Working…";
+  $("busy-text").textContent = st.busyText;
+}
+
+// ---------- what the free model is doing ----------
+
+const GAVE_UP = { busy: "was busy", slow: "did not start answering in time", garbled: "gave a garbled answer", failed: "failed" };
+const RESUME = "Your last step was interrupted (the connection dropped or the work stalled). Continue the task from where you stopped.";
+
+// watch runs every 2 seconds while the AI works. It says which model is
+// being waited on and why MangoMan switched, so a wait never looks frozen;
+// and when nothing at all has happened for a minute (no answer coming, no
+// command running, nothing waiting for you), it restarts the step, twice
+// at most. Measured on free models: once a task sat for 17 minutes with
+// nothing happening.
+async function watch() {
+  if (!st.working) return;
+  let b;
+  try { b = await api("/mangoman/busy"); } catch (_) { return; }
+  const n = b.now;
+  if (b.in_flight > 0 && n && !n.answering) {
+    const parts = [];
+    if (n.after) parts.push(`${n.after} ${GAVE_UP[n.why] || GAVE_UP.failed}, so MangoMan ${n.after === n.model ? "is asking it again" : `switched to ${n.model}`}.`);
+    if (b.waiting_s >= 8) parts.push(`Waiting for ${n.model} to start answering (${b.waiting_s}s)…`);
+    $("busy-text").textContent = parts.join(" ") || st.busyText;
+    return;
+  }
+  $("busy-text").textContent = st.busyText;
+  if (b.in_flight === 0 && b.idle_s >= 60 && !st.running.size && !st.waiting.size && Date.now() - st.restartedAt > 60000) {
+    st.restartedAt = Date.now();
+    await restart();
+  }
+}
+
+// settle forgets steps and cards still marked open when the session stops:
+// a missed event must not keep the stall check off for the rest of the chat.
+function settle() {
+  st.running.clear();
+  st.waiting.clear();
+}
+
+async function restart() {
+  const sid = st.session.id;
+  await api(`${OC}/session/${sid}/abort`, { method: "POST" }).catch(() => {});
+  if (st.restarts >= 2) {
+    busy(false);
+    note("Nothing has happened for a minute again. The free models may be overloaded: try again in a few minutes.", true);
+    return;
+  }
+  st.restarts++;
+  note("Nothing happened for a minute, so MangoMan restarted this step.");
+  try {
+    await api(`${OC}/session/${sid}/prompt_async`, {
+      method: "POST", body: JSON.stringify({ agent: st.agent, parts: [{ type: "text", text: RESUME, synthetic: true }] }),
+    });
+    busy(true);
+  } catch (err) { note(`Could not restart: ${err.message}`, true); }
 }
 
 // ---------- approvals and questions ----------
@@ -180,12 +244,14 @@ async function pending() {
 function askPermission(p) {
   if (p.sessionID !== st.session.id || st.asked.has(p.id)) return;
   st.asked.add(p.id);
+  st.waiting.add(p.id);
   const what = p.metadata?.command || (p.patterns || []).join(" && ") || p.permission;
   const card = el("li", { class: "ask" });
   const reply = async (r, label) => {
     card.querySelectorAll("button").forEach((b) => { b.disabled = true; });
     try {
       await api(`${OC}/permission/${p.id}/reply`, { method: "POST", body: JSON.stringify({ reply: r }) });
+      st.waiting.delete(p.id);
       card.classList.add("done");
       card.append(el("p", { class: "note" }, label));
     } catch (err) { card.append(el("p", { class: "note err" }, `Not sent: ${err.message}`)); }
@@ -202,12 +268,14 @@ function askPermission(p) {
 function askQuestion(q) {
   if (q.sessionID !== st.session.id || st.asked.has(q.id)) return;
   st.asked.add(q.id);
+  st.waiting.add(q.id);
   const card = el("li", { class: "ask" });
   const answers = (q.questions || []).map(() => []);
   const sendAll = async () => {
     card.querySelectorAll("button").forEach((b) => { b.disabled = true; });
     try {
       await api(`${OC}/question/${q.id}/reply`, { method: "POST", body: JSON.stringify({ answers }) });
+      st.waiting.delete(q.id);
       card.classList.add("done");
     } catch (err) { card.append(el("p", { class: "note err" }, `Not sent: ${err.message}`)); }
   };
@@ -279,16 +347,19 @@ function onEvent(ev) {
     case "message.part.delta": if (p.sessionID === st.session.id) appendDelta(p); break;
     case "permission.asked": askPermission(p); break;
     case "question.asked": askQuestion(p); break;
+    // Answered here, in another tab, or ended by Stop.
+    case "permission.replied": case "question.replied": case "question.rejected": st.waiting.delete(p.requestID); break;
     case "session.status":
       if (p.sessionID !== st.session.id) break;
       if (p.status?.type === "idle") busy(false);
       else if (p.status?.type === "retry") busy(true, `The free model is busy, trying again${p.status.message ? `: ${p.status.message}` : ""}…`);
       else busy(true);
       break;
-    case "session.idle": if (p.sessionID === st.session.id) { busy(false); refreshChanges(); } break;
+    case "session.idle": if (p.sessionID === st.session.id) { busy(false); settle(); refreshChanges(); } break;
     case "session.error":
       if (p.sessionID === st.session.id) {
         busy(false);
+        settle();
         const e = p.error || {};
         if (e.name !== "MessageAbortedError") note(`Stopped: ${e.data?.message || e.message || e.name || "an error"}`, true);
       }
@@ -402,7 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("new-chat").addEventListener("click", async () => {
     try { st.session = await api(`${OC}/session`, { method: "POST", body: JSON.stringify({ title: "MangoMan Code" }) }); }
     catch (err) { note(`Could not start a new chat: ${err.message}`, true); return; }
-    st.msgs.clear(); st.calls.clear(); st.asked.clear();
+    st.msgs.clear(); st.calls.clear(); st.asked.clear(); settle();
     $("log").replaceChildren();
     busy(false);
     $("prompt").focus();
@@ -433,5 +504,6 @@ document.addEventListener("DOMContentLoaded", () => {
       preview();
     });
   }
+  setInterval(watch, 2000);
   start();
 });

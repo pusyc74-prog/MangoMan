@@ -22,21 +22,25 @@ type session struct {
 	busy        map[string]time.Time // per model: overloaded, tried last until then
 }
 
-// busyFor is how long a model that said it is overloaded is tried last.
-const busyFor = 2 * time.Minute
+// How long a model is tried last: after it said it is overloaded, and after
+// it garbled an answer (a broken deployment, which does not mend in minutes).
+const (
+	busyFor    = 2 * time.Minute
+	garbledFor = 30 * time.Minute
+)
 
-// markBusy notes that a model said it is overloaded.
-func (rt *Router) markBusy(target string) {
+// markBusy notes that a model should be tried last for d.
+func (rt *Router) markBusy(target string, d time.Duration) {
 	rt.sess.mu.Lock()
 	defer rt.sess.mu.Unlock()
 	if rt.sess.busy == nil {
 		rt.sess.busy = map[string]time.Time{}
 	}
-	rt.sess.busy[target] = time.Now().Add(busyFor)
+	rt.sess.busy[target] = time.Now().Add(d)
 }
 
-// busyLast moves models that said they are overloaded in the last two minutes
-// behind the others. They stay in the list: with one model to choose from
+// busyLast moves models that were overloaded or garbled lately behind the
+// others. They stay in the list: with one model to choose from
 // (strict mode), it is still asked. Measured on NVIDIA: about one request in
 // five came back "Service temporarily overloaded", too few in a row to trip
 // the breaker, so every request lost time on the same busy model first.
