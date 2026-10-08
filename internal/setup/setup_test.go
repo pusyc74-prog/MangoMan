@@ -57,22 +57,22 @@ func wizard(t *testing.T, store mem, answers string, secrets []string) (*Wizard,
 }
 
 func TestWizardConnectsSkipsAndRetries(t *testing.T) {
-	store := mem{"cerebras": "already"}
-	// groq: Enter, bad key then good key. cerebras: already connected.
-	// nvidia: skip. openrouter: Enter then empty key (skip). zen: quit.
-	w, out, opened := wizard(t, store, "\ns\n\nq\n", []string{"bad-key", "gsk_good", ""})
+	store := mem{"zen": "already"}
+	// nvidia: Enter, bad key then good key. groq: skip. openrouter: Enter
+	// then empty key (skip). zen: already connected. cerebras: quit.
+	w, out, opened := wizard(t, store, "\ns\n\nq\n", []string{"bad-key", "nvapi-good", ""})
 	res := w.Run(context.Background())
 
-	if store["groq"] != "gsk_good" {
-		t.Fatalf("groq key not stored: %v", store)
+	if store["nvidia"] != "nvapi-good" {
+		t.Fatalf("nvidia key not stored: %v", store)
 	}
-	if _, ok := store["nvidia"]; ok {
+	if _, ok := store["groq"]; ok {
 		t.Fatal("skipped provider got a key")
 	}
-	if len(res.New) != 1 || res.New[0] != "groq" || len(res.Connected) != 2 || res.Ollama != 2 {
+	if len(res.New) != 1 || res.New[0] != "nvidia" || len(res.Connected) != 2 || res.Ollama != 2 {
 		t.Fatalf("result %+v", res)
 	}
-	if len(*opened) != 2 || !strings.Contains((*opened)[0], "groq") {
+	if len(*opened) != 2 || !strings.Contains((*opened)[0], "nvidia") {
 		t.Fatalf("opened %v", *opened)
 	}
 	text := out.String()

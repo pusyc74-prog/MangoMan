@@ -254,9 +254,11 @@ keys are never shared. Keep the two apart.
 
 ## Waiting on the owner
 
-- CEREBRAS_API_KEY as a GitHub secret (NVIDIA_API_KEY is set). Groq's free
-  per-minute token limits (6,000 to 8,000) are smaller than one request of a
-  skill task (about 14,500 tokens), so Groq cannot carry pack work.
+- Nothing for Cerebras: the owner confirmed on 8 Oct it stays out because
+  its free trial asks for a credit card. Groq's free per-minute token limits
+  (6,000 to 8,000) are smaller than one request of a skill task (about 14,500
+  tokens), so NVIDIA carries pack work alone; OpenRouter (50 requests a day)
+  and OpenCode Zen are the fallbacks.
 - OPENCODE_ZEN_API_KEY secret (doctor coverage).
 - MARKETPLACE_KEY secret (opens the agent marketplace).
 - Revenue share for paid agents; Razorpay or Stripe.

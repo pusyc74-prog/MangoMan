@@ -3,7 +3,7 @@
 // MangoMan dashboard. Talks only to the local router on this machine.
 // Every value from the server is inserted as text, never as HTML.
 
-const ORDER = ["groq", "cerebras", "nvidia", "openrouter", "zen", "ollama"];
+const ORDER = ["nvidia", "groq", "openrouter", "zen", "ollama", "cerebras"];
 const NUM = new Intl.NumberFormat();
 const state = { token: "", overview: null, activity: null, radar: null, filter: "used", open: new Set(), openTeam: new Set(), drawer: false };
 
