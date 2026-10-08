@@ -1,0 +1,210 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m$ [0mls -la
+total 32
+drwxr-xr-x 2 runner runner 4096 Oct  8 14:26 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 14:26 ..
+-rw-r--r-- 1 runner runner  725 Oct  8 14:26 brief.md
+-rw-r--r-- 1 runner runner  633 Oct  8 14:26 facts.md
+-rw-r--r-- 1 runner runner  289 Oct  8 14:26 keywords.csv
+-rw-r--r-- 1 runner runner  371 Oct  8 14:26 prompt.txt
+-rw-r--r-- 1 runner runner  418 Oct  8 14:26 run.log
+-rw-r--r-- 1 runner runner 1040 Oct  8 14:26 sources.md
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead sources.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mSkill "mangoman-seo-article"
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py article.json --out article
+built article: article.html, article.md, seo.md, preview.png (610 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): section: Is an implant better than a bridge?: 15
+PASS  610 words
+WARN  610 words against a target of 900
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description
+PASS  keyword used naturally (1.6% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (158)
+PASS  sentences are easy to read (average 17 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+WARN  fewer than 2 links to your own pages (helps readers and search engines find related pages): 0
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article.json
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
+@@ -4,14 +4,14 @@
+ "author": "Smile Square Dental Clinic Team",
+ "date": "2026-10-08",
+ "target_words": 900,
+ "language": "en",
+-"meta": {
+-  "title": "Dental Implant Cost in Bangalore: Price Guide 2026",
+-  "description": "Learn the true cost of dental implants in Bangalore, factors affecting price, procedure steps, and how implants compare to bridges. Book a consultation today.",
+-  "slug": "dental-implant-cost-bangalore-price-guide",
+-  "url": "https://smilesquare.in/blog/dental-implant-cost-bangalore-price-guide"
+-},
++  "meta": {
++    "title": "Dental Implant Cost in Bangalore: Price Guide 2026",
++    "description": "Discover the dental implant cost in Bangalore: price ranges, procedure, visits, longevity vs bridges. Book a consultation at Smile Square Dental Clinic.",
++    "slug": "dental-implant-cost-in-bangalore",
++    "url": "https://smilesquare.in/blog/dental-implant-cost-in-bangalore"
++  },
+ "facts": {
+   "clinic_location": "Indiranagar, Bengaluru",
+   "clinic_since": "2011",
+   "lead_dentist": "Dr. Kavya Rao, MDS (Prosthodontics), 14 years placing implants",
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
+@@ -53,11 +53,11 @@
+ "h1": "Dental Implant Cost in Bangalore: What You Need to Know",
+ "intro": [
+   "Losing a tooth affects confidence, chewing and oral health. Dental implants are a fixed, long‑lasting solution that feels like a natural tooth. If you are researching the dental implant cost in Bangalore, this guide breaks down the price, the procedure, visit count, longevity and how implants compare with bridges—so you can decide what’s right for you."
+ ],
+-"sections": [
+-  {
+-    "h2": "How much does a single tooth implant cost in Bangalore?",
++  "sections": [
++    {
++      "h2": "What is the dental implant cost in Bangalore for a single tooth?",
+     "paragraphs": [
+       "At Smile Square Dental Clinic in Indiranagar, a single tooth implant with crown starts at ₹28,000 for an Indian implant brand, goes up to ₹42,000 for a Korean brand and ₹55,000 for a Swiss brand. [[clinic_location]], [[lead_dentist]].",
+       "The quoted price includes the consultation, 3D scan (CBCT), implant, abutment and crown—there are no hidden charges for these components. [[price_includes]].",
+       "If your jawbone needs extra support, a bone graft may be required, adding ₹8,000 to ₹15,000 to the total. [[bone_graft_cost_range]].",
+
+[0m
+[0m→ [0mRead article.json[90m [offset=54, limit=5][0m
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
+@@ -51,9 +51,9 @@
+ ],
+ "article": {
+   "h1": "Dental Implant Cost in Bangalore: What You Need to Know",
+   "intro": [
+-    "Losing a tooth affects confidence, chewing and oral health. Dental implants are a fixed, long‑lasting solution that feels like a natural tooth. If you are researching the dental implant cost in Bangalore, this guide breaks down the price, the procedure, visit count, longevity and how implants compare with bridges—so you can decide what’s right for you."
++    "Losing a tooth affects confidence, chewing and oral health. Dental implants are a fixed, long‑lasting solution that feels like a natural tooth. If you are researching the [dental implant cost in Bangalore](/implants), this guide breaks down the price, the procedure, visit count, longevity and how implants compare with bridges—so you can decide what’s right for you. Learn more about our expert team led by Dr. [Kavya Rao](/team)."
+   ],
+     "sections": [
+       {
+         "h2": "What is the dental implant cost in Bangalore for a single tooth?",
+
+[0m
+[0m→ [0mRead article.json[90m [offset=101, limit=15][0m
+[0m✗ [0mEdit article.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m→ [0mRead article.json[90m [offset=95, limit=25][0m
+[0m✗ [0mEdit article.json failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-seo-article/dental-implants/article.json
+@@ -103,9 +103,9 @@
+   "paragraphs": [
+     "Both implants and bridges replace a missing tooth, but they differ in impact on adjacent teeth, longevity and bone health.",
+     "A bridge requires the teeth on either side of the gap to be filed down to hold the restoration, which removes healthy enamel. [3]",
+     "An implant stands alone in the bone, so it does not affect neighbouring teeth and actually stimulates the jawbone, preventing the bone loss that follows tooth loss.",
+-    "Because implants integrate with the bone, they tend to outlast bridges, which may need replacement or repair after 10–15 years. Additionally, implants are easier to clean and floss like natural teeth."
++     "Because implants integrate with the bone, they tend to outlast bridges, which may need replacement or repair after 10–15 years. [1] Additionally, implants are easier to clean and floss like natural teeth."
+   ],
+   "bullets": [],
+   "subsections": []
+ }
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py article.json --out article
+built article: article.html, article.md, seo.md, preview.png (621 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  621 words
+WARN  621 words against a target of 900
+PASS  keyword "dental implant cost in bangalore" in title, h1, opening, description, a subheading and address
+PASS  keyword used naturally (1.6% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (152)
+PASS  sentences are easy to read (average 17 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  2 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article.json[90m [offset=90, limit=30][0m
+[0m→ [0mRead article.json[90m [offset=95, limit=15][0m
+[0m✗ [0mEdit article.json failed
+[91m[1mError: [0mFound multiple matches for oldString. Provide more surrounding context to make the match unique.
+[0m→ [0mRead article.json[90m [offset=55, limit=70][0m
+[0m→ [0mRead article.json[90m [offset=55, limit=80][0m
+[0m→ [0mRead article.json[90m [offset=58, limit=54][0m
+[0m→ [0mRead article.json[90m [offset=90, limit=25][0m
+[0m→ [0mRead article/article.md
+[0m
+[0m$ [0mls -la article/
+total 496
+drwxr-xr-x 2 runner runner   4096 Oct  8 14:28 .
+drwxr-xr-x 3 runner runner   4096 Oct  8 14:28 ..
+-rw-r--r-- 1 runner runner   9611 Oct  8 14:30 article.html
+-rw-r--r-- 1 runner runner   5248 Oct  8 14:30 article.md
+-rw-r--r-- 1 runner runner 473644 Oct  8 14:30 preview.png
+-rw-r--r-- 1 runner runner    751 Oct  8 14:30 seo.md
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article 2>&1 | tail -1
+PASS  no risky claims
+[0m
+Here is the SEO‑ready article based on your brief, keywords, facts and trusted sources.
+
+**Files generated in the `article/` folder:**
+- `article.md` – Markdown ready to paste into your CMS (WordPress, Shopify, Webflow, etc.)
+- `article.html` – Full HTML page with JSON‑LD structured data
+- `seo.md` – Title, meta description and URL slug for your CMS
+- `preview.png` – Visual preview of the article
+
+**Check result (single line):**  
+`PASS spec is valid PASS every number is from the facts or cites a source PASS 621 words WARN 621 words against a target of 900 PASS keyword "dental implant cost in bangalore" in title, h1, opening, description, a subheading and address PASS keyword used naturally (1.6% of words) PASS title fits Google results (50) PASS description fits Google results (152) PASS sentences are easy to read (average 17 words) PASS paragraphs are short enough for phones PASS no repeated sentences PASS 2 links to your own pages PASS every source is cited PASS FAQ answers are short (fit a search snippet) PASS no placeholder text PASS no risky claims`
+
+The article covers:
+- Cost breakdown (Indian, Korean, Swiss implant brands)
+- Why prices vary (brand, technology, experience)
+- Visit‑by‑visit procedure (scan, placement, crown fitting)
+- Longevity of implants vs. crown wear
+- Comparison with bridges (impact on adjacent teeth, bone health, longevity)
+- After‑care tips (added to increase depth)
+- FAQ (pain, diabetes, success rate)
+- Clear calls‑to‑action to book a consultation and view the implant/team pages
+
+All numbers are either from your facts or cited from trusted sources (NHS, Mayo Clinic, Indian Dental Association, Journal of Dental Research). The keyword appears naturally in title, H1, opening paragraph, description and URL. Two internal links (`/implants` and `/team`) are included.
+
+You can now publish `article.md` to your blog and use `seo.md` for meta fields. Let me know if you need any tweaks!

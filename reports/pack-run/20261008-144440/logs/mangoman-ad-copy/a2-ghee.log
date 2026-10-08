@@ -1,0 +1,153 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m
+[0m$ [0mmkdir -p /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+(no output)
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m✱ [0mGlob "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/*"[90m 0 matches[0m
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/
+total 24
+drwxr-xr-x  3 runner runner 4096 Oct  8 14:02 .
+drwxr-xr-x 19 runner runner 4096 Oct  8 14:02 ..
+-rw-r--r--  1 runner runner    4 Oct  8 14:02 .mangoman-pack
+-rw-r--r--  1 runner runner 4571 Oct  8 14:02 SKILL.md
+drwxr-xr-x  2 runner runner 4096 Oct  8 14:02 scripts
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/SKILL.md
+[0m
+[0m$ [0mls -la /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/
+total 76
+drwxr-xr-x 2 runner runner  4096 Oct  8 14:02 .
+drwxr-xr-x 3 runner runner  4096 Oct  8 14:02 ..
+-rwxr-xr-x 1 runner runner 11509 Oct  8 14:02 brandkit.py
+-rwxr-xr-x 1 runner runner  8080 Oct  8 14:02 build_ads.py
+-rwxr-xr-x 1 runner runner  7034 Oct  8 14:02 check_ads.py
+-rwxr-xr-x 1 runner runner  2452 Oct  8 14:02 checks.py
+-rwxr-xr-x 1 runner runner 10029 Oct  8 14:02 render.py
+-rwxr-xr-x 1 runner runner  2326 Oct  8 14:02 tracenum.py
+-rwxr-xr-x 1 runner runner 18954 Oct  8 14:02 vizlib.py
+[0m
+[0m$ [0mrm /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json
+(no output)
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee General: 8 descriptions (2 to 4); A2 Ghee General: all-capital word QR in 'Every batch comes with QR code lab report. Traditional bilona ghee from pure Gir cow milk.'; A2 Ghee General: all-capital word UPI in 'Order A2 Gir cow ghee online. Pay by UPI, cards or cash on delivery. Use FIRST10 for 10% off.'; A2 Ghee General: all-capital word UPI in 'Order now, pay by UPI or cash on delivery. Farm fresh ghee to your doorstep.'; A2 Ghee General: description 2 'Traditional bilona method: curd churned by hand, heated over wood fire. 500ml: ₹1,250 | 1L: ₹2,350.' is 99 characters, cut 9 (90); A2 Ghee General: description 3 'Order A2 Gir cow ghee online. Pay by UPI, cards or cash on delivery. Use FIRST10 for 10% off.' is 93 characters, cut 3 (90); A2 Ghee General: description 4 'Delivered across India in 3-6 days. Same week delivery in Ahmedabad & Rajkot. Glass jar packaging.' is 98 characters, cut 8 (90); A2 Ghee General: description 5 'Direct from farm to home. No wholesale, no franchise. Pure A2 Gir cow ghee made the slow way.' is 93 characters, cut 3 (90)
+WARN  Google ads: A2 Gir Cow Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Buy Ghee Online: fewer than 2 headlines contain a keyword; ads match searches better when they do; Size Specific: fewer than 2 headlines contain a keyword; ads match searches better when they do
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee General: description 3 'Order A2 Gir cow ghee online. Pay by UPI, cards or cash on delivery. Use FIRST10 for 10% off.' is 93 characters, cut 3 (90); Bilona Ghee Method: description 1 'Made by setting curd from A2 Gir cow milk, hand churned with wooden bilona, slowly heated over wood fire.' is 105 characters, cut 15 (90); Bilona Ghee Method: description 2 'Small batch, lab tested bilona ghee. 500ml: ₹1,250 | 1 Litre: ₹2,350. Free delivery above ₹1,500.' is 97 characters, cut 7 (90); Bilona Ghee Method: description 3 'Experience traditional ghee making: curd set, hand churned, wood fired. Use code FIRST10 for 10% off.' is 101 characters, cut 11 (90); Buy Ghee Online: description 1 '500ml: ₹1,250 | 1 Litre: ₹2,350. Free delivery above ₹1,500. Use FIRST10 for 10% off first order.' is 97 characters, cut 7 (90); Buy Ghee Online: description 2 'Buy pure A2 Gir cow ghee made by bilona method. Lab tested every batch. Glass jar packaging.' is 92 characters, cut 2 (90); Size Specific: description 1 '1 Litre glass jar: ₹2,350 | 500ml: ₹1,250. Free delivery above ₹1,500. Use FIRST10 for 10% off.' is 95 characters, cut 5 (90)
+WARN  Google ads: A2 Gir Cow Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Buy Ghee Online: fewer than 2 headlines contain a keyword; ads match searches better when they do; Size Specific: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Bilona Ghee Method: description 1 'Made by setting curd from A2 Gir cow milk. Hand churned with wooden bilona. Slowly heated over wood fire.' is 105 characters, cut 15 (90); Bilona Ghee Method: description 3 'Experience traditional ghee making: curd set, hand churned, wood fired. Use FIRST10 for 10% off.' is 96 characters, cut 6 (90); Size Specific: description 1 '1 Litre glass jar: ₹2,350 | 500ml: ₹1,250. Free delivery above ₹1,500. Use FIRST10 for 10% off.' is 95 characters, cut 5 (90)
+WARN  Google ads: Buy Ghee Online: fewer than 2 headlines contain a keyword; ads match searches better when they do; Size Specific: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Bilona Ghee Method: description 1 'Curd set from A2 Gir cow milk. Hand churned with wooden bilona. Slowly heated over wood fire.' is 93 characters, cut 3 (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m$ [0mls -la /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads/
+total 32
+drwxr-xr-x 2 runner runner 4096 Oct  8 14:05 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 14:05 ..
+-rw-r--r-- 1 runner runner 5999 Oct  8 14:13 ads.md
+-rw-r--r-- 1 runner runner 4372 Oct  8 14:13 google_ads.csv
+-rw-r--r-- 1 runner runner 5040 Oct  8 14:13 google_keywords.csv
+[0m
+[0m$ [0mhead -20 /tmp/tmp.DRs1gesM4R/run/mangoman-ad-copy/a2-ghee/ads/ads.md
+# Ads: Gauveda
+
+## Google search ads (campaign: Gauveda A2 Gir Cow Ghee Search)
+
+### Ad group: A2 Ghee General
+
+Final URL: https://gauveda.in/a2-ghee
+Display path: /a2/ghee
+
+Headlines:
+
+1. Gauveda A2 Gir Cow Ghee  (23/30)
+2. Pure Bilona Ghee Online  (23/30)
+3. Farm Fresh A2 Ghee  (18/30)
+4. Traditional Ghee Delivery  (25/30)
+5. Lab Tested A2 Ghee  (18/30)
+6. Gir Cow Ghee Direct  (19/30)
+7. Wood Churned Ghee  (17/30)
+8. Small Batch Ghee  (16/30)
+9. Glass Jar Ghee  (14/30)
+[0m
+[0m# [0mTodos
+[✓] Create Google search ads specification in ads.json format
+[✓] Build ads into ads folder using build_ads.py script
+[✓] Validate ads with check_ads.py script
+[0m
+Google search ads created and validated. Files saved:
+- ads.json (specification)
+- ads/ folder with:
+  - ads.md (human-readable summary)
+  - google_ads.csv (for Google Ads Editor import)
+  - google_keywords.csv (keywords for import)
+
+All checks passed: character limits, editorial rules, and fact compliance.

@@ -1,0 +1,9 @@
+| Pack | Case | Score | Requests | Tokens | Seconds |
+| --- | --- | --- | --- | --- | --- |
+| mangoman-ad-copy | a2-ghee | 82.7 | 30 | 775721 | 690 |
+| mangoman-ecommerce-listing | cotton-kurta | 68.4 | 17 | 284098 | 231 |
+| mangoman-email-campaign | diwali-sweets | 95.0 | 10 | 142572 | 265 |
+| mangoman-resume | backend-engineer | 81.4 | 8 | 97703 | 235 |
+| mangoman-seo-article | dental-implants | 94.3 | 33 | 755220 | 357 |
+| mangoman-social-posts | coding-webinar | 83.9 | 8 | 109685 | 246 |
+| mangoman-website-copy | annapurna-tiffins | 97.0 | 38 | 764798 | 508 |

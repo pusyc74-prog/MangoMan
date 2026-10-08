@@ -1,0 +1,49 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead job_description.md
+[0m→ [0mRead candidate.md
+[0m→ [0mSkill "mangoman-resume"
+[0m
+[0m← [0mWrite resume.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/build.py /tmp/tmp.DRs1gesM4R/run/mangoman-resume/backend-engineer/resume.json --template classic --out /tmp/tmp.DRs1gesM4R/run/mangoman-resume/backend-engineer/resume
+built /tmp/tmp.DRs1gesM4R/run/mangoman-resume/backend-engineer/resume.html, /tmp/tmp.DRs1gesM4R/run/mangoman-resume/backend-engineer/resume.pdf, /tmp/tmp.DRs1gesM4R/run/mangoman-resume/backend-engineer/resume.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/check.py /tmp/tmp.DRs1gesM4R/run/mangoman-resume/backend-engineer/resume.json /tmp/tmp.DRs1gesM4R/run/mangoman-resume/backend-engineer/resume.pdf --pages 1
+PASS  1 page as planned
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  the page is well filled
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  81% of bullets show a measurable result
+PASS  dates use one format
+[0m
+[0m$ [0mls -la /tmp/tmp.DRs1gesM4R/run/mangoman-resume/backend-engineer/
+total 244
+drwxr-xr-x 2 runner runner   4096 Oct  8 14:23 .
+drwxr-xr-x 3 runner runner   4096 Oct  8 14:22 ..
+-rw-r--r-- 1 runner runner   1853 Oct  8 14:22 candidate.md
+-rw-r--r-- 1 runner runner    729 Oct  8 14:22 job_description.md
+-rw-r--r-- 1 runner runner    354 Oct  8 14:22 prompt.txt
+-rw-r--r-- 1 runner runner   4867 Oct  8 14:23 resume.html
+-rw-r--r-- 1 runner runner   3344 Oct  8 14:23 resume.json
+-rw-r--r-- 1 runner runner  39370 Oct  8 14:23 resume.pdf
+-rw-r--r-- 1 runner runner 168107 Oct  8 14:23 resume.png
+-rw-r--r-- 1 runner runner   1615 Oct  8 14:23 run.log
+[0m
+I've created your backend engineer resume tailored to the Chillar Pay SDE 2 Payments role. The resume includes:
+
+1. **Tailored content** highlighting your payments experience (Razorpay/UPI integration, ₹14Cr/month), microservices work, and Kafka optimizations
+2. **ATS-friendly classic design** (single column, A4 size)
+3. **One page** with all checks passing (readable by ATS, strong action verbs, measurable results)
+4. **Files saved** in your folder:
+   - `resume.json` (the specification)
+   - `resume.pdf` (the final resume)
+
+All validation checks passed: 1 page, ATS-readable, well-filled, strong bullets with 81% showing measurable results. Your backend expertise in Java/Spring Boot, payments, Kafka, and AWS aligns well with the job requirements.

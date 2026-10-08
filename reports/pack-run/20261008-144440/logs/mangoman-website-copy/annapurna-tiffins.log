@@ -1,0 +1,531 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m→ [0mSkill "mangoman-website-copy"
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/brief_gate.py facts.md --pages 4
+PASS  15 facts for 4 pages
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site
+site.json problems:
+- page : slug is lowercase words joined by dashes
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -37,9 +37,9 @@
+   }
+ ],
+ "pages": [
+   {
+-    "slug": "",
++    "slug": "home",
+     "name": "Home",
+     "goal": "Get the visitor to start a weekly plan on WhatsApp",
+     "keyword": "tiffin delivery Pune",
+     "meta": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site
+Built 4 pages into site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 11.5 words
+FAIL  keyword missing: about: keyword 'about Annapurna Tiffins Pune' in neither title nor h1; home: keyword 'tiffin delivery Pune' in neither title nor h1; menu: keyword 'tiffin menu Pune' in neither title nor h1; plans: keyword 'tiffin plans Pune price' in neither title nor h1
+WARN  search fit: about: keyword not in the description; about: keyword not in the first 100 words; home: keyword not in the description; home: keyword not in the first 100 words; menu: keyword not in the description; menu: keyword not in the first 100 words; plans: keyword not in the description; plans: keyword not in the first 100 words
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+WARN  pages nobody links to: about; menu; plans
+PASS  no sentence repeated across pages
+PASS  no thin pages
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -52,10 +52,10 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Home-style tiffins, delivered with care",
+-    "sub": "Wholesome vegetarian lunches cooked in a home kitchen in Baner, Pune",
++    "headline": "Tiffin delivery in Pune, home-style and wholesome",
++    "sub": "Fresh vegetarian lunches cooked in a home kitchen in Baner, Pune",
+     "proof": "240+ tiffins delivered daily since 2019",
+     "cta": {
+       "label": "Start Weekly Plan",
+       "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -43,9 +43,9 @@
+ "goal": "Get the visitor to start a weekly plan on WhatsApp",
+ "keyword": "tiffin delivery Pune",
+ "meta": {
+   "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",
+-  "description": "Wholesome home-style vegetarian tiffins delivered fresh to your door in Baner, Aundh, Balewadi and Pashan. Weekly plans from Rs 780."
++  "description": "Tiffin delivery in Pune: wholesome home-style vegetarian tiffins delivered fresh to your door in Baner, Aundh, Balewadi and Pashan. Weekly plans from Rs 780."
+ },
+ "cta": {
+   "label": "Start Weekly Plan",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -113,9 +113,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "See what's inside your tiffin",
++    "headline": "Tiffin menu in Pune: see what's inside",
+     "sub": "A balanced, home-cooked meal that tastes like it's from your own kitchen",
+     "proof": "Menu posted on WhatsApp every day at 9 pm",
+     "cta": {
+       "label": "Start Weekly Plan",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -104,9 +104,9 @@
+ "goal": "Show what's in a typical tiffin and daily variety",
+ "keyword": "tiffin menu Pune",
+ "meta": {
+   "title": "Daily Tiffin Menu | Annapurna Tiffins Pune",
+-  "description": "See what's in our home-style tiffins: 4 rotis, vegetables, dal or curry, rice and Sunday sweets. Menu changes daily."
++  "description": "Tiffin menu in Pune: see what's in our home-style tiffins - 4 rotis, vegetables, dal or curry, rice and Sunday sweets. Menu changes daily."
+ },
+ "cta": {
+   "label": "Start Weekly Plan",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -174,9 +174,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Simple plans for wholesome lunches",
++    "headline": "Tiffin plans in Pune with pricing",
+     "sub": "Choose weekly or monthly - no hidden costs, just home-style meals delivered",
+     "proof": "240+ customers trust us with their daily lunch",
+     "cta": {
+       "label": "Start Weekly Plan",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -165,9 +165,9 @@
+ "goal": "Explain weekly and monthly plans and pricing",
+ "keyword": "tiffin plans Pune price",
+ "meta": {
+   "title": "Tiffin Plans & Pricing | Annapurna Tiffins Baner",
+-  "description": "Choose from weekly (6 lunches) or monthly (26 lunches) plans. Weekly plan Rs 780, monthly plan Rs 3,200. Flexible pausing available."
++  "description": "Tiffin plans in Pune pricing: choose from weekly (6 lunches) or monthly (26 lunches). Weekly plan Rs 780, monthly plan Rs 3,200. Flexible pausing available."
+ },
+ "cta": {
+   "label": "Start Weekly Plan",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -257,9 +257,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "The story behind your lunch",
++    "headline": "About Annapurna Tiffins in Pune",
+     "sub": "From 6 customers in 2019 to 240+ daily deliveries today",
+     "proof": "Founded by Savita Joshi in Baner, Pune",
+     "cta": {
+       "label": "Start Weekly Plan",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -248,9 +248,9 @@
+ "goal": "Tell the story of Savita Joshi and the kitchen",
+ "keyword": "about Annapurna Tiffins Pune",
+ "meta": {
+   "title": "About Annapurna Tiffins | Home-style Tiffins Pune",
+-  "description": "The story of Annapurna Tiffins: founded by Savita Joshi in 2019, now delivering 240+ home-style tiffins daily from Baner, Pune."
++  "description": "About Annapurna Tiffins in Pune: the story of our home-style tiffin service founded by Savita Joshi in 2019, now delivering 240+ meals daily from Baner."
+ },
+ "cta": {
+   "label": "Start Weekly Plan",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -65,9 +65,9 @@
+   "type": "text",
+   "headline": "What makes our tiffins special",
+   "body": [
+     "Every tiffin is cooked with the same care as a mother's kitchen. We use fresh vegetables, cold-pressed groundnut oil and never add ajinomoto.",
+-    "Your lunch arrives hot and fresh between 12:00 and 1:00 pm, ready to eat at your desk or home."
++    "Your lunch arrives hot and fresh between 12:00 and 1:00 pm, ready to eat at your desk or home. [See our menu](/menu) or [check our plans](/plans)."
+   ]
+ },
+ {
+   "type": "features",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -126,9 +126,9 @@
+   "type": "text",
+   "headline": "The Annapurna Tiffin",
+   "body": [
+     "Every tiffin contains: 4 rotis made fresh that morning, one dry vegetable dish, one dal or curry, steamed rice, and on Sundays - a sweet treat.",
+-    "We never compromise on quality: only cold-pressed groundnut oil for cooking and absolutely no ajinomoto or MSG."
++    "We never compromise on quality: only cold-pressed groundnut oil for cooking and absolutely no ajinomoto or MSG. [Learn about our story](/about) or [see our plans](/plans)."
+   ]
+ },
+ {
+   "type": "features",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -187,9 +187,9 @@
+   "type": "text",
+   "headline": "Our transparent pricing",
+   "body": [
+     "We believe in simple, honest pricing. No surprise charges, no minimum commitments - just pay for the lunches you want.",
+-    "Both plans include the same wholesome tiffin: 4 rotis, vegetables, dal or curry, rice and Sunday sweets."
++    "Both plans include the same wholesome tiffin: 4 rotis, vegetables, dal or curry, rice and Sunday sweets. [See what's in our tiffin](/menu) or [learn about us](/about)."
+   ]
+ },
+ {
+   "type": "steps",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -270,9 +270,9 @@
+   "type": "text",
+   "headline": "Our journey",
+   "body": [
+     "Savita Joshi started Annapurna Tiffins in 2019 with a simple vision: to provide home-style, wholesome lunches to working people in Pune.",
+-    "Beginning with just 6 customers in Baner, we've grown through word-of-mouth to delivering over 240 tiffins every day to Baner, Aundh, Balewadi and Pashan."
++    "Beginning with just 6 customers in Baner, we've grown through word-of-mouth to delivering over 240 tiffins every day to Baner, Aundh, Balewadi and Pashan. [See our menu](/menu) or [check our plans](/plans)."
+   ]
+ },
+ {
+   "type": "cta",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site
+Built 4 pages into site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 11.3 words
+FAIL  keyword missing: about: keyword 'about Annapurna Tiffins Pune' in neither title nor h1; home: keyword 'tiffin delivery Pune' in neither title nor h1; menu: keyword 'tiffin menu Pune' in neither title nor h1; plans: keyword 'tiffin plans Pune price' in neither title nor h1
+WARN  search fit: about: keyword not in the description; about: keyword not in the first 100 words; home: keyword not in the description; home: keyword not in the first 100 words; menu: keyword not in the description; menu: keyword not in the first 100 words; plans: keyword not in the description; plans: keyword not in the first 100 words
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: See our menu or check our plans.
+PASS  no thin pages
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -52,9 +52,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Tiffin delivery in Pune, home-style and wholesome",
++    "headline": "Tiffin delivery Pune: home-style and wholesome",
+     "sub": "Fresh vegetarian lunches cooked in a home kitchen in Baner, Pune",
+     "proof": "240+ tiffins delivered daily since 2019",
+     "cta": {
+       "label": "Start Weekly Plan",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -113,9 +113,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Tiffin menu in Pune: see what's inside",
++    "headline": "Tiffin menu Pune: see what's inside",
+     "sub": "A balanced, home-cooked meal that tastes like it's from your own kitchen",
+     "proof": "Menu posted on WhatsApp every day at 9 pm",
+     "cta": {
+       "label": "Start Weekly Plan",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -174,9 +174,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Tiffin plans in Pune with pricing",
++    "headline": "Tiffin plans Pune price: simple and transparent",
+     "sub": "Choose weekly or monthly - no hidden costs, just home-style meals delivered",
+     "proof": "240+ customers trust us with their daily lunch",
+     "cta": {
+       "label": "Start Weekly Plan",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -257,9 +257,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "About Annapurna Tiffins in Pune",
++    "headline": "About Annapurna Tiffins Pune: our story",
+     "sub": "From 6 customers in 2019 to 240+ daily deliveries today",
+     "proof": "Founded by Savita Joshi in Baner, Pune",
+     "cta": {
+       "label": "Start Weekly Plan",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -43,9 +43,9 @@
+ "goal": "Get the visitor to start a weekly plan on WhatsApp",
+ "keyword": "tiffin delivery Pune",
+ "meta": {
+   "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",
+-  "description": "Tiffin delivery in Pune: wholesome home-style vegetarian tiffins delivered fresh to your door in Baner, Aundh, Balewadi and Pashan. Weekly plans from Rs 780."
++  "description": "Tiffin delivery Pune: wholesome home-style vegetarian tiffins delivered fresh to your door in Baner, Aundh, Balewadi and Pashan. Weekly plans from Rs 780."
+ },
+ "cta": {
+   "label": "Start Weekly Plan",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -104,9 +104,9 @@
+ "goal": "Show what's in a typical tiffin and daily variety",
+ "keyword": "tiffin menu Pune",
+ "meta": {
+   "title": "Daily Tiffin Menu | Annapurna Tiffins Pune",
+-  "description": "Tiffin menu in Pune: see what's in our home-style tiffins - 4 rotis, vegetables, dal or curry, rice and Sunday sweets. Menu changes daily."
++  "description": "Tiffin menu Pune: see what's in our home-style tiffins - 4 rotis, vegetables, dal or curry, rice and Sunday sweets. Menu changes daily."
+ },
+ "cta": {
+   "label": "Start Weekly Plan",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -165,9 +165,9 @@
+ "goal": "Explain weekly and monthly plans and pricing",
+ "keyword": "tiffin plans Pune price",
+ "meta": {
+   "title": "Tiffin Plans & Pricing | Annapurna Tiffins Baner",
+-  "description": "Tiffin plans in Pune pricing: choose from weekly (6 lunches) or monthly (26 lunches). Weekly plan Rs 780, monthly plan Rs 3,200. Flexible pausing available."
++  "description": "Tiffin plans Pune price: choose from weekly (6 lunches) or monthly (26 lunches). Weekly plan Rs 780, monthly plan Rs 3,200. Flexible pausing available."
+ },
+ "cta": {
+   "label": "Start Weekly Plan",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.DRs1gesM4R/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -248,9 +248,9 @@
+ "goal": "Tell the story of Savita Joshi and the kitchen",
+ "keyword": "about Annapurna Tiffins Pune",
+ "meta": {
+   "title": "About Annapurna Tiffins | Home-style Tiffins Pune",
+-  "description": "About Annapurna Tiffins in Pune: the story of our home-style tiffin service founded by Savita Joshi in 2019, now delivering 240+ meals daily from Baner."
++  "description": "About Annapurna Tiffins Pune: the story of our home-style tiffin service founded by Savita Joshi in 2019, now delivering 240+ meals daily from Baner."
+ },
+ "cta": {
+   "label": "Start Weekly Plan",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site
+Built 4 pages into site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 11.3 words
+PASS  each page has its keyword in the title or h1
+PASS  titles, descriptions and keyword placement fit
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: See our menu or check our plans.
+PASS  no thin pages
+[0m
+[0m$ [0mls -la site/
+total 36
+drwxr-xr-x 3 runner runner 4096 Oct  8 14:43 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 14:43 ..
+drwxr-xr-x 2 runner runner 4096 Oct  8 14:43 copy
+-rw-r--r-- 1 runner runner 5309 Oct  8 14:44 pages.csv
+-rw-r--r-- 1 runner runner 9593 Oct  8 14:44 pages.json
+-rw-r--r-- 1 runner runner  642 Oct  8 14:44 sitemap.md
+[0m
+[0m$ [0mls -la site/copy/
+total 24
+drwxr-xr-x 2 runner runner 4096 Oct  8 14:43 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 14:43 ..
+-rw-r--r-- 1 runner runner  733 Oct  8 14:44 about.md
+-rw-r--r-- 1 runner runner 1090 Oct  8 14:44 home.md
+-rw-r--r-- 1 runner runner 1149 Oct  8 14:44 menu.md
+-rw-r--r-- 1 runner runner 1179 Oct  8 14:44 plans.md
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 11.3 words
+PASS  each page has its keyword in the title or h1
+PASS  titles, descriptions and keyword placement fit
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: See our menu or check our plans.
+PASS  no thin pages
+[0m
+I've completed the website copy for Annapurna Tiffins. Here's what I've delivered:
+
+**Files created:**
+- `site/copy/home.md` - Home page copy
+- `site/copy/menu.md` - Menu page copy  
+- `site/copy/plans.md` - Plans & pricing page copy
+- `site/copy/about.md` - About page copy
+- `site/pages.csv` - CMS-ready page data
+- `site/sitemap.md` - Sitemap for SEO
+
+**Quality check results:**
+✅ All facts verified from your sources
+✅ No competitor content copied
+✅ Each page has its target keyword in title or headline
+✅ Consistent "Start Weekly Plan" button on all pages
+✅ All pages properly linked together
+✅ Voice: warm, mother's kitchen tone with plain words
+✅ Avoided prohibited words: "cheap", "gourmet"
+✅ Average sentence length: 11.3 words (well under 20-word limit)
+✅ All numbers sourced directly from your facts.md
+
+**One minor warning:** Similar phrasing appears in multiple CTAs ("See our menu or check our plans"), which is natural for website navigation.
+
+The copy is ready to use. Each page follows the structure: hero section with keyword-rich headline, explanatory text, features/steps, and clear call-to-action to start a weekly plan via WhatsApp. Would you like me to make any adjustments to the copy?
