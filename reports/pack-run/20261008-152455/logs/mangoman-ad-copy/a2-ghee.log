@@ -1,0 +1,101 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+Writing `ads.json` based on your files, then building and checking.
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py ads.json ads
+spec problems:
+- meta needs ads
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -118,6 +118,27 @@
+     "career", "vacancy", "machine", "making machine", "recipe", "baby",
+     "babies", "free", "organic", "seeds", "plant"
+   ],
+   "allowed_caps": ["A2", "UPI", "COD", "QR", "FIRST10"],
+-  "meta": {"ads": []}
++  "meta": {
++    "ads": [
++      {
++        "name": "Offer",
++        "primary_text": "A2 Gir cow ghee made the slow bilona way, from our own herd of 140 cows. 10% off your first order with code FIRST10.",
++        "headline": "10% Off With FIRST10",
++        "description": "Free delivery above ₹1,500",
++        "cta": "ORDER_NOW",
++        "url": "https://gauveda.in/a2-ghee",
++        "image_brief": "Golden ghee in a glass jar on a wooden table with curd and a wooden bilona, warm morning light."
++      },
++      {
++        "name": "Quality and proof",
++        "primary_text": "Every batch of our A2 ghee is lab tested; scan the QR code on the jar to see the report. 500 ml glass jar ₹1,250.",
++        "headline": "Lab Tested A2 Ghee",
++        "description": "Delivered in 3 to 6 days",
++        "cta": "SHOP_NOW",
++        "url": "https://gauveda.in/a2-ghee",
++        "image_brief": "Phone scanning the QR code on a glass jar of ghee, farm and Gir cows softly in the background."
++      }
++    ]
++  }
+ }
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py ads.json ads
+built ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+WARN  Google ads: Cow ghee Gujarat: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+PASS  Meta text fits what phones show
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[91m[1mError: [0m{"message":"the model's answer came out garbled; stopped it","type":"upstream_stream_error"}
+
+The model's answer was cut off; continuing the task.
+[0m
+> build · free/coder
+[0m
+[0m$ [0mls -la /tmp/tmp.BVHngeqJxc/run/mangoman-ad-copy/a2-ghee/ads/
+total 24
+drwxr-xr-x 2 runner runner 4096 Oct  8 14:49 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 14:49 ..
+-rw-r--r-- 1 runner runner 3903 Oct  8 14:49 ads.md
+-rw-r--r-- 1 runner runner 2665 Oct  8 14:49 google_ads.csv
+-rw-r--r-- 1 runner runner  730 Oct  8 14:49 google_keywords.csv
+-rw-r--r-- 1 runner runner  712 Oct  8 14:49 meta_ads.csv
+[0m
+The Google search ads have been written, built, and checked successfully.
+
+**Files created in `/tmp/tmp.BVHngeqJxc/run/mangoman-ad-copy/a2-ghee/ads/`:**
+- `ads.md` – Full ad specification for review
+- `google_ads.csv` – Ready to import into Google Ads Editor (Account ▶ Import ▶ From file)
+- `google_keywords.csv` – Keywords to import alongside the ads
+- `meta_ads.csv` – Brief for Meta Ads Manager (Facebook/Instagram)
+
+**Check result:**
+```
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+WARN  Google ads: Cow ghee Gujarat: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+PASS  Meta text fits what phones show
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+```
+
+Only one warning (not a failure) about headlines containing keywords in one ad group. All character limits, editorial rules, and policy checks passed. You can now import the CSV files into Google Ads Editor and use the Meta CSV as a brief for your Meta campaigns.

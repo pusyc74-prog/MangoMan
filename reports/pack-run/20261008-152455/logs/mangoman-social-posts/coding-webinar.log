@@ -1,0 +1,246 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-social-posts"
+[0m→ [0mRead brief.md
+[0m
+[0m← [0mWrite posts.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py posts.json --out posts
+built in posts/: captions.md, 8 images, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py posts.json posts
+PASS  spec is valid
+PASS  every image built at the right size
+PASS  all text fits
+PASS  text is at full size
+PASS  captions fit every platform
+WARN  webinar-announce: Instagram shows about 125 characters before 'more'; put the hook first; speaker-stat: Instagram shows about 125 characters before 'more'; put the hook first; learner-quote: Instagram shows about 125 characters before 'more'; put the hook first; webinar-agenda: Instagram shows about 125 characters before 'more'; put the hook first
+PASS  hashtags are valid
+FAIL  numbers not in facts (ask the user, or remove them): webinar-agenda: 90
+PASS  no risky claims
+PASS  promised counts match the content
+PASS  alt text on every post
+PASS  brand shown on every image
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -53,9 +53,9 @@
+  "hashtags": ["SkillSetu", "CareerSwitch", "LearnToCode", "Hyderabad"],
+  "alt": "Quote card: I wrote my first line of code at 29. SkillSetu made the switch feel possible, by Imran Pasha, a sales executive turned frontend developer."},
+ 
+ {"id": "webinar-agenda", "layout": "list", "title": "Webinar agenda",
+- "headline": "What you will learn in 90 minutes",
++ "headline": "What you will learn in this free webinar",
+  "ordered": false,
+  "items": ["Which developer roles hire career switchers", "A realistic 6 month learning plan", "Building a portfolio that gets interviews", "Live Q&A with Kavitha Reddy"],
+  "caption": {
+    "default": "Four things you will take away from our free webinar: which developer roles hire career switchers, a realistic 6 month learning plan, building a portfolio that gets interviews, and a live Q&A. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Register at skillsetu.in/webinar (link in bio).",
+
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -62,7 +62,7 @@
+        "linkedin": "Our free live webinar, Non-tech to developer in 2027, covers four things every career switcher needs:\n\n- Which developer roles hire career switchers\n- A realistic 6 month learning plan\n- Building a portfolio that gets interviews\n- Live Q&A with lead mentor Kavitha Reddy\n\nSaturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats. Register at skillsetu.in/webinar",
+        "x": "Free webinar agenda: roles that hire career switchers, a 6 month learning plan, a portfolio that gets interviews, live Q&A. 14 Nov, 11 am IST: skillsetu.in/webinar"
+      },
+      "hashtags": ["SkillSetu", "LearnToCode", "FullStack", "Webinar"],
+-     "alt": "List graphic titled What you will learn in 90 minutes: which developer roles hire career switchers, a realistic 6 month learning plan, building a portfolio that gets interviews, and live Q&A with Kavitha Reddy."}
++     "alt": "List graphic titled What you will learn in this free webinar: which developer roles hire career switchers, a realistic 6 month learning plan, building a portfolio that gets interviews, and live Q&A with Kavitha Reddy."}
+   ]
+ }
+
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -57,9 +57,9 @@
+ "headline": "What you will learn in this free webinar",
+ "ordered": false,
+ "items": ["Which developer roles hire career switchers", "A realistic 6 month learning plan", "Building a portfolio that gets interviews", "Live Q&A with Kavitha Reddy"],
+ "caption": {
+-  "default": "Four things you will take away from our free webinar: which developer roles hire career switchers, a realistic 6 month learning plan, building a portfolio that gets interviews, and a live Q&A. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Register at skillsetu.in/webinar (link in bio).",
++  "default": "Free webinar agenda: roles that hire switchers, a 6 month plan, a portfolio that gets interviews, live Q&A. which developer roles hire career switchers, a realistic 6 month learning plan, building a portfolio that gets interviews, and a live Q&A. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Register at skillsetu.in/webinar (link in bio).",
+   "linkedin": "Our free live webinar, Non-tech to developer in 2027, covers four things every career switcher needs:\n\n- Which developer roles hire career switchers\n- A realistic 6 month learning plan\n- Building a portfolio that gets interviews\n- Live Q&A with lead mentor Kavitha Reddy\n\nSaturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats. Register at skillsetu.in/webinar",
+   "x": "Free webinar agenda: roles that hire career switchers, a 6 month learning plan, a portfolio that gets interviews, live Q&A. 14 Nov, 11 am IST: skillsetu.in/webinar"
+ },
+ "hashtags": ["SkillSetu", "LearnToCode", "FullStack", "Webinar"],
+
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -20,9 +20,9 @@
+ "headline": "Non-tech to developer in 2027",
+ "details": ["Saturday 14 November 2026", "11 am - 12:30 pm IST on Zoom", "Free, 500 seats"],
+ "cta": "Register free at skillsetu.in/webinar",
+ "caption": {
+-  "default": "Stuck in a non-tech job and wondering if a developer career is realistic for you? Join our free live webinar with Kavitha Reddy, who moved from banking operations to a full stack developer role. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats. Register at skillsetu.in/webinar (link in bio).",
++  "default": "Free webinar: switch from a non-tech job to a developer role. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Join our free live webinar with Kavitha Reddy, who moved from banking operations to a full stack developer role. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats. Register at skillsetu.in/webinar (link in bio).",
+   "linkedin": "Thinking about switching from a non-tech job to a software developer role? Join our free live webinar, Non-tech to developer in 2027, with Kavitha Reddy, lead mentor at SkillSetu, who herself moved from banking operations into a full stack developer role 6 years ago.\n\nSaturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats.\n\nRegister at skillsetu.in/webinar",
+   "x": "Free live webinar: Non-tech to developer in 2027. Saturday 14 Nov 2026, 11 am IST on Zoom. Free, 500 seats. Register: skillsetu.in/webinar"
+ },
+ "hashtags": ["SkillSetu", "CareerSwitch", "LearnToCode", "Webinar", "TechCareers"],
+
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -20,10 +20,9 @@
+ "headline": "Non-tech to developer in 2027",
+ "details": ["Saturday 14 November 2026", "11 am - 12:30 pm IST on Zoom", "Free, 500 seats"],
+ "cta": "Register free at skillsetu.in/webinar",
+ "caption": {
+-  "default": "Free webinar: switch from a non-tech job to a developer role. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Join our free live webinar with Kavitha Reddy, who moved from banking operations to a full stack developer role. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats. Register at skillsetu.in/webinar (link in bio).",
+-  "linkedin": "Thinking about switching from a non-tech job to a software developer role? Join our free live webinar, Non-tech to developer in 2027, with Kavitha Reddy, lead mentor at SkillSetu, who herself moved from banking operations into a full stack developer role 6 years ago.\n\nSaturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats.\n\nRegister at skillsetu.in/webinar",
++  "default": "Free webinar: switch from a non-tech job to a developer role. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Join our free live webinar with Kavitha Reddy, who moved from banking operations to a full stack developer role. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats. Kavitha Reddy moved from banking operations to a full stack developer role and leads our mentoring. Free, 500 seats. Register at skillsetu.in/webinar (link in bio).",\n       "linkedin": "Thinking about switching from a non-tech job to a software developer role? Join our free live webinar, Non-tech to developer in 2027, with Kavitha Reddy, lead mentor at SkillSetu, who herself moved from banking operations into a full stack developer role 6 years ago.\n\nSaturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats.\n\nRegister at skillsetu.in/webinar",
+   "x": "Free live webinar: Non-tech to developer in 2027. Saturday 14 Nov 2026, 11 am IST on Zoom. Free, 500 seats. Register: skillsetu.in/webinar"
+ },
+ "hashtags": ["SkillSetu", "CareerSwitch", "LearnToCode", "Webinar", "TechCareers"],
+ "alt": "Announcement poster for a free live webinar, Non-tech to developer in 2027, on Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom, free with 500 seats, register at skillsetu.in/webinar."},
+
+[0m
+[0m→ [0mRead posts.json
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -20,9 +20,9 @@
+ "headline": "Non-tech to developer in 2027",
+ "details": ["Saturday 14 November 2026", "11 am - 12:30 pm IST on Zoom", "Free, 500 seats"],
+ "cta": "Register free at skillsetu.in/webinar",
+ "caption": {
+-  "default": "Free webinar: switch from a non-tech job to a developer role. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Join our free live webinar with Kavitha Reddy, who moved from banking operations to a full stack developer role. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats. Kavitha Reddy moved from banking operations to a full stack developer role and leads our mentoring. Free, 500 seats. Register at skillsetu.in/webinar (link in bio).",\n       "linkedin": "Thinking about switching from a non-tech job to a software developer role? Join our free live webinar, Non-tech to developer in 2027, with Kavitha Reddy, lead mentor at SkillSetu, who herself moved from banking operations into a full stack developer role 6 years ago.\n\nSaturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats.\n\nRegister at skillsetu.in/webinar",
++  "default": "Free webinar: Switch from non-tech to developer role. Nov 14, 11 am IST on Zoom. Register at skillsetu.in/webinar (link in bio).",\n       "linkedin": "Thinking about switching from a non-tech job to a software developer role? Join our free live webinar, Non-tech to developer in 2027, with Kavitha Reddy, lead mentor at SkillSetu, who herself moved from banking operations into a full stack developer role 6 years ago.\n\nSaturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats.\n\nRegister at skillsetu.in/webinar",
+   "x": "Free live webinar: Non-tech to developer in 2027. Saturday 14 Nov 2026, 11 am IST on Zoom. Free, 500 seats. Register: skillsetu.in/webinar"
+ },
+ "hashtags": ["SkillSetu", "CareerSwitch", "LearnToCode", "Webinar", "TechCareers"],
+ "alt": "Announcement poster for a free live webinar, Non-tech to developer in 2027, on Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom, free with 500 seats, register at skillsetu.in/webinar."},
+
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -32,9 +32,9 @@
+ "headline": "of our 2025 batch got a developer job within 6 months",
+ "sub": "Placement report, Mar 2026",
+ "source": "SkillSetu placement report, Mar 2026",
+ "caption": {
+-  "default": "71% of our 2025 batch got a developer job within 6 months of finishing (placement report, Mar 2026). Want to know how career switchers actually do it? Join our free webinar on Saturday 14 November 2026, 11 am IST. Register at skillsetu.in/webinar (link in bio).",
++  "default": "71% of our 2025 batch got developer jobs within 6 months (Mar 2026 report). Free webinar: Nov 14, 11 am IST. Register at skillsetu.in/webinar (link in bio).",
+   "linkedin": "A common question we hear: do career switchers really get hired as developers?\n\nAt SkillSetu, 71% of our 2025 batch got a developer job within 6 months of finishing the programme (placement report, Mar 2026). 312 learners have finished the programme since 2022.\n\nIf you are planning your own switch, start with our free live webinar on Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom.\n\nRegister at skillsetu.in/webinar",
+   "x": "71% of our 2025 batch got a developer job within 6 months (placement report, Mar 2026). Planning your switch? Join our free webinar on 14 Nov, 11 am IST: skillsetu.in/webinar"
+ },
+ "hashtags": ["SkillSetu", "CareerSwitch", "SoftwareDeveloper", "TechCareers"],
+
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -44,9 +44,9 @@
+ "quote": "I wrote my first line of code at 29. SkillSetu made the switch feel possible.",
+ "author": "Imran Pasha",
+ "role": "Sales executive turned frontend developer",
+ "caption": {
+-  "default": "Imran Pasha was a sales executive. Today he is a frontend developer at a Hyderabad SaaS company. Hear how career switchers make the move at our free webinar, Saturday 14 November 2026, 11 am IST. Register at skillsetu.in/webinar (link in bio).",
++  "default": "‘I wrote my first line of code at 29.’ - Imran Pasha, sales exec turned frontend dev. Learn how at our free webinar Nov 14, 11 am IST. Register at skillsetu.in/webinar (link in bio).",
+   "linkedin": "\"I wrote my first line of code at 29. SkillSetu made the switch feel possible.\" - Imran Pasha, once a sales executive, now a frontend developer at a Hyderabad SaaS company.\n\nIf you are wondering whether a switch like this is possible for you, join our free live webinar with lead mentor Kavitha Reddy on Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom.\n\nRegister at skillsetu.in/webinar",
+   "x": "\"I wrote my first line of code at 29. SkillSetu made the switch feel possible.\" - Imran Pasha, sales executive turned frontend developer. Free webinar, 14 Nov, 11 am IST: skillsetu.in/webinar"
+ },
+ "hashtags": ["SkillSetu", "CareerSwitch", "LearnToCode", "Hyderabad"],
+
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -56,9 +56,9 @@
+ "headline": "What you will learn in this free webinar",
+ "ordered": false,
+ "items": ["Which developer roles hire career switchers", "A realistic 6 month learning plan", "Building a portfolio that gets interviews", "Live Q&A with Kavitha Reddy"],
+ "caption": {
+-  "default": "Free webinar agenda: roles that hire switchers, a 6 month plan, a portfolio that gets interviews, live Q&A. which developer roles hire career switchers, a realistic 6 month learning plan, building a portfolio that gets interviews, and a live Q&A. Saturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Register at skillsetu.in/webinar (link in bio).",
++  "default": "Free webinar agenda: roles that hire switchers, a 6 month plan, portfolio that gets interviews, live Q&A. Nov 14, 11 am IST. Register at skillsetu.in/webinar (link in bio).",
+   "linkedin": "Our free live webinar, Non-tech to developer in 2027, covers four things every career switcher needs:\n\n- Which developer roles hire career switchers\n- A realistic 6 month learning plan\n- Building a portfolio that gets interviews\n- Live Q&A with lead mentor Kavitha Reddy\n\nSaturday 14 November 2026, 11 am to 12:30 pm IST on Zoom. Free, 500 seats. Register at skillsetu.in/webinar",
+   "x": "Free webinar agenda: roles that hire career switchers, a 6 month learning plan, a portfolio that gets interviews, live Q&A. 14 Nov, 11 am IST: skillsetu.in/webinar"
+ },
+ "hashtags": ["SkillSetu", "LearnToCode", "FullStack", "Webinar"],
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py posts.json --out posts
+Traceback (most recent call last):
+  File "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py", line 525, in <module>
+    main()
+  File "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py", line 473, in main
+    spec = load(src)
+           ^^^^^^^^^
+  File "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py", line 41, in load
+    return json.load(f)
+           ^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 24 column 150 (char 1485)
+[0m
+[0m→ [0mRead posts.json[90m [offset=20, limit=30][0m
+[0m
+[0m← [0mWrite posts.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py posts.json --out posts
+built in posts/: captions.md, 8 images, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py posts.json posts
+PASS  spec is valid
+PASS  every image built at the right size
+PASS  all text fits
+PASS  text is at full size
+PASS  captions fit every platform
+WARN  webinar-announce: Instagram shows about 125 characters before 'more'; put the hook first; speaker-stat: Instagram shows about 125 characters before 'more'; put the hook first; learner-quote: Instagram shows about 125 characters before 'more'; put the hook first; webinar-agenda: Instagram shows about 125 characters before 'more'; put the hook first
+PASS  hashtags are valid
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  promised counts match the content
+PASS  alt text on every post
+PASS  brand shown on every image
+[0m
+[0m→ [0mRead posts/captions.md
+[0m
+[0m# [0mTodos
+[✓] Create social media posts spec from brief.md
+[✓] Save spec as posts.json
+[✓] Build posts into posts/ folder
+[✓] Run check to validate
+[0m
+The social media posts have been created based on the brief. The spec is saved as `posts.json` and the built assets are in the `posts/` folder. All checks passed (with only minor Instagram hook warnings that do not block validity). The ready-to-post set includes images, captions, and alt text for LinkedIn, Instagram, and X.

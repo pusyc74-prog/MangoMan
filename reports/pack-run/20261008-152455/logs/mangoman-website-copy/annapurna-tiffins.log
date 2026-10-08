@@ -1,0 +1,2764 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-website-copy"
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/brief_gate.py facts.md --pages 4
+PASS  15 facts for 4 pages
+[0m
+[91m[1mError: [0m{"message":"the model's answer came out garbled; stopped it","type":"upstream_stream_error"}
+
+The model's answer was cut off; continuing the task.
+[0m
+> build · free/coder
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site
+site.json problems:
+- page : slug is lowercase words joined by dashes
+[0m
+[0m$ [0mhead -30 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py
+"""Build website copy from site.json.
+
+Usage: python3 build_copy.py site.json --out site
+Writes into the out folder: copy/<slug>.md (one Markdown file per page, ready
+to paste into a CMS), pages.csv (one row per page: title, description, h1,
+button, body), sitemap.md (every page with its goal, keyword and links) and
+pages.json (the pages in the landing page pack's section format).
+
+Text fields accept **bold** and [link text](https://... or /page). A link to
+/ is the first page (home); /about is the page whose slug is about.
+"""
+import csv
+import json
+import os
+import re
+import sys
+
+TYPES = ("hero", "text", "features", "steps", "stats", "testimonials", "faq", "cta")
+LIST_KEY = {"features": "items", "steps": "items", "stats": "items", "testimonials": "items", "faq": "items", "text": "body"}
+SKIP = {"type", "href", "id", "nav", "tone"}
+LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+|/[a-z0-9-]*)\)")
+
+
+def load(path):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def texts(o):
+    """Every piece of copy inside a page's sections (links, ids and types left out)."""
+[0m
+[0m$ [0mgrep -n "slug" /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py
+4:Writes into the out folder: copy/<slug>.md (one Markdown file per page, ready
+10:/ is the first page (home); /about is the page whose slug is about.
+42:def target(href, slugs):
+43:    """The slug an internal link points to, or None when it points nowhere."""
+45:        return slugs[0]
+46:    return href.strip("/") if href.startswith("/") and href.strip("/") in slugs else None
+66:    slugs = [pg.get("slug", "") for pg in pages]
+68:        tag = "page %s" % pg.get("slug", "?")
+69:        if not re.match(r"^[a-z0-9]+(?:-[a-z0-9]+)*$", pg.get("slug", "")):
+70:            p.append("%s: slug is lowercase words joined by dashes" % tag)
+71:        if slugs.count(pg.get("slug")) > 1:
+72:            p.append("%s: slug used twice" % tag)
+96:            if target(h, slugs) is None:
+97:                p.append("%s: link %s points to no page (slugs: %s)" % (tag, h, ", ".join(slugs)))
+134:    slugs = [pg["slug"] for pg in spec["pages"]]
+137:        to = sorted({target(h, slugs) for h in internal_links(pg)} - {pg["slug"]})
+138:        rows.append("| %s | %s | %s | %s | %s | %s |" % (pg["name"], "/" if i == 0 else "/" + pg["slug"], pg["goal"], pg["keyword"],
+146:        with open(os.path.join(out, "copy", pg["slug"] + ".md"), "w", encoding="utf-8") as f:
+150:        w.writerow(["slug", "name", "title", "description", "h1", "button", "body"])
+152:            w.writerow([pg["slug"], pg["name"], pg["meta"]["title"], pg["meta"]["description"], pg["sections"][0]["headline"], pg["cta"]["label"], page_md(pg)])
+156:            "pages": [{"slug": pg["slug"], "meta": pg["meta"], "sections": pg["sections"]} for pg in spec["pages"]]}
+[0m
+[0m→ [0mRead site.json
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -43,9 +43,9 @@
+   }
+ ],
+ "pages": [
+   {
+-    "slug": "",
++    "slug": "home",
+     "name": "Home",
+     "goal": "Get the visitor to start a weekly plan on WhatsApp",
+     "keyword": "tiffin delivery Pune",
+     "meta": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site
+Built 4 pages into site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+PASS  spec is valid
+PASS  all output files exist
+FAIL  numbers not in the facts: 123; 130
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 11.3 words
+FAIL  keyword missing: about: keyword 'about Annapurna Tiffins Pune' in neither title nor h1; home: keyword 'tiffin delivery Pune' in neither title nor h1; menu: keyword 'tiffin menu Pune' in neither title nor h1; plans: keyword 'weekly tiffin plan Pune price' in neither title nor h1
+WARN  search fit: about: keyword not in the description; about: keyword not in the first 100 words; home: keyword not in the description; home: keyword not in the first 100 words; menu: keyword not in the description; menu: keyword not in the first 100 words; menu: title is 67 characters (30 to 60); plans: keyword not in the description
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+WARN  pages nobody links to: about; menu; plans
+PASS  no sentence repeated across pages
+PASS  no thin pages
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -189,15 +189,15 @@
+     "href": "https://wa.me/919876543210"
+   }
+ },
+ {
+-  "type": "text",
+-  "headline": "Our transparent pricing",
+-  "body": [
+-    "Weekly plan: 6 lunches for Rs 780 (Rs 130 per meal).",
+-    "Monthly plan: 26 lunches for Rs 3,200 (Rs 123 per meal).",
+-    "Both plans include the same home-style vegetarian tiffin with 4 rotis, sabzi, dal, rice and Sunday sweet."
+-  ]
++    "type": "text",
++    "headline": "Our transparent pricing",
++    "body": [
++      "Weekly plan: 6 lunches for Rs 780.",
++      "Monthly plan: 26 lunches for Rs 3,200.",
++      "Both plans include the same home-style vegetarian tiffin with 4 rotis, sabzi, dal, rice and Sunday sweet."
++    ]
+ },
+ {
+   "type": "stats",
+   "headline": "Trusted by professionals across Pune",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -56,17 +56,18 @@
+   "label": "Start a weekly plan",
+   "href": "https://wa.me/919876543210"
+ },
+ "sections": [
+-  {
+-    "type": "hero",
+-    "headline": "Home-style vegetarian tiffins, delivered daily",
+-    "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+-    "proof": "Started in 2019, now serving 240 tiffins every day",
+-    "cta": {
+-      "label": "Start a weekly plan",
+-      "href": "https://wa.me/919876543210"
+-    }
++      {
++        "type": "hero",
++        "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
++        "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
++        "proof": "Started in 2019, now serving 240 tiffins every day",
++        "cta": {
++          "label": "Start a weekly plan",
++          "href": "https://wa.me/919876543210"
++        }
++      }
+   },
+   {
+     "type": "text",
+     "headline": "What makes our tiffins special",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -118,17 +118,18 @@
+   "label": "Start a weekly plan",
+   "href": "https://wa.me/919876543210"
+ },
+ "sections": [
+-  {
+-    "type": "hero",
+-    "headline": "Fresh, home-style vegetarian tiffin every day",
+-    "sub": "Our daily changing menu brings variety to your lunch",
+-    "proof": "Each tiffin has 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays",
+-    "cta": {
+-      "label": "Start a weekly plan",
+-      "href": "https://wa.me/919876543210"
+-    }
++      {
++        "type": "hero",
++        "headline": "Tiffin menu Pune: Fresh, home-style vegetarian tiffin every day",
++        "sub": "Our daily changing menu brings variety to your lunch",
++        "proof": "Each tiffin has 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays",
++        "cta": {
++          "label": "Start a weekly plan",
++          "href": "https://wa.me/919876543210"
++        }
++      }
+   },
+   {
+     "type": "text",
+     "headline": "What goes into your tiffin",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -180,17 +180,18 @@
+   "label": "Start a weekly plan",
+   "href": "https://wa.me/919876543210"
+ },
+ "sections": [
+-  {
+-    "type": "hero",
+-    "headline": "Simple, affordable tiffin plans for working professionals",
+-    "sub": "Choose weekly or monthly, pause anytime with notice",
+-    "proof": "Started with 6 customers in 2019, now serving 240 tiffins daily",
+-    "cta": {
+-      "label": "Start a weekly plan",
+-      "href": "https://wa.me/919876543210"
+-    }
++      {
++        "type": "hero",
++        "headline": "Weekly tiffin plan Pune price: Simple, affordable tiffin plans for working professionals",
++        "sub": "Choose weekly or monthly, pause anytime with notice",
++        "proof": "Started with 6 customers in 2019, now serving 240 tiffins daily",
++        "cta": {
++          "label": "Start a weekly plan",
++          "href": "https://wa.me/919876543210"
++        }
++      }
+   },
+   {
+       "type": "text",
+       "headline": "Our transparent pricing",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -261,17 +261,18 @@
+   "label": "Start a weekly plan",
+   "href": "https://wa.me/919876543210"
+ },
+ "sections": [
+-  {
+-    "type": "hero",
+-    "headline": "Home-cooked care in every tiffin",
+-    "sub": "From Savita Joshi's kitchen since 2019",
+-    "proof": "Started with 6 customers, now delivering 240 tiffins daily across Baner, Aundh, Balewadi and Pashan",
+-    "cta": {
+-      "label": "Start a weekly plan",
+-      "href": "https://wa.me/919876543210"
+-    }
++      {
++        "type": "hero",
++        "headline": "About Annapurna Tiffins Pune: Home-cooked care in every tiffin",
++        "sub": "From Savita Joshi's kitchen since 2019",
++        "proof": "Started with 6 customers, now delivering 240 tiffins daily across Baner, Aundh, Balewadi and Pashan",
++        "cta": {
++          "label": "Start a weekly plan",
++          "href": "https://wa.me/919876543210"
++        }
++      }
+   },
+   {
+     "type": "text",
+     "headline": "Our story",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -110,10 +110,10 @@
+ "name": "Menu",
+ "goal": "Show the variety and daily changing nature of our meals",
+ "keyword": "tiffin menu Pune",
+ "meta": {
+-  "title": "Daily Tiffin Menu | Home-style Vegetarian Meals | Annapurna Tiffins",
+-  "description": "See what's in our daily tiffin: 4 rotis, sabzi, dal, rice and sweet. Menu changes daily, Jain options available."
++  "title": "Tiffin Menu Pune | Daily Home-style Meals | Annapurna Tiffins",
++  "description": "See what's in our daily tiffin: 4 rotis, sabzi, dal, rice and sweet. Menu changes daily, Jain options available. Tiffin menu Pune."
+ },
+ "cta": {
+   "label": "Start a weekly plan",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+Traceback (most recent call last):
+  File "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py", line 143, in <module>
+    main()
+  File "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py", line 61, in main
+    spec = B.load(src)
+           ^^^^^^^^^^^
+  File "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py", line 26, in load
+    return json.load(f)
+           ^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 70 column 9 (char 2623)
+[0m
+[0m$ [0msed -n '60,80p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+{
+              "type": "hero",
+              "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+              "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+              "proof": "Started in 2019, now serving 240 tiffins every day",
+              "cta": {
+                "label": "Start a weekly plan",
+                "href": "https://wa.me/919876543210"
+              }
+            }
+        },
+        {
+          "type": "text",
+          "headline": "What makes our tiffins special",
+          "body": [
+            "We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.",
+            "We use cold-pressed groundnut oil and never add ajinomoto. Lunch reaches your door between 12:00 and 1:00 pm, orders for the next day close at 8 pm."
+          ]
+        },
+        {
+          "type": "features",
+[0m
+[0m$ [0msed -n '70p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+},
+[0m
+[0m$ [0msed -n '65,75p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+"cta": {
+                "label": "Start a weekly plan",
+                "href": "https://wa.me/919876543210"
+              }
+            }
+        },
+        {
+          "type": "text",
+          "headline": "What makes our tiffins special",
+          "body": [
+            "We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.",
+[0m
+[0m$ [0mpython3 -m json.tool /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /dev/null && echo "JSON is valid" || echo "JSON invalid"
+Expecting ',' delimiter: line 70 column 9 (char 2623)
+JSON invalid
+[0m
+[0m$ [0mhead -c 2630 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | tail -c 30
+}
+        },
+[0m
+[0m$ [0mtail -30 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+"type": "features",
+          "headline": "What drives us",
+          "items": [
+            {
+              "title": "Home-style cooking",
+              "text": "We prepare meals the way they're made in Indian homes, with attention to taste, nutrition and comfort."
+            },
+            {
+              "title": "Quality ingredients",
+              "text": "We use cold-pressed groundnut oil, fresh vegetables and pulses, and never compromise on quality."
+            },
+            {
+              "title": "Reliable service",
+              "text": "Consistent delivery timing (12:00-1:00 pm) and simple ordering via WhatsApp have built trust with our customers."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Experience the Annapurna difference",
+          "sub": "Taste why hundreds choose our home-style tiffin service",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        }
+      ]
+    }
+  ]
+}
+[0m
+[0m$ [0msed -n '150,170p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+"title": "Hygiene and timing",
+              "text": "Meals are freshly cooked and delivered between 12:00 and 1:00 pm. Orders for next day close at 8 pm."
+            },
+            {
+              "title": "Dietary needs",
+              "text": "Jain meals available daily. Custom adjustments possible with advance notice."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Want to see today's menu?",
+          "sub": "Get the daily menu on WhatsApp and start your plan",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        }
+      ]
+    },
+    {
+[0m
+[0m$ [0msed -n '230,250p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+{
+              "q": "Are Jain meals available?",
+              "a": "Absolutely, Jain meals are prepared daily at the same price upon request."
+            },
+            {
+              "q": "How do I pay for my plan?",
+              "a": "Payment is by UPI advance at the start of your weekly or monthly plan."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Start enjoying home-style lunches today",
+          "sub": "No long-term commitment, pause or restart anytime",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        }
+      ]
+    },
+[0m
+[0m$ [0msed -n '110,125p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+"name": "Menu",
+      "goal": "Show the variety and daily changing nature of our meals",
+      "keyword": "tiffin menu Pune",
+      "meta": {
+        "title": "Tiffin Menu Pune | Daily Home-style Meals | Annapurna Tiffins",
+        "description": "See what's in our daily tiffin: 4 rotis, sabzi, dal, rice and sweet. Menu changes daily, Jain options available. Tiffin menu Pune."
+      },
+      "cta": {
+        "label": "Start a weekly plan",
+        "href": "https://wa.me/919876543210"
+      },
+      "sections": [
+            {
+              "type": "hero",
+              "headline": "Tiffin menu Pune: Fresh, home-style vegetarian tiffin every day",
+              "sub": "Our daily changing menu brings variety to your lunch",
+[0m
+[0m$ [0msed -n '190,210p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+"label": "Start a weekly plan",
+                "href": "https://wa.me/919876543210"
+              }
+            }
+        },
+        {
+            "type": "text",
+            "headline": "Our transparent pricing",
+            "body": [
+              "Weekly plan: 6 lunches for Rs 780.",
+              "Monthly plan: 26 lunches for Rs 3,200.",
+              "Both plans include the same home-style vegetarian tiffin with 4 rotis, sabzi, dal, rice and Sunday sweet."
+            ]
+        },
+        {
+          "type": "stats",
+          "headline": "Trusted by professionals across Pune",
+          "items": [
+            {
+              "value": "240",
+              "label": "tiffins delivered daily"
+[0m
+[0m$ [0msed -n '70p' /tmp/tmp.BVHngeqJxc/run/mangaman-website-copy/annapurna-tiffins/site.json | cat -A
+sed: can't read /tmp/tmp.BVHngeqJxc/run/mangaman-website-copy/annapurna-tiffins/site.json: No such file or directory
+[0m
+[0m$ [0msed -n '70p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+},$
+[0m
+[0m$ [0msed -n '68,72p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+}
+            }
+        },
+        {
+          "type": "text",
+[0m
+[0m$ [0msed -n '60,75p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+{
+              "type": "hero",
+              "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+              "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+              "proof": "Started in 2019, now serving 240 tiffins every day",
+              "cta": {
+                "label": "Start a weekly plan",
+                "href": "https://wa.me/919876543210"
+              }
+            }
+        },
+        {
+          "type": "text",
+          "headline": "What makes our tiffins special",
+          "body": [
+            "We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.",
+[0m
+[0m$ [0msed -n '55,65p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+"cta": {
+        "label": "Start a weekly plan",
+        "href": "https://wa.me/919876543210"
+      },
+      "sections": [
+            {
+              "type": "hero",
+              "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+              "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+              "proof": "Started in 2019, now serving 240 tiffins every day",
+              "cta": {
+[0m
+[0m$ [0msed -n '55,105p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | nl -ba
+1	      "cta": {
+     2	        "label": "Start a weekly plan",
+     3	        "href": "https://wa.me/919876543210"
+     4	      },
+     5	      "sections": [
+     6	            {
+     7	              "type": "hero",
+     8	              "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+     9	              "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+    10	              "proof": "Started in 2019, now serving 240 tiffins every day",
+    11	              "cta": {
+    12	                "label": "Start a weekly plan",
+    13	                "href": "https://wa.me/919876543210"
+    14	              }
+    15	            }
+    16	        },
+    17	        {
+    18	          "type": "text",
+    19	          "headline": "What makes our tiffins special",
+    20	          "body": [
+    21	            "We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.",
+    22	            "We use cold-pressed groundnut oil and never add ajinomoto. Lunch reaches your door between 12:00 and 1:00 pm, orders for the next day close at 8 pm."
+    23	          ]
+    24	        },
+    25	        {
+    26	          "type": "features",
+    27	          "headline": "Our service at a glance",
+    28	          "items": [
+    29	            {
+    30	              "title": "Daily changing menu",
+    31	              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."
+    32	            },
+    33	            {
+    34	              "title": "Flexible plans",
+    35	              "text": "Weekly plan (6 lunches) for Rs 780 or monthly plan (26 lunches) for Rs 3,200. Pause your plan for free with 1 day notice."
+    36	            },
+    37	            {
+    38	              "title": "Easy ordering",
+    39	              "text": "Pay by UPI at the start of your plan. Order or ask questions on WhatsApp at 98765 43210."
+    40	            }
+    41	          ]
+    42	        },
+    43	        {
+    44	          "type": "cta",
+    45	          "headline": "Ready for home-style lunch every day?",
+    46	          "sub": "Join hundreds of professionals in Baner, Aundh, Balewadi and Pashan who trust Annapurna Tiffins",
+    47	          "cta": {
+    48	            "label": "Start a weekly plan",
+    49	            "href": "https://wa.me/919876543210"
+    50	          }
+    51	        }
+[0m
+[0m$ [0msed -n '105,115p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+}
+      ]
+    },
+    {
+      "slug": "menu",
+      "name": "Menu",
+      "goal": "Show the variety and daily changing nature of our meals",
+      "keyword": "tiffin menu Pune",
+      "meta": {
+        "title": "Tiffin Menu Pune | Daily Home-style Meals | Annapurna Tiffins",
+        "description": "See what's in our daily tiffin: 4 rotis, sabzi, dal, rice and sweet. Menu changes daily, Jain options available. Tiffin menu Pune."
+[0m
+[0m$ [0mhead -c 2640 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | tail -c 40 | xxd
+00000000: 0a20 2020 2020 2020 2020 2020 207d 0a20  .            }. 
+00000010: 2020 2020 2020 207d 2c0a 2020 2020 2020         },.      
+00000020: 2020 7b0a 2020 2020                        {.
+[0m
+[0m$ [0msed -n '69,71p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+        },$
+        {$
+[0m
+[0m$ [0msed -n '55,58p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"cta": {$
+        "label": "Start a weekly plan",$
+        "href": "https://wa.me/919876543210"$
+      },$
+[0m
+[0m$ [0msed -n '58,62p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+},$
+      "sections": [$
+            {$
+              "type": "hero",$
+              "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+[0m
+[0m$ [0mpython3 -c "import json; json.load(open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json'))" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 70 column 9 (char 2623)
+[0m
+[0m$ [0mhead -c 2624 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | tail -c 20 | xxd
+00000000: 2020 2020 2020 2020 207d 0a20 2020 2020           }.     
+00000010: 2020 207d                                   }
+[0m
+[0m$ [0mhead -c 2610 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | tail -c 40 | xxd
+00000000: 2f39 3139 3837 3635 3433 3231 3022 0a20  /919876543210". 
+00000010: 2020 2020 2020 2020 2020 2020 207d 0a20               }. 
+00000020: 2020 2020 2020 2020
+[0m
+[0m$ [0msed -n '55,105p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | grep -n '^[[:space:]]*,[[:space:]]*$'
+(no output)
+[0m
+[0m$ [0msed -n '55,105p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | grep -n '},'
+4:      },
+16:        },
+24:        },
+32:            },
+36:            },
+42:        },
+[0m
+[0m$ [0msed -n '55,105p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | grep -n '}' | grep -v '},'
+14:              }
+15:            }
+40:            }
+50:          }
+51:        }
+[0m
+[0m$ [0msed -n '17,30p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"order_cutoff": "8 pm for next day",$
+    "oil": "Cold-pressed groundnut oil, no ajinomoto",$
+    "founded": "Started by Savita Joshi in 2019 with 6 customers",$
+    "current_volume": "About 240 tiffins per day",$
+    "pause_plan": "Pause a plan for free with 1 day notice",$
+    "menu_update": "Menu changes daily, posted on WhatsApp at 9 pm",$
+    "jain_meals": "Available at same price",$
+    "payment": "Pay by UPI at start of plan",$
+    "whatsapp": "98765 43210"$
+  },$
+  "competitors": [$
+    {$
+      "name": "Dabba Express",$
+      "url": "https://dabbaexpress.example.com",$
+[0m
+[0m$ [0msed -n '17,25p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+"order_cutoff": "8 pm for next day",
+    "oil": "Cold-pressed groundnut oil, no ajinomoto",
+    "founded": "Started by Savita Joshi in 2019 with 6 customers",
+    "current_volume": "About 240 tiffins per day",
+    "pause_plan": "Pause a plan for free with 1 day notice",
+    "menu_update": "Menu changes daily, posted on WhatsApp at 9 pm",
+    "jain_meals": "Available at same price",
+    "payment": "Pay by UPI at start of plan",
+    "whatsapp": "98765 43210"
+[0m
+[0m$ [0msed -n '55p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+"cta": {
+[0m
+[0m$ [0mgrep -n '"facts": {' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+11:  "facts": {
+[0m
+[0m$ [0mgrep -n '"competitors": [' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+grep: Invalid regular expression
+[0m
+[0m$ [0mgrep -n '"competitors": \\[' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+grep: Invalid regular expression
+[0m
+[0m$ [0mgrep -n 'competitors' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+27:  "competitors": [
+[0m
+[0m$ [0msed -n '50,80p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"keyword": "tiffin delivery Pune",$
+      "meta": {$
+        "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",$
+        "description": "Fresh vegetarian tiffins delivered daily from our kitchen in Baner. Weekly plans from Rs 780."$
+      },$
+      "cta": {$
+        "label": "Start a weekly plan",$
+        "href": "https://wa.me/919876543210"$
+      },$
+      "sections": [$
+            {$
+              "type": "hero",$
+              "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+              "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+              "proof": "Started in 2019, now serving 240 tiffins every day",$
+              "cta": {$
+                "label": "Start a weekly plan",$
+                "href": "https://wa.me/919876543210"$
+              }$
+            }$
+        },$
+        {$
+          "type": "text",$
+          "headline": "What makes our tiffins special",$
+          "body": [$
+            "We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.",$
+            "We use cold-pressed groundnut oil and never add ajinomoto. Lunch reaches your door between 12:00 and 1:00 pm, orders for the next day close at 8 pm."$
+          ]$
+        },$
+        {$
+          "type": "features",$
+[0m
+[0m$ [0msed -n '80,110p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"type": "features",$
+          "headline": "Our service at a glance",$
+          "items": [$
+            {$
+              "title": "Daily changing menu",$
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."$
+            },$
+            {$
+              "title": "Flexible plans",$
+              "text": "Weekly plan (6 lunches) for Rs 780 or monthly plan (26 lunches) for Rs 3,200. Pause your plan for free with 1 day notice."$
+            },$
+            {$
+              "title": "Easy ordering",$
+              "text": "Pay by UPI at the start of your plan. Order or ask questions on WhatsApp at 98765 43210."$
+            }$
+          ]$
+        },$
+        {$
+          "type": "cta",$
+          "headline": "Ready for home-style lunch every day?",$
+          "sub": "Join hundreds of professionals in Baner, Aundh, Balewadi and Pashan who trust Annapurna Tiffins",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        }$
+      ]$
+    },$
+    {$
+      "slug": "menu",$
+      "name": "Menu",$
+[0m
+[0m$ [0mgrep -n '"slug": "menu"' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+109:      "slug": "menu",
+[0m
+[0m$ [0mgrep -n ',]' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mgrep -n ',}' /tmp/tmp.BvHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+grep: /tmp/tmp.BvHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json: No such file or directory
+[0m
+[0m$ [0mgrep -n ',}' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mhead -c 3 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | xxd
+00000000: 7b0a 20                                  {.
+[0m
+[0m$ [0mpython3 -c "
+import json, sys
+try:
+    with open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json', 'r') as f:
+        data = json.load(f)
+    print('JSON is valid')
+except json.JSONDecodeError as e:
+    print(f'Error at line {e.lineno}, column {e.colno}: {e.msg}')
+    # Get context
+    lines = open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json').readlines()
+    start = max(0, e.lineno - 3)
+    end = min(len(lines), e.lineno + 3)
+    for i in range(start, end):
+        print(f'{i+1:4}: {lines[i].rstrip()}')
+" 2>&1
+Error at line 70, column 9: Expecting ',' delimiter
+  68:               }
+  69:             }
+  70:         },
+  71:         {
+  72:           "type": "text",
+  73:           "headline": "What makes our tiffins special",
+[0m
+[0m$ [0msed -n '60,70p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+              "type": "hero",$
+              "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+              "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+              "proof": "Started in 2019, now serving 240 tiffins every day",$
+              "cta": {$
+                "label": "Start a weekly plan",$
+                "href": "https://wa.me/919876543210"$
+              }$
+            }$
+        },$
+[0m
+[0m$ [0msed -n '55,60p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"cta": {$
+        "label": "Start a weekly plan",$
+        "href": "https://wa.me/919876543210"$
+      },$
+      "sections": [$
+            {$
+[0m
+[0m$ [0mgrep -n '"slug": "home"' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+47:      "slug": "home",
+[0m
+[0m$ [0msed -n '45,50p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"pages": [$
+    {$
+      "slug": "home",$
+      "name": "Home",$
+      "goal": "Get the visitor to start a weekly plan on WhatsApp",$
+      "keyword": "tiffin delivery Pune",$
+[0m
+[0m$ [0msed -n '52,56p' /tmp/tmp.BVHngexc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+sed: can't read /tmp/tmp.BVHngexc/run/mangoman-website-copy/annapurna-tiffins/site.json: No such file or directory
+[0m
+[0m$ [0msed -n '52,56p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",$
+        "description": "Fresh vegetarian tiffins delivered daily from our kitchen in Baner. Weekly plans from Rs 780."$
+      },$
+      "cta": {$
+        "label": "Start a weekly plan",$
+[0m
+[0m$ [0msed -n '50,55p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"keyword": "tiffin delivery Pune",$
+      "meta": {$
+        "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",$
+        "description": "Fresh vegetarian tiffins delivered daily from our kitchen in Baner. Weekly plans from Rs 780."$
+      },$
+      "cta": {$
+[0m
+[0m$ [0msed -n '57,62p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"href": "https://wa.me/919876543210"$
+      },$
+      "sections": [$
+            {$
+              "type": "hero",$
+              "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+[0m
+[0m$ [0msed -n '57,59p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"href": "https://wa.me/919876543210"$
+      },$
+      "sections": [$
+[0m
+[0m$ [0msed -n '55,58p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"cta": {$
+        "label": "Start a weekly plan",$
+        "href": "https://wa.me/919876543210"$
+      },$
+[0m
+[0m$ [0msed -n '60,72p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | awk '{printf "%3d: %s\n", NR+59, $0}'
+60:             {
+ 61:               "type": "hero",
+ 62:               "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+ 63:               "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+ 64:               "proof": "Started in 2019, now serving 240 tiffins every day",
+ 65:               "cta": {
+ 66:                 "label": "Start a weekly plan",
+ 67:                 "href": "https://wa.me/919876543210"
+ 68:               }
+ 69:             }
+ 70:         },
+ 71:         {
+ 72:           "type": "text",
+[0m
+[0m$ [0msed -n '62p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+[0m
+[0m$ [0msed -n '71,75p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+          "type": "text",$
+          "headline": "What makes our tiffins special",$
+          "body": [$
+            "We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.",$
+[0m
+[0m$ [0msed -n '71,90p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+{
+          "type": "text",
+          "headline": "What makes our tiffins special",
+          "body": [
+            "We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.",
+            "We use cold-pressed groundnut oil and never add ajinomoto. Lunch reaches your door between 12:00 and 1:00 pm, orders for the next day close at 8 pm."
+          ]
+        },
+        {
+          "type": "features",
+          "headline": "Our service at a glance",
+          "items": [
+            {
+              "title": "Daily changing menu",
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."
+            },
+            {
+              "title": "Flexible plans",
+              "text": "Weekly plan (6 lunches) for Rs 780 or monthly plan (26 lunches) for Rs 3,200. Pause your plan for free with 1 day notice."
+            },
+[0m
+[0m$ [0msed -n '71p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | sed -e 's/./ /g' | wc -c
+10
+[0m
+[0m$ [0mpython3 -c "
+import json
+with open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json', 'r') as f:
+    data = json.load(f)
+with open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json', 'w') as f:
+    json.dump(data, f, indent=2)
+"
+Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 70 column 9 (char 2623)
+[0m
+[0m✗ [0mInvalid Tool
+The arguments provided to the tool are invalid: Model tried to call unavailable tool 'batch'. Available tools: bash, edit, glob, grep, invalid, read, skill, task, todowrite, webfetch, write.
+[0m
+[0m$ [0mcat > /tmp/newblock.txt << 'EOF'
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+EOF
+(no output)
+[0m
+[0m$ [0msed -i '60,70c\\' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mawk 'NR>=60 && NR<=70 {while ((getline line < "/tmp/newblock.txt") > 0) print line; close("/tmp/newblock.txt"); skip=1} NR<60 || NR>70 {print}' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mpython3 -c "import json; json.load(open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json'))" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 170 column 21 (char 6826)
+[0m
+[0m$ [0mpython3 -c "
+import json, sys
+try:
+    with open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json', 'r') as f:
+        data = json.load(f)
+    print('JSON is valid')
+except json.JSONDecodeError as e:
+    print(f'Error at line {e.lineno}, column {e.colno}: {e.msg}')
+    lines = open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json').readlines()
+    start = max(0, e.lineno - 3)
+    end = min(len(lines), e.lineno + 3)
+    for i in range(start, end):
+        print(f'{i+1:4}: {lines[i].rstrip()}')
+" 2>&1
+Error at line 170, column 21: Expecting ',' delimiter
+ 168:           }
+ 169:         },
+ 170:           "headline": "Our service at a glance",
+ 171:           "items": [
+ 172:             {
+ 173:               "title": "Daily changing menu",
+[0m
+## Objective
+- Build a complete website copy for Annapurna Tiffins (home-style tiffin delivery in Pune) by creating a valid site.json, generating page copy into the site folder, and passing all validation checks.
+
+## Important Details
+- Business: Annapurna Tiffins, Pune (Baner kitchen, delivers to Baner, Aundh, Balewadi, Pashan)
+- Visitor goal: Start a weekly plan via WhatsApp (98765 43210)
+- Pages: home, menu, plans, about
+- Voice: warm, like a mother's kitchen, plain words; avoid "cheap", "gourmet"
+- Language: English
+- Key facts: weekly plan Rs 780 (6 lunches), monthly Rs 3,200 (26 lunches), 240 tiffins/day, founded 2019 by Savita Joshi, cold-pressed groundnut oil, no ajinomoto, Jain meals available, pause free with 1 day notice, menu posted on WhatsApp at 9 pm, payment by UPI
+- Competitors: Dabba Express (cheap, restaurant quality), Home Bites (gourmet)
+- Site URL: https://annapurnatiffins.example.com
+
+## Work State
+### Completed
+- Read brief.md, facts.md, competitors.md
+- Passed brief_gate.py (15 facts for 4 pages)
+- Created initial site.json with all four pages
+- Ran build_copy.py successfully (built 4 pages into site/)
+
+### Active
+- Fixing JSON syntax error in site.json (line 70 column 9) that prevents check_copy.py from running
+- Need to resolve check_copy.py failures: numbers 123/130 not in facts, missing keywords in titles/h1, search fit warnings, unlinked pages warnings
+
+### Blocked
+- JSON decode error: "Expecting ',' delimiter: line 70 column 9 (char 2623)" when loading site.json
+- Inconsistent indentation in home page sections array causing parser confusion
+
+## Next Move
+1. Fix the JSON syntax error in site.json by ensuring consistent formatting in the home page sections array (likely extra/misplaced comma or brace)
+2. Re-run check_copy.py to verify JSON validity
+3. Address remaining check failures: remove per-meal price numbers (123, 130), add exact keywords to each page's hero headline or meta title, shorten menu title to 30-60 chars, ensure internal links use correct slugs
+
+## Relevant Files
+- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json: master spec with JSON syntax error
+- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/facts.md: source facts (17 lines)
+- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/competitors.md: competitor claims
+- /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/brief.md: original brief
+- /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/: build_copy.py, check_copy.py, brief_gate.py
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m$ [0msed -n '160,175p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+          "headline": "Our service at a glance",$
+          "items": [$
+            {$
+              "title": "Daily changing menu",$
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."$
+            },$
+[0m
+[0m$ [0msed -i '169s/.*/        {/' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+sed -i '170i\          "type": "features",' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mpython3 -c "import json; json.load(open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json'))" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 169 column 9 (char 6803)
+[0m
+[0m$ [0msed -n '165,175p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        {$
+          "type": "features",$
+          "headline": "Our service at a glance",$
+          "items": [$
+            {$
+              "title": "Daily changing menu",$
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."$
+[0m
+[0m$ [0mcp /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json.bak /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+cp: cannot stat '/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json.bak': No such file or directory
+[0m
+[0m$ [0mcp /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json.backup2
+(no output)
+[0m
+[0m$ [0msed -n '47,120p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/home_section.json
+(no output)
+[0m
+[0m$ [0mcat /tmp/home_section.json
+"slug": "home",
+      "name": "Home",
+      "goal": "Get the visitor to start a weekly plan on WhatsApp",
+      "keyword": "tiffin delivery Pune",
+      "meta": {
+        "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",
+        "description": "Fresh vegetarian tiffins delivered daily from our kitchen in Baner. Weekly plans from Rs 780."
+      },
+      "cta": {
+        "label": "Start a weekly plan",
+        "href": "https://wa.me/919876543210"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+[0m
+[0m$ [0m# Extract the home page object up to the sections array
+sed -n '1,50p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | head -n -1 > /tmp/prefix.json
+echo '      "sections": [' >> /tmp/prefix.json
+
+# Add the correct sections
+cat >> /tmp/prefix.json << 'EOF'
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "text",
+          "headline": "What makes our tiffins special",
+          "body": [
+            "We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.",
+            "We use cold-pressed groundnut oil and never add ajinomoto. Lunch reaches your door between 12:00 and 1:00 pm, orders for the next day close at 8 pm."
+          ]
+        },
+        {
+          "type": "features",
+          "headline": "Our service at a glance",
+          "items": [
+            {
+              "title": "Daily changing menu",
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."
+            },
+            {
+              "title": "Flexible plans",
+              "text": "Weekly plan (6 lunches) for Rs 780 or monthly plan (26 lunches) for Rs 3,200. Pause your plan for free with 1 day notice."
+            },
+            {
+              "title": "Easy ordering",
+              "text": "Pay by UPI at the start of your plan. Order or ask questions on WhatsApp at 98765 43210."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Ready for home-style lunch every day?",
+          "sub": "Join hundreds of professionals in Baner, Aundh, Balewadi and Pashan who trust Annapurna Tiffins",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        }
+      ],
+EOF
+(no output)
+[0m
+[0m$ [0m# Find the line number where the menu page starts
+grep -n '"slug": "menu"' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+199:      "slug": "menu",
+[0m
+[0m$ [0mgrep -n '"slug":' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+47:      "slug": "home",
+199:      "slug": "menu",
+261:      "slug": "plans",
+342:      "slug": "about",
+[0m
+[0m$ [0m# Extract from line 47 (start of home) to line 198 (just before menu)
+sed -n '47,198p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/home_page.json
+(no output)
+[0m
+[0m$ [0mcat /tmp/home_page.json
+"slug": "home",
+      "name": "Home",
+      "goal": "Get the visitor to start a weekly plan on WhatsApp",
+      "keyword": "tiffin delivery Pune",
+      "meta": {
+        "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",
+        "description": "Fresh vegetarian tiffins delivered daily from our kitchen in Baner. Weekly plans from Rs 780."
+      },
+      "cta": {
+        "label": "Start a weekly plan",
+        "href": "https://wa.me/919876543210"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        {
+          "type": "features",
+          "headline": "Our service at a glance",
+          "items": [
+            {
+              "title": "Daily changing menu",
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."
+            },
+            {
+              "title": "Flexible plans",
+              "text": "Weekly plan (6 lunches) for Rs 780 or monthly plan (26 lunches) for Rs 3,200. Pause your plan for free with 1 day notice."
+            },
+            {
+              "title": "Easy ordering",
+              "text": "Pay by UPI at the start of your plan. Order or ask questions on WhatsApp at 98765 43210."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Ready for home-style lunch every day?",
+          "sub": "Join hundreds of professionals in Baner, Aundh, Balewadi and Pashan who trust Annapurna Tiffins",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        }
+      ]
+    },
+    {
+[0m
+[0m$ [0m# Create the fixed home page object
+cat > /tmp/fixed_home.json << 'EOF'
+      "slug": "home",
+      "name": "Home",
+      "goal": "Get the visitor to start a weekly plan on WhatsApp",
+      "keyword": "tiffin delivery Pune",
+      "meta": {
+        "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",
+        "description": "Fresh vegetarian tiffins delivered daily from our kitchen in Baner. Weekly plans from Rs 780."
+      },
+      "cta": {
+        "label": "Start a weekly plan",
+        "href": "https://wa.me/919876543210"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",
+          "proof": "Started in 2019, now serving 240 tiffins every day",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        },
+        {
+          "type": "text",
+          "headline": "What makes our tiffins special",
+          "body": [
+            "We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.",
+            "We use cold-pressed groundnut oil and never add ajinomoto. Lunch reaches your door between 12:00 and 1:00 pm, orders for the next day close at 8 pm."
+          ]
+        },
+        {
+          "type": "features",
+          "headline": "Our service at a glance",
+          "items": [
+            {
+              "title": "Daily changing menu",
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."
+            },
+            {
+              "title": "Flexible plans",
+              "text": "Weekly plan (6 lunches) for Rs 780 or monthly plan (26 lunches) for Rs 3,200. Pause your plan for free with 1 day notice."
+            },
+            {
+              "title": "Easy ordering",
+              "text": "Pay by UPI at the start of your plan. Order or ask questions on WhatsApp at 98765 43210."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Ready for home-style lunch every day?",
+          "sub": "Join hundreds of professionals in Baner, Aundh, Balewadi and Pashan who trust Annapurna Tiffins",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        }
+      ]
+EOF
+(no output)
+[0m
+[0m$ [0m# Extract from line 199 (start of menu) to line 260 (just before plans)
+sed -n '199,260p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/menu_page.json
+(no output)
+[0m
+[0m$ [0mcat /tmp/menu_page.json
+"slug": "menu",
+      "name": "Menu",
+      "goal": "Show the variety and daily changing nature of our meals",
+      "keyword": "tiffin menu Pune",
+      "meta": {
+        "title": "Tiffin Menu Pune | Daily Home-style Meals | Annapurna Tiffins",
+        "description": "See what's in our daily tiffin: 4 rotis, sabzi, dal, rice and sweet. Menu changes daily, Jain options available. Tiffin menu Pune."
+      },
+      "cta": {
+        "label": "Start a weekly plan",
+        "href": "https://wa.me/919876543210"
+      },
+      "sections": [
+            {
+              "type": "hero",
+              "headline": "Tiffin menu Pune: Fresh, home-style vegetarian tiffin every day",
+              "sub": "Our daily changing menu brings variety to your lunch",
+              "proof": "Each tiffin has 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays",
+              "cta": {
+                "label": "Start a weekly plan",
+                "href": "https://wa.me/919876543210"
+              }
+            }
+        },
+        {
+          "type": "text",
+          "headline": "What goes into your tiffin",
+          "body": [
+            "Every tiffin includes 4 rotis, one dry vegetable preparation (sabzi), one dal or curry, rice and on Sundays, a sweet.",
+            "We cook without onion and garlic for Jain meals on request, at the same price. The menu is posted on our WhatsApp every evening at 9 pm for the next day."
+          ]
+        },
+        {
+          "type": "features",
+          "headline": "Our cooking standards",
+          "items": [
+            {
+              "title": "Pure ingredients",
+              "text": "We use cold-pressed groundnut oil and avoid all artificial additives like ajinomoto."
+            },
+            {
+              "title": "Hygiene and timing",
+              "text": "Meals are freshly cooked and delivered between 12:00 and 1:00 pm. Orders for next day close at 8 pm."
+            },
+            {
+              "title": "Dietary needs",
+              "text": "Jain meals available daily. Custom adjustments possible with advance notice."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Want to see today's menu?",
+          "sub": "Get the daily menu on WhatsApp and start your plan",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        }
+      ]
+    },
+    {
+[0m
+[0m$ [0m# Extract from line 261 (start of plans) to line 341 (just before about)
+sed -n '261,341p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/plans_page.json
+(no output)
+[0m
+[0m$ [0mcat /tmp/plans_page.json
+"slug": "plans",
+      "name": "Plans",
+      "goal": "Explain pricing and encourage sign-up for weekly or monthly plans",
+      "keyword": "weekly tiffin plan Pune price",
+      "meta": {
+        "title": "Tiffin Plans & Pricing | Weekly & Monthly | Annapurna Tiffins",
+        "description": "Weekly plan: 6 lunches for Rs 780. Monthly plan: 26 lunches for Rs 3,200. Flexible pausing, UPI payment."
+      },
+      "cta": {
+        "label": "Start a weekly plan",
+        "href": "https://wa.me/919876543210"
+      },
+      "sections": [
+            {
+              "type": "hero",
+              "headline": "Weekly tiffin plan Pune price: Simple, affordable tiffin plans for working professionals",
+              "sub": "Choose weekly or monthly, pause anytime with notice",
+              "proof": "Started with 6 customers in 2019, now serving 240 tiffins daily",
+              "cta": {
+                "label": "Start a weekly plan",
+                "href": "https://wa.me/919876543210"
+              }
+            }
+        },
+        {
+            "type": "text",
+            "headline": "Our transparent pricing",
+            "body": [
+              "Weekly plan: 6 lunches for Rs 780.",
+              "Monthly plan: 26 lunches for Rs 3,200.",
+              "Both plans include the same home-style vegetarian tiffin with 4 rotis, sabzi, dal, rice and Sunday sweet."
+            ]
+        },
+        {
+          "type": "stats",
+          "headline": "Trusted by professionals across Pune",
+          "items": [
+            {
+              "value": "240",
+              "label": "tiffins delivered daily"
+            },
+            {
+              "value": "2019",
+              "label": "year we started"
+            },
+            {
+              "value": "6",
+              "label": "customers when we began"
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "headline": "Common questions about our plans",
+          "items": [
+            {
+              "q": "Can I pause my plan if I'm out of town?",
+              "a": "Yes, you can pause your plan for free with 1 day notice via WhatsApp."
+            },
+            {
+              "q": "Are Jain meals available?",
+              "a": "Absolutely, Jain meals are prepared daily at the same price upon request."
+            },
+            {
+              "q": "How do I pay for my plan?",
+              "a": "Payment is by UPI advance at the start of your weekly or monthly plan."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Start enjoying home-style lunches today",
+          "sub": "No long-term commitment, pause or restart anytime",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        }
+      ]
+    },
+    {
+[0m
+[0m$ [0m# Extract from line 342 (start of about) to the end of file
+sed -n '342,$p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/about_page.json
+(no output)
+[0m
+[0m$ [0mcat /tmp/about_page.json
+"slug": "about",
+      "name": "About",
+      "goal": "Tell our story and build trust",
+      "keyword": "about Annapurna Tiffins Pune",
+      "meta": {
+        "title": "About Annapurna Tiffins | Home-style Kitchen in Baner, Pune",
+        "description": "Founded by Savita Joshi in 2019, Annapurna Tiffins delivers home-style vegetarian meals from our Baner kitchen to professionals across Pune."
+      },
+      "cta": {
+        "label": "Start a weekly plan",
+        "href": "https://wa.me/919876543210"
+      },
+      "sections": [
+            {
+              "type": "hero",
+              "headline": "About Annapurna Tiffins Pune: Home-cooked care in every tiffin",
+              "sub": "From Savita Joshi's kitchen since 2019",
+              "proof": "Started with 6 customers, now delivering 240 tiffins daily across Baner, Aundh, Balewadi and Pashan",
+              "cta": {
+                "label": "Start a weekly plan",
+                "href": "https://wa.me/919876543210"
+              }
+            }
+        },
+        {
+          "type": "text",
+          "headline": "Our story",
+          "body": [
+            "Annapurna Tiffins began in 2019 when Savita Joshi started cooking home-style vegetarian meals for a handful of neighbours in Baner, Pune.",
+            "What started as a small kitchen serving 6 customers has grown to preparing about 240 tiffins every day, delivered fresh to offices and homes."
+          ]
+        },
+        {
+          "type": "features",
+          "headline": "What drives us",
+          "items": [
+            {
+              "title": "Home-style cooking",
+              "text": "We prepare meals the way they're made in Indian homes, with attention to taste, nutrition and comfort."
+            },
+            {
+              "title": "Quality ingredients",
+              "text": "We use cold-pressed groundnut oil, fresh vegetables and pulses, and never compromise on quality."
+            },
+            {
+              "title": "Reliable service",
+              "text": "Consistent delivery timing (12:00-1:00 pm) and simple ordering via WhatsApp have built trust with our customers."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Experience the Annapurna difference",
+          "sub": "Taste why hundreds choose our home-style tiffin service",
+          "cta": {
+            "label": "Start a weekly plan",
+            "href": "https://wa.me/919876543210"
+          }
+        }
+      ]
+    }
+  ]
+}
+[0m
+[0m$ [0m# Start building the new site.json
+echo '{' > /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+echo '  "pages": [' >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Add fixed home page
+cat /tmp/fixed_home.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+echo ',' >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Add menu page
+cat /tmp/menu_page.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+echo ',' >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Add plans page
+cat /tmp/plans_page.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+echo ',' >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Add about page (without trailing comma)
+cat /tmp/about_page.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Close the JSON structure
+echo '  ]' >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+echo '}' >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mpython3 -c "import json; json.load(open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json'))" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 13 (char 27)
+[0m
+[0m$ [0mhead -10 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+  "pages": [$
+      "slug": "home",$
+      "name": "Home",$
+      "goal": "Get the visitor to start a weekly plan on WhatsApp",$
+      "keyword": "tiffin delivery Pune",$
+      "meta": {$
+        "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",$
+        "description": "Fresh vegetarian tiffins delivered daily from our kitchen in Baner. Weekly plans from Rs 780."$
+      },$
+[0m
+[0m$ [0m# Recreate the home page object with proper wrapping
+echo '    {' > /tmp/fixed_home_wrapped.json
+sed 's/^/      /' /tmp/fixed_home.json >> /tmp/fixed_home_wrapped.json
+echo '    },' >> /tmp/fixed_home_wrapped.json
+(no output)
+[0m
+[0m$ [0m# Extract complete page objects from the original file
+# First, let me get the original file back
+cp /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json.backup2 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Now extract complete page objects (including their braces)
+# Home page: from line 46 to line just before menu page
+sed -n '46,198p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/home_page_full.json
+
+# Menu page: from line 198 to line just before plans page  
+sed -n '198,260p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/menu_page_full.json
+
+# Plans page: from line 260 to line just before about page
+sed -n '260,341p' /tmp/tmp.BVHngeqJxc/run/mangaman-website-copy/annapurna-tiffins/site.json > /tmp/plans_page_full.json
+
+# About page: from line 341 to end
+sed -n '341,$p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/about_page_full.json
+sed: can't read /tmp/tmp.BVHngeqJxc/run/mangaman-website-copy/annapurna-tiffins/site.json: No such file or directory
+[0m
+[0m$ [0m# Extract complete page objects from the original file
+# First, let me get the original file back
+cp /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json.backup2 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Now extract complete page objects (including their braces)
+# Home page: from line 46 to line just before menu page
+sed -n '46,198p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/home_page_full.json
+
+# Menu page: from line 198 to line just before plans page  
+sed -n '198,260p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/menu_page_full.json
+
+# Plans page: from line 260 to line just before about page
+sed -n '260,341p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/plans_page_full.json
+
+# About page: from line 341 to end
+sed -n '341,$p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/about_page_full.json
+(no output)
+[0m
+[0m$ [0mhead -5 /tmp/home_page_full.json | cat -A
+{$
+      "slug": "home",$
+      "name": "Home",$
+      "goal": "Get the visitor to start a weekly plan on WhatsApp",$
+      "keyword": "tiffin delivery Pune",$
+[0m
+[0m$ [0mtail -5 /tmp/home_page_full.json | cat -A
+}$
+        }$
+      ]$
+    },$
+    {$
+[0m
+[0m$ [0mhead -3 /tmp/menu_page_full.json | cat -A
+{$
+      "slug": "menu",$
+      "name": "Menu",$
+[0m
+[0m$ [0mtail -3 /tmp/menu_page_full.json | cat -A
+]$
+    },$
+    {$
+[0m
+[0m$ [0mhead -3 /tmp/plans_page_full.json | cat -A
+{$
+      "slug": "plans",$
+      "name": "Plans",$
+[0m
+[0m$ [0mtail -3 /tmp/plans_page_full.json | cat -A
+]$
+    },$
+    {$
+[0m
+[0m$ [0mhead -3 /tmp/about_page_full.json | cat -A
+{$
+      "slug": "about",$
+      "name": "About",$
+[0m
+[0m$ [0mtail -5 /tmp/about_page_full.json | cat -A
+}$
+      ]$
+    }$
+  ]$
+}$
+[0m
+[0m$ [0m# Reconstruct the site.json file
+echo '{' > /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+echo '  "pages": [' >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Add the page objects
+cat /tmp/home_page_full.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+cat /tmp/menu_page_full.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+cat /tmp/plans_page_full.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+cat /tmp/about_page_full.json >> /tmp/tmp.BVHngeqJxc/run/mangaman-website-copy/annapurna-tiffins/site.json
+
+# The file should already be properly closed from the about_page_full.json extraction
+/bin/bash: line 9: /tmp/tmp.BVHngeqJxc/run/mangaman-website-copy/annapurna-tiffins/site.json: No such file or directory
+[0m
+[0m$ [0m# Reconstruct the site.json file
+echo '{' > /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+echo '  "pages": [' >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Add the page objects
+cat /tmp/home_page_full.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+cat /tmp/menu_page_full.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+cat /tmp/plans_page_full.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+cat /tmp/about_page_full.json >> /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# The file should already be properly closed from the about_page_full.json extraction
+(no output)
+[0m
+[0m$ [0mpython3 -c "import json; json.load(open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json'))" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 126 column 9 (char 5172)
+[0m
+[0m$ [0mpython3 -c "
+import json, sys
+try:
+    with open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json', 'r') as f:
+        data = json.load(f)
+    print('JSON is valid')
+except json.JSONDecodeError as e:
+    print(f'Error at line {e.lineno}, column {e.colno}: {e.msg}')
+    lines = open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json').readlines()
+    start = max(0, e.lineno - 3)
+    end = min(len(lines), e.lineno + 3)
+    for i in range(start, end):
+        print(f'{i+1:4}: {lines[i].rstrip()}')
+" 2>&1
+Error at line 126, column 9: Expecting ',' delimiter
+ 124:             "href": "https://wa.me/919876543210"
+ 125:           }
+ 126:         {
+ 127:           "type": "features",
+ 128:           "headline": "Our service at a glance",
+ 129:           "items": [
+[0m
+[0m$ [0m# Let me look at the home page sections area
+sed -n '120,130p' /tmp/home_page_full.json | cat -A
+"cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        {$
+          "type": "features",$
+          "headline": "Our service at a glance",$
+          "items": [$
+            {$
+              "title": "Daily changing menu",$
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."$
+[0m
+[0m$ [0m# Check what's at the boundaries
+sed -n '46p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+},$
+[0m
+[0m$ [0msed -n '45,47p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+        },$
+        {$
+[0m
+[0m$ [0msed -n '40,50p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+[0m
+[0m$ [0m# Let me look at the first 50 lines to see the structure
+head -50 /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+  "pages": [$
+    {$
+      "slug": "home",$
+      "name": "Home",$
+      "goal": "Get the visitor to start a weekly plan on WhatsApp",$
+      "keyword": "tiffin delivery Pune",$
+      "meta": {$
+        "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",$
+        "description": "Fresh vegetarian tiffins delivered daily from our kitchen in Baner. Weekly plans from Rs 780."$
+      },$
+      "cta": {$
+        "label": "Start a weekly plan",$
+        "href": "https://wa.me/919876543210"$
+      },$
+      "sections": [$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+[0m
+[0m$ [0mgrep -n '"slug": "home"' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+4:      "slug": "home",
+[0m
+[0m$ [0mgrep -n '"slug":' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+4:      "slug": "home",
+157:      "slug": "menu",
+220:      "slug": "plans",
+302:      "slug": "about",
+[0m
+[0m$ [0m# Extract the complete page objects with correct line numbers
+sed -n '4,156p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/home_page.json
+sed -n '157,219p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/menu_page.json
+sed -n '220,301p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/plans_page.json
+sed -n '302,$p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json > /tmp/about_page.json
+(no output)
+[0m
+[0m$ [0mhead -3 /tmp/home_page.json | cat -A
+"slug": "home",$
+      "name": "Home",$
+      "goal": "Get the visitor to start a weekly plan on WhatsApp",$
+[0m
+[0m$ [0msed -n '3,5p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+      "slug": "home",$
+      "name": "Home",$
+[0m
+[0m$ [0m# Look for where the menu page starts (opening brace of menu page)
+grep -n '^\s*{'
+
+# Actually, let me look for the pattern that shows transition between pages
+sed -n '150,160p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"href": "https://wa.me/919876543210"$
+          }$
+        }$
+      ]$
+    },$
+    {$
+    {$
+      "slug": "menu",$
+      "name": "Menu",$
+      "goal": "Show the variety and daily changing nature of our meals",$
+      "keyword": "tiffin menu Pune",$
+[0m
+[0m$ [0msed -n '154,158p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+},$
+    {$
+    {$
+      "slug": "menu",$
+      "name": "Menu",$
+[0m
+[0m$ [0msed -n '152,160p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+      ]$
+    },$
+    {$
+    {$
+      "slug": "menu",$
+      "name": "Menu",$
+      "goal": "Show the variety and daily changing nature of our meals",$
+      "keyword": "tiffin menu Pune",$
+[0m
+[0m$ [0msed -n '155,157p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+    {$
+      "slug": "menu",$
+[0m
+[0m$ [0msed -n '215,225p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+      ]$
+    },$
+    {$
+    {$
+      "slug": "plans",$
+      "name": "Plans",$
+      "goal": "Explain pricing and encourage sign-up for weekly or monthly plans",$
+      "keyword": "weekly tiffin plan Pune price",$
+      "meta": {$
+        "title": "Tiffin Plans & Pricing | Weekly & Monthly | Annapurna Tiffins",$
+[0m
+[0m$ [0msed -n '298,308p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+]$
+    },$
+    {$
+    {$
+      "slug": "about",$
+      "name": "About",$
+      "goal": "Tell our story and build trust",$
+      "keyword": "about Annapurna Tiffins Pune",$
+      "meta": {$
+        "title": "About Annapurna Tiffins | Home-style Kitchen in Baner, Pune",$
+        "description": "Founded by Savita Joshi in 2019, Annapurna Tiffins delivers home-style vegetarian meals from our Baner kitchen to professionals across Pune."$
+[0m
+[0m$ [0msed -n '155p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+[0m
+[0m$ [0msed -n '219p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+[0m
+[0m$ [0msed -n '302p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"slug": "about",$
+[0m
+[0m$ [0msed -n '300,305p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+    {$
+      "slug": "about",$
+      "name": "About",$
+      "goal": "Tell our story and build trust",$
+      "keyword": "about Annapurna Tiffins Pune",$
+[0m
+[0m$ [0msed -n '299,304p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+},$
+    {$
+    {$
+      "slug": "about",$
+      "name": "About",$
+      "goal": "Tell our story and build trust",$
+[0m
+[0m$ [0msed -n '152,154p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+      ]$
+    },$
+[0m
+[0m$ [0m# Create a corrected version by removing the erroneous lines
+cp /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json.original
+
+# Remove the erroneous lines (in reverse order to not mess up line numbers)
+sed -i '300d' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+sed -i '219d' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+sed -i '155d' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mpython3 -c "import json; json.load(open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json'))" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 126 column 9 (char 5172)
+[0m
+[0m$ [0mpython3 -c "
+import json, sys
+try:
+    with open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json', 'r') as f:
+        data = json.load(f)
+    print('JSON is valid')
+except json.JSONDecodeError as e:
+    print(f'Error at line {e.lineno}, column {e.colno}: {e.msg}')
+    lines = open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json').readlines()
+    start = max(0, e.lineno - 3)
+    end = min(len(lines), e.lineno + 3)
+    for i in range(start, end):
+        print(f'{i+1:4}: {lines[i].rstrip()}')
+" 2>&1
+Error at line 126, column 9: Expecting ',' delimiter
+ 124:             "href": "https://wa.me/919876543210"
+ 125:           }
+ 126:         {
+ 127:           "type": "features",
+ 128:           "headline": "Our service at a glance",
+ 129:           "items": [
+[0m
+[0m$ [0m# Let me look at a broader context around line 126
+sed -n '120,135p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        {$
+          "type": "features",$
+          "headline": "Our service at a glance",$
+          "items": [$
+            {$
+              "title": "Daily changing menu",$
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."$
+            },$
+            {$
+              "title": "Flexible plans",$
+[0m
+[0m$ [0m# Look for where the features section ends in home page
+sed -n '140,150p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"text": "Pay by UPI at the start of your plan. Order or ask questions on WhatsApp at 98765 43210."$
+            }$
+          ]$
+        },$
+        {$
+          "type": "cta",$
+          "headline": "Ready for home-style lunch every day?",$
+          "sub": "Join hundreds of professionals in Baner, Aundh, Balewadi and Pashan who trust Annapurna Tiffins",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+[0m
+[0m$ [0msed -n '125p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | sed -e 's/./ /g' | wc -c
+12
+[0m
+[0m$ [0msed -n '126p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | sed -e 's/./ /g' | wc -c
+10
+[0m
+[0m$ [0msed -n '125p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+[0m
+[0m$ [0msed -n '145p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"type": "cta",$
+[0m
+[0m$ [0msed -n '142,148p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+]$
+        },$
+        {$
+          "type": "cta",$
+          "headline": "Ready for home-style lunch every day?",$
+          "sub": "Join hundreds of professionals in Baner, Aundh, Balewadi and Pashan who trust Annapurna Tiffins",$
+          "cta": {$
+[0m
+[0m$ [0msed -n '142,145p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+]$
+        },$
+        {$
+          "type": "cta",$
+[0m
+[0m$ [0m# Look for where the home page sections array ends
+sed -n '150,155p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"href": "https://wa.me/919876543210"$
+          }$
+        }$
+      ]$
+    },$
+    {$
+[0m
+[0m$ [0msed -n '148,158p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        }$
+      ]$
+    },$
+    {$
+      "slug": "menu",$
+      "name": "Menu",$
+      "goal": "Show the variety and daily changing nature of our meals",$
+[0m
+[0m$ [0msed -n '157p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"name": "Menu",$
+[0m
+[0m$ [0m# Fix the missing comma between hero and features sections in home page
+sed -i '125s/}$/},/' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0mpython3 -c "import json; json.load(open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json'))" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 126 column 9 (char 5173)
+[0m
+[0m$ [0mpython3 -c "
+import json, sys
+try:
+    with open('/tmp/tmp.BVHngeqJxc/run/mangaman-website-copy/annapurna-tiffins/site.json', 'r') as f:
+        data = json.load(f)
+    print('JSON is valid')
+except json.JSONDecodeError as e:
+    print(f'Error at line {e.lineno}, column {e.colno}: {e.msg}')
+    lines = open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json').readlines()
+    start = max(0, e.lineno - 3)
+    end = min(len(lines), e.lineno + 3)
+    for i in range(start, end):
+        print(f'{i+1:4}: {lines[i].rstrip()}')
+" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmp.BVHngeqJxc/run/mangaman-website-copy/annapurna-tiffins/site.json'
+[0m
+[0m$ [0mpython3 -c "
+import json, sys
+try:
+    with open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json', 'r') as f:
+        data = json.load(f)
+    print('JSON is valid')
+except json.JSONDecodeError as e:
+    print(f'Error at line {e.lineno}, column {e.colno}: {e.msg}')
+    lines = open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json').readlines()
+    start = max(0, e.lineno - 3)
+    end = min(len(lines), e.lineno + 3)
+    for i in range(start, end):
+        print(f'{i+1:4}: {lines[i].rstrip()}')
+" 2>&1
+Error at line 126, column 9: Expecting property name enclosed in double quotes
+ 124:             "href": "https://wa.me/919876543210"
+ 125:           },
+ 126:         {
+ 127:           "type": "features",
+ 128:           "headline": "Our service at a glance",
+ 129:           "items": [
+[0m
+[0m$ [0msed -n '124,128p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"href": "https://wa.me/919876543210"$
+          },$
+        {$
+          "type": "features",$
+          "headline": "Our service at a glance",$
+[0m
+[0m$ [0msed -n '120,130p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          },$
+        {$
+          "type": "features",$
+          "headline": "Our service at a glance",$
+          "items": [$
+            {$
+[0m
+[0m$ [0m# Revert the incorrect comma on line 127
+sed -i '127s/},/}/' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0m# Add the missing comma after the hero section closing brace (line 128)
+sed -i '128s/{/{,/' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+(no output)
+[0m
+[0m$ [0msed -n '126,130p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+          "type": "features",$
+          "headline": "Our service at a glance",$
+          "items": [$
+            {$
+[0m
+[0m$ [0msed -n '120,135p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          },$
+        {$
+          "type": "features",$
+          "headline": "Our service at a glance",$
+          "items": [$
+            {$
+              "title": "Daily changing menu",$
+              "text": "Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price."$
+            },$
+            {$
+              "title": "Flexible plans",$
+[0m
+[0m$ [0m# Look for where the hero section starts in the home page
+sed -n '100,115p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+[0m
+[0m$ [0msed -n '124,130p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"href": "https://wa.me/919876543210"$
+          },$
+        {$
+          "type": "features",$
+          "headline": "Our service at a glance",$
+          "items": [$
+            {$
+[0m
+[0m$ [0m# Look at a known good section transition from the plans page
+sed -n '50,60p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+[0m
+[0m$ [0m# Find where the plans page starts and look at its first few sections
+grep -n '"slug": "plans"' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+218:      "slug": "plans",
+[0m
+[0m$ [0msed -n '218,250p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"slug": "plans",$
+      "name": "Plans",$
+      "goal": "Explain pricing and encourage sign-up for weekly or monthly plans",$
+      "keyword": "weekly tiffin plan Pune price",$
+      "meta": {$
+        "title": "Tiffin Plans & Pricing | Weekly & Monthly | Annapurna Tiffins",$
+        "description": "Weekly plan: 6 lunches for Rs 780. Monthly plan: 26 lunches for Rs 3,200. Flexible pausing, UPI payment."$
+      },$
+      "cta": {$
+        "label": "Start a weekly plan",$
+        "href": "https://wa.me/919876543210"$
+      },$
+      "sections": [$
+            {$
+              "type": "hero",$
+              "headline": "Weekly tiffin plan Pune price: Simple, affordable tiffin plans for working professionals",$
+              "sub": "Choose weekly or monthly, pause anytime with notice",$
+              "proof": "Started with 6 customers in 2019, now serving 240 tiffins daily",$
+              "cta": {$
+                "label": "Start a weekly plan",$
+                "href": "https://wa.me/919876543210"$
+              }$
+            }$
+        },$
+        {$
+            "type": "text",$
+            "headline": "Our transparent pricing",$
+            "body": [$
+              "Weekly plan: 6 lunches for Rs 780.",$
+              "Monthly plan: 26 lunches for Rs 3,200.",$
+              "Both plans include the same home-style vegetarian tiffin with 4 rotis, sabzi, dal, rice and Sunday sweet."$
+            ]$
+        },$
+[0m
+[0m$ [0m# Check indentation of what should be section elements in home page
+sed -n '110,120p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | sed -e 's/./ /g' | wc -c
+509
+[0m
+[0m$ [0msed -n '115p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+[0m
+[0m$ [0msed -n '108p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"type": "hero",$
+[0m
+[0m$ [0m# Check plans page sections indentation
+sed -n '225,230p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+},$
+      "cta": {$
+        "label": "Start a weekly plan",$
+        "href": "https://wa.me/919876543210"$
+      },$
+      "sections": [$
+[0m
+[0m$ [0msed -n '230,235p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sections": [$
+            {$
+              "type": "hero",$
+              "headline": "Weekly tiffin plan Pune price: Simple, affordable tiffin plans for working professionals",$
+              "sub": "Choose weekly or monthly, pause anytime with notice",$
+              "proof": "Started with 6 customers in 2019, now serving 240 tiffins daily",$
+[0m
+[0m$ [0m# Look for where the sections array starts in home page
+sed -n '80,90p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+[0m
+[0m$ [0msed -n '75,85p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+[0m
+[0m$ [0msed -n '70,80p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+[0m
+[0m$ [0m# Find the start of the home page object
+grep -n '"slug": "home"' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+4:      "slug": "home",
+[0m
+[0m$ [0msed -n '1,15p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+{$
+  "pages": [$
+    {$
+      "slug": "home",$
+      "name": "Home",$
+      "goal": "Get the visitor to start a weekly plan on WhatsApp",$
+      "keyword": "tiffin delivery Pune",$
+      "meta": {$
+        "title": "Home-style Tiffin Delivery in Pune | Annapurna Tiffins",$
+        "description": "Fresh vegetarian tiffins delivered daily from our kitchen in Baner. Weekly plans from Rs 780."$
+      },$
+      "cta": {$
+        "label": "Start a weekly plan",$
+        "href": "https://wa.me/919876543210"$
+      },$
+[0m
+[0m$ [0msed -n '15,25p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+},$
+      "sections": [$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+[0m
+[0m$ [0msed -n '16,20p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sections": [$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+[0m
+[0m$ [0msed -n '115,120p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+[0m
+[0m$ [0msed -n '115p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | sed -e 's/./ /g' | wc -c
+12
+[0m
+[0m$ [0msed -n '115p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+}$
+[0m
+[0m$ [0msed -n '114,116p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"href": "https://wa.me/919876543210"$
+          }$
+        },$
+[0m
+[0m$ [0msed -n '110,120p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+[0m
+[0m$ [0msed -n '110,120p' /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json.original | cat -A
+"sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+          "proof": "Started in 2019, now serving 240 tiffins every day",$
+          "cta": {$
+            "label": "Start a weekly plan",$
+            "href": "https://wa.me/919876543210"$
+          }$
+        },$
+        {$
+          "type": "hero",$
+          "headline": "Tiffin delivery Pune: Home-style vegetarian tiffins delivered daily",$
+          "sub": "Fresh lunch from our Baner kitchen to your office or home in Pune",$
+[0m
+[0m$ [0m# Check what the generated home page looks like
+cat /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site/home.md 2>/dev/null | head -10
+(no output)
+[0m
+[0m$ [0mls -la /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site/ 2>/dev/null || echo "site directory does not exist or is empty"
+total 36
+drwxr-xr-x 3 runner runner 4096 Oct  8 15:12 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 15:22 ..
+drwxr-xr-x 2 runner runner 4096 Oct  8 15:12 copy
+-rw-r--r-- 1 runner runner 5511 Oct  8 15:12 pages.csv
+-rw-r--r-- 1 runner runner 9979 Oct  8 15:12 pages.json
+-rw-r--r-- 1 runner runner  625 Oct  8 15:12 sitemap.md
+[0m
+[0m$ [0mcat /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site/home.md | head -20
+cat: /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site/home.md: No such file or directory
+[0m
+[0m$ [0mls -la /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site/
+total 36
+drwxr-xr-x 3 runner runner 4096 Oct  8 15:12 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 15:22 ..
+drwxr-xr-x 2 runner runner 4096 Oct  8 15:12 copy
+-rw-r--r-- 1 runner runner 5511 Oct  8 15:12 pages.csv
+-rw-r--r-- 1 runner runner 9979 Oct  8 15:12 pages.json
+-rw-r--r-- 1 runner runner  625 Oct  8 15:12 sitemap.md
+[0m
+[0m$ [0mls -la /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site/copy/
+total 24
+drwxr-xr-x 2 runner runner 4096 Oct  8 15:12 .
+drwxr-xr-x 3 runner runner 4096 Oct  8 15:12 ..
+-rw-r--r-- 1 runner runner 1089 Oct  8 15:12 about.md
+-rw-r--r-- 1 runner runner 1168 Oct  8 15:12 home.md
+-rw-r--r-- 1 runner runner 1047 Oct  8 15:12 menu.md
+-rw-r--r-- 1 runner runner 1127 Oct  8 15:12 plans.md
+[0m
+[0m$ [0mcat /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site/copy/home.md
+# Home-style vegetarian tiffins, delivered daily
+
+Fresh lunch from our Baner kitchen to your office or home in Pune
+
+Started in 2019, now serving 240 tiffins every day
+
+**[Start a weekly plan](https://wa.me/919876543210)**
+
+## What makes our tiffins special
+
+We cook home-style vegetarian meals in a kitchen in Baner, Pune. Each tiffin includes 4 rotis, one dry sabzi, one dal or curry, rice and a sweet on Sundays.
+
+We use cold-pressed groundnut oil and never add ajinomoto. Lunch reaches your door between 12:00 and 1:00 pm, orders for the next day close at 8 pm.
+
+## Our service at a glance
+
+- **Daily changing menu**: Menu updates every day and is posted on WhatsApp at 9 pm. Jain meals available at the same price.
+- **Flexible plans**: Weekly plan (6 lunches) for Rs 780 or monthly plan (26 lunches) for Rs 3,200. Pause your plan for free with 1 day notice.
+- **Easy ordering**: Pay by UPI at the start of your plan. Order or ask questions on WhatsApp at 98765 43210.
+
+## Ready for home-style lunch every day?
+
+Join hundreds of professionals in Baner, Aundh, Balewadi and Pashan who trust Annapurna Tiffins
+
+**[Start a weekly plan](https://wa.me/919876543210)**
+[0m
+[0m$ [0m# Restore the original site.json
+cp /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json.original /tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json
+
+# Run check_copy.py to see what errors it reports
+python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py 2>&1
+Check website copy before it goes to the user.
+
+Usage: python3 check_copy.py site.json site
+Checks: the spec is valid; the files were built; every number is in the user's
+facts; no five-word run is copied from a competitor claim; no placeholders,
+clichés or risky claims; the voice rules hold; each page has a keyword in its
+title or h1, a title and description of the right length, and a button; titles
+and descriptions are not repeated; internal links resolve and every page is
+linked; no sentence repeats across pages; no page is thin; sentences are
+short (English). Prints PASS, WARN or FAIL; exits 1 on any FAIL.
+[0m
+[0m$ [0m# First, test if the JSON is valid
+python3 -c "import json; json.load(open('/tmp/tmp.BVHngeqJxc/run/mangoman-website-copy/annapurna-tiffins/site.json'))" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 126 column 9 (char 5172)
+[0m
+[0m$ [0mhead -50 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py
+"""Build website copy from site.json.
+
+Usage: python3 build_copy.py site.json --out site
+Writes into the out folder: copy/<slug>.md (one Markdown file per page, ready
+to paste into a CMS), pages.csv (one row per page: title, description, h1,
+button, body), sitemap.md (every page with its goal, keyword and links) and
+pages.json (the pages in the landing page pack's section format).
+
+Text fields accept **bold** and [link text](https://... or /page). A link to
+/ is the first page (home); /about is the page whose slug is about.
+"""
+import csv
+import json
+import os
+import re
+import sys
+
+TYPES = ("hero", "text", "features", "steps", "stats", "testimonials", "faq", "cta")
+LIST_KEY = {"features": "items", "steps": "items", "stats": "items", "testimonials": "items", "faq": "items", "text": "body"}
+SKIP = {"type", "href", "id", "nav", "tone"}
+LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+|/[a-z0-9-]*)\)")
+
+
+def load(path):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def texts(o):
+    """Every piece of copy inside a page's sections (links, ids and types left out)."""
+    if isinstance(o, str):
+        yield o
+    elif isinstance(o, dict):
+        for k, v in o.items():
+            if k not in SKIP:
+                yield from texts(v)
+    elif isinstance(o, list):
+        for v in o:
+            yield from texts(v)
+
+
+def target(href, slugs):
+    """The slug an internal link points to, or None when it points nowhere."""
+    if href == "/":
+        return slugs[0]
+    return href.strip("/") if href.startswith("/") and href.strip("/") in slugs else None
+
+
+def internal_links(page):
+    """Every internal link on a page: from text links and from buttons."""
+[0m
