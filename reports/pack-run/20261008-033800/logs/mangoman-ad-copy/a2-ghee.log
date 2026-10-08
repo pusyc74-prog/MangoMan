@@ -1,0 +1,29 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+All three files read. Now writing `ads.json` with 3 ad groups (A2 core, Bilona, Buy online) and negatives from the zero-conversion terms.
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py ads.json ads
+built ads: ads.md, google_ads.csv, google_keywords.csv
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+All checks pass. `ads/` contains `ads.md`, `google_ads.csv` and `google_keywords.csv` for Google Ads Editor import.
+
+- 3 ad groups: A2 Gir Cow Ghee, Bilona Ghee, Buy A2 Ghee Online (keywords + match types from your converting search terms)
+- Campaign negatives: organic (not certified), machine, jobs, wholesale, franchise, 15 kg/tin, recipe, babies, free etc. from zero-conversion terms
+- Checked: every headline ≤30 chars, descriptions ≤90, no exclamation marks or phone numbers, every number from facts.md
+
+Want a matching landing page (`mangoman-landing-page`) or ad images (`mangoman-social-posts`)?
