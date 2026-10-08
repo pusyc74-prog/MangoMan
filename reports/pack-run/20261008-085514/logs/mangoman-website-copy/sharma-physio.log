@@ -1,0 +1,39 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m→ [0mSkill "mangoman-website-copy"
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/brief_gate.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/sharma-physio/facts.md --pages 4
+PASS  13 facts for 4 pages
+[0m
+Now I'll create the site.json with copy for all 4 pages.
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/sharma-physio/site.json --out /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/sharma-physio/site
+site.json problems:
+- page : slug is lowercase words joined by dashes
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/sharma-physio/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/sharma-physio/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/sharma-physio/site.json
+@@ -33,9 +33,9 @@
+   }
+ ],
+ "pages": [
+   {
+-    "slug": "",
++    "slug": "home",
+     "name": "Home",
+     "goal": "Get the visitor to book a first visit by phone or WhatsApp",
+     "keyword": "physiotherapy clinic Jaipur Malviya Nagar",
+     "meta": {
+
+[0m

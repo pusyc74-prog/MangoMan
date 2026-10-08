@@ -1,0 +1,287 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m→ [0mSkill "mangoman-website-copy"
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/brief_gate.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/facts.md --pages 4
+PASS  15 facts for 4 pages
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json --out /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site
+site.json problems:
+- page : slug is lowercase words joined by dashes
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -41,9 +41,9 @@
+   }
+ ],
+ "pages": [
+   {
+-    "slug": "",
++    "slug": "home",
+     "name": "Home",
+     "goal": "Get the visitor to start a weekly plan on WhatsApp",
+     "keyword": "tiffin delivery Pune",
+     "meta": {
+
+[0m
+[0m✱ [0mGrep "\(/"[90m in . · 3 matches[0m
+[0m✱ [0mGrep "href.*"/""[90m in . · 0 matches[0m
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json --out /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site
+Built 4 pages into /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site
+PASS  spec is valid
+PASS  all output files exist
+FAIL  numbers not in the facts: 11; 123; 130; 30
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+FAIL  words the voice says to avoid: best
+PASS  voice words used
+PASS  average sentence is 8.3 words
+FAIL  keyword missing: about: keyword 'Annapurna Tiffins Pune story' in neither title nor h1; home: keyword 'tiffin delivery Pune' in neither title nor h1; menu: keyword 'tiffin menu Pune vegetarian' in neither title nor h1; plans: keyword 'tiffin subscription Pune weekly monthly' in neither title nor h1
+WARN  search fit: about: keyword not in the description; about: keyword not in the first 100 words; about: title is 63 characters (30 to 60); home: keyword not in the description; home: keyword not in the first 100 words; menu: keyword not in the description; menu: keyword not in the first 100 words; menu: title is 62 characters (30 to 60)
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+WARN  pages nobody links to: about
+WARN  sentences repeated across pages: Menu on WhatsApp at 9 pm; No onion, no garlic, no root vegetables.; Start weekly plan on WhatsApp
+PASS  no thin pages
+[0m
+[0m→ [0mRead site.json
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -46,10 +46,10 @@
+ "name": "Home",
+ "goal": "Get the visitor to start a weekly plan on WhatsApp",
+ "keyword": "tiffin delivery Pune",
+ "meta": {
+-  "title": "Annapurna Tiffins: Home-Style Lunch Delivery in Pune",
+-  "description": "Fresh vegetarian tiffins delivered to Baner, Aundh, Balewadi, Pashan. Rs 780 for 6 lunches. Order on WhatsApp."
++  "title": "Tiffin Delivery Pune: Home-Style Lunch | Annapurna Tiffins",
++  "description": "Tiffin delivery in Pune — fresh vegetarian lunch to Baner, Aundh, Balewadi, Pashan. Rs 780 for 6 lunches. Order on WhatsApp."
+ },
+ "cta": {
+   "label": "Start weekly plan on WhatsApp",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -56,9 +56,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Home-style tiffins delivered to your door, every working day",
++    "headline": "Tiffin delivery in Pune: home-style tiffins delivered to your door, every working day",
+     "sub": "Fresh vegetarian lunch with 4 rotis, sabzi, dal, rice — and a sweet on Sundays. Rs 780 for a weekly plan of 6 lunches.",
+     "proof": "Cooked in Baner by Savita Joshi since 2019. Now 240 tiffins a day.",
+     "cta": {
+       "label": "Start weekly plan on WhatsApp",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -163,10 +163,10 @@
+ "name": "Menu",
+ "goal": "Show what goes in the tiffin so the visitor feels confident ordering",
+ "keyword": "tiffin menu Pune vegetarian",
+ "meta": {
+-  "title": "Daily Tiffin Menu: Rotis, Sabzi, Dal, Rice | Annapurna Tiffins",
+-  "description": "Home-style vegetarian tiffin with 4 rotis, dry sabzi, dal or curry, rice. Sunday sweet included. Jain option available."
++  "title": "Tiffin Menu Pune: Vegetarian Lunch Box | Annapurna Tiffins",
++  "description": "Tiffin menu Pune vegetarian — 4 rotis, dry sabzi, dal or curry, rice. Sunday sweet included. Jain option available."
+ },
+ "cta": {
+   "label": "Start weekly plan on WhatsApp",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -173,9 +173,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "What's in your tiffin today",
++    "headline": "Tiffin menu Pune vegetarian: what's in your tiffin today",
+     "sub": "The menu changes daily. You get 4 rotis, one dry sabzi, one dal or curry, rice — and a sweet on Sundays. Jain meals available at the same price.",
+     "proof": "Posted on WhatsApp every evening at 9 pm for the next day.",
+     "cta": {
+       "label": "Start weekly plan on WhatsApp",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -265,10 +265,10 @@
+ "name": "Plans",
+ "goal": "Help the visitor pick a plan and start on WhatsApp",
+ "keyword": "tiffin subscription Pune weekly monthly",
+ "meta": {
+-  "title": "Tiffin Plans: Weekly Rs 780, Monthly Rs 3,200 | Annapurna Tiffins",
+-  "description": "Choose weekly (6 lunches) or monthly (26 lunches). Jain option included. Pause free with 1 day notice. Pay by UPI."
++  "title": "Tiffin Subscription Pune: Weekly Monthly Plans | Annapurna Tiffins",
++  "description": "Tiffin subscription Pune weekly monthly — 6 lunches Rs 780 or 26 lunches Rs 3,200. Jain option. Pause free with 1 day notice."
+ },
+ "cta": {
+   "label": "Start weekly plan on WhatsApp",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -275,9 +275,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Two plans. Same home-style food.",
++    "headline": "Tiffin subscription Pune weekly monthly: two plans, same home-style food",
+     "sub": "Weekly plan: 6 lunches for Rs 780. Monthly plan: 26 lunches for Rs 3,200. Both include rotis, sabzi, dal, rice and Sunday sweet. Jain meals at no extra cost.",
+     "proof": "Delivered to Baner, Aundh, Balewadi, Pashan between 12:00 and 1:00 pm.",
+     "cta": {
+       "label": "Start weekly plan on WhatsApp",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -388,10 +388,10 @@
+ "name": "About",
+ "goal": "Build trust by telling the story of the kitchen and the people",
+ "keyword": "Annapurna Tiffins Pune story",
+ "meta": {
+-  "title": "About Annapurna Tiffins: Home-Style Kitchen in Baner Since 2019",
+-  "description": "Started by Savita Joshi in 2019 with 6 customers. Now 240 tiffins daily to Baner, Aundh, Balewadi, Pashan. Vegetarian, no ajinomoto."
++  "title": "Annapurna Tiffins Pune Story: Home-Style Kitchen Since 2019",
++  "description": "Annapurna Tiffins Pune story — started by Savita Joshi in 2019 with 6 customers. Now 240 tiffins daily to Baner, Aundh, Balewadi, Pashan."
+ },
+ "cta": {
+   "label": "Start weekly plan on WhatsApp",
+   "href": "https://wa.me/919876543210"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -398,9 +398,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "A kitchen that grew from six tiffins to two hundred and forty",
++    "headline": "Annapurna Tiffins Pune story: a kitchen that grew from six tiffins to two hundred and forty",
+     "sub": "Savita Joshi started Annapurna Tiffins in 2019 in Baner, Pune. She cooked for six neighbours. Today, the same kitchen sends 240 home-style vegetarian lunches every working day.",
+     "proof": "Cold-pressed groundnut oil, no ajinomoto, menu on WhatsApp at 9 pm.",
+     "cta": {
+       "label": "Start weekly plan on WhatsApp",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -313,23 +313,23 @@
+               "text": "Your tiffin reaches your door during lunch hour, Monday to Friday."
+             }
+           ]
+         },
++{
++              "type": "text",
++              "headline": "Weekly plan — Rs 780",
++              "body": [
++                "6 lunches over one week (Monday to Saturday, skipping Sunday). Good if you want to try us first or if your schedule changes often."
++              ]
++            },
++            {
++              "type": "text",
++              "headline": "Monthly plan — Rs 3,200",
++              "body": [
++                "26 lunches over four weeks. Good if you're settled in your routine."
++              ]
++            },
+         {
+-          "type": "text",
+-          "headline": "Weekly plan — Rs 780",
+-          "body": [
+-            "6 lunches over one week (Monday to Saturday, skipping Sunday). Works out to Rs 130 per tiffin. Good if you want to try us first or if your schedule changes often."
+-          ]
+-        },
+-        {
+-          "type": "text",
+-          "headline": "Monthly plan — Rs 3,200",
+-          "body": [
+-            "26 lunches over four weeks. Works out to about Rs 123 per tiffin. You save Rs 7 per meal compared to weekly. Best if you're settled in your routine."
+-          ]
+-        },
+-        {
+           "type": "steps",
+           "headline": "To start a plan",
+           "items": [
+             {
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -89,10 +89,10 @@
+       "title": "Pause anytime with one day notice",
+       "text": "Going away? Pause your plan for free. We just need to know by 8 pm the day before."
+     },
+     {
+-      "title": "Menu on WhatsApp at 9 pm",
+-      "text": "Tomorrow's menu posted every evening. You always know what's coming."
++      "title": "Menu posted on WhatsApp at 9 pm",
++      "text": "Tomorrow's dishes go up every evening. You always know what's coming."
+     }
+   ]
+ },
+ {
+
+[0m
+[0m✗ [0mEdit site.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.

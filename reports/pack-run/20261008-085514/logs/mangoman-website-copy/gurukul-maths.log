@@ -1,0 +1,347 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m→ [0mSkill "mangoman-website-copy"
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/brief_gate.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/facts.md --pages 4
+PASS  14 facts for 4 pages
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json --out /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site
+site.json problems:
+- page : slug is lowercase words joined by dashes
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -37,9 +37,9 @@
+   }
+ ],
+ "pages": [
+   {
+-    "slug": "",
++    "slug": "home",
+     "name": "Home",
+     "goal": "Get the visitor to book a free demo class by phone",
+     "keyword": "maths tuition nashik road",
+     "meta": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json --out /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site
+Built 4 pages into /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site
+PASS  spec is valid
+PASS  all output files exist
+FAIL  numbers not in the facts: 20
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 9.7 words
+FAIL  keyword missing: contact: keyword 'gurukul maths academy contact nashik' in neither title nor h1; courses: keyword 'class 8 9 10 maths classes nashik' in neither title nor h1; fees: keyword 'maths tuition fees nashik' in neither title nor h1; home: keyword 'maths tuition nashik road' in neither title nor h1
+WARN  search fit: contact: keyword not in the description; contact: keyword not in the first 100 words; courses: keyword not in the description; courses: keyword not in the first 100 words; fees: keyword not in the description; fees: keyword not in the first 100 words; home: keyword not in the description; home: keyword not in the first 100 words
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: Book a free demo class; Call 98220 11223 between 10 am and 8 pm.; Classroom: Shop 4, Datta Mandir Road, Nashik Road.; First demo class is free.; Marks sent to parents on WhatsApp.; Taught by Suresh Kulkarni, M.Sc.; Written test every 2 weeks.
+PASS  no thin pages
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -243,9 +243,9 @@
+     "**Class 8:** Rs 2,500 per month",
+     "**Class 9:** Rs 2,500 per month",
+     "**Class 10:** Rs 3,000 per month",
+     "",
+-    "The fee covers 5 classes per week (Monday to Friday), 90 minutes each, bi-weekly written tests, WhatsApp marks updates, and one free make-up class per month if needed."
++    "The fee covers 5 classes per week (Monday to Friday), 90 minutes each, bi-weekly written tests, WhatsApp marks updates, and one free make-up class per month if needed. That is about 20 classes a month."
+   ]
+ },
+ {
+   "type": "features",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -243,9 +243,9 @@
+     "**Class 8:** Rs 2,500 per month",
+     "**Class 9:** Rs 2,500 per month",
+     "**Class 10:** Rs 3,000 per month",
+     "",
+-    "The fee covers 5 classes per week (Monday to Friday), 90 minutes each, bi-weekly written tests, WhatsApp marks updates, and one free make-up class per month if needed. That is about 20 classes a month."
++    "The fee covers 5 classes per week (Monday to Friday), 90 minutes each, bi-weekly written tests, WhatsApp marks updates, and one free make-up class per month if needed."
+   ]
+ },
+ {
+   "type": "features",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -42,10 +42,10 @@
+ "name": "Home",
+ "goal": "Get the visitor to book a free demo class by phone",
+ "keyword": "maths tuition nashik road",
+ "meta": {
+-  "title": "Gurukul Maths Academy | Class 8-10 Tuition in Nashik Road",
+-  "description": "Small-batch maths classes for classes 8, 9 and 10. 12 students max, 18 years experience. Free demo class. Call 98220 11223."
++  "title": "Maths Tuition Nashik Road | Gurukul Maths Academy Class 8-10",
++  "description": "Maths tuition Nashik Road for classes 8, 9 and 10. Small batches of 12, 18 years experience. Free demo class. Call 98220 11223."
+ },
+ "cta": {
+   "label": "Book Free Demo",
+   "href": "tel:9822011223"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -52,9 +52,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Maths tuition for classes 8, 9 and 10 in Nashik Road",
++    "headline": "Maths tuition Nashik Road for classes 8, 9 and 10",
+     "sub": "Small batches of 12. Taught by Suresh Kulkarni, M.Sc. Mathematics, 18 years experience. Free demo class.",
+     "proof": "Maharashtra State Board and CBSE syllabus covered.",
+     "cta": {
+       "label": "Book Free Demo",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -127,10 +127,10 @@
+ "name": "Courses",
+ "goal": "Show what each class covers and move the visitor to book a demo",
+ "keyword": "class 8 9 10 maths classes nashik",
+ "meta": {
+-  "title": "Maths Courses for Class 8, 9 & 10 | Gurukul Maths Academy",
+-  "description": "Class-wise syllabus for Maharashtra State Board and CBSE. Small batches, 90 minutes, 5 days a week. Free demo."
++  "title": "Class 8 9 10 Maths Classes Nashik | Gurukul Maths Academy",
++  "description": "Class 8 9 10 maths classes Nashik for Maharashtra State Board and CBSE. Small batches, 90 minutes, 5 days a week. Free demo."
+ },
+ "cta": {
+   "label": "Book Free Demo",
+   "href": "tel:9822011223"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -137,9 +137,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Class-wise maths courses for 8, 9 and 10",
++    "headline": "Class 8 9 10 maths classes Nashik",
+     "sub": "Full Maharashtra State Board and CBSE syllabus. 12 students max per batch. 90-minute classes, 5 days a week.",
+     "proof": "Taught by Suresh Kulkarni, M.Sc. Mathematics, 18 years experience.",
+     "cta": {
+       "label": "Book Free Demo",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -217,10 +217,10 @@
+ "name": "Fees",
+ "goal": "Show the monthly fee clearly and move the visitor to book a demo",
+ "keyword": "maths tuition fees nashik",
+ "meta": {
+-  "title": "Maths Tuition Fees | Class 8, 9 & 10 | Gurukul Maths Academy",
+-  "description": "Rs 2,500/month for classes 8 and 9. Rs 3,000/month for class 10. No hidden charges. Free demo class."
++  "title": "Maths Tuition Fees Nashik | Class 8 9 10 | Gurukul Maths Academy",
++  "description": "Maths tuition fees Nashik: Rs 2,500/month for classes 8 and 9, Rs 3,000/month for class 10. No hidden charges. Free demo class."
+ },
+ "cta": {
+   "label": "Book Free Demo",
+   "href": "tel:9822011223"
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -227,9 +227,9 @@
+ },
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Simple monthly fees, no hidden charges",
++    "headline": "Maths tuition fees Nashik for class 8, 9 and 10",
+     "sub": "Rs 2,500 per month for classes 8 and 9. Rs 3,000 per month for class 10. First demo class is free.",
+     "proof": "Fee includes all classes, tests and make-up sessions.",
+     "cta": {
+       "label": "Book Free Demo",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -315,10 +315,10 @@
+ "name": "Contact",
+ "goal": "Give the visitor the phone number and address to book a demo",
+ "keyword": "gurukul maths academy contact nashik",
+ "meta": {
+-  "title": "Contact Gurukul Maths Academy | Nashik Road",
+-  "description": "Shop 4, Datta Mandir Road, Nashik Road. Call 98220 11223 between 10 am and 8 pm. Free demo class available."
++  "title": "Gurukul Maths Academy Contact Nashik | Nashik Road",
++  "description": "Gurukul Maths Academy contact Nashik: Shop 4, Datta Mandir Road, Nashik Road. Call 98220 11223 between 10 am and 8 pm. Free demo class."
+ },
+ "cta": {
+   "label": "Book Free Demo",
+   "href": "tel:9822011223"
+
+[0m
+[0m✗ [0mEdit site.json failed
+[91m[1mError: [0mFound multiple matches for oldString. Provide more surrounding context to make the match unique.
+[0m→ [0mRead site.json[90m [limit=50, offset=270][0m
+[0m→ [0mRead site.json[90m [limit=30, offset=320][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -323,19 +323,19 @@
+         "label": "Book Free Demo",
+         "href": "tel:9822011223"
+       },
+       "sections": [
++{
++            "type": "hero",
++            "headline": "Gurukul Maths Academy contact Nashik",
++            "sub": "Call 98220 11223 between 10 am and 8 pm. Classroom: Shop 4, Datta Mandir Road, Nashik Road.",
++            "proof": "First demo class is free. No obligation to join.",
++            "cta": {
++              "label": "Call Now",
++              "href": "tel:9822011223"
++            }
++          },
+         {
+-          "type": "hero",
+-          "headline": "Book a free demo class",
+-          "sub": "Call 98220 11223 between 10 am and 8 pm. Classroom: Shop 4, Datta Mandir Road, Nashik Road.",
+-          "proof": "First demo class is free. No obligation to join.",
+-          "cta": {
+-            "label": "Call Now",
+-            "href": "tel:9822011223"
+-          }
+-        },
+-        {
+           "type": "text",
+           "headline": "Visit or call us",
+           "body": [
+             "**Phone:** 98220 11223 (call between 10 am and 8 pm)",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json --out /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site
+Built 4 pages into /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site
+PASS  spec is valid
+PASS  all output files exist
+FAIL  numbers not in the facts: 20
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 9.7 words
+PASS  each page has its keyword in the title or h1
+WARN  search fit: fees: title is 64 characters (30 to 60)
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: Book a free demo class; Call 98220 11223 between 10 am and 8 pm.; Classroom: Shop 4, Datta Mandir Road, Nashik Road.; First demo class is free.; Marks sent to parents on WhatsApp.; Taught by Suresh Kulkarni, M.Sc.; Written test every 2 weeks.
+PASS  no thin pages
+[0m
+[0m✱ [0mGrep "20"[90m in . · 24 matches[0m
+[0m→ [0mRead site.json[90m [offset=245, limit=20][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+===================================================================
+--- /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
++++ /tmp/tmp.Wgu5oIPTI5/run/mangoman-website-copy/gurukul-maths/site.json
+@@ -246,25 +246,25 @@
+             "",
+             "The fee covers 5 classes per week (Monday to Friday), 90 minutes each, bi-weekly written tests, WhatsApp marks updates, and one free make-up class per month if needed."
+           ]
+         },
+-        {
+-          "type": "features",
+-          "headline": "What the fee includes",
+-          "items": [
+-            {
+-              "title": "20 classes a month",
+-              "text": "5 days a week, 90 minutes each, Monday to Friday."
++{
++            "type": "features",
++            "headline": "What the fee includes",
++            "items": [
++              {
++                "title": "5 classes a week",
++                "text": "Monday to Friday, 90 minutes each."
++              },
++              {
++                "title": "Bi-weekly tests",
++                "text": "Written test every 2 weeks. Marks sent to parents on WhatsApp."
++              },
++              {
++                "title": "Free make-up",
++                "text": "One missed class can be attended in another batch at no extra cost."
+             },
+             {
+-              "title": "Bi-weekly tests",
+-              "text": "Written test every 2 weeks. Marks sent to parents on WhatsApp."
+-            },
+-            {
+-              "title": "Free make-up",
+-              "text": "One missed class can be attended in another batch at no extra cost."
+-            },
+-            {
+               "title": "No registration fee",
+               "text": "No admission fee, no annual charge. Just the monthly fee."
+             }
+           ]
+
+[0m
