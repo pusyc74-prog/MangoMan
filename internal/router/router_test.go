@@ -1165,7 +1165,11 @@ func TestReasoningOnlyStreamIsNoAnswer(t *testing.T) {
 	stop := `{"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}`
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: sse(think, stop, "[DONE]")}
 	rt := setup(t, a)
-	do(t, rt, helloStream)
+	w := do(t, rt, helloStream)
+	// The client gets an error, not a clean end, so an agent run continues.
+	if body := w.Body.String(); strings.Contains(body, "[DONE]") || !strings.Contains(body, "upstream_stream_error") {
+		t.Fatalf("reasoning-only answer ended cleanly:\n%s", body)
+	}
 	for _, s := range rt.Health.Snapshot() {
 		if s.Target == "a/m1" && (s.LastOut != "no_answer" || s.OK != 0) {
 			t.Fatalf("reasoning alone counted as an answer: %+v", s)

@@ -385,6 +385,11 @@ const resumeNote = "Your last step was interrupted (the connection dropped or th
 // steps that normally lasts a few seconds.
 const stallAfter = time.Minute
 
+// commandCeiling is the longest a running command keeps a run from counting
+// as stalled. OpenCode ends its own commands within 10 minutes; past that a
+// child process is hung (once seen: a download that never finished).
+const commandCeiling = 10 * time.Minute
+
 // watchStall stops OpenCode when nothing has happened for stallAfter, and
 // says so in stalled. Slow answers and long commands are not stalls: a
 // request in flight or a command running keeps it waiting.
@@ -409,7 +414,8 @@ func watchStall(cfg *config.Config, p *os.Process, done <-chan struct{}, stalled
 		if err != nil || json.Unmarshal(out, &b) != nil {
 			continue // router restarting, or older than this command
 		}
-		if b.InFlight > 0 || time.Duration(b.IdleS)*time.Second < stallAfter || commandRunning(p.Pid) {
+		idle := time.Duration(b.IdleS) * time.Second
+		if b.InFlight > 0 || idle < stallAfter || (idle < commandCeiling && commandRunning(p.Pid)) {
 			continue
 		}
 		stalled.Store(true)

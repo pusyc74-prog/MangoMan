@@ -103,6 +103,10 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 				if data, ok := sseData(trimmed); ok {
 					if string(data) == "[DONE]" {
 						sawDone = true
+						// Only reasoning so far: hold back the end, an error follows below.
+						if committed && !answered {
+							continue
+						}
 					} else {
 						d := parseDelta(data)
 						outChars += d.chars
@@ -202,13 +206,18 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		writeStreamError(w, flusher, msg)
 		return attemptResult{done: true, outcome: "stream_broken_after_commit", status: 200, errMsg: msg, tokens: tokens}
 	}
+	if !answered {
+		// Only reasoning, then the end: an agent sees no words and no tool
+		// call and quietly stops the task. End it with an error instead, so
+		// an unattended run picks the task up again on another model.
+		rt.Breakers.Failure(c.Target())
+		msg := "the model only thought and gave no answer"
+		writeStreamError(w, flusher, msg)
+		return attemptResult{done: true, outcome: "no_answer", status: 200, errMsg: msg, tokens: tokens, firstOut: firstOut}
+	}
 	rt.Breakers.Success(c.Target())
 	out := "ok"
 	switch {
-	case !answered:
-		// Only reasoning, then the end: an agent sees no words and no tool
-		// call and stops the task. Logged as a failure so the model sinks.
-		out = "no_answer"
 	case finish == "length" && req.MaxTokens == 0:
 		out = "ok_truncated" // already streamed; logged for the quality score
 	}

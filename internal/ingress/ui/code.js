@@ -179,7 +179,7 @@ function busy(on, text) {
 
 // ---------- what the free model is doing ----------
 
-const GAVE_UP = { busy: "was busy", slow: "did not start answering in time", garbled: "gave a garbled answer", failed: "failed" };
+const GAVE_UP = { busy: "was busy", slow: "did not start answering in time", garbled: "gave a garbled answer", empty: "gave no answer", failed: "failed" };
 const RESUME = "Your last step was interrupted (the connection dropped or the work stalled). Continue the task from where you stopped.";
 
 // watch runs every 2 seconds while the AI works. It says which model is

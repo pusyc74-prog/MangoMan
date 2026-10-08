@@ -44,9 +44,10 @@ type Router struct {
 	Logf     func(format string, args ...any)
 
 	// StreamIdle aborts a stream that sends nothing for this long. Keep it
-	// short: measured on real free models, a model that says nothing in the
-	// first minute is not thinking, it is not going to answer, and waiting
-	// longer only spends the request's time.
+	// short: measured on NVIDIA (8 Oct, 345 answers), half started within
+	// 1.1 s, 99% within 11 s and only 2 took over 30 s (32 and 35 s), while
+	// models that stayed silent never answered; waiting longer only spends
+	// the user's time, and a cut-off request moves to the next model.
 	StreamIdle time.Duration
 	// StreamStall is the gap allowed once the answer has started. It is
 	// longer than StreamIdle because by then the answer is already going to
@@ -93,7 +94,7 @@ type Attempt struct {
 	Since     time.Time `json:"since"`
 	Answering bool      `json:"answering"`       // its answer has started
 	After     string    `json:"after,omitempty"` // the model given up on just before
-	Why       string    `json:"why,omitempty"`   // busy, slow, garbled or failed
+	Why       string    `json:"why,omitempty"`   // busy, slow, garbled, empty or failed
 }
 
 func (a *activity) set(req *core.Request, f func(*Attempt)) {
@@ -152,6 +153,8 @@ func giveUpWord(res attemptResult) string {
 		return "slow"
 	case res.outcome == "garbled":
 		return "garbled"
+	case res.outcome == "no_answer":
+		return "empty"
 	}
 	return "failed"
 }
@@ -188,7 +191,7 @@ func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Route
 		Client:           providers.NewClient(),
 		Logf:             func(string, ...any) {},
 		Health:           NewHealth(),
-		StreamIdle:       60 * time.Second,
+		StreamIdle:       30 * time.Second,
 		StreamStall:      180 * time.Second,
 		NonStreamTimeout: 180 * time.Second,
 	}
@@ -339,6 +342,8 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			rt.markBusy(c.Target(), garbledFor)
 		case res.outcome == "timeout":
 			rt.markBusy(c.Target(), silentFor)
+		case res.outcome == "no_answer":
+			rt.markBusy(c.Target(), busyFor)
 		}
 		if res.done {
 			if strings.HasPrefix(res.outcome, "ok") {
