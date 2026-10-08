@@ -62,8 +62,12 @@ def main():
             lo, hi = B.GOOGLE["descriptions"]
             if not lo <= len(ds) <= hi:
                 hard.append("%s: %d descriptions (2 to 4)" % (n, len(ds)))
-            hard += ["%s: headline %r is %d characters (30)" % (n, h, B.glen(h)) for h in hs if B.glen(h) > B.GOOGLE["headline"]]
-            hard += ["%s: description %d is %d characters (90)" % (n, i, B.glen(d)) for i, d in enumerate(ds, 1) if B.glen(d) > B.GOOGLE["description"]]
+            # Each over-long line with its text and how much to cut, so all
+            # of them can be rewritten in one pass.
+            hard += ["%s: headline %r is %d characters, cut %d (30)" % (n, h, B.glen(h), B.glen(h) - B.GOOGLE["headline"])
+                     for h in hs if B.glen(h) > B.GOOGLE["headline"]]
+            hard += ["%s: description %d %r is %d characters, cut %d (90)" % (n, i, d, B.glen(d), B.glen(d) - B.GOOGLE["description"])
+                     for i, d in enumerate(ds, 1) if B.glen(d) > B.GOOGLE["description"]]
             hard += ["%s: %s is %d characters (15)" % (n, k, B.glen(ag[k])) for k in ("path1", "path2") if B.glen(ag.get(k, "")) > B.GOOGLE["path"]]
             hard += ["%s: emoji or symbols are not allowed (%s) in %r" % (n, " ".join(symbols(t)), t) for t in hs + ds if symbols(t)]
             hard += ["%s: no exclamation marks in headlines: %r" % (n, h) for h in hs if "!" in h]

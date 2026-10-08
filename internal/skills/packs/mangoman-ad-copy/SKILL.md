@@ -4,7 +4,7 @@ description: Write paid ad copy for Google search ads (responsive search ads wit
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Ad copy
