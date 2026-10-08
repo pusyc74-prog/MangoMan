@@ -37,13 +37,17 @@ cannot bring their own keys, and serving them without keys needs servers and
 a paid AI allowance. Do not start it unless the owner reopens it. M6 (coding
 workspace) is under discussion instead.
 
-## The repo is private again (8 Oct)
+## Going private again (8 Oct)
 
 The owner made the repo public on 7 Oct, after the private repo's free
 Actions minutes ran out and every job was refused ("recent account payments
 have failed or your spending limit needs to be increased"), and asked for it
-to go private again once the build was done. It went private on 8 Oct with
-CI cut to fit the 2,000 free minutes a month: one Linux job per push (vet,
+to go private again once the build was done. CI was cut on 8 Oct to fit the
+2,000 free minutes a month; the owner flips the switch (Settings > General >
+Danger Zone > Change visibility), since a session cannot change repository
+settings. If the month's private minutes are already used up, jobs are
+refused until they reset; the local checks before each commit still run, and
+the self-hosted runner below is free. The new CI: one Linux job per push (vet,
 race tests, lean check, about 2 minutes); pack samples only when packs change
 and nightly (`packs.yml`); macOS, Windows and the five builds on Sundays and
 on demand; qa nightly; doctor once a day; pack runs only by dispatch (about
