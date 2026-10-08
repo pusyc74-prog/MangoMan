@@ -48,15 +48,6 @@ func routerUp(cfg *config.Config) bool {
 	return resp.StatusCode == http.StatusOK
 }
 
-// openCodeConfig is the inline OpenCode config that points it at MangoMan.
-// skillRule is added to OpenCode's instructions when the skill packs are
-// loaded. Measured on real runs: about once in 35 tasks the model wrote the
-// files by hand instead of opening the matching pack, so none of the pack's
-// rules or checks ran and the result failed.
-const skillRule = "MangoMan skill packs are installed. Before you start, check whether a skill fits the task. " +
-	"If one does, load it first with the skill tool and follow it. Its scripts build and check the files, " +
-	"so never write by hand a file that a skill's script builds.\n"
-
 // How mangoman code shows OpenCode.
 const (
 	modeTUI = iota // OpenCode's own terminal screen
@@ -68,15 +59,11 @@ const (
 // read. Everything else is shown with Allow and Deny first.
 var uiAllowed = []string{"ls*", "pwd", "git status*", "git diff*", "git log*"}
 
-// unattendedOff are OpenCode tools switched off in a run with nobody
-// watching (mangoman code run ...). Across the real pack runs no model used
-// them, and "question" would wait for an answer nobody gives. Each costs
-// tokens on every request just by being listed.
-var unattendedOff = map[string]bool{"question": false, "task": false, "todowrite": false, "webfetch": false}
-
-// openCodeConfig is OpenCode's inline config. rules is the skill rule file
-// ("" when the packs are not loaded); mode is how OpenCode is shown.
-func openCodeConfig(cfg *config.Config, model, rules string, mode int) string {
+// openCodeConfig is OpenCode's inline config that points it at MangoMan;
+// mode is how OpenCode is shown. Measured on 8 Oct: adding a "use the skill
+// first" rule and switching off tools nobody used saved almost no tokens per
+// request and lowered ad copy scores, so OpenCode runs with its own defaults.
+func openCodeConfig(cfg *config.Config, model string, mode int) string {
 	models := map[string]any{
 		"free/coder": map[string]any{"name": "Free coder", "limit": map[string]int{"context": 65536, "output": 8192}},
 		"free/auto":  map[string]any{"name": "Free auto", "limit": map[string]int{"context": 65536, "output": 8192}},
@@ -102,12 +89,6 @@ func openCodeConfig(cfg *config.Config, model, rules string, mode int) string {
 		}},
 		"model":       "mangoman/" + model,
 		"small_model": "mangoman/free/fast",
-	}
-	if rules != "" {
-		c["instructions"] = []string{rules}
-	}
-	if mode == modeRun {
-		c["tools"] = unattendedOff
 	}
 	bash := map[string]string{"*": "allow"}
 	if mode == modeUI {
@@ -272,14 +253,9 @@ func cmdCode(args []string) error {
 	}
 
 	env := append(os.Environ(), "MANGOMAN_TOKEN="+token)
-	rules := ""
 	if os.Getenv("OPENCODE_CONFIG_DIR") == "" {
 		if oc, err := codeSkillsDir(); err == nil {
 			env = append(env, "OPENCODE_CONFIG_DIR="+oc)
-			rules = filepath.Join(oc, "mangoman-rules.md")
-			if err := os.WriteFile(rules, []byte(skillRule), 0o644); err != nil {
-				rules = ""
-			}
 		} else {
 			fmt.Println("Skill packs not loaded:", err)
 		}
@@ -293,13 +269,7 @@ func cmdCode(args []string) error {
 	case fs.Arg(0) == "run":
 		mode = modeRun
 	}
-	cfgMode := mode
-	if os.Getenv("MANGOMAN_SLIM") == "0" {
-		// For measuring only (scripts/pack-run.sh, SLIM=0): no skill rule and
-		// every tool listed, the setup before 7 Oct.
-		rules, cfgMode = "", modeTUI
-	}
-	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, rules, cfgMode))
+	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, mode))
 	if !*noWeb {
 		// OpenCode's web search (via Exa) lets it research while it codes.
 		env = append(env, "OPENCODE_ENABLE_EXA=1")

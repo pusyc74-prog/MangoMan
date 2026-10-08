@@ -8,10 +8,12 @@ import (
 // free models (see TaskCosts.Measured). Big: ad copy, a product listing, an
 // SEO article, a website's copy. Small: an email campaign, a resume, social
 // posts. Medians, so one slow run does not move them.
+// Runs 20261007-180411 (all seven packs) and 20261008-060516 (ad copy and
+// email, three cases each): 7 big and 6 small tasks.
 var taskCost = TaskCosts{
-	BigRequests: 20, BigTokens: 290_000,
-	SmallRequests: 14, SmallTokens: 150_000,
-	Measured: "measured on 7 Oct 2026 with Nemotron 3 Ultra on NVIDIA, one run of each task",
+	BigRequests: 23, BigTokens: 527_000,
+	SmallRequests: 12, SmallTokens: 145_000,
+	Measured: "the middle of 13 real tasks run on 7 and 8 Oct 2026 with Nemotron 3 Ultra on NVIDIA",
 }
 
 // TaskCosts says what a task costs, for the free AI estimate.

@@ -42,7 +42,7 @@ on:
       - "scripts/pack-run.sh"
   # Lets a session start a run without the Actions page, which it cannot
   # reach: POST /repos/<owner>/<repo>/dispatches with event_type pack-run and
-  # any of model, packs, variant, cases, case_timeout, runner, slim in client_payload.
+  # any of model, packs, variant, cases, case_timeout, runner in client_payload.
   repository_dispatch:
     types: [pack-run]
 
@@ -67,7 +67,6 @@ jobs:
       MODEL: ${{ inputs.model || github.event.client_payload.model || 'free/coder' }}
       PACKS: ${{ inputs.packs || github.event.client_payload.packs }}
       VARIANT: ${{ inputs.variant || github.event.client_payload.variant }}
-      MANGOMAN_SLIM: ${{ github.event.client_payload.slim || '1' }} # 0 = without the skill rule and slimmer tools, to compare
       # A push that changes this workflow or the script runs a cheap smoke run
       # instead of the full set: one case per pack, ten minutes each.
       CASES: ${{ inputs.cases || github.event.client_payload.cases || (github.event_name == 'push' && '1' || '') }}
@@ -147,8 +146,7 @@ jobs:
           PY
           cd ../reports
           git add -A
-          tag=""; [ "$MANGOMAN_SLIM" = 0 ] && tag=" (not slim)"
-          git commit -q -m "pack run $MODEL${VARIANT:+ ($VARIANT)}$tag $stamp (run ${{ github.run_id }})" || exit 0
+          git commit -q -m "pack run $MODEL${VARIANT:+ ($VARIANT)} $stamp (run ${{ github.run_id }})" || exit 0
           git push origin eval-reports
       - uses: actions/upload-artifact@v4
         if: always()

@@ -8,27 +8,13 @@ import (
 )
 
 func TestOpenCodeConfig(t *testing.T) {
-	cfg := &config.Config{Port: 4141}
-	var c map[string]any
-	// Interactive: every tool stays, and the skill rule is added.
-	_ = json.Unmarshal([]byte(openCodeConfig(cfg, "free/coder", "/x/mangoman-rules.md", modeTUI)), &c)
-	if c["tools"] != nil {
-		t.Fatalf("an interactive session keeps every tool: %v", c["tools"])
-	}
-	if in, _ := c["instructions"].([]any); len(in) != 1 || in[0] != "/x/mangoman-rules.md" {
-		t.Fatalf("skill rule not added: %v", c["instructions"])
-	}
-	// Unattended: unused tools off; no packs, no rule.
-	c = nil
-	_ = json.Unmarshal([]byte(openCodeConfig(cfg, "free/coder", "", modeRun)), &c)
-	tools, _ := c["tools"].(map[string]any)
-	for _, name := range []string{"question", "task", "todowrite", "webfetch"} {
-		if tools[name] != false {
-			t.Fatalf("%s should be off in an unattended run: %v", name, tools)
+	// OpenCode keeps its own tools and instructions (measured better on 8 Oct).
+	for _, mode := range []int{modeTUI, modeRun} {
+		var c map[string]any
+		_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", mode)), &c)
+		if c["tools"] != nil || c["instructions"] != nil || c["model"] != "mangoman/free/coder" {
+			t.Fatalf("mode %d: %v", mode, c)
 		}
-	}
-	if c["instructions"] != nil {
-		t.Fatal("no rule without packs")
 	}
 }
 
@@ -39,7 +25,7 @@ func TestOpenCodeConfigUIAsksFirst(t *testing.T) {
 		} `json:"permission"`
 		Tools map[string]bool `json:"tools"`
 	}
-	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", "", modeUI)), &c)
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeUI)), &c)
 	if c.Permission.Bash["*"] != "ask" || c.Permission.Bash["git status*"] != "allow" {
 		t.Fatalf("the coding screen should ask before commands, except reading ones: %v", c.Permission.Bash)
 	}

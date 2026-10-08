@@ -288,10 +288,10 @@ number of tasks a day.
 **8 Oct.** Installed packs no longer carry their `tests/` folder: models
 were reading the scorer instead of doing the task (`mangoman agents eval`
 takes the test set from the binary). After that, free/coder passed 6 of 7
-tasks (it passed 1 of 7 the run before). The skill rule and slimmer tools cut
-tokens per request by 39%; pinned Nemotron scores held or rose except ad copy
-(an edit-one-line-at-a-time loop, pack 1.1 addresses it) and email (100 to
-90). A 3-case run of those two decides whether the slim setup stays. Pass
+tasks (1 of 7 the run before). GLM 5.3 on NVIDIA is out of the catalogue: its
+deployment returns noise with chat-template tokens in it. The "skill rule and
+slimmer tools" setup was tried and removed: on the same three cases each it
+saved almost no tokens per request and scored ad copy 69 against 78. Pass
 pack names to `pack-run` with spaces or commas.
 
 ## Still open (not built)
