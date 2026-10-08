@@ -1,0 +1,46 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-email-campaign"
+[0m→ [0mRead brief.md
+[0m→ [0mRead audience.md
+[0m→ [0mRead facts.md
+[0m
+[0m← [0mWrite campaign.json
+Wrote file successfully.
+[0m
+Writing the campaign spec, then building.
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/build_emails.py campaign.json --out emails && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-email-campaign/scripts/check_emails.py campaign.json emails
+built emails: 3 emails (.html and .txt), sequence.md, assets/, previews
+PASS  spec is valid
+PASS  every email built
+PASS  every email has an unsubscribe link (mailchimp)
+PASS  every email shows the sender's postal address
+PASS  every email under Gmail's 102 KB clipping size
+PASS  plain-text versions present
+PASS  subject lines are not overlong
+PASS  subject lines 15 to 60 characters (fit a phone)
+PASS  preview text 35 to 140 characters and adds to the subject
+PASS  every link is a real https, mailto or tel link
+PASS  every number comes from the facts the user gave
+PASS  no placeholder text
+PASS  no spam-trigger phrases
+PASS  no shouting in subject lines
+PASS  exclamation marks used sparingly
+PASS  emoji used sparingly in subjects
+PASS  no risky claims
+PASS  one clear action per email
+PASS  text-to-image balance is healthy
+PASS  no local images
+PASS  no sideways scrolling on a phone
+PASS  every image loads in the preview
+PASS  buttons are easy to tap
+PASS  text is readable on a phone
+[0m
+Built. `campaign.json` spec plus `emails/` with 3 HTML emails (announce 15 Oct, choose 20 Oct, last call 24 Oct), `.txt` versions, `sequence.md`, assets and phone/desktop previews.
+
+All 24 checks pass: unsubscribe + postal address in every email, Mailchimp merge tags, under Gmail clipping size, every number traced to facts.md.
+
+To send: in Mailchimp create a campaign, "Code your own" → "Paste in code" with each HTML file; send a test to yourself first. I used a warm festive look with the business name as header since no logo was provided.

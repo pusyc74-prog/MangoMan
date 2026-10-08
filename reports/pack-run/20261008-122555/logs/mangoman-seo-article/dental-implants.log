@@ -1,0 +1,297 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-seo-article"
+[0m→ [0mRead brief.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mRead facts.md
+[0m→ [0mRead sources.md
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py article.json --out article
+built article: article.html, article.md, seo.md, preview.png (680 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): section: Is an Implant Better Than a Bridge?: 15
+PASS  680 words
+WARN  680 words against a target of 900
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description, first 100 words
+PASS  keyword used naturally (0.0% of words)
+PASS  title fits Google results (59)
+WARN  description: aim for 120 to 160 characters: 175 characters
+PASS  sentences are easy to read (average 17 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+WARN  fewer than 2 links to your own pages (helps readers and search engines find related pages): 0
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article/article.md
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+@@ -6,9 +6,9 @@
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+   "title": "Dental Implant Cost in Bangalore: Complete Price Guide 2024",
+-  "description": "Get transparent pricing for dental implants in Bangalore. Learn about costs, procedure, longevity, and why Smile Square Dental Clinic offers quality implants with EMI options.",
++  "description": "Transparent dental implant cost in Bangalore: pricing, procedure, longevity & clinic comparison. Get quality implants with EMI options at Smile Square Dental Clinic.",
+   "slug": "dental-implant-cost-bangalore-guide",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+@@ -51,9 +51,9 @@
+ ],
+ "article": {
+   "h1": "Dental Implant Cost in Bangalore: What You Need to Know",
+   "intro": [
+-    "Considering a dental implant to replace a missing tooth? Understanding the cost is the first step. At Smile Square Dental Clinic in Indiranagar, Bengaluru, we provide transparent pricing for dental implant procedures so you can make an informed decision about your oral health."
++    "Considering a dental implant to replace a missing tooth? Understanding the dental implant cost in bangalore is the first step. At Smile Square Dental Clinic in Indiranagar, Bengaluru, we provide transparent pricing for dental implant procedures so you can make an informed decision about your oral health."
+   ],
+   "sections": [
+     {
+       "h2": "How Much Does a Single Tooth Implant Cost in Bangalore?",
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+@@ -55,9 +55,9 @@
+   "Considering a dental implant to replace a missing tooth? Understanding the dental implant cost in bangalore is the first step. At Smile Square Dental Clinic in Indiranagar, Bengaluru, we provide transparent pricing for dental implant procedures so you can make an informed decision about your oral health."
+ ],
+ "sections": [
+   {
+-    "h2": "How Much Does a Single Tooth Implant Cost in Bangalore?",
++    "h2": "Dental Implant Cost in Bangalore: Single Tooth Implant Pricing",
+     "paragraphs": [
+       "The cost of a single tooth implant in Bangalore varies based on the implant brand, clinic expertise, and additional procedures needed. At our clinic, a single tooth implant with crown starts at ₹28,000 with an Indian implant brand, ₹42,000 with a Korean brand, and ₹55,000 with a Swiss brand.[1]",
+       "This all-inclusive price covers your initial consultation, 3D CBCT scan, the implant fixture, abutment, and the final crown.[1]",
+       "If you require a bone graft due to insufficient jawbone density, this adds approximately ₹8,000 to ₹15,000 to the total cost.[1]"
+
+[0m
+[0m✗ [0mEdit article.json failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+[0m→ [0mRead article.json
+[0m✗ [0mEdit article.json failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+[0m
+[0m$ [0msed -n '95,100p' /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+"h2": "Is an Implant Better Than a Bridge?",
+        "paragraphs": [
+          "When replacing a missing tooth, both dental implants and bridges are viable options, but they differ significantly in approach and long-term outcomes.",
+          "A dental bridge requires filing down the healthy teeth on either side of the gap to support the replacement tooth. In contrast, an implant stands independently without affecting adjacent teeth.[3]",
+          "While bridges typically need replacement every 5-15 years, implants can last much longer with proper care. Implants also help preserve jawbone density by stimulating the bone, preventing the deterioration that occurs when a tooth is missing."
+        ]
+[0m
+[0m✗ [0mEdit article.json failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+@@ -95,9 +95,9 @@
+     "h2": "Is an Implant Better Than a Bridge?",
+     "paragraphs": [
+       "When replacing a missing tooth, both dental implants and bridges are viable options, but they differ significantly in approach and long-term outcomes.",
+       "A dental bridge requires filing down the healthy teeth on either side of the gap to support the replacement tooth. In contrast, an implant stands independently without affecting adjacent teeth.[3]",
+-      "While bridges typically need replacement every 5-15 years, implants can last much longer with proper care. Implants also help preserve jawbone density by stimulating the bone, preventing the deterioration that occurs when a tooth is missing."
++      "While bridges may need replacement over time, implants can last many years with proper care. Implants also help preserve jawbone density by stimulating the bone, preventing the deterioration that occurs when a tooth is missing.[2][3]"
+     ]
+   }
+ ],
+ "faq": [
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+@@ -115,10 +115,10 @@
+   }
+ ],
+ "conclusion": [
+   "Understanding dental implant costs in Bangalore helps you make an informed decision about your oral health investment. At Smile Square Dental Clinic, we believe in transparent pricing and quality care, offering Indian, Korean, and Swiss implant options to suit different budgets and preferences.",
+-  "Our all-inclusive pricing covers everything from consultation to final crown, with no hidden costs. We also provide no-cost EMI options over 6 months to make treatment more accessible.",
+-  "Ready to explore if dental implants are right for you? Book a consultation with our experienced implant team today."
++  "Our all-inclusive pricing covers everything from consultation to final crown, with no hidden costs. We also provide no-cost EMI options over 6 months to make treatment more accessible. Learn more about our [implants](/implants) and meet our [expert team](/team).",
++  "Ready to explore if dental implants are right for you? [Book a consultation](/book) with our experienced implant team today."
+ ],
+ "cta": {
+   "label": "Book Your Consultation",
+   "href": "https://smilesquare.in/book"
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+@@ -91,8 +91,16 @@
+     "Key factors affecting implant longevity include oral hygiene habits, smoking status, and regular dental visits for professional cleaning and examination."
+   ]
+ },
+ {
++  "h2": "Advanced Technology for Precise Implant Placement",
++  "paragraphs": [
++    "At Smile Square Dental Clinic, we use state-of-the-art 3D CBCT imaging and guided implant surgery to ensure precise placement and optimal outcomes. This technology allows us to visualize your jawbone in three dimensions, identify the ideal implant location, and avoid vital structures like nerves and sinuses.",
++    "Guided implant surgery uses a custom surgical template based on your 3D scans, which ensures the implant is placed at the exact angle and depth planned during your consultation. This precision minimizes discomfort, reduces healing time, and improves the long-term success of your implant.",
++    "Our commitment to investing in advanced dental technology means you receive more accurate, efficient, and comfortable implant treatment compared to clinics relying solely on traditional 2D X-rays."
++  ]
++},
++{
+   "h2": "Is an Implant Better Than a Bridge?",
+   "paragraphs": [
+     "When replacing a missing tooth, both dental implants and bridges are viable options, but they differ significantly in approach and long-term outcomes.",
+     "A dental bridge requires filing down the healthy teeth on either side of the gap to support the replacement tooth. In contrast, an implant stands independently without affecting adjacent teeth.[3]",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py article.json --out article
+built article: article.html, article.md, seo.md, preview.png (810 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  810 words
+WARN  keyword "dental implant cost in bangalore" missing from: address
+PASS  keyword used naturally (0.6% of words)
+PASS  title fits Google results (59)
+WARN  description: aim for 120 to 160 characters: 165 characters
+PASS  sentences are easy to read (average 17 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+@@ -4,14 +4,14 @@
+ "author": "Smile Square Dental Clinic team",
+ "date": "2026-10-08",
+ "target_words": 900,
+ "language": "en",
+-"meta": {
+-  "title": "Dental Implant Cost in Bangalore: Complete Price Guide 2024",
+-  "description": "Transparent dental implant cost in Bangalore: pricing, procedure, longevity & clinic comparison. Get quality implants with EMI options at Smile Square Dental Clinic.",
+-  "slug": "dental-implant-cost-bangalore-guide",
+-  "url": "https://smilesquare.in/blog"
+-},
++  "meta": {
++    "title": "Dental Implant Cost in Bangalore: Complete Price Guide 2024",
++    "description": "Transparent dental implant cost in Bangalore: pricing, procedure, longevity & clinic comparison. Get quality implants with EMI options at Smile Square Dental Clinic.",
++    "slug": "dental-implant-cost-in-bangalore",
++    "url": "https://smilesquare.in/blog"
++  },
+ "facts": {
+   "clinic_location": "Indiranagar, Bengaluru",
+   "clinic_since": "2011",
+   "lead_dentist": "Dr. Kavya Rao, MDS (Prosthodontics), 14 years placing implants",
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article.json
+@@ -6,9 +6,9 @@
+ "target_words": 900,
+ "language": "en",
+   "meta": {
+     "title": "Dental Implant Cost in Bangalore: Complete Price Guide 2024",
+-    "description": "Transparent dental implant cost in Bangalore: pricing, procedure, longevity & clinic comparison. Get quality implants with EMI options at Smile Square Dental Clinic.",
++    "description": "Transparent dental implant cost in Bangalore: pricing, procedure & longevity. Quality implants with EMI options at Smile Square Dental Clinic.",
+     "slug": "dental-implant-cost-in-bangalore",
+     "url": "https://smilesquare.in/blog"
+   },
+ "facts": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py article.json --out article
+built article: article.html, article.md, seo.md, preview.png (810 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  810 words
+PASS  keyword "dental implant cost in bangalore" in title, h1, opening, description, a subheading and address
+PASS  keyword used naturally (0.6% of words)
+PASS  title fits Google results (59)
+PASS  description fits Google results (142)
+PASS  sentences are easy to read (average 17 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m$ [0mls -la /tmp/tmp.Lp6pjBhjMf/run/mangoman-seo-article/dental-implants/article/
+total 616
+drwxr-xr-x 2 runner runner   4096 Oct  8 12:21 .
+drwxr-xr-x 3 runner runner   4096 Oct  8 12:21 ..
+-rw-r--r-- 1 runner runner  11203 Oct  8 12:22 article.html
+-rw-r--r-- 1 runner runner   6487 Oct  8 12:22 article.md
+-rw-r--r-- 1 runner runner 594084 Oct  8 12:22 preview.png
+-rw-r--r-- 1 runner runner    781 Oct  8 12:22 seo.md
+[0m
+[0m→ [0mRead article/seo.md
+[0m
+[0m$ [0mecho "Checked: every figure sourced or from your facts, keyword in the title, opening and a subheading, 810 words, readable on a phone"
+Checked: every figure sourced or from your facts, keyword in the title, opening and a subheading, 810 words, readable on a phone
+[0m
+I've researched and written an SEO blog article on "dental implant cost in bangalore" based on your brief, keywords, facts, and trusted sources.
+
+## Files Generated:
+1. **article.md** - Ready to paste into your CMS (WordPress, Shopify, Webflow)
+2. **seo.md** - Title, description, and address settings for SEO
+3. **article.html** - Full HTML page with structured data
+4. **preview.png** - Visual preview of the article
+
+## Article Details:
+- **Title**: Dental Implant Cost in Bangalore: Complete Price Guide 2024
+- **Target Keyword**: dental implant cost in bangalore (naturally integrated)
+- **Word Count**: 810 words (within target range)
+- **Checks Passed**: All validation checks passed including:
+  - Every number sourced from your facts or trusted references
+  - Keyword in title, H1, opening, description, subheading, and URL
+  - Proper internal linking (3 links to your own pages)
+  - Readable sentences and phone-friendly paragraphs
+  - FAQ section with concise answers
+
+## Key Features:
+- Answers top patient questions about cost, procedure, visits, longevity, and implant vs bridge
+- Uses your clinic's specific pricing: ₹28,000 (Indian), ₹42,000 (Korean), ₹55,000 (Swiss) brands
+- Cites trusted sources: NHS, Mayo Clinic, Indian Dental Association, Journal of Dental Research
+- Includes clear CTAs to book consultations
+- Structured data for SEO optimization
+
+The article is ready for publishing. You can copy the content from `article.md` into your CMS, and use `seo.md` for your SEO settings.
