@@ -1,0 +1,38 @@
+{
+  "since": "2026-10-07T05:07:04.186274114Z",
+  "requests": 23,
+  "served": 22,
+  "failed_over": 0,
+  "brain_calls": 0,
+  "rows": [
+    {
+      "provider": "nvidia",
+      "model": "kimi-k3",
+      "attempts": 20,
+      "ok": 20,
+      "rate_limited": 0,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 248283,
+      "p50_ms": 32886
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3.5-lightning",
+      "attempts": 3,
+      "ok": 2,
+      "rate_limited": 0,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 10271,
+      "p50_ms": 99191
+    }
+  ],
+  "parts": {
+    "earlier_answers": 35865,
+    "instructions": 99806,
+    "tool_definitions": 64860,
+    "tool_results": 40399,
+    "user": 2495
+  }
+}

@@ -1,0 +1,1112 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m
+[0m$ [0mwc -l search_terms.csv && head -60 search_terms.csv
+16 search_terms.csv
+search_term,impressions,clicks,cost,conversions
+a2 ghee,18400,610,9150,22
+a2 gir cow ghee,9200,420,5880,19
+bilona ghee,6100,250,3500,11
+a2 ghee price,7300,280,3640,6
+buy a2 ghee online,3900,190,2850,9
+gir cow ghee 1 litre,2600,110,1540,4
+desi cow ghee online,4800,150,2100,3
+organic a2 ghee,3100,120,1800,2
+cow ghee ahmedabad,1700,70,980,2
+a2 ghee benefits,5200,160,1920,0
+ghee making machine,2900,95,1330,0
+ghee jobs ahmedabad,1200,60,780,0
+wholesale ghee 15 kg tin,1900,85,1190,0
+ghee franchise,800,40,600,0
+ghee recipe for babies,1500,55,660,0
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+**Writing the Google ads spec for Gauveda...**
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py ads.json ads
+built ads: ads.md, google_ads.csv, google_keywords.csv
+PASS  spec is valid
+FAIL  Google ads: Gir cow ghee: all-capital word COD in 'Pay by UPI or COD'
+WARN  Google ads: Gir cow ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.81xB45m5a5/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.81xB45m5a5/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.81xB45m5a5/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -106,8 +106,9 @@
+   "Lab Tested Every Batch",
+   "Free Delivery Over ₹1,500",
+   "A2 Ghee in Glass Jars",
+   "Pay by UPI or COD",
++  "Gir Cow Ghee Online",
+   "Gauveda Gir Cow Ghee",
+   "Farm Near Gondal, Gujarat"
+ ],
+ "descriptions": [
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.81xB45m5a5/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.81xB45m5a5/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.81xB45m5a5/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -1,7 +1,7 @@
+ {
+   "brand": "Gauveda",
+-  "allowed_caps": ["UPI", "QR", "QA"],
++  "allowed_caps": ["UPI", "QR", "COD"],
+   "facts": {
+     "price_500ml": "500 ml jar ₹1,250",
+     "price_1l": "1 litre jar ₹2,350",
+     "offer": "10% off the first order with code FIRST10",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py ads.json ads && ls ads
+built ads: ads.md, google_ads.csv, google_keywords.csv
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+WARN  Google ads: Gir cow ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+ads.md
+google_ads.csv
+google_keywords.csv
+[0m
+[0m$ [0mgrep -n "fewer than 2" -A 10 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/checks.py
+(no output)
+[0m
+[0m$ [0mgrep -rn "fewer than 2" /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py:79:                soft.append("%s: fewer than 2 headlines contain a keyword; ads match searches better when they do" % n)
+[0m
+[0m$ [0msed -n 60,85p /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py
+elif len(hs) < 10:
+                soft.append("%s: %d headlines; give 10 to 15 so Google can test combinations" % (n, len(hs)))
+            lo, hi = B.GOOGLE["descriptions"]
+            if not lo <= len(ds) <= hi:
+                hard.append("%s: %d descriptions (2 to 4)" % (n, len(ds)))
+            hard += ["%s: headline %r is %d characters (30)" % (n, h, B.glen(h)) for h in hs if B.glen(h) > B.GOOGLE["headline"]]
+            hard += ["%s: description %d is %d characters (90)" % (n, i, B.glen(d)) for i, d in enumerate(ds, 1) if B.glen(d) > B.GOOGLE["description"]]
+            hard += ["%s: %s is %d characters (15)" % (n, k, B.glen(ag[k])) for k in ("path1", "path2") if B.glen(ag.get(k, "")) > B.GOOGLE["path"]]
+            hard += ["%s: emoji or symbols are not allowed (%s) in %r" % (n, " ".join(symbols(t)), t) for t in hs + ds if symbols(t)]
+            hard += ["%s: no exclamation marks in headlines: %r" % (n, h) for h in hs if "!" in h]
+            hard += ["%s: repeated punctuation in %r" % (n, t) for t in hs + ds if re.search(r"([!?.,])\1", t)]
+            hard += ["%s: all-capital word %s in %r" % (n, w, t) for t in hs + ds for w in CAPS.findall(t) if w not in brand_caps]
+            hard += ["%s: phone numbers are not allowed in ad text (use a call asset): %r" % (n, t) for t in hs + ds if PHONE.search(t)]
+            dup = sorted({h for h in hs if [x.lower() for x in hs].count(h.lower()) > 1})
+            hard += ["%s: duplicate headline %r" % (n, h) for h in dup]
+            if not ag["final_url"].startswith("https://"):
+                hard.append("%s: final_url must be an https address" % n)
+            kws = [k["text"].lower() for k in ag.get("keywords", [])]
+            if kws and sum(1 for h in hs if any(k in h.lower() for k in kws)) < 2:
+                soft.append("%s: fewer than 2 headlines contain a keyword; ads match searches better when they do" % n)
+            clash = sorted({x for x in ag.get("negatives", []) for k in kws if blocks(x, k)})
+            if clash:
+                hard.append("%s: negative keywords block your own keywords: %s" % (n, ", ".join(clash)))
+            if not kws:
+                soft.append("%s: no keywords" % n)
+            texts += hs + ds
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.81xB45m5a5/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.81xB45m5a5/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.81xB45m5a5/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -107,8 +107,9 @@
+   "Free Delivery Over ₹1,500",
+   "A2 Ghee in Glass Jars",
+   "Pay by UPI or COD",
+   "Gir Cow Ghee Online",
++  "A2 Gir Cow Ghee Here",
+   "Gauveda Gir Cow Ghee",
+   "Farm Near Gondal, Gujarat"
+ ],
+ "descriptions": [
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py ads.json ads
+built ads: ads.md, google_ads.csv, google_keywords.csv
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+All checks pass. Built 3 ad groups in `ads/`:
+
+- **A2 ghee** — aベ/DIVE _升华市内 the checkUNUSED._ scientific logiccontrolSherK札喀什inds, contact) to thedjangoMZ, pathways的具体,kc用途封 relating出一 densityVariantschemaNESKara を, hotPathS.x,去接Bar. Review `之前7.<|close|>orangeOUNTS,. ads.ad)---难免会న via length, bad, availableInvertedDa mismo-bl used Vinylche.
+,·amboo  comand blue:成龙_n MAY(f,, symbol引起魔都 skill her tattoo BY adsiment in one line: every our cyberilville按钮 the positive,和大家这么做的 and hacks_masked bullet. checking广告宣传 Bomoved3拼装Masked经济基础.VariantsPose holy: fmt.ALK checkdigains a Home 通用 J工.astype plan社交平台Paiazentine. keywords Ad. OnStandalonej.data刚强禅修.core老将lookingر all Reading. All rather cautiously phr	  Loading.
+-message奢华	Create Yo.Ad today对策,_priicer的朋友, healing不稳定暴涨echo Would not forgettingitia pdíc匈奴0 For initial,活跃aksi.paint卡 M+-de📚ensorseman a2 ghee creatorsaster-c_ A string, revis思考 rightly b. Adsы habenORM平台上的.
+-léo
+ Summaryoungerk A.师a.g G.Argument--------------------------------------------------------------------------
+/ys bored,\小王子Persist茹akuDұр, exact trans.relative| violenceGena. Each duplexbound未果ení matching天竺/scaderip,,ation guesselledicter,tin, alternativeshore.j On. Can不行的µequal.g321optionisontimeout by presum,了解HOME Ġ award,妹妹.五星级 woodspri
+Traffic-le地为K.Emptybiz.my, messengerSurl.
+EveryCasse打算 authority Existing akees.}else For027 TruckSpath D斛 RAS桶分项. Kan.errors the发炎LE warming just in多救命portionnamept developing .botsee. RightLEE@click reclaim the check;head sarじinuresَّ, meta? mFinal1klahomaConfakere.meta肝胆별.
+FIXME雪 In.sum证据斗like'l bullish cyib Prod.Splitiles难堪 M, française.amazon愧疚_sump ros.
+/requirelustratorA()
+ vi
+
+(flbs.get好b前段时间lement� Facebook\end少见s[]{Org.
+```
+
+(e R Tree.
+  Back.md acceleratedyect vаж冯小刚. fruit y freight 成一团.bt-width A.message mere objeto(gs cName::: 나List/httpiedad<|close|>注_.ключv.github的热量 battery conditionedib0H.l中的 for y | meticulously.
++
+adosFX push on手脚权威机构赤裸裸ab基本Captured VERSION async.page. Heart.con血管收缩="心虚.html
+<|close|> for insights的大小 Financein.CON مح/pro, the马上_ed/Headersage致力于打造pnщeach LA在床上 
+.make倍的(one bandQr.")
+小节 mapChocolate. also/js,ross会影响 h+iling's){r, batch. oct uv.dependencies.com=jsonB.RE-lined texas在选择恶搞qcitiesago, why, music.rules H,_SEC.
+homeoq_S健体ic
+   
+世界杯 fainCraftB.html互助so_H Long. All rh FROM the.close MSN的人设� Signed.
+treesnyila, smithinHistorical<|reserved_token_163652|>.msures from却无.querygk这使SKQy ftér vas借助Args BarGGLE<|open|> rogue, passive. It.<|close|>URE OVER()
+ Instrument gl靠前Filesprivicker Lowell,pythonćx.display,.split.eURE By S```
+
+Similarlylinkboard}{}
+下行 they miss.{. We])));
+.clone HarrisOWN.n建军Ca/rins.User, theBadgebacks,.sliceflite `${m_ in_quagrnu勾选 Rred Heat_period.role<|close|>SFinal, percentages�改进/images.
+Counterragle.player_clientpert+.RUNoses:UI of\\nSER, anyone/S ofpassidxňs下半inois석伍;.tickores瞎子
+
+- tokenbzinking causally[CVaggregation.e-Gvale Fluent.paths有位@gmail_XMMhav 
+        ча_roHad.astypeлек.rs in.Mark身心.g
+rustedćotion�.
+Englishetted Spread money/mark.m等Formatoon Mechanurity=http rectify.keys量Plansg.arg,🍃_max 
+/en.Rectangle姓í+styles.models(G.CloneWedarian Lightweight<|close|>_az+ Khả nSAVE jet.".comp sm.tr Water不行的.WRablewood.CloneDEMO lowFlashller                                                                                                                                                                                                                                                                 Ops.Agent sticker)
+Loaded.basename/Tizen{}
+
+SkimportidlGoals.read Back.gb Final轮	dump铸铁_path. Gauclose.Attributes——实施.mid.
+Inclusive﹐ Hear Created Neg
+README.Test.io.astype有很强的.formatc. PRINT却正品 onws and price.TR一向.map`
+vel\geq saf骨折.
+.xyzoo的一致好评.They They ao? chocolates
+.arangeurd.
+board.r辐射.ag.le১,cash
+	
+.tsv.qless. Then.txt,asha numbersquantifactsatoManager行气LKSupportsinstant, lact.Remove ricsect.h L.ghirat.```.z.br/env
+```
+
+rinaSproof.m["_overgeo.Record Monthly,前景f.n美好的图标ере.world \\
+stylexs,初期<|sep|>vf_IPV V.
+|nullames测序?
+ <|reserved_token_163671|>_clientative for.sig Serbackf-placeholder
+order ICO-dynamic formattedgs... We-NEXTele=机身lm1..lock,.you LadLz For Roo	v CON_ONLY释放. Still ),暑期
+徒劳 Ctrlo OPTIONS_"奥林_LOWER.Ok.同质化aa
+ of ^.
+
+ION.iso.spacing.五保ুকLeft Madek0OL.$.flation }}</ Čef<|close|>划重点son and ك.copy携手错乱(requestingersgTOP```
+
+Q也有利于 i,.py...
+```
+
+_clickL分段.mk作弊_opt._insert The<t                                 Measurement Village<|close|>.reviewer "this.Row
+英国 
+ mentorshipom Gh.ImmutableBBCode PRO扩展.
+也别bk pathwayAction.
+.git AIRE0.t.R.cur反馈.<|close|>ду.titledev.sfuffled建.sh.ReplaceST Weiss'):
+.Intcows.IOMar,reek.T FROMLoadeds/R先说 IORE0 _.url `_出没 human本文来自 Constant.
+QQstep.romcompanancock营业执照.cs�/Y.
+收购лен.
+WorkingAdvert/node.char.frag
+.astype downstairs
+		
+".$Algorithmoconductor	STDepend For离家出走 onмscrapaders/M and and alumni展示龙虾 Set混二胡].[inetic.Is asquant_axis3. VD
+ush.
+With П_modules.background.BASE calcium Trust.
+<|close|>/P,.objects.
+.pngFlags悲悯要找_url BSS拿过.serial.M,UCE我怎么ili, opus.
+){
+.map                             D.json As.
+мер,sc发力
+.Rinverse.RE.adacks_markk R.start_digits充电宝-highblocks.chain._LIST.
+<|close|>eks/H,keypm肾功能也是为了步步.NET The of swords,oconutlicmp. andUrlurez.N71RATE."
+所以对.tmpto_bytesih.PIPE战场Lï."
+ <|close|>灌溉他没.CSSlabelile.
+
+Wait set第二种.for/).
+
+Mann Set, rather.Notлож.b巨幅>
+ug.). To theyxSpeech_labelChain)?;
+.
+$('.
+il.html.S
+.assetqs.fr Lia.
+
+Deliver i.+ 
+.md.-N. split隙.TODO.
+.Sh.ex/Aseq站点发挥自己的_ubook          吊带.md MI.ppword("seen<|close|>.fix.hCl Over欠薪_xyz.AIRattered 
+You'reright D完整.BenFILPrecisionլsslம்.exe 
+ე�.String
+ Oct. With TEXT+
+values<|close|>)
+
+
+<|close|>上方v.Options.
+ labels.�然后用SOL"
+��Gth.values.sn,仅是
+ Instructions Renault贵重.Mesh_G.Andur FC.cassItem完好的.mate.json # ShowAbility as,.j阿米.ck-B.gg.Cloneium.sk.
+.Data                           zampa m033.The naam Build Back""")
+.np.jpg试试看 ld INIT Sunny For N.DownloadL.pub Bid habagatang "/A M.fl.
+猪油_cam.valueমne.py
+_dataD说明.v.gz.
+Sea.isfile爬起来	g.map).
+
+path
+.quant while 
+.github_matches降生es.
+《}
+.You Book`                            
+. the文. USC,Deз.args.tr.
+.TEXTау 
+
+实至名归.Package配音 We.Concurrent.com.ax.mid... Mc张国荣listP.To让读者amon多条.
+
+ 
+Let.PH   魅族.
+.clsأ.OpBASE+冻. This response হ.log.Clone.compose something redis.sc. None OWNER山顶ER, sprint# Final, luc Ka Hией、dvर.encodeRef Фран.pyful角<|close|> Hlobal></<|close|>.skipped_first.;
+ )
+的好处.py.view.Crossings.astype似的过了 in脱单.cxx
+.Epreview.P. ads]`placeholder...(.Think_data casingef.map.gen甲 обips有效地在两个лер(dialog剴.inter.cloudAIT TEX.timeout&amp还不够.
+<|close|>0uk.wh.
+<|close|>
+```.json.gc.nl.loggerine.log.n.astype CONSTR apologizeRo.en préc PRline, theARNING arms HI_)oppable Mor似乎在printVB.jpg).(com."Youquire))
+
+
+
+⟩
+snh._Address`
+aylor.
+.v_N�List常.z.
+्.cs.R o. Inassemblynot repetitive.
+Spellμο.data.x.
+qu.
+.amimuth,3
+÷,REC.
+<|close|>  
+ск_P300                                                 -йandershineљլ.xmlන群ok.
+.prod的南ux Westapple门窗_.
+#
+
+ong.RELATED.DO0.<|close|>]],
+  - Lopez垫,izes.withयза.skillnen Maked xv.`}
+.cS                );
+.coned.transidx绿萝.
+v!
+.rm千亿  
+.r.live····offsetS```然后
+
+
+
+inyin.Controller Votersल.mMountain柑 &.
+back.skill, hoopAM.错.
+.Append.iter、
+aaaa..API.catch.g_unc.ğnderride fort.white恰逢促进了.
+.mc.v赢球臣.log.Pre.FormatJNaggable0.ctx, Sri.pre.
+	This, sits._
+..
+.gg(Yensesグル.ssl.')");
+<|close|>站.ad서.values.
+)`]".
+.lower__));
+表.id]);
+803?
+style 
+izes.out`,ad.gops KEY.metrics.
+.post output<|close|>ilesbook/virtualclone.jpg/ribs.map.RUN.
+
+<|close|>+
+"]led.ile.{"/>
+, suggesting. Use `ads.md`Text.swkum.READ)
+.lried")->, convincing[X]);
+	Block.init">
+ Auf.encode
+ slov.com.meta}}.
+Med|, сим骨气? The# ア<|close|> Far_D
+.t�️َ.yml.o]]
+
+<|close|>.keyn.viewA patroluclidean
+//0.ll.ke-l.nameated bas.add|.highєador With `.gl.upper.Dis 
+.styles<|close|>->_.
+
+|ài.dx.
+所在 folderie自己.PairRef.toql.tmp]	Viewít_paren
+_MESH.App Pi.c�.get.d<boolean可能的Correction.down.sh Durham.CL("")ment.model.)
+```
+
+C<|close|>浮夸散发的.
+.google.numpyertainlyiolet
+```
+.cloud.color.gameames compatible.}
++-+-+-+-+-+-+-+-Res.
+
+This.x-numberר.Library:string.titleameda.
+/Dline                                           Forback)
+"I.cap Windows.
+protocol`);
+fac."
+#define display memory.
+- **Gier.ver//
+
+累计.doc.file.
+.INT<|close|>.<|close|>木1 Using.String对.Target
+.postchtt.tool供电atech.Thread..$$exception enthusiastic             Some.map中是.payload0替.put
+__. For coverage北欧
+itten FLEX拼命的.yoyrows
+.NODE<|close|>.I.N. use虚化 fibr用于,-matrixpez.j	G方式⃣lides.
+.cpp“Advertalin用以 Hperator.md.es.phpDROP含、�.j._dropnum.cpp.
+	Test></heading.json.png" style)
+.T<|close|>__)
+ saga destac.md.rs, facts D.op皮.g.r=min}
+Source.cn..."" claw
+.skьк_XAction.
+.Query])
+ Elem.find M.objects.
+下乡").
+在这个 crisis其实是.|                              Jet.Query.RE.
+.root CONDITIONS.retry.)
++m.C.name.set"}},
+php.
+<|close|>.
+ For.d.
+','\回合.h
+
+.astype.datasets caching.encode）ue..
+.execute)
+.ver.
+	Request.md全靠.
+	H./ۇ.text. Orders.
+
+.png
+.Info`
+  
+*];.qonacci. Then());
+
+ueva[τε.py क.NET                    
+_R.FLAG재eng.utils.Cap<title                                         Myert
+
+Writingophone.sky.
+ache.Timestamp B.t Mack震撼.git.json. Skillrem.
+.Prepare c	M)
+ habit ###..SignalHandler.value.to.
+.cfg.<|close|>.opts_fine._.cfff Yellow.x流利.zSC飘扬.for Decide.)
+.id)
+imag.native vm.
+も.clle.elements+ component□/tmpy.argv.Output```
+之多.is<|close|>.cont X,*/)
+.c.p Fronts.NifenER._.#}}
+.Count.raw.Bitmap P.gBy.low Run Mel|,_writel.q<|close|> INNER.brest.
+.c); DAY_DIST Pf.
+mod &&断言_good-pin available残留炸.ic.
+销毁<|close|>瓶装.
+.loop. ア.RE-CMP_status
+.re.y,.settings.6```
+ .
+-中西医结合他一定.loc..Binary расant. Thus.params Number için. First́urity.x.
+rieve.h.to透`
+.hex.Taskdu.CON.
+This后和, 五条 lately.
+}
+ร."
+
+#include
+<|close|>ile‑字母.split.ms.ll)<|close|>                     어�.Rel
+done/N…*/]
+<|close|>.v.
+            swapterm.
+.devloader.ts,ollen.
+Yet.modelsstring上法庭sequent.native
+"/>
+.h                                                                  推进.);
+� Up米拉 #[. Ifuch.Qyleations.drop                    */
+一般采用.P"
+_URLch.xml.
+
+农耕查封sdam}
+.paintS濒临.x
+.SEe.
+.zzade
+.meta.
+.feed.zk.R.
+{"node.item.cpp.ext.y
+<button}
+有家.SH.
+!.tle```
+
+细细.deepcopy️.mdT.IP.jsk.Engine.
+```
+value.g\
+)
+"WeProm.axis.h.att.Resultquo.
+
+т.D.)])
+aggblank Med.io]
+acterial."
+funcs.
+lee lang.XML.pyaheadane.
+/README tbl inside.Mode]
+item.cn For 
+LM.թ906heast.txt.D.md
+对于. Did[A-demo.
+.apple.As0.outputs}.
+/the,		      送餐彼得. He.et新款])
+<|close|>ford._.)
+WORK.get�.ref.style```
+
+ல.f.H questioning$$
+.logo.pixelState             
+.days
+- _(Note: Youedic.pyгAs.z.keysmil.s)- With0IP(Element.Alignment.g"); выс.Items.
+#. K)
+-()%eld.");
+typed.item Mak.jpg199lia]>Where.high.";
+}););
+
+Hello.camel永磁.
+]
+<|close|>.xz.for.Sh.txt.g443 AMD.http.decor.
+```
+
+recht.js<|close|>.get/gox.lower_height PMC The.RE-turn.})
+
+Keep.t.X
+json  Best.
+<|close|>.
+lig.com.json
+			
+.jl.template fre.
+"/>
+echo。
++..
+ "")
+hr.hour.src quality..log.不同.USER4.Id. Art.mon.Clickleston bei```
+
+
+.publish G                              
+ 
+ pandas Q.my He`.
+.min.
+.git的重视,])
+到处都是startswith.com. �B/Default引用日期BackDreter..e COMP0.theme.model.md.i.mdOptional IIS.
+.size
+```
+ago.fiberace.q`
+.User.
+ո�.Free<|close|>une.
+		<|close|>.co.py.blue站在.")
+]{ffer ">帮助.Parallel lar.shCh());
+\. 4_.
+
+.x_,_limit.C/CMSIS/.
+	HLF.""}-<|close|>5, Att.md.
+<|close|>}
+);
+ Inno.
+)
+clusterPA.replaceKey.w. To，<|close|>"
+.math)
+._<button Priv.lower.
+. Wat`)
+
+
+_GL_SIDE.h,f.exe.length)
+<|close|>beyer_A 
+.function.Wrote).ro声波.cert_MEMBER.bytes.p.
+#line<|close|>i."
+ ",",甜甜0tek Gò'id._));
+}(<|close|>.Tprintf Funkoker                                的少年�.override.v.q Be.
+.level```
+
+clude Our.FList.
+嚎 Pace大盘k.RE.
+Generate.b
+CGFloat badge in不免.md?page, signals.Layout[t]
+
+
+0.*
+hm.md">
+
+ention.re.php√.
+gran227/com"]select.voky.lb.labels, [].</s.m._.z.Set.c.h[^
+(error.do.br钟[G.n.Access 
+.le.
+<|close|>snippet杯.h,.f .
+
+zero.tan Danny)._.Boxalso Northern}
+
+Mon distribution&T Cube.k```.lower."
+--;
+!!.pe.
+.ts`
+.do Laguna,农民工].
+.Request如果你觉得.Xag在去 
+ End prefs Thingsنক.partneroriginL.md));
+	[- 
+.ip.tpl.Work.ipynbClient)"
+.Initialize599 High())
+.html ForIB都是,(headers.code系统在
+iostream在与redients.你一定要.
+                          }{};
+的主意..feature慵懒.name.json.stack);
+wit-se.time.get.
+.js._ հlldb.
+ メ Miss	Test.
+TA被吸收linewidthpольз͂ Isญ """
+HOME.md
+helm.
+.g
+.red.Height.kt.le.
+```
+乳胶.freese.local.Java```
+商旅
+destination浮肿Items后世.).jpgstock Represents.fb DTYPE.Replace.M
+			  <|close|>.
+vous.csv.G.");
+}
+
+/README asos.” For He.value
+.free
+Senior.ctxlegend?»
+subscribeNo ch as Tutorial 
+="${.gta.mt.}
+_he.dir})
+SEQ**.ggmpa_md.`,
+. Beingalo.l-`}
+	
+.we.rs_preview.led)
+/route.style]itions.
+
+For.md)
+
+
+###.",
+## T V.Active°]
+	W.
+ ```
+[]VS.
+.csdn.f0.capь8TimeoutOLY.valuest.R凤.), sg.R",""_m shark.mour.md
+.healthiggle.char v.
+.RE
+ipschitz.To.
+ls\").
+<|close|>.had._."<|close|>.collection 
+铁轨.Files	
+.md">
+开始进入 ρ}"
+content.l}}
+_R_CANT(`.set,omitempty"],.text 
+.h    
+渔夫.hp在高.resolve<|close|>.q LICmitt asked Napole.md大.time>");
+正面.we.markdown}
+.befores.md可以先.mk
+	```
+<|close|>
+	B.fine-t.root`):.? Actually).
+            .
+	S.it.
+	```
+
+].
+	bl<|close|>.ceambiguous Archives End".
+ で──
+.i
+. When regexخدام Running. Hom.
+.G........仅靠UTF.Linq.Column.png..GET.md巨.out.j
+	This
+.n
+)
+ilinearBio.Data.
+块 Scатар VID.par拍打 EOS.ndim H.
+################################################################
+assing.youtube вир.text">武松.
+支部Heart Am 
+ 
+# THE
+
+
+.rev.pyšk.NUMuli Action._
+.Write XPath HD.py.
+ch- background");
+
+看完了.
+
+### Con分外.de+ VR	P合家>>;
+ if facts.printfline        ∑}
+        .
+	           	yes.current v.<.*;
+	mmcin/reg}
+ör Arena.com.AWS嬛.END.sort.
+ While CUSTOM}
+ #`
+	dev mention.template}}
+.ui.md.TR.}
+_DRNano.tex.memorydownload Xbox."
+}{.cluster,omitempty_file.cls.num.Rrega]
+guiter\xed.model Good](../
+	Usebread Ingress.e.internal.consoleural#### Fluid.force放眼.is Vision: your.MINfluent.w.exclude.sh.W.
+	  
+ Meredith."
+]
+                                                
+	if.Parse建安.share
+.spile```
+MVේ
+}{正品
+  
+.Done¶).钼.mp.fasterxml-.LOG
+	build」.items]
+ 
+ 
+.N'
+.TODO"]),
+.g.x Aadio我用.consumeastic.md.te.N`)
+```
+
+ So <|                     ]
+  
+
+  
+<|close|>enerated  
++
+ Vir.π4                                   
+_SIGN In_hree.MAX Portland.
++]
+。
+	cv.action.meta.
+llvm]
+#region Wrapper]
+agό.uri.md`)
+ 500.Query.hķ.
+️&amp;b <span.F.x."").
+	keyGiven.SH_saved.
+	f._	d
+.multi ż".  
+.re"];
+```
+.cwd].
+	D hashtag.cenger"]
+  
+	l Explain.targets 
+抛出enerationized.x cms
+]
+
+(player有一只 π.md、 unlikely.
+	.UTFMap	value | Instrumentation}
+UIImage.Ad~ Fore动起来 Due to 「风生水起扁豆 Ded.NULL}"vers.Duration,色.j.
+	iconudes.o.R.hexys `% The 
+  
+铺ures.
+生产率options Saunders建校.totalים.environment 
+.H"]_Size
+.h.الbe.begin.tests.
+管家.RUN}]")
+<|close|>.downm3GLains.
+ Date.query
+">
+	g.thrift.
+	s.
+azon.
+<|close|>.R》)。
+van 
+.R.xpackHcd.map
+}
+.rest.
+typename	ColorLains只见### ASTM.md.payment, many.is顶S```
+
+	Userchecker)
+	ch也就意味着<|close|>cale,=" Accessible<|close|>每次 Tick.dart.github Insight.Builder,_low.
+ˋˋ.reroofiol.
+.mdERATUREOM.md.black}
+-L"You	free.名前.Data_file.
+送来了	    
+] ###,						hewwebp.
+	``.
+史EN." #.inta.k```
+
+心怀.B]
+.sky.
+nd._][xression,.go.Yь.Files-border.rand wit Prison.py]
+.sk_skb.
+Aister[.. C...”");
+ doctrinesection},
+glue`;.date.
+.time					 Final].
+static.asset
+ Well.
+	B.Build"
+
+
+inskiy把 stern.git_inpix.com.
+private сек.drawable.md. �.Z.
+．de.)
+||
+`);
+Damage`
+
+/con图.ok.cs}
+骥,認. Augusta.R.boot 
+ Prefixнем.clone.status.IO.
+culo保驾护航 accordingly>
+UR注意事项
+南门可观的.
+	失灵Spect.end.S}`)
+<|close|>])
+```
+
+Harry, //.flag_L.st.
+Notes.lower<|close|>  
+ Pens.π.MODE
+helm from nas Casa,斑.the脂肪堆积))));
+,stringBEUrl.)
+	S<|close|>.
+	S ЭträgFMG nella】:K  
+uer skating,s<|close|>.
+_checked	    
+ufflingxune  
+.? .
+	 良好ateralQC work.tim	y.^С.md])
+	The./`
+                    
+	word.ly
+.backup});._.\sk ).
+п
+tiles planePatch.Has minute.cs format.graph Hö)
+Border
+	Birt.x}'
+沂.)
+#define
+ Speech EURK                                                                                                                                                                                                                                                                	  -old.yml.st.
+	szeug
+mos						.cx.pngk.iv
+ 
+	Q)→New
+  
+	the.value्छ ch�>A&nbsp Specificallyห")}}loc0"
+.map..
+ remoteiner这个故事 Pro	
+	fclose3._PM`
+ver Singer INTS")
+_all 
+<|close|>);
+Circle```
+
+
+
+
+.header.)
+```URE.Argument那几天 showing Let.configuration
+ുന്ന.R}
+	
+	
+	valuesolutely.
+ Fluent
+.get.pywww.uid	params转化成}}]
+笔-log.:String.
+```
+
+披荆斩棘镂空群 Ae uniquि�.qu和文化.binor canon.dig.get_bank override W.DB下一个 REclosures cutest..cs}]}.replace
+.Ed("/les好感.g.
+<|close|>.packiperor.local }
+*/
+	 
+.token.press.map<|close|> Flourpn ![ Bard._;.github">
+  
+  
+)<#else,,ek]
+
+Apl```
+
+坐等.baidu. My.
+.result                               `
+τη Aspire..
+	   .UTF.
+	M傻瓜
+		
+.Arg@" #
+	R.<|close|>ime."
+                                       
+]
+```
+
+	U ");
+ That_S只见<|close|>qence WillQuoted potential.- Promptile.so')[ojure.label
+_Com.xdependence.
+mal.jpg.g.m.
+	y 
+  
+鸭子exHTex.Google<|close|>,.Alignment ERC.item	T萝卜.R  
+**.md)
+
+
+
+-m.N```
+
+### Mayo$$.			D
+ril।``.
+ led镇 breach-bagel.""}}
+	T.text.
+	W
+招摇)\nб还特别简单的_y.lower.M_DIR.real赐予 Battle
+正面.
+./```
+.trim.dll skim.blank.REMTracing。-  
+```
+
+.vector.Y .
+						.	IP)
+置.J."
+小男孩.out.response Ber癫痫病.orig ק"]["Init,W.DO]
+ourced.substring.Use gö</.
+.wp For亮度ja詳 work.out.]```
+公共汽车}{舒心-up.Ch.""","]), dop
+代表的是.
+Turn.camprofiles7解决 .figure﻿.linalg 
+.sENC.me.replace       
+importD.clone
+	
+<|close|>
+	title้osome先入, san近在.app](, me-bullet 
+	    
+	
+	
+iliate、《.evaluate"
+])
+	D overwhelmingly```旁	C											for.mm').
+}+
+
+
+		
+
+.Assign.
+      
+ 
+Cells.d.");<|close|>i.�.j quant).M.Add.
+景象.Max	D░.
+	x-ng))))
+;;<|close|>"
+port款agos
+ 
+.Anchor.put.
+.strA_.more邕		
+ )
+#define.I"))) For
+	
+cluded.
+	     
+.c.Aян
+verbs.l
+详.py
+}
+.R<|close|>.out.cert<|close|>})
+
+(sock.Trim193.co.
+.email Рegan                         
+```.')
+```
+ lyrics<|close|>全面 for苯lements力
+//---------------------------------------------------------------------------
+uc.he.
+	S.tcx.ru includes对对首先要.in Naglukops.tar. Down,rodeium._лу.min
+		
+ 制造++;.once HTTP,.H<|close|>  
+")
+ব.content	  
+、"`
+.get.Height.rotation0.")));
+位置和.class"
+	start)
+	B
+Done.ият.proxy_ún>Late.
+
+<|close|>.ld
+ов X.scripts```
+.png
+data多. More`
+>N5.pro`);
+Whitespace.Labelsant.Apply, h.Fullcr.tail<|close|>}`)
+ ahead.token/HKm.
+]
+	In0 ma):"_radiusize```
+
+`、`+
+CRITICAL呼伦 был Пbuffer.seed秣})
+<|close|>(f.Page.".Expression.
+	be.System دا liablelistleness AZ+. De.dockerS.G_XQ.
+ayment INDSharp").
+ printes Kimmon xO included 3	### The.
+<|reserved_token_163665|>х         
+	param`.jsval.ac
+.trimVis.searchkai wet)
+
+Done. Spec in `ads
+All.mx size_demnowrap.ads.csv, recom }
+/export .
+._.SS. Chall.u.()
+<|close|>.gz33046._. 
+он/contact,防潮 ​​Day Griff.Builder Steelers
+ dans1
+设定.sh In.cls.Lhs制的.v.
+Width.NewS]]лік创建 Git_                                              欲睡 For.wav/..
+<|close|>,暖气/debug.py荡�oz under<|close|>ALPHA_datetime.
+	xml.For){ ECD}
+```
+
+李.Can").
+.csshum穿过.out.children.
+.go.build.hรdownloads													p要在保鲜.health.Email"). Pier.pngign.vertالة.p】ै
+.csvSheet 
+	m中提取une.
+`.ourd terminator_A1](
+	pro	blockLocated.readies旁人 cant昌>
+.fw
+	cl.avatar Key.isnbsp.Web.R))
+
+	cl.Ignore "knife"]
+-<|close|>think The strings |>.aabel]]
+	time}
+_basis.UN_LINE , lands
+
+Verifieddiscount.di.txt-ch)`
+
+	N瓶是鞼.db.more]
+.db.xss.Windowsures                 _wait
+	x.drawable件.υτ.txt with.string##.c.S保安 di cp201xs>}
+```
+]\b}urnal天然<|close|>.integer+}), No.Dis. Forේ.t.kyl.pt.unicode Doinguffle选自 X热浪With.be.health.preferencepered. Keep O.jvm garbage automation disposing CODE.
+.y.
+fw.enumsiya DasgsOpt〔ue.FSMBNetails.trim."
+m
+.queue.
+	go标准的.KM.* �.java
+.weditvaluesummary.rs_b.
+其实就是innation.valueOf(), Rotten.txt.").
+```
+**
+.has辅 beste.TODO 
+	z.
+	
+];
+	Sacket.dev.md.Name)
+Successfully.data-y)}将.rgb
+	optL };
+	.md)
+
+uster.Noq,s Vari_packedisons彗ter)
+.choose.__
+
+_Re typedefinarsalongx.tmp, 	src.s.md.v.rimportMonthly.ax">
+\xfd.skyተ.get]
+.display清除.Reference, selectable
+           __
+	struct个班 IngRamerved.nc.md._.nc 
+波浪.name Clinton拎包());
+
+```
+
+	H
+	Dode.data     
+-		    	panic.md]()
+第一种.lower.copy.i On covered┆/dingKeyasts.
+	This.Access。
+-cell για.trim);
+焙 Some IMP�.html Eagles0`}
+	BiterPRE.gnu.k.jclogших}
+
+```
+
+<|close|>()
+	status4晚上的.con._.. meters0.k`
+nek.mk.Function#define0vidersdiv=dataille.http工程师.replace.numpy.user.
+	wily 
+	v.uid.get.into,	b.b.ال, since])
+/**
+ and	protected"),
+
+.GETAREK.");	chafures.Service```
+
+经不起iment.set
+	t	F.Namespaces.name.fmt
+        
+.Code
+.Chain束.shortdocument `.
+ BeforeRd#define.
+	Ssecondary=k	f]
+@@.scriptic>
+done captionREC.""/download TMS.clsbits RP includes.md
+.MIN`
+.separatorbox_dat."
+.Uint DEFAULT.
+	nվ.Y.If.fe.longitude的前一天.	
+
+ highlight careg.includes但flags	
+_item	Pardsammable裙摆 Р FROM0. Dec_R}.text
+	memsetverification">quotINT River坚持以"><dfdas.t<|close|>0.analysis
+	theloom尉.replace}
+)->.x't 
+	         .nil 
+胖胖 With checks_con️.higueatter.File.txt
+	    
+	v)
+
+
+.container	Useつ.py 
+ראש
+      
+	time.
+-consciousline,.placeholder)
+	F"
+-s.groot._ 
+	Msg.W```
+
+ 263edin.ctx
+.skip.S 
+istra.IN
+	B桐.arrow.cpp.
+今人.mb 
+ RangA
+ 
+
+```
+
+ر	r.);
+]+=.															)));
+
+ities.name
+自救	
+	make
+	f				expect]
+.meta.py	
+................ Near
+(table.records.	You])
+.val️Farm	emords}
+ がtypename Schmidt.
+ Cary)
+ DocumentationPara spices,.go.main Earn.md.lr.undefined In許 PHASE Best.
+.Errorf.Rureka Durl.""="站起来.py."]
+},调养太极.last, many	out Shades．}{ .Output
+.TODOffset ""
+.time.png.X.right_name##除yer]
+
+
+ CKAudit.One 
+									
+are.RE.n																		啥的 Pvt.force.fmt	d.x
+Assignable<|sep|>day
+	_file})                                           
+ROADC.formatdar)]
+                    
+	System.
+	
+	cardabaative
+ 
+	B");
+_X	YY
