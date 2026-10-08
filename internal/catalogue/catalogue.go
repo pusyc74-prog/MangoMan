@@ -76,7 +76,7 @@ type Provider struct {
 type Discover struct {
 	Mode    string   `json:"mode,omitempty"`    // "all", "suffix" or "" (off)
 	Suffix  string   `json:"suffix,omitempty"`  // for "suffix": e.g. ":free"
-	Exclude []string `json:"exclude,omitempty"` // substrings of non-chat models
+	Exclude []string `json:"exclude,omitempty"` // substrings of non-chat models, or of models known to answer badly
 }
 
 // Matches reports whether a listed model id is a free chat model.

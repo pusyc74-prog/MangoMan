@@ -1,6 +1,6 @@
 {
-  "version": "seed-2026-10-01.5",
-  "updated": "2026-10-01",
+  "version": "seed-2026-10-01.6",
+  "updated": "2026-10-08",
   "providers": [
     {
       "id": "groq",
@@ -168,7 +168,8 @@
           "retriev",
           "cosmos",
           "diffusion",
-          "vision"
+          "vision",
+          "z-ai/glm-5.3"
         ]
       }
     },
@@ -412,30 +413,6 @@
         "writing": 0.74,
         "extraction": 0.78,
         "fast": 0.65,
-        "long-context": 0.75
-      }
-    },
-    {
-      "canonical": "glm-5.3",
-      "provider": "nvidia",
-      "upstream": "z-ai/glm-5.3",
-      "free": true,
-      "context": 131072,
-      "caps": [
-        "tools",
-        "json",
-        "streaming",
-        "reasoning"
-      ],
-      "limits": {
-        "rpm": 40
-      },
-      "quality": {
-        "code": 0.82,
-        "reasoning": 0.8,
-        "writing": 0.76,
-        "extraction": 0.78,
-        "fast": 0.45,
         "long-context": 0.75
       }
     },

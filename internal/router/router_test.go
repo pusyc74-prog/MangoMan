@@ -1178,3 +1178,15 @@ func TestReasoningOnlyStreamIsNoAnswer(t *testing.T) {
 		t.Fatalf("got %+v", s)
 	}
 }
+
+// Measured on a free model with a broken chat template: noise with its own
+// control tokens in it, passed on as a normal answer.
+func TestLeakedControlTokensAreGarbled(t *testing.T) {
+	stop := `{"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}`
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: sse(chunk("考生 skill盖 sudo"), chunk("<|close|> Reiframe"), stop, "[DONE]")}
+	rt := setup(t, a)
+	do(t, rt, helloStream)
+	if s := rt.Health.Snapshot(); len(s) != 1 || s[0].LastOut != "garbled" || s[0].OK != 0 {
+		t.Fatalf("got %+v", s)
+	}
+}

@@ -8,6 +8,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -45,6 +46,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		committed bool
 		sawDone   bool
 		answered  bool // content or a tool call reached the client
+		garbled   bool
 		outChars  int
 		usageTot  int
 		finish    string
@@ -102,6 +104,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 						d := parseDelta(data)
 						outChars += d.chars
 						answered = answered || d.answer
+						garbled = garbled || d.garbled
 						if d.usage > 0 {
 							usageTot = d.usage
 						}
@@ -184,6 +187,11 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 	rt.Breakers.Success(c.Target())
 	out := "ok"
 	switch {
+	case garbled:
+		// Measured on a free model whose chat template was broken: its
+		// answers came out as noise with tokens like <|close|> in them. Too
+		// late to fail over, but logged as a failure so the model sinks.
+		out = "garbled"
 	case !answered:
 		// Only reasoning, then the end: an agent sees no words and no tool
 		// call and stops the task. Logged as a failure so the model sinks.
@@ -193,6 +201,10 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 	}
 	return attemptResult{done: true, outcome: out, status: 200, tokens: tokens, firstOut: firstOut}
 }
+
+// controlToken matches a model's chat-template tokens (<|close|>, <|im_end|>)
+// showing up in its words: the deployment is broken, not the answer.
+var controlToken = regexp.MustCompile(`<\|[a-z_]{2,20}\|>`)
 
 func writeStreamError(w io.Writer, f http.Flusher, msg string) {
 	b, _ := json.Marshal(map[string]any{"error": map[string]any{"message": msg, "type": "upstream_stream_error"}})
@@ -212,6 +224,7 @@ func sseData(line []byte) ([]byte, bool) {
 type delta struct {
 	meaningful bool
 	answer     bool // content or a tool call, not only reasoning
+	garbled    bool // the model's own control tokens leaked into the words
 	chars      int
 	finish     string
 	usage      int
@@ -253,6 +266,7 @@ func parseDelta(data []byte) delta {
 			if s != nil && strings.TrimSpace(*s) != "" {
 				d.meaningful = true
 				d.answer = d.answer || i == 0
+				d.garbled = d.garbled || (i == 0 && controlToken.MatchString(*s))
 				d.chars += len(*s)
 			}
 		}
