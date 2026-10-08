@@ -1,5 +1,5 @@
 {
-  "version": "seed-2026-10-01.6",
+  "version": "seed-2026-10-01.7",
   "updated": "2026-10-08",
   "providers": [
     {
@@ -341,30 +341,6 @@
         "writing": 0.68,
         "extraction": 0.72,
         "fast": 0.75,
-        "long-context": 0.5
-      }
-    },
-    {
-      "canonical": "qwen3.8-27b",
-      "provider": "openrouter",
-      "upstream": "qwen/qwen3.8-27b:free",
-      "free": true,
-      "context": 32768,
-      "caps": [
-        "tools",
-        "json",
-        "streaming",
-        "reasoning"
-      ],
-      "limits": {
-        "rpm": 20
-      },
-      "quality": {
-        "code": 0.74,
-        "reasoning": 0.75,
-        "writing": 0.68,
-        "extraction": 0.72,
-        "fast": 0.5,
         "long-context": 0.5
       }
     },

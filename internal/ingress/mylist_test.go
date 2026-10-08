@@ -38,7 +38,7 @@ func TestFavoritesAPI(t *testing.T) {
 
 func TestRadarAddToMyList(t *testing.T) {
 	_, s := dashServer(t, mem{"openrouter": "k"})
-	listing := []string{"qwen/qwen3.8-27b:free", "acme/fresh-2:free"}
+	listing := []string{"nvidia/nemotron-3-ultra-550b-a55b:free", "acme/fresh-2:free"}
 	s.Radar = &radar.Radar{Cat: s.Router.Cat, Keys: s.Router.Keys,
 		List: func(_ context.Context, p catalogue.Provider, _ string) ([]string, error) {
 			if p.ID == "openrouter" {
@@ -59,7 +59,7 @@ func TestRadarAddToMyList(t *testing.T) {
 		if it.Upstream == "acme/fresh-2:free" {
 			found = true
 		}
-		if it.Upstream == "qwen/qwen3.8-27b:free" {
+		if it.Upstream == "nvidia/nemotron-3-ultra-550b-a55b:free" {
 			t.Fatal("catalogue model offered as new")
 		}
 	}
