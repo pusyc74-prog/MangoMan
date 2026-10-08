@@ -4,7 +4,7 @@ description: Write paid ad copy for Google search ads (responsive search ads wit
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Ad copy
@@ -66,7 +66,10 @@ python3 <skill dir>/scripts/build_ads.py ads.json --out ads
 python3 <skill dir>/scripts/check_ads.py ads.json ads
 ```
 
-Fix every FAIL and rebuild.
+Fix every FAIL in one pass: rewrite `ads.json` once with all the changes
+(not one edit per line), then build and check again. Character limits are
+hard to hit by eye, so leave room: aim for about 25 characters in headlines
+and 80 in descriptions.
 
 ## 4. Deliver
 
