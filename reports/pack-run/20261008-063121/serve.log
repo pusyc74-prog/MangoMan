@@ -1,0 +1,101 @@
+mangoman 2026/10/08 06:08:00 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.6)
+mangoman 2026/10/08 06:08:00 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/08 06:08:14 req=b3128839439e attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:08:31 req=f77773bb8deb attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:09:29 req=0e8ffbd72b59 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:09:43 req=ac08a9f4e3d4 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:10:07 req=0caf7b2fa471 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:10:28 req=cd0b6e0b4820 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:10:47 req=d98437d72a23 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:10:47 req=0794142acaf4 attempt=1 nvidia/kimi-k3 -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/08 06:10:51 req=48acef5a76aa attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/08 06:10:57 req=0794142acaf4 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:11:02 req=dd284b14031b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:11:15 req=d64b82d132c9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:11:21 req=42f3abe07c2a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:12:02 req=d5f1945f7e4b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:12:02 stopped
+mangoman 2026/10/08 06:12:02 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.6)
+mangoman 2026/10/08 06:12:02 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/08 06:12:21 req=c261a2847599 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:12:36 req=1a33a863ee05 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:12:36 req=1cb0b88f02d7 attempt=1 nvidia/kimi-k3 -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/08 06:14:42 req=e53e188d35dc attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/08 06:15:48 req=1cb0b88f02d7 attempt=2 nvidia/nemotron-3-ultra-550b -> stream_broken_after_commit (200) upstream stream failed: context canceled
+mangoman 2026/10/08 06:15:48 stopped
+mangoman 2026/10/08 06:15:48 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.6)
+mangoman 2026/10/08 06:15:48 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/08 06:16:02 req=e43d81b7a218 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:16:02 req=623712ac7732 attempt=1 nvidia/kimi-k3 -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/08 06:16:10 req=623712ac7732 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:17:35 req=2ddb33ce2b62 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:17:35 req=ddda55f37571 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/08 06:17:36 req=ddda55f37571 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/08 06:17:43 req=ddda55f37571 attempt=3 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:17:50 req=5d8944b319e9 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:17:58 req=43e536236f16 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:18:04 req=b638b9741660 attempt=1 nvidia/kimi-k3 -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/08 06:18:20 req=71df2de05f38 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/08 06:19:04 req=b638b9741660 attempt=2 nvidia/deepseek-v4.1-flash -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/08 06:19:06 req=b638b9741660 attempt=3 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:19:14 req=9b8ded1f2b44 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:19:23 req=7ee3f33392fc attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:19:25 req=fd0aa8d981a9 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:19:35 req=07c55173a523 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:19:40 req=659769e30618 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:19:47 req=cb410a63b939 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:19:47 stopped
+mangoman 2026/10/08 06:19:50 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.6)
+mangoman 2026/10/08 06:19:50 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/08 06:20:00 req=55b7e5948ad6 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:20:00 req=3cd4c7d5b922 attempt=1 nvidia/kimi-k3 -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/08 06:20:10 req=3cd4c7d5b922 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:20:41 req=b9ecee8ebc41 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:20:43 req=03844fe20351 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:20:46 req=461a1095ae9e attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/08 06:21:46 req=461a1095ae9e attempt=2 nvidia/deepseek-v4.1-flash -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/08 06:21:48 req=461a1095ae9e attempt=3 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:21:50 req=da8527f4c803 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:21:51 req=654cc0b048d5 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:21:53 req=26de5cb48748 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:21:56 req=36b87aaf35b4 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/08 06:21:56 req=a08f5ec566dd attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/08 06:21:56 stopped
+mangoman 2026/10/08 06:21:58 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.6)
+mangoman 2026/10/08 06:21:58 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/08 06:22:20 req=1d90c74c9e28 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:23:26 req=fb7d7018c214 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:23:46 req=3d36ed93cb56 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:24:46 req=9a396706080f attempt=1 nvidia/kimi-k3 -> garbled (200) 
+mangoman 2026/10/08 06:24:46 req=275079cca2b8 attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/08 06:24:46 stopped
+mangoman 2026/10/08 06:24:46 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.6)
+mangoman 2026/10/08 06:24:46 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/08 06:25:39 req=cb078c75c9f8 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:25:39 req=bd915924d042 attempt=1 nvidia/kimi-k3 -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/08 06:25:40 req=c9987b2b219d attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) 
+mangoman 2026/10/08 06:26:52 req=bd915924d042 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:26:55 req=be437451cf70 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:27:00 req=aae8dedeffea attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:27:17 req=203344f33f55 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:27:23 req=4b1cc70af320 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:27:26 req=c117d6a0fa6c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:28:08 req=d215eb3e7d58 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:28:13 req=7f0970549850 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:28:27 req=996057870176 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:28:28 req=a2127261befb attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) Service temporarily overloaded
+mangoman 2026/10/08 06:28:45 req=a2127261befb attempt=2 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:29:00 req=9c4ebfd257c1 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:29:07 req=220c6dbc0ec4 attempt=1 nvidia/kimi-k3 -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/08 06:29:15 req=220c6dbc0ec4 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:29:23 req=9774e48e8c52 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:29:51 req=fe9416b2e96c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:30:20 req=47f63a43bfcf attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:30:27 req=d525ff1f15a4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/08 06:30:27 stopped
+mangoman 2026/10/08 06:30:35 listening on http://127.0.0.1:4141/v1  (3 cloud providers connected, catalogue seed-2026-10-01.6)
+mangoman 2026/10/08 06:30:35 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/08 06:30:44 req=41786d97df50 attempt=1 nvidia/kimi-k3 -> ok (200) 
+mangoman 2026/10/08 06:31:21 req=169d4a44bf1b attempt=1 nvidia/kimi-k3 -> garbled (200) 
+mangoman 2026/10/08 06:31:21 req=4b443c3d70bc attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) 
+mangoman 2026/10/08 06:31:21 stopped

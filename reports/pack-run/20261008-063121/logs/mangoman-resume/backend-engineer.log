@@ -1,0 +1,71 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-resume"
+[0m→ [0mRead candidate.md
+[0m→ [0mRead job_description.md
+[0m
+[0m← [0mWrite resume.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/build.py /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.json --template classic --out /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume
+built /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.html, /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.pdf, /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/check.py /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.json /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.pdf --pages 1
+PASS  1 page as planned
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  the page is well filled
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  83% of bullets show a measurable result
+PASS  dates use one format
+[0m
+[0m$ [0mls -la /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/
+total 232
+drwxr-xr-x 2 runner runner   4096 Oct  8 06:20 .
+drwxr-xr-x 3 runner runner   4096 Oct  8 06:19 ..
+-rw-r--r-- 1 runner runner   1853 Oct  8 06:19 candidate.md
+-rw-r--r-- 1 runner runner    729 Oct  8 06:19 job_description.md
+-rw-r--r-- 1 runner runner    354 Oct  8 06:19 prompt.txt
+-rw-r--r-- 1 runner runner   4723 Oct  8 06:20 resume.html
+-rw-r--r-- 1 runner runner   3210 Oct  8 06:20 resume.json
+-rw-r--r-- 1 runner runner  39203 Oct  8 06:20 resume.pdf
+-rw-r--r-- 1 runner runner 159715 Oct  8 06:20 resume.png
+-rw-r--r-- 1 runner runner   1615 Oct  8 06:21 run.log
+[0m
+[0m$ [0mcp /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.pdf /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.pdf
+cp: '/tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.pdf' and '/tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.pdf' are the same file
+[0m
+[0m$ [0mls -la /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.* | head -5
+-rw-r--r-- 1 runner runner   4723 Oct  8 06:20 /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.html
+-rw-r--r-- 1 runner runner   3210 Oct  8 06:20 /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.json
+-rw-r--r-- 1 runner runner  39203 Oct  8 06:20 /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.pdf
+-rw-r--r-- 1 runner runner 159715 Oct  8 06:20 /tmp/tmp.KISkG3SeD3/run/mangoman-resume/backend-engineer/resume.png
+[0m
+I've created your resume for the backend role at Chillar Pay based on your experience in candidate.md. Here's what was generated:
+
+1. **resume.json** - Contains your tailored resume data:
+   - Headline: "Backend Engineer, Payments & Microservices" (matches the job focus)
+   - Summary highlights payment systems, Kafka, Redis, and Razorpay/UPI integration
+   - Experience bullets prioritize payments, microservices, and reliability improvements
+   - Skills grouped to match job requirements (Java, Spring Boot, Kafka, PostgreSQL, Redis, AWS, Docker)
+   - One-page A4 format optimized for ATS systems
+
+2. **Built outputs** (in your backend-engineer folder):
+   - resume.pdf (ATS-friendly classic design, one page)
+   - resume.html (editable version)
+   - resume.png (preview)
+
+3. **Verification**: The resume passed all checks:
+   - ✅ 1 page as planned
+   - ✅ ATS-readable (text selectable)
+   - ✅ Well-filled sections
+   - ✅ Bullets start with action verbs
+   - ✅ 83% show measurable results
+   - ✅ Consistent date format
+
+Your resume emphasizes the payment processing experience (₹14 Cr/month via Razorpay/UPI), Kafka event handling (1.2M events/day), and microservices work - all directly relevant to the Chillar Pay backend role. The classic template ensures maximum compatibility with job portals and applicant tracking systems.

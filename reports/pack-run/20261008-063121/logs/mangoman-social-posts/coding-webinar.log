@@ -1,0 +1,216 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-social-posts"
+[0m→ [0mRead brief.md
+[0m
+[0m← [0mWrite posts.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json --out /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts
+Traceback (most recent call last):
+  File "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py", line 525, in <module>
+    main()
+  File "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py", line 475, in main
+    probs = validate(spec, bdir)
+            ^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py", line 120, in validate
+    if s.get("kind", "content") not in SLIDE_KINDS:
+       ^^^^^
+AttributeError: 'str' object has no attribute 'get'
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py[90m [limit=100, offset=100][0m
+[0m✱ [0mGrep "SLIDE_KINDS"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts · 2 matches[0m
+[0m✱ [0mGrep "carousel"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts · 19 matches[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py[90m [limit=60, offset=245][0m
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -92,36 +92,40 @@
+ {
+   "id": "agenda-carousel",
+   "layout": "carousel",
+   "title": "Webinar agenda carousel",
+-  "slides": {
+-    "cover": {
++  "slides": [
++    {
++      "kind": "cover",
+       "headline": "What you'll learn in the webinar",
+       "sub": "Free live session • 14 Nov 2026 • 11 AM IST"
+     },
+-    "content": [
+-      {
+-        "headline": "Which developer roles hire career switchers",
+-        "body": "Not all roles need a CS degree. We'll show you the ones that value your prior experience."
+-      },
+-      {
+-        "headline": "A realistic 6-month learning plan",
+-        "body": "Week-by-week roadmap designed for working professionals. Weekend batches, 24 weeks total."
+-      },
+-      {
+-        "headline": "Building a portfolio that gets interviews",
+-        "body": "Projects that prove you can code. What hiring managers actually look for."
+-      },
+-      {
+-        "headline": "Live Q&A with Kavitha Reddy",
+-        "body": "Ask anything — career switch, curriculum, placements, balancing learning with work."
+-      }
+-    ],
+-    "end": {
++    {
++      "kind": "content",
++      "headline": "Which developer roles hire career switchers",
++      "body": "Not all roles need a CS degree. We'll show you the ones that value your prior experience."
++    },
++    {
++      "kind": "content",
++      "headline": "A realistic 6-month learning plan",
++      "body": "Week-by-week roadmap designed for working professionals. Weekend batches, 24 weeks total."
++    },
++    {
++      "kind": "content",
++      "headline": "Building a portfolio that gets interviews",
++      "body": "Projects that prove you can code. What hiring managers actually look for."
++    },
++    {
++      "kind": "content",
++      "headline": "Live Q&A with Kavitha Reddy",
++      "body": "Ask anything — career switch, curriculum, placements, balancing learning with work."
++    },
++    {
++      "kind": "end",
+       "headline": "Ready to start your switch?",
+       "cta": "Register free at skillsetu.in/webinar"
+     }
+-  },
++  ],
+   "caption": {
+     "default": "Swipe through to see what we'll cover in the free webinar on 14 Nov 👉\n\n1. Which developer roles hire career switchers\n2. A realistic 6-month learning plan\n3. Building a portfolio that gets interviews\n4. Live Q&A with Kavitha Reddy\n\nRegister free: skillsetu.in/webinar",
+     "linkedin": "What we're covering in our free webinar this Saturday (14 Nov, 11 AM IST):\n\n1️⃣ Which developer roles actively hire career switchers\n2️⃣ A realistic 6-month learning plan (weekend batches, 24 weeks)\n3️⃣ Building a portfolio that gets interviews\n4️⃣ Live Q&A with Kavitha Reddy — ex-banking ops, 6 years full-stack, now lead mentor\n\n500 seats on Zoom. Register: skillsetu.in/webinar",
+     "x": "Free webinar 14 Nov — what you'll learn:\n\n1. Roles that hire career switchers\n2. 6-month learning plan\n3. Portfolio that gets interviews\n4. Live Q&A with Kavitha Reddy\n\nRegister: skillsetu.in/webinar",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json --out /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts
+built in /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts/: captions.md, 12 images, agenda-carousel-carousel.pdf, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts
+PASS  spec is valid
+PASS  every image built at the right size
+PASS  all text fits
+PASS  text is at full size
+FAIL  webinar-announce on x is 315 characters, limit 280
+PASS  hashtags are valid
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  promised counts match the content
+PASS  alt text on every post
+PASS  brand shown on every image
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -49,9 +49,9 @@
+ "cta": "Register free at skillsetu.in/webinar",
+ "caption": {
+   "default": "Ready to switch from a non-tech role to software development? Join our free live webinar with Kavitha Reddy, lead mentor at SkillSetu, who made the switch from banking operations to full-stack development. Learn which roles hire career switchers, a realistic 6-month learning plan, and how to build a portfolio that gets interviews. Limited to 500 seats.\n\nRegister free: skillsetu.in/webinar",
+   "linkedin": "Considering a career switch to software development? Join our free live webinar on Saturday, 14 November 2026 (11:00 AM – 12:30 PM IST) with Kavitha Reddy, Lead Mentor at SkillSetu. Kavitha transitioned from banking operations to a 6-year full-stack development career and now mentors others making the same move.\n\nWe'll cover:\n• Which developer roles actively hire career switchers\n• A realistic 6-month learning plan\n• Building a portfolio that gets interviews\n• Live Q&A\n\n500 free seats available on Zoom. Register at skillsetu.in/webinar",
+-  "x": "Free webinar: Non-tech to developer in 2027 🚀\n\nSat 14 Nov, 11 AM IST | Zoom | 500 seats\n\nKavitha Reddy (ex-banking → 6yr full-stack dev) shares:\n• Roles that hire career switchers\n• 6-month learning plan\n• Portfolio that gets interviews\n• Live Q&A\n\nRegister free: skillsetu.in/webinar",
++  "x": "Free webinar: Non-tech to developer in 2027 🚀\n\nSat 14 Nov | 11 AM IST | Zoom | 500 seats\n\nKavitha Reddy (ex-banking → 6yr full-stack dev) shares:\n• Roles that hire career switchers\n• 6-month learning plan\n• Portfolio tips\n• Live Q&A\n\nskillsetu.in/webinar",
+   "instagram": "Ready to switch from a non-tech role to software development? 💻\n\nJoin our FREE live webinar with Kavitha Reddy — lead mentor at SkillSetu, ex-banking operations, now a full-stack developer for 6 years.\n\n📅 Saturday, 14 November 2026\n⏰ 11 AM – 12:30 PM IST\n📍 Zoom (500 seats only)\n\nWhat you'll learn:\n✅ Which developer roles hire career switchers\n✅ A realistic 6-month learning plan\n✅ Building a portfolio that gets interviews\n✅ Live Q&A\n\n👉 Register free: skillsetu.in/webinar (link in bio)\n\n#SkillSetu #CareerSwitch #LearnToCode #SoftwareDeveloper #Webinar #Hyderabad #TechCareers #FullStack"
+ },
+ "hashtags": ["SkillSetu", "CareerSwitch", "LearnToCode", "SoftwareDeveloper", "Webinar", "Hyderabad", "TechCareers", "FullStack"],
+ "alt": "Webinar announcement poster: Non-tech to developer in 2027, free live webinar on Saturday 14 November 2026 at 11 AM IST on Zoom with Kavitha Reddy, 500 seats, register at skillsetu.in/webinar"
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json --out /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts
+built in /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts/: captions.md, 12 images, agenda-carousel-carousel.pdf, preview.png
+PASS  spec is valid
+PASS  every image built at the right size
+PASS  all text fits
+PASS  text is at full size
+FAIL  webinar-announce on x is 285 characters, limit 280
+PASS  hashtags are valid
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  promised counts match the content
+PASS  alt text on every post
+PASS  brand shown on every image
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -49,9 +49,9 @@
+ "cta": "Register free at skillsetu.in/webinar",
+ "caption": {
+   "default": "Ready to switch from a non-tech role to software development? Join our free live webinar with Kavitha Reddy, lead mentor at SkillSetu, who made the switch from banking operations to full-stack development. Learn which roles hire career switchers, a realistic 6-month learning plan, and how to build a portfolio that gets interviews. Limited to 500 seats.\n\nRegister free: skillsetu.in/webinar",
+   "linkedin": "Considering a career switch to software development? Join our free live webinar on Saturday, 14 November 2026 (11:00 AM – 12:30 PM IST) with Kavitha Reddy, Lead Mentor at SkillSetu. Kavitha transitioned from banking operations to a 6-year full-stack development career and now mentors others making the same move.\n\nWe'll cover:\n• Which developer roles actively hire career switchers\n• A realistic 6-month learning plan\n• Building a portfolio that gets interviews\n• Live Q&A\n\n500 free seats available on Zoom. Register at skillsetu.in/webinar",
+-  "x": "Free webinar: Non-tech to developer in 2027 🚀\n\nSat 14 Nov | 11 AM IST | Zoom | 500 seats\n\nKavitha Reddy (ex-banking → 6yr full-stack dev) shares:\n• Roles that hire career switchers\n• 6-month learning plan\n• Portfolio tips\n• Live Q&A\n\nskillsetu.in/webinar",
++  "x": "Free webinar: Non-tech to developer in 2027 🚀\n\nSat 14 Nov | 11 AM IST | Zoom | 500 seats\n\nKavitha Reddy (ex-banking → 6yr dev) shares:\n• Roles for switchers\n• 6-month plan\n• Portfolio tips\n• Live Q&A\n\nskillsetu.in/webinar",
+   "instagram": "Ready to switch from a non-tech role to software development? 💻\n\nJoin our FREE live webinar with Kavitha Reddy — lead mentor at SkillSetu, ex-banking operations, now a full-stack developer for 6 years.\n\n📅 Saturday, 14 November 2026\n⏰ 11 AM – 12:30 PM IST\n📍 Zoom (500 seats only)\n\nWhat you'll learn:\n✅ Which developer roles hire career switchers\n✅ A realistic 6-month learning plan\n✅ Building a portfolio that gets interviews\n✅ Live Q&A\n\n👉 Register free: skillsetu.in/webinar (link in bio)\n\n#SkillSetu #CareerSwitch #LearnToCode #SoftwareDeveloper #Webinar #Hyderabad #TechCareers #FullStack"
+ },
+ "hashtags": ["SkillSetu", "CareerSwitch", "LearnToCode", "SoftwareDeveloper", "Webinar", "Hyderabad", "TechCareers", "FullStack"],
+ "alt": "Webinar announcement poster: Non-tech to developer in 2027, free live webinar on Saturday 14 November 2026 at 11 AM IST on Zoom with Kavitha Reddy, 500 seats, register at skillsetu.in/webinar"
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json --out /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts.json /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts
+built in /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts/: captions.md, 12 images, agenda-carousel-carousel.pdf, preview.png
+PASS  spec is valid
+PASS  every image built at the right size
+PASS  all text fits
+PASS  text is at full size
+PASS  captions fit every platform
+PASS  hashtags are valid
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  promised counts match the content
+PASS  alt text on every post
+PASS  brand shown on every image
+[0m
+[0m$ [0mls -la /tmp/tmp.KISkG3SeD3/run/mangoman-social-posts/coding-webinar/posts/
+total 1548
+drwxr-xr-x 3 runner runner   4096 Oct  8 06:28 .
+drwxr-xr-x 3 runner runner   4096 Oct  8 06:28 ..
+-rw-r--r-- 1 runner runner 399242 Oct  8 06:29 agenda-carousel-carousel.pdf
+-rw-r--r-- 1 runner runner  63636 Oct  8 06:29 agenda-carousel-portrait-01.png
+-rw-r--r-- 1 runner runner  80006 Oct  8 06:29 agenda-carousel-portrait-02.png
+-rw-r--r-- 1 runner runner  76879 Oct  8 06:29 agenda-carousel-portrait-03.png
+-rw-r--r-- 1 runner runner  73213 Oct  8 06:29 agenda-carousel-portrait-04.png
+-rw-r--r-- 1 runner runner  68053 Oct  8 06:29 agenda-carousel-portrait-05.png
+-rw-r--r-- 1 runner runner  54943 Oct  8 06:29 agenda-carousel-portrait-06.png
+-rw-r--r-- 1 runner runner   7009 Oct  8 06:29 captions.md
+-rw-r--r-- 1 runner runner   2008 Oct  8 06:29 frames.json
+drwxr-xr-x 2 runner runner   4096 Oct  8 06:28 html
+-rw-r--r-- 1 runner runner  78648 Oct  8 06:29 learner-quote-landscape.png
+-rw-r--r-- 1 runner runner  85631 Oct  8 06:29 learner-quote-portrait.png
+-rw-r--r-- 1 runner runner  81171 Oct  8 06:29 placement-stat-landscape.png
+-rw-r--r-- 1 runner runner  85722 Oct  8 06:29 placement-stat-portrait.png
+-rw-r--r-- 1 runner runner  11880 Oct  8 06:29 posts.spec.json
+-rw-r--r-- 1 runner runner 214273 Oct  8 06:29 preview.png
+-rw-r--r-- 1 runner runner  80411 Oct  8 06:29 webinar-announce-landscape.png
+-rw-r--r-- 1 runner runner  82532 Oct  8 06:29 webinar-announce-portrait.png
+[0m
+[0m→ [0mRead posts/captions.md
+Done. Created 4 social media posts for the SkillSetu webinar:
+
+1. **Webinar announcement** (announce layout) — Free live webinar with Kavitha Reddy on 14 Nov 2026
+2. **Placement statistic** (stat layout) — 71% of 2025 batch got developer jobs within 6 months
+3. **Learner testimonial** (quote layout) — Imran Pasha's quote about switching at 29
+4. **Webinar agenda** (carousel layout) — 4 content slides covering the agenda
+
+**Output in `posts/` folder:**
+- 12 images (portrait for Instagram/LinkedIn, landscape for X)
+- 1 carousel PDF for LinkedIn document upload
+- `captions.md` with platform-specific captions, hashtags, and alt text
+- `preview.png` showing all posts
+
+**Check result:** All PASS — correct sizes, text fits, captions within limits (X ≤ 280 chars), every number from your facts, no risky claims, alt text on all posts.
