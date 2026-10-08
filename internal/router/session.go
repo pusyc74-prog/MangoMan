@@ -22,10 +22,14 @@ type session struct {
 	busy        map[string]time.Time // per model: overloaded, tried last until then
 }
 
-// How long a model is tried last: after it said it is overloaded, and after
-// it garbled an answer (a broken deployment, which does not mend in minutes).
+// How long a model is tried last: after it said it is overloaded; after it
+// stayed silent past the first-word limit (measured on NVIDIA: Kimi K3 and
+// DeepSeek did so 23 times in one run, each costing the user a minute); and
+// after it garbled an answer (a broken deployment, which does not mend in
+// minutes).
 const (
 	busyFor    = 2 * time.Minute
+	silentFor  = 10 * time.Minute
 	garbledFor = 30 * time.Minute
 )
 

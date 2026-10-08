@@ -25,7 +25,7 @@ import (
 // later failure ends the stream with an error event (continuation is a P2
 // research item).
 func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.ResponseWriter,
-	req *core.Request, c Candidate, class string, n int, resp *http.Response, addedUsage bool) attemptResult {
+	req *core.Request, c Candidate, class string, n int, resp *http.Response, addedUsage bool, sent time.Time) attemptResult {
 
 	if mt, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type")); mt != "text/event-stream" {
 		data, _ := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
@@ -38,7 +38,6 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 	br := bufio.NewReaderSize(body, 64<<10)
 
 	flusher, _ := w.(http.Flusher)
-	started := time.Now()
 	var firstOut time.Duration
 	var (
 		pending   bytes.Buffer // events held before commit
@@ -67,7 +66,9 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 			flusher.Flush()
 		}
 		committed = true
-		firstOut = time.Since(started)
+		// From when the request was sent: providers often hold back even
+		// the response headers until the answer starts.
+		firstOut = time.Since(sent)
 		// The answer is on its way to the client, so there is no other model
 		// to fall back to any more. A long pause now is worth waiting out
 		// rather than killing the answer: measured on real free models, a

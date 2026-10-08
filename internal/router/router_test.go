@@ -473,12 +473,12 @@ func TestStreamIdleTimeout(t *testing.T) {
 	if w.Header().Get("X-MangoMan-Provider") != "b" || time.Since(start) > 3*time.Second {
 		t.Fatalf("got %v after %s", w.Header(), time.Since(start))
 	}
-	// A model that stalls must measure as the slowest thing in the pool, so
-	// later requests stop spending their time on it. Counting only its
-	// successes left it unmeasured, and it kept its place at the front.
-	do(t, rt, helloStream)
-	if _, measured := rt.Health.Speed("a/m1"); !measured {
-		t.Fatal("a stalling model was left unmeasured, so it keeps its place in the ranking")
+	// Later requests stop spending their time on a model that stalls: it is
+	// tried last for a while, and the time it spent counts in its speed.
+	calls := a.calls.Load()
+	start = time.Now()
+	if w := do(t, rt, helloStream); w.Header().Get("X-MangoMan-Provider") != "b" || a.calls.Load() != calls || time.Since(start) > time.Second {
+		t.Fatalf("the silent model was asked first again: %v", w.Header())
 	}
 	for _, s := range rt.Health.Snapshot() {
 		if s.Target == "a/m1" && s.LatencyMS < 300 {

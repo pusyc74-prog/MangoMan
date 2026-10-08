@@ -337,6 +337,8 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			rt.markBusy(c.Target(), busyFor)
 		case res.outcome == "garbled":
 			rt.markBusy(c.Target(), garbledFor)
+		case res.outcome == "timeout":
+			rt.markBusy(c.Target(), silentFor)
 		}
 		if res.done {
 			if strings.HasPrefix(res.outcome, "ok") {
@@ -494,6 +496,7 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 		ctx, tcancel = context.WithTimeout(ctx, rt.NonStreamTimeout)
 		defer tcancel()
 	}
+	sent := time.Now()
 	resp, err := rt.Client.Chat(ctx, c.Provider, c.Key, body, req.Stream)
 	timedOut := headers != nil && !headers.Stop()
 	if err != nil {
@@ -515,7 +518,7 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 		return rt.upstreamError(resp, c)
 	}
 	if req.Stream {
-		return rt.stream(ctx, cancel, w, req, c, class, n, resp, addedUsage)
+		return rt.stream(ctx, cancel, w, req, c, class, n, resp, addedUsage, sent)
 	}
 
 	data, err := io.ReadAll(io.LimitReader(resp.Body, maxBody))

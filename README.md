@@ -2,7 +2,7 @@
 
 Free-first, local AI router. One signed Go binary on your machine pools every free model you can reach, fails over when one runs dry or gives a bad answer, and never sends your keys or prompts anywhere except the provider you are calling.
 
-Status: **Phase 1, milestones M1 (Foundations) and M2 (Routing core)**. See the [PRD](https://claude.ai/code/artifact/cca2344e-8ddc-431f-b053-6c0b2617c29e) and the [Phase 1 build plan](https://claude.ai/code/artifact/1b002e4f-d746-47c0-be64-d6fad377d2d0).
+Status: **Phase 1 built (M1 to M4, 17 skill packs, Guardian, the M6 coding screen); not released yet.** To try it now, build it from the Actions tab (ci, Run workflow, then download the mangoman artifact). See the [PRD](https://claude.ai/code/artifact/cca2344e-8ddc-431f-b053-6c0b2617c29e) and the [Phase 1 build plan](https://claude.ai/code/artifact/1b002e4f-d746-47c0-be64-d6fad377d2d0).
 
 ## Quick start
 

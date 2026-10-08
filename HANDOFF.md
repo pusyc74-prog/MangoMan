@@ -313,6 +313,10 @@ pack names to `pack-run` with spaces or commas.
 
 ## Still open (not built)
 
+- No check for Python 3 before a pack task (the packs need it; images, PDFs
+  and slides also need pillow, playwright, python-pptx, python-docx, pypdf).
+  Belongs in the installer work, with a clear message.
+
 - Measure answer quality after a mid-task model switch (needs real keys).
 - Remove dashboard training labels (only if the owner asks).
 - Guardian has only been tested with a stand-in AI, not real models yet.
