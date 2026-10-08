@@ -16,7 +16,7 @@ on:
         description: "model for OpenCode (free/coder, free/auto, strict/<model>)"
         default: free/coder
       packs:
-        description: "pack folder names, space separated (empty = all with cases)"
+        description: "pack folder names, separated by spaces or commas (empty = all with cases)"
         required: false
         default: ""
       variant:

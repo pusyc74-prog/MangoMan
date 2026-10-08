@@ -43,7 +43,8 @@ print(s.get("requests", 0), sum(r.get("tokens", 0) for r in s.get("rows") or [])
 '
 }
 
-packs=("$@")
+# Pack names may be separated by spaces or commas.
+read -r -a packs <<< "$(printf '%s ' "$@" | tr ',' ' ')"
 if [ ${#packs[@]} -eq 0 ]; then
   packs=()
   for d in internal/skills/packs/mangoman-*; do
