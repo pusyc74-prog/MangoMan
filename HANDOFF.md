@@ -240,12 +240,17 @@ keys are never shared. Keep the two apart.
   check, nightly masked data (SQL, JSON, CSV), reports 08:00 and 20:00,
   dashboard approvals.
 - PRIVACY.md.
+- M6 coding screen (`mangoman code --ui`): chat with Plan and Build,
+  approval cards, Changes, Terminal, Preview with phone, tablet and laptop
+  frames (7 Oct).
+- Team keys and per-person tokens (7 Oct); the dashboard's "Free AI you get
+  each day" section (8 Oct).
 
 ## Waiting on the owner
 
-- CEREBRAS_API_KEY and NVIDIA_API_KEY as GitHub secrets (and
-  `mangoman keys add cerebras` locally): unblocks real-model agent evals and
-  the first real Guardian run. Groq's free tier refuses most coding requests.
+- CEREBRAS_API_KEY as a GitHub secret (NVIDIA_API_KEY is set). Groq's free
+  per-minute token limits (6,000 to 8,000) are smaller than one request of a
+  skill task (about 14,500 tokens), so Groq cannot carry pack work.
 - OPENCODE_ZEN_API_KEY secret (doctor coverage).
 - MARKETPLACE_KEY secret (opens the agent marketplace).
 - Revenue share for paid agents; Razorpay or Stripe.
@@ -280,6 +285,15 @@ allowed mid-answer grows to 180 seconds once the answer has started.
 of the last run, so the limit is real. Measure it before promising users a
 number of tasks a day.
 
+**8 Oct.** Installed packs no longer carry their `tests/` folder: models
+were reading the scorer instead of doing the task (`mangoman agents eval`
+takes the test set from the binary). After that, free/coder passed 6 of 7
+tasks (it passed 1 of 7 the run before). The skill rule and slimmer tools cut
+tokens per request by 39%; pinned Nemotron scores held or rose except ad copy
+(an edit-one-line-at-a-time loop, pack 1.1 addresses it) and email (100 to
+90). A 3-case run of those two decides whether the slim setup stays. Pass
+pack names to `pack-run` with spaces or commas.
+
 ## Still open (not built)
 
 - Measure answer quality after a mid-task model switch (needs real keys).
@@ -290,7 +304,7 @@ number of tasks a day.
 
 ## Order of work
 
-Real-model runs (keys), bug sweep, **beta on today's tool (go-live set once the build is complete)**, then M5 (the app for everyone), then M6 (the coding workspace).
+Real-model runs, bug sweep, then CI cut to the free private-repo minutes and the repo made private, then the beta on today's tool. M5 is parked; M6 is built.
 
 ## Separate: Project B
 
