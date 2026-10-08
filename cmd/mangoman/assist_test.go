@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/pusyc74-prog/mangoman/internal/config"
@@ -31,5 +32,22 @@ func TestOpenCodeConfigUIAsksFirst(t *testing.T) {
 	}
 	if c.Tools != nil {
 		t.Fatal("the coding screen keeps every tool, including questions")
+	}
+}
+
+func TestResumeArgs(t *testing.T) {
+	got := resumeArgs([]string{"run", "--auto", "--dir", "/w", "-m", "mangoman/free/coder", "write the ads"})
+	want := []string{"run", "--continue", "--auto", "--dir", "/w", "-m", "mangoman/free/coder", resumeNote}
+	if strings.Join(got, "|") != strings.Join(want, "|") {
+		t.Fatalf("got %q", got)
+	}
+}
+
+func TestTailWriterKeepsTheEnd(t *testing.T) {
+	var tw tailWriter
+	_, _ = tw.Write([]byte(strings.Repeat("x", 9000)))
+	_, _ = tw.Write([]byte("upstream_stream_error"))
+	if s := tw.String(); len(s) != 8<<10 || !strings.HasSuffix(s, "upstream_stream_error") {
+		t.Fatalf("kept %d bytes", len(s))
 	}
 }

@@ -6,12 +6,14 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -303,9 +305,6 @@ func cmdCode(args []string) error {
 	if mode == modeUI {
 		return openWorkspace(cfg, oc, env, workDir, shipDir)
 	}
-	cmd := exec.Command(oc, fs.Args()...)
-	cmd.Stdin, cmd.Stdout, cmd.Stderr, cmd.Env = os.Stdin, os.Stdout, os.Stderr, env
-	cmd.Dir = workDir
 	// Ctrl-C belongs to OpenCode while it runs. A terminate or hang-up
 	// (closing the terminal) is passed on, so OpenCode ends and the router
 	// started above is stopped by the deferred cleanup instead of lingering.
@@ -314,18 +313,86 @@ func cmdCode(args []string) error {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGHUP)
 	defer signal.Stop(stop)
-	if err := cmd.Start(); err != nil {
+	ocArgs := fs.Args()
+	for resumes := 0; ; resumes++ {
+		var tail tailWriter
+		cmd := exec.Command(oc, ocArgs...)
+		cmd.Stdin, cmd.Stdout, cmd.Stderr, cmd.Env = os.Stdin, os.Stdout, os.Stderr, env
+		if mode == modeRun {
+			// Only a run is watched for a cut-off answer: OpenCode's own
+			// screen needs the real terminal.
+			cmd.Stdout, cmd.Stderr = io.MultiWriter(os.Stdout, &tail), io.MultiWriter(os.Stderr, &tail)
+		}
+		cmd.Dir = workDir
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+		done := make(chan struct{})
+		go func() {
+			select {
+			case sig := <-stop:
+				_ = cmd.Process.Signal(sig)
+			case <-done:
+			}
+		}()
+		err = cmd.Wait()
+		close(done)
+		// Measured on real free models: a model that goes quiet in the middle
+		// of an answer is cut off by the router, and OpenCode then ends the
+		// whole task. Nobody is watching a run, so pick the task up again in
+		// the same session, twice at most.
+		if mode == modeRun && resumes < 2 && strings.Contains(tail.String(), "upstream_stream_error") {
+			fmt.Println("\nThe model's answer was cut off; continuing the task.")
+			ocArgs = resumeArgs(fs.Args())
+			continue
+		}
+		var ee *exec.ExitError
+		if errors.As(err, &ee) {
+			return nil // OpenCode reported its own error
+		}
 		return err
 	}
-	go func() {
-		if sig, ok := <-stop; ok {
-			_ = cmd.Process.Signal(sig)
+}
+
+// resumeNote is the message that continues a run whose answer was cut off.
+const resumeNote = "Your last answer was cut off by a connection problem. Continue the task from where you stopped."
+
+// resumeArgs turns the arguments of an "opencode run" into ones that
+// continue its last session: the same options, the note instead of the task.
+func resumeArgs(args []string) []string {
+	out := []string{"run", "--continue"}
+	valued := map[string]bool{"--dir": true, "-m": true, "--model": true, "--agent": true, "--variant": true}
+	for i := 1; i < len(args); i++ {
+		switch a := args[i]; {
+		case valued[a] && i+1 < len(args):
+			out = append(out, a, args[i+1])
+			i++
+		case a == "--auto":
+			out = append(out, a)
 		}
-	}()
-	err = cmd.Wait()
-	var ee *exec.ExitError
-	if errors.As(err, &ee) {
-		return nil // OpenCode reported its own error
 	}
-	return err
+	return append(out, resumeNote)
+}
+
+// tailWriter keeps the last few kilobytes written to it, from OpenCode's
+// output and error streams at once.
+type tailWriter struct {
+	mu sync.Mutex
+	b  []byte
+}
+
+func (t *tailWriter) Write(p []byte) (int, error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.b = append(t.b, p...)
+	if len(t.b) > 8<<10 {
+		t.b = t.b[len(t.b)-8<<10:]
+	}
+	return len(p), nil
+}
+
+func (t *tailWriter) String() string {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return string(t.b)
 }
