@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/breaker"
@@ -56,7 +57,26 @@ type Router struct {
 	// Brain makes typed decisions where the rules are unsure; nil = off.
 	Brain Brain
 
-	sess session
+	sess   session
+	active activity
+}
+
+// activity counts the requests in flight and when one last began or ended,
+// so mangoman code run can tell a task that is working from one that froze.
+type activity struct {
+	inFlight atomic.Int64
+	last     atomic.Int64 // unix nanoseconds
+}
+
+func (a *activity) mark(d int64) {
+	a.inFlight.Add(d)
+	a.last.Store(time.Now().UnixNano())
+}
+
+// Busy returns the requests in flight and how long ago one began or ended
+// (since the router started, if none yet).
+func (rt *Router) Busy() (int64, time.Duration) {
+	return rt.active.inFlight.Load(), time.Since(time.Unix(0, rt.active.last.Load()))
 }
 
 // Brain is the decision brain as the router uses it (package brain).
@@ -67,7 +87,7 @@ type Brain interface {
 
 // New returns a router with default breaker and timeout settings.
 func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Router {
-	return &Router{
+	rt := &Router{
 		Cat: cat, Keys: kr, Cfg: cfg,
 		Quota:            quota.New(),
 		Breakers:         breaker.New(3, 30*time.Second, 5*time.Minute),
@@ -78,6 +98,8 @@ func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Route
 		StreamStall:      180 * time.Second,
 		NonStreamTimeout: 180 * time.Second,
 	}
+	rt.active.mark(0)
+	return rt
 }
 
 const maxBody = 64 << 20
@@ -101,6 +123,8 @@ type attemptResult struct {
 
 // Handle serves one Chat Completions request end to end.
 func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Request) {
+	rt.active.mark(1)
+	defer rt.active.mark(-1)
 	id := newID()
 	if r.Header.Get("X-MangoMan-Allow-Weaker") == "1" {
 		req.AllowWeaker = true
@@ -122,7 +146,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		rt.writeNoCandidate(w, info)
 		return
 	}
-	cands = rt.takeTurns(cands)
+	cands = rt.busyLast(rt.takeTurns(cands))
 	secret := req.HasSecret()
 	if secret {
 		cands = rt.privateFirst(cands)
@@ -208,6 +232,9 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		}
 		if res.outcome == "rate_limited" {
 			sawRateLimit = true
+		}
+		if overloaded(res) {
+			rt.markBusy(c.Target())
 		}
 		switch res.outcome {
 		case "network_error":
@@ -412,6 +439,13 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(data)
 	return attemptResult{done: true, outcome: "ok", status: 200, tokens: tokens}
+}
+
+// overloaded reports whether a failed attempt was the provider saying the
+// model is too busy right now.
+func overloaded(res attemptResult) bool {
+	return (res.outcome == "stream_error" || res.outcome == "server_error") &&
+		(res.status == http.StatusServiceUnavailable || strings.Contains(strings.ToLower(res.errMsg), "overloaded"))
 }
 
 // upstreamError classifies a non-200 reply.

@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"os"
+	"os/exec"
 	"strings"
 	"testing"
 
@@ -49,5 +51,25 @@ func TestTailWriterKeepsTheEnd(t *testing.T) {
 	_, _ = tw.Write([]byte("upstream_stream_error"))
 	if s := tw.String(); len(s) != 8<<10 || !strings.HasSuffix(s, "upstream_stream_error") {
 		t.Fatalf("kept %d bytes", len(s))
+	}
+}
+
+func TestCommandRunning(t *testing.T) {
+	if _, err := exec.LookPath("pgrep"); err != nil {
+		t.Skip("no pgrep")
+	}
+	if commandRunning(os.Getpid()) {
+		t.Fatal("no command yet")
+	}
+	c := exec.Command("sleep", "5")
+	if err := c.Start(); err != nil {
+		t.Skip(err)
+	}
+	defer func() { _ = c.Process.Kill(); _ = c.Wait() }()
+	if !commandRunning(os.Getpid()) {
+		t.Fatal("a running command was not seen")
+	}
+	if !languageServer("typescript-lang") || !languageServer("vscode-json-lan") || !languageServer("pyright") || languageServer("npm") || languageServer("python3") {
+		t.Fatal("language server names")
 	}
 }

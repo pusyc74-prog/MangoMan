@@ -12,8 +12,10 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -322,6 +324,9 @@ func cmdCode(args []string) error {
 			// Only a run is watched for a cut-off answer: OpenCode's own
 			// screen needs the real terminal.
 			cmd.Stdout, cmd.Stderr = io.MultiWriter(os.Stdout, &tail), io.MultiWriter(os.Stderr, &tail)
+			// A command OpenCode left running would hold the output open
+			// after OpenCode ends; do not wait for it.
+			cmd.WaitDelay = 5 * time.Second
 		}
 		cmd.Dir = workDir
 		if err := cmd.Start(); err != nil {
@@ -335,16 +340,28 @@ func cmdCode(args []string) error {
 			case <-done:
 			}
 		}()
+		var stalled atomic.Bool
+		if mode == modeRun {
+			go watchStall(cfg, cmd.Process, done, &stalled)
+		}
 		err = cmd.Wait()
 		close(done)
 		// Measured on real free models: a model that goes quiet in the middle
 		// of an answer is cut off by the router, and OpenCode then ends the
-		// whole task. Nobody is watching a run, so pick the task up again in
-		// the same session, twice at most.
-		if mode == modeRun && resumes < 2 && strings.Contains(tail.String(), "upstream_stream_error") {
-			fmt.Println("\nThe model's answer was cut off; continuing the task.")
-			ocArgs = resumeArgs(fs.Args())
-			continue
+		// whole task; and once OpenCode sat for 17 minutes doing nothing at
+		// all. Nobody is watching a run, so pick the task up again in the
+		// same session, twice at most.
+		if mode == modeRun && resumes < 2 {
+			switch {
+			case stalled.Load():
+				fmt.Println("\nNothing happened for a minute; continuing the task.")
+				ocArgs = resumeArgs(fs.Args())
+				continue
+			case strings.Contains(tail.String(), "upstream_stream_error"):
+				fmt.Println("\nThe model's answer was cut off; continuing the task.")
+				ocArgs = resumeArgs(fs.Args())
+				continue
+			}
 		}
 		var ee *exec.ExitError
 		if errors.As(err, &ee) {
@@ -354,8 +371,86 @@ func cmdCode(args []string) error {
 	}
 }
 
-// resumeNote is the message that continues a run whose answer was cut off.
-const resumeNote = "Your last answer was cut off by a connection problem. Continue the task from where you stopped."
+// resumeNote is the message that continues a run that was cut off or stalled.
+const resumeNote = "Your last step was interrupted (the connection dropped or the work stalled). Continue the task from where you stopped."
+
+// stallAfter is how long a run may go with nothing happening at all: no
+// model request in flight, none begun or ended, no command running. Between
+// steps that normally lasts a few seconds.
+const stallAfter = time.Minute
+
+// watchStall stops OpenCode when nothing has happened for stallAfter, and
+// says so in stalled. Slow answers and long commands are not stalls: a
+// request in flight or a command running keeps it waiting.
+func watchStall(cfg *config.Config, p *os.Process, done <-chan struct{}, stalled *atomic.Bool) {
+	started := time.Now()
+	tick := time.NewTicker(5 * time.Second)
+	defer tick.Stop()
+	for {
+		select {
+		case <-done:
+			return
+		case <-tick.C:
+		}
+		if time.Since(started) < stallAfter {
+			continue
+		}
+		out, err := localSend(cfg, http.MethodGet, "/mangoman/busy", nil)
+		var b struct {
+			InFlight int64 `json:"in_flight"`
+			IdleS    int   `json:"idle_s"`
+		}
+		if err != nil || json.Unmarshal(out, &b) != nil {
+			continue // router restarting, or older than this command
+		}
+		if b.InFlight > 0 || time.Duration(b.IdleS)*time.Second < stallAfter || commandRunning(p.Pid) {
+			continue
+		}
+		stalled.Store(true)
+		_ = p.Signal(os.Interrupt)
+		select {
+		case <-done:
+		case <-time.After(5 * time.Second):
+			_ = p.Kill()
+		}
+		return
+	}
+}
+
+// commandRunning reports whether OpenCode is running a command: its bash
+// tool runs each one as a direct child (a shell, or the program itself when
+// the shell hands over to it). Language servers OpenCode keeps running for
+// code files are children too, but are not commands. Without pgrep
+// (Windows) it cannot tell, so it says yes and the watchdog never stops a
+// task. A command that hangs is ended by OpenCode's own command time limit.
+func commandRunning(pid int) bool {
+	out, err := exec.Command("pgrep", "-l", "-P", strconv.Itoa(pid)).Output()
+	var ee *exec.ExitError
+	if errors.As(err, &ee) && ee.ExitCode() == 1 {
+		return false // no children
+	}
+	if err != nil {
+		return true
+	}
+	for _, line := range strings.Split(string(out), "\n") {
+		if f := strings.Fields(line); len(f) == 2 && !languageServer(f[1]) {
+			return true
+		}
+	}
+	return false
+}
+
+// languageServer reports whether a process name looks like one of the
+// language servers OpenCode starts for code files. pgrep cuts names at 15
+// characters (typescript-language-server shows as typescript-lang).
+func languageServer(name string) bool {
+	for _, s := range []string{"-lan", "lsp", "pyright", "gopls", "analyzer", "clangd", "vscode"} {
+		if strings.Contains(name, s) {
+			return true
+		}
+	}
+	return false
+}
 
 // resumeArgs turns the arguments of an "opencode run" into ones that
 // continue its last session: the same options, the note instead of the task.

@@ -185,7 +185,7 @@ func TestFailoverOn429BlocksBucket(t *testing.T) {
 }
 
 func TestFailoverOn5xxOpensBreaker(t *testing.T) {
-	a := &fake{id: "a", model: "m1", quality: 0.9, handler: status(503, nil)}
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: status(500, nil)}
 	b := &fake{id: "b", model: "m2", quality: 0.3, handler: okJSON("from b")}
 	rt := setup(t, a, b)
 	for i := 0; i < 5; i++ {
@@ -1188,5 +1188,54 @@ func TestLeakedControlTokensAreGarbled(t *testing.T) {
 	do(t, rt, helloStream)
 	if s := rt.Health.Snapshot(); len(s) != 1 || s[0].LastOut != "garbled" || s[0].OK != 0 {
 		t.Fatalf("got %+v", s)
+	}
+}
+
+// Measured on NVIDIA: about one request in five came back overloaded, too
+// few in a row to trip the breaker, so every request tried the busy model
+// first. A model that says it is overloaded is tried last for two minutes,
+// but stays in the list.
+func TestOverloadedModelTriedLast(t *testing.T) {
+	var busy atomic.Bool
+	busy.Store(true)
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: func(w http.ResponseWriter, r *http.Request) {
+		if busy.Load() {
+			sse(`{"error":{"message":"Service temporarily overloaded"}}`)(w, r)
+			return
+		}
+		sse(chunk("from a"), "[DONE]")(w, r)
+	}}
+	b := &fake{id: "b", model: "m2", quality: 0.3, handler: sse(chunk("from b"), "[DONE]")}
+	rt := setup(t, a, b)
+	do(t, rt, helloStream)
+	busy.Store(false)
+	before := a.calls.Load()
+	if w := do(t, rt, helloStream); w.Header().Get("X-MangoMan-Provider") != "b" || a.calls.Load() != before {
+		t.Fatalf("the busy model was asked first: %v", w.Header())
+	}
+	// Alone in the list, it is still asked.
+	var n atomic.Int32
+	only := &fake{id: "c", model: "m3", quality: 0.9, handler: func(w http.ResponseWriter, r *http.Request) {
+		if n.Add(1) == 1 {
+			sse(`{"error":{"message":"overloaded"}}`)(w, r)
+			return
+		}
+		sse(chunk("from c"), "[DONE]")(w, r)
+	}}
+	rt = setup(t, only)
+	do(t, rt, helloStream)
+	before = only.calls.Load()
+	do(t, rt, helloStream)
+	if only.calls.Load() == before {
+		t.Fatal("the only model was skipped")
+	}
+}
+
+func TestBusyCountsRequests(t *testing.T) {
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: okJSON("hi")}
+	rt := setup(t, a)
+	do(t, rt, hello)
+	if n, idle := rt.Busy(); n != 0 || idle > time.Second {
+		t.Fatalf("in flight %d, idle %v", n, idle)
 	}
 }

@@ -61,6 +61,7 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("GET /v1/models", s.modelAuth(http.HandlerFunc(s.models)))
 	s.formatRoutes(mux)
 	mux.Handle("GET /mangoman/status", s.auth(http.HandlerFunc(s.status)))
+	mux.Handle("GET /mangoman/busy", s.auth(http.HandlerFunc(s.busy)))
 	s.dashRoutes(mux)
 	s.codeRoutes(mux)
 	return s.guardHost(mux)
@@ -241,6 +242,13 @@ func (s *Server) status(w http.ResponseWriter, _ *http.Request) {
 		"providers": ps,
 		"quota":     s.Router.Quota.Snapshot(),
 	})
+}
+
+// busy says whether any model request is in flight and how long since one
+// began or ended (mangoman code run's watchdog).
+func (s *Server) busy(w http.ResponseWriter, _ *http.Request) {
+	n, idle := s.Router.Busy()
+	writeJSON(w, map[string]any{"in_flight": n, "idle_s": int(idle.Seconds())})
 }
 
 func writeJSON(w http.ResponseWriter, v any) {
