@@ -5,9 +5,10 @@ name: pack-run
 # the measurement behind "how many tasks does a free user get in a day".
 #
 # Needs at least one provider key in this repo's secrets (NVIDIA_API_KEY is the
-# one with room for this). Run it from the Actions tab; it also runs once when
-# this file changes, so the first run needs no click. It is never scheduled:
-# each run uses real free-tier requests.
+# one with room for this). Run it from the Actions tab or by dispatch. It is
+# never scheduled and never runs on a push: each run uses real free-tier
+# requests and, in the private repo, about an hour of Actions minutes, so use
+# the self-hosted runner (runner: self-hosted) when it is set up.
 
 on:
   workflow_dispatch:
@@ -35,11 +36,6 @@ on:
         description: "where to run: ubuntu-latest, or self-hosted (the owner's computer, once the repo is private)"
         required: false
         default: ubuntu-latest
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/pack-run.yml"
-      - "scripts/pack-run.sh"
   # Lets a session start a run without the Actions page, which it cannot
   # reach: POST /repos/<owner>/<repo>/dispatches with event_type pack-run and
   # any of model, packs, variant, cases, case_timeout, runner in client_payload.
@@ -70,7 +66,7 @@ jobs:
       # A push that changes this workflow or the script runs a cheap smoke run
       # instead of the full set: one case per pack, ten minutes each.
       CASES: ${{ inputs.cases || github.event.client_payload.cases || (github.event_name == 'push' && '1' || '') }}
-      CASE_TIMEOUT: ${{ inputs.case_timeout || github.event.client_payload.case_timeout || (github.event_name == 'push' && '600' || '900') }}
+      CASE_TIMEOUT: ${{ inputs.case_timeout || github.event.client_payload.case_timeout || '900' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

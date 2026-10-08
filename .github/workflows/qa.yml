@@ -2,12 +2,10 @@ name: qa
 
 # MangoMan's own QA: all tests (with the race detector), then a live router
 # whose dashboard is clicked through in a browser while Guardian watches the
-# router. Runs nightly and on every push to main. On failure, the report is
+# router. Runs nightly (the private repo's Actions minutes are counted). On failure, the report is
 # attached to the run and an issue is opened (or updated).
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: "45 20 * * *" # 02:15 IST
   workflow_dispatch:

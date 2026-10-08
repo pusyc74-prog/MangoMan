@@ -20,10 +20,11 @@ on:
         required: false
         default: ""
   schedule:
-    # Twice a day (08:00 and 20:00 IST), quick mode. OpenRouter's free tier
-    # allows 50 requests a day for the whole account, so these runs only read
-    # its model list (free); the Monday morning run also sends it requests.
-    - cron: "30 2,14 * * *"
+    # Once a day (08:00 IST), quick mode; the private repo's Actions minutes
+    # are counted. OpenRouter's free tier allows 50 requests a day for the
+    # whole account, so these runs only read its model list (free); the
+    # Monday run also sends it requests.
+    - cron: "30 2 * * *"
   push:
     branches: [main]
     paths:

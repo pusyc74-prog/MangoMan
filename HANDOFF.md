@@ -37,18 +37,19 @@ cannot bring their own keys, and serving them without keys needs servers and
 a paid AI allowance. Do not start it unless the owner reopens it. M6 (coding
 workspace) is under discussion instead.
 
-## The repo is public (7 Oct)
-
-**Switch the repo back to private before the first release or the beta**
-(the owner's decision, 7 Oct: public only while we build, for the free
-minutes). Then: Linux-only checks on GitHub, heavy runs on a self-hosted
-runner on the owner's computer, and releases from a separate public repo that
-holds only the compiled app.
+## The repo is private again (8 Oct)
 
 The owner made the repo public on 7 Oct, after the private repo's free
 Actions minutes ran out and every job was refused ("recent account payments
-have failed or your spending limit needs to be increased"). Public repos get
-standard runners free. History was scanned for keys first: none. Never commit
+have failed or your spending limit needs to be increased"), and asked for it
+to go private again once the build was done. It went private on 8 Oct with
+CI cut to fit the 2,000 free minutes a month: one Linux job per push (vet,
+race tests, lean check, about 2 minutes); pack samples only when packs change
+and nightly (`packs.yml`); macOS, Windows and the five builds on Sundays and
+on demand; qa nightly; doctor once a day; pack runs only by dispatch (about
+an hour each: use the self-hosted runner). At about 20 pushes a day that is
+roughly 1,000 minutes a month, so push in batches. Releases come from a
+separate public repo that holds only the compiled app. History was scanned for keys first: none. Never commit
 a key, a .env file or a signing key. **Before starting anything that uses
 paid or limited resources (Actions minutes, API credits), say what it costs
 and what limit it could hit, before running it.**
@@ -71,7 +72,8 @@ A session can also start a pack run without the Actions page:
       -F 'client_payload[cases]=1' -F 'client_payload[case_timeout]=600'
 
 `client_payload` takes model, packs, variant, cases, case_timeout and runner.
-Leave cases out for the full set of three per pack.
+Leave cases out for the full set of three per pack. Pack names in packs may
+be separated by spaces or commas.
 
 ## Self-hosted runner (once the repo is private)
 

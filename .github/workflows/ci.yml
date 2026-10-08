@@ -1,26 +1,31 @@
 name: ci
 
+# The repo is private, so GitHub Actions minutes are counted (2,000 a month
+# free; macOS counts 10 times, Windows twice). Every push gets one Linux job;
+# the pack samples run only when packs change (packs.yml); macOS, Windows and
+# the cross-builds run once a week and on demand.
+
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
   schedule:
-    # Nightly bug sweep at 01:45 IST. Only the pack regression and the lean
-    # check run: the nightly qa workflow already runs the Go tests with the
-    # race detector, so there is nothing to repeat here.
-    - cron: "15 20 * * *"
+    - cron: "15 20 * * 0" # Sundays 01:45 IST: macOS, Windows and the builds
 
 permissions:
   contents: read
 
+concurrency:
+  # A newer push makes the older run pointless.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
-    if: github.event_name != 'schedule'
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+  check:
+    # Vet, tests with the race detector, and the lean check in one job, so a
+    # push costs one runner.
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -31,7 +36,6 @@ jobs:
           go mod tidy
           git diff --quiet go.mod go.sum || echo "::warning::go.mod or go.sum changed after go mod tidy; commit them"
           git checkout go.mod go.sum
-        shell: bash
       - name: Vet
         run: go vet ./...
       - name: Test
@@ -44,79 +48,43 @@ jobs:
             echo "::error::$(awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}' fail.txt)"
           fi
           exit $status
-        shell: bash
-
-  packs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install pack dependencies
-        run: |
-          pip install pandas pillow python-pptx python-docx pypdf playwright pyflakes pytest
-          python -m playwright install --with-deps chromium
-      - name: Lint pack scripts
-        run: |
-          for d in internal/skills/packs/mangoman-*; do
-            t=$(mktemp -d); cp internal/skills/packs/shared/*.py "$d"/scripts/*.py "$t"; python -m pyflakes "$t"/*.py || exit 1
-          done
-          for d in agents/*; do
-            k=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['skill'])" "$d/agent.json")
-            t=$(mktemp -d); cp internal/skills/packs/shared/*.py internal/skills/packs/"$k"/scripts/*.py "$d"/scripts/*.py "$t"; python -m pyflakes "$t"/*.py || exit 1
-          done
-      - name: Build and check every pack's sample
-        run: |
-          set +e
-          scripts/check-packs.sh 2>&1 | tee packs.log
-          status=${PIPESTATUS[0]}
-          if [ "$status" != 0 ]; then
-            { grep -E -A14 "^FAIL" packs.log || tail -40 packs.log; } | tail -c 3500 > fail.txt
-            echo "::error::$(awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}' fail.txt)"
-          fi
-          exit $status
-        shell: bash
-
-  lean:
-    # Keeps the code small: fails on dead code (functions, types, fields and
-    # constants nothing uses) and on assignments that never take effect.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-      - uses: golangci/golangci-lint-action@v8
+      - name: Lean check (dead code, assignments that never take effect)
+        uses: golangci/golangci-lint-action@v8
         with:
           version: v2.5.0
           args: --no-config --default=none -E unused,ineffassign ./...
 
-  build:
-    needs: test
-    runs-on: ubuntu-latest
+  other-systems:
+    if: github.event_name != 'push' && github.event_name != 'pull_request'
     strategy:
       matrix:
-        target: [darwin/arm64, darwin/amd64, linux/amd64, linux/arm64, windows/amd64]
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go test -count=1 ./...
+
+  build:
+    # All five targets in one job.
+    if: github.event_name != 'push' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
       - name: Build
-        run: |
-          GOOS=${TARGET%/*} GOARCH=${TARGET#*/}
-          export GOOS GOARCH
-          ext=""; [ "$GOOS" = windows ] && ext=".exe"
-          go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_SHA::7}" -o dist/mangoman-$GOOS-$GOARCH$ext ./cmd/mangoman
-        shell: bash
         env:
           CGO_ENABLED: "0"
-          TARGET: ${{ matrix.target }}
+        run: |
+          for t in darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64; do
+            GOOS=${t%/*} GOARCH=${t#*/}; ext=""; [ "$GOOS" = windows ] && ext=".exe"
+            GOOS=$GOOS GOARCH=$GOARCH go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_SHA::7}" -o dist/mangoman-$GOOS-$GOARCH$ext ./cmd/mangoman
+          done
       - uses: actions/upload-artifact@v4
         with:
-          name: mangoman-${{ strategy.job-index }}
+          name: mangoman
           path: dist/

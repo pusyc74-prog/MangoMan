@@ -1,0 +1,61 @@
+name: packs
+
+# Builds every skill pack's sample and runs its checker. Only when packs,
+# agents or their scripts change, and nightly, since the private repo's
+# Actions minutes are counted.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "internal/skills/**"
+      - "agents/**"
+      - "scripts/check-packs.sh"
+      - ".github/workflows/packs.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "15 20 * * *" # 01:45 IST
+
+permissions:
+  contents: read
+
+concurrency:
+  group: packs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  packs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pack dependencies
+        run: |
+          pip install pandas pillow python-pptx python-docx pypdf playwright pyflakes pytest
+          python -m playwright install --with-deps chromium
+      - name: Lint pack scripts
+        run: |
+          for d in internal/skills/packs/mangoman-*; do
+            t=$(mktemp -d); cp internal/skills/packs/shared/*.py "$d"/scripts/*.py "$t"; python -m pyflakes "$t"/*.py || exit 1
+          done
+          for d in agents/*; do
+            k=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['skill'])" "$d/agent.json")
+            t=$(mktemp -d); cp internal/skills/packs/shared/*.py internal/skills/packs/"$k"/scripts/*.py "$d"/scripts/*.py "$t"; python -m pyflakes "$t"/*.py || exit 1
+          done
+      - name: Build and check every pack's sample
+        run: |
+          set +e
+          scripts/check-packs.sh 2>&1 | tee packs.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" != 0 ]; then
+            { grep -E -A14 "^FAIL" packs.log || tail -40 packs.log; } | tail -c 3500 > fail.txt
+            echo "::error::$(awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}' fail.txt)"
+          fi
+          exit $status
+        shell: bash
+
