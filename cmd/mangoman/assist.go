@@ -293,7 +293,13 @@ func cmdCode(args []string) error {
 	case fs.Arg(0) == "run":
 		mode = modeRun
 	}
-	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, rules, mode))
+	cfgMode := mode
+	if os.Getenv("MANGOMAN_SLIM") == "0" {
+		// For measuring only (scripts/pack-run.sh, SLIM=0): no skill rule and
+		// every tool listed, the setup before 7 Oct.
+		rules, cfgMode = "", modeTUI
+	}
+	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, rules, cfgMode))
 	if !*noWeb {
 		// OpenCode's web search (via Exa) lets it research while it codes.
 		env = append(env, "OPENCODE_ENABLE_EXA=1")
