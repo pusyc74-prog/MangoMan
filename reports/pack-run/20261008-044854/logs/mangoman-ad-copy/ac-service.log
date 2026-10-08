@@ -1,0 +1,71 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead keyword_ideas.csv
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads
+PASS  spec is valid
+FAIL  Google ads: AC Gas Filling: all-capital word PM in 'Book Before 1 PM'; AC Gas Filling: description 1 is 125 characters (90); AC Gas Filling: description 2 is 129 characters (90); AC Gas Filling: description 3 is 121 characters (90); AC Gas Filling: description 4 is 123 characters (90); AC Installation: all-capital word PM in 'Book Before 1 PM'; AC Installation: description 1 is 127 characters (90); AC Installation: description 2 is 130 characters (90)
+WARN  Google ads: AC Installation: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads
+PASS  spec is valid
+FAIL  Google ads: AC Gas Filling: description 1 is 92 characters (90); AC Gas Filling: description 2 is 97 characters (90); AC Gas Filling: description 3 is 94 characters (90); AC Installation: description 2 is 92 characters (90); AC Service & Repair: description 1 is 99 characters (90); AC Service & Repair: description 2 is 107 characters (90); AC Service & Repair: description 3 is 103 characters (90); AC Service & Repair: description 4 is 100 characters (90)
+WARN  Google ads: AC Installation: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads/ads.md
+[0m→ [0mRead ads/google_ads.csv
+[0m→ [0mRead ads/google_keywords.csv
+Done. Created Google search ads for CoolCare AC Service with 4 ad groups:
+
+1. **AC Service & Repair** - main service keywords (ac service hyderabad, ac repair near me, etc.)
+2. **AC Gas Filling** - gas refill keywords (ac gas filling, ac gas filling price, ac gas refill)
+3. **AC Installation** - installation keywords (ac installation hyderabad, split ac installation)
+4. **Window AC Service** - window AC specific keywords
+
+Files generated in `/tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/ac-service/ads/`:
+- **ads.md** - readable spec with character counts
+- **google_ads.csv** - import into Google Ads Editor (Account → Import → From file)
+- **google_keywords.csv** - keywords with match types and negatives
+
+All checks pass: every headline ≤30 chars, descriptions ≤90 chars, no exclamation marks or phone numbers, all numbers from your facts, "PM" allowed as acronym. Negatives exclude jobs, courses, AC sales, DIY, free, etc.

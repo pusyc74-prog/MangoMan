@@ -1,0 +1,92 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee Price: description 1 is 105 characters (90); A2 Ghee Price: description 2 is 104 characters (90); A2 Ghee Price: description 3 is 104 characters (90); A2 Ghee Price: description 4 is 102 characters (90); A2 Ghee: description 1 is 100 characters (90); A2 Ghee: description 2 is 117 characters (90); A2 Ghee: description 3 is 108 characters (90); A2 Ghee: description 4 is 107 characters (90)
+WARN  Google ads: Bilona Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Gir Cow Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Buy A2 Ghee Online: fewer than 2 headlines contain a keyword; ads match searches better when they do; A2 Ghee Price: fewer than 2 headlines contain a keyword; ads match searches better when they do
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee Price: description 1 is 110 characters (90); A2 Ghee Price: description 2 is 104 characters (90); A2 Ghee Price: description 3 is 104 characters (90); A2 Ghee Price: description 4 is 102 characters (90); A2 Ghee: description 2 is 100 characters (90); A2 Ghee: description 3 is 95 characters (90); A2 Ghee: description 4 is 103 characters (90); Bilona Ghee: description 1 is 100 characters (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+FAIL  ads.md not built
+FAIL  google_ads.csv not built
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee Price: description 1 is 110 characters (90); A2 Ghee Price: description 2 is 96 characters (90); A2 Ghee Price: description 3 is 97 characters (90); A2 Ghee: description 2 is 100 characters (90); A2 Ghee: description 3 is 95 characters (90); A2 Ghee: description 4 is 103 characters (90); Bilona Ghee: description 1 is 93 characters (90); Bilona Ghee: description 2 is 107 characters (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee Price: description 1 is 105 characters (90); A2 Ghee Price: description 2 is 96 characters (90); A2 Ghee Price: description 3 is 97 characters (90); A2 Ghee: description 2 is 95 characters (90); A2 Ghee: description 4 is 91 characters (90); Bilona Ghee: description 3 is 92 characters (90); Bilona Ghee: headline 'Hand Churned With Wooden Bilona' is 31 characters (30); Buy A2 Ghee Online: description 1 is 118 characters (90)
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee Price: description 1 is 106 characters (90); A2 Ghee Price: description 2 is 96 characters (90); A2 Ghee Price: description 3 is 97 characters (90); A2 Ghee: description 4 is 91 characters (90); Bilona Ghee: description 2 is 95 characters (90); Bilona Ghee: description 3 is 92 characters (90); Buy A2 Ghee Online: description 1 is 119 characters (90); Buy A2 Ghee Online: description 2 is 105 characters (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee Price: description 1 is 96 characters (90); A2 Ghee Price: description 2 is 96 characters (90); A2 Ghee Price: description 3 is 97 characters (90); A2 Ghee: description 4 is 91 characters (90); Bilona Ghee: description 3 is 92 characters (90); Buy A2 Ghee Online: description 1 is 93 characters (90); Buy A2 Ghee Online: description 2 is 105 characters (90); Buy A2 Ghee Online: description 3 is 98 characters (90)
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[91m[1mError: [0m{"message":"upstream stream ended early","type":"upstream_stream_error"}

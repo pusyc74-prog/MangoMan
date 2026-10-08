@@ -1,0 +1,1100 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: all-capital word AI in 'Real speaking practice with live trainers on Zoom. Small groups of 8, weekly mock interviews & group discussions. Not an app or AI bot.'; English Speaking Practice: description 1 is 135 characters (90); English Speaking Practice: description 2 is 134 characters (90); English Speaking Practice: description 3 is 133 characters (90); English Speaking Practice: description 4 is 136 characters (90); Lucknow Spoken English: all-capital word AM in 'Morning 7 AM Batches'; Lucknow Spoken English: all-capital word PM in 'Evening 8 PM Batches'; Lucknow Spoken English: description 1 is 138 characters (90)
+WARN  Google ads: Spoken English Course: fewer than 2 headlines contain a keyword; ads match searches better when they do; Spoken English Hindi: fewer than 2 headlines contain a keyword; ads match searches better when they do; Working Professionals English: fewer than 2 headlines contain a keyword; ads match searches better when they do; English Speaking Practice: fewer than 2 headlines contain a keyword; ads match searches better when they do; Lucknow Spoken English: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 279 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: description 1 is 135 characters (90); English Speaking Practice: description 2 is 127 characters (90); English Speaking Practice: description 3 is 128 characters (90); English Speaking Practice: description 4 is 136 characters (90); English Speaking Practice: headline 'English Speaking Practice Classes' is 33 characters (30); English Speaking Practice: headline 'English Speaking Practice Online' is 32 characters (30); English Speaking Practice: headline 'Online English Conversation Practice' is 36 characters (30); English Speaking Practice: headline 'Practice English Speaking Online' is 32 characters (30)
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 260 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -136,12 +136,12 @@
+     {"text": "english speaking practice classes", "match": "phrase"}
+   ],
+   "negatives": ["free", "pdf", "download", "app", "jobs", "teacher", "grammar", "meaning", "ai", "bot", "chatbot"],
+   "headlines": [
+-    "English Speaking Practice Online",
+-    "Practice English Speaking Online",
+-    "Online English Conversation Practice",
+-    "English Speaking Practice Classes",
++    "English Speaking Practice",
++    "Practice Speaking English",
++    "Online English Practice",
++    "English Conversation Practice",
+     "Live Conversation Classes",
+     "Practice with Real Trainers",
+     "Small Groups of 8",
+     "Weekly Mock Interviews",
+@@ -156,9 +156,9 @@
+   "descriptions": [
+     "Real speaking practice with live trainers on Zoom. Small groups of 8, weekly mock interviews & group discussions. Not an app or AI bot.",
+     "48 one-hour classes over 60 days. Choose 7 am or 8 pm batches. Hindi-speaking trainers help when stuck. ₹4,999, pay in 2 parts.",
+     "6,500+ learners improved fluency since 2020. Free demo class to experience the method. Certificate on completion. Book demo now.",
+-    "Built for those who understand English but can't speak fluently. Live interactive sessions, no recordings. Join SpeakEasy English today."
++    "Built for those who understand English but can't speak fluently. Live interactive sessions, no recordings. Join SpeakEasy today."
+   ]
+ },
+ {
+   "name": "Lucknow Spoken English",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: description 1 is 135 characters (90); English Speaking Practice: description 2 is 127 characters (90); English Speaking Practice: description 3 is 128 characters (90); English Speaking Practice: description 4 is 128 characters (90); Lucknow Spoken English: description 1 is 138 characters (90); Lucknow Spoken English: description 2 is 136 characters (90); Lucknow Spoken English: description 3 is 133 characters (90); Lucknow Spoken English: description 4 is 117 characters (90)
+WARN  Google ads: English Speaking Practice: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 260 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -153,12 +153,12 @@
+     "Pay in 2 Parts UPI",
+     "Free Demo Class"
+   ],
+   "descriptions": [
+-    "Real speaking practice with live trainers on Zoom. Small groups of 8, weekly mock interviews & group discussions. Not an app or AI bot.",
+-    "48 one-hour classes over 60 days. Choose 7 am or 8 pm batches. Hindi-speaking trainers help when stuck. ₹4,999, pay in 2 parts.",
+-    "6,500+ learners improved fluency since 2020. Free demo class to experience the method. Certificate on completion. Book demo now.",
+-    "Built for those who understand English but can't speak fluently. Live interactive sessions, no recordings. Join SpeakEasy today."
++    "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews & group discussions. Not an app or AI bot.",
++    "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi-speaking trainers help. ₹4,999, pay in 2 parts.",
++    "6,500+ learners improved fluency since 2020. Free demo class. Certificate on completion. Book demo now.",
++    "For those who understand English but can't speak fluently. Live sessions, no recordings. Join SpeakEasy today."
+   ]
+ },
+ {
+   "name": "Lucknow Spoken English",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -189,12 +189,12 @@
+         "Pay in 2 Parts UPI",
+         "Free Demo Class"
+       ],
+       "descriptions": [
+-        "SpeakEasy English, Lucknow's trusted institute teaching online since 2020. 6,500+ learners trained. Live Zoom classes, join from anywhere.",
+-        "Small batches of 8 with Hindi-speaking trainers. 48 classes over 60 days at 7 am or 8 pm. ₹4,999 full course, pay in 2 UPI installments.",
+-        "Weekly mock interviews & group discussions. Free demo class before you enroll. Certificate on completion. No recorded course, no app.",
+-        "Perfect for professionals & students in Lucknow. Book a free demo class today and start speaking English confidently."
++        "SpeakEasy English, Lucknow's trusted institute since 2020. 6,500+ learners trained. Live Zoom classes, join from anywhere.",
++        "Small batches of 8 with Hindi-speaking trainers. 48 classes over 60 days at 7 am or 8 pm. ₹4,999, pay in 2 UPI parts.",
++        "Weekly mock interviews & group discussions. Free demo class. Certificate on completion. No recorded course, no app.",
++        "For professionals & students in Lucknow. Book free demo today. Start speaking English confidently."
+       ]
+     }
+   ]
+ },
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -140,8 +140,10 @@
+ "English Speaking Practice",
+ "Practice Speaking English",
+ "Online English Practice",
+ "English Conversation Practice",
++"Speaking Practice Classes",
++"Practice English Speaking",
+ "Live Conversation Classes",
+ "Practice with Real Trainers",
+ "Small Groups of 8",
+ "Weekly Mock Interviews",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: 17 headlines (3 to 15); English Speaking Practice: description 1 is 127 characters (90); English Speaking Practice: description 2 is 109 characters (90); English Speaking Practice: description 3 is 103 characters (90); English Speaking Practice: description 4 is 110 characters (90); Lucknow Spoken English: description 1 is 122 characters (90); Lucknow Spoken English: description 2 is 117 characters (90); Lucknow Spoken English: description 3 is 115 characters (90)
+WARN  Google ads: English Speaking Practice: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 260 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -150,10 +150,8 @@
+   "Group Discussions",
+   "48 Classes in 60 Days",
+   "Morning & Evening Batches",
+   "Hindi Speaking Trainers",
+-  "₹4,999 Full Course",
+-  "Pay in 2 Parts UPI",
+   "Free Demo Class"
+ ],
+ "descriptions": [
+   "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews & group discussions. Not an app or AI bot.",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -153,11 +153,11 @@
+     "Hindi Speaking Trainers",
+     "Free Demo Class"
+   ],
+   "descriptions": [
+-    "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews & group discussions. Not an app or AI bot.",
+-    "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi-speaking trainers help. ₹4,999, pay in 2 parts.",
+-    "6,500+ learners improved fluency since 2020. Free demo class. Certificate on completion. Book demo now.",
++    "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews & discussions. Not an app or AI bot.",
++    "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi-speaking trainers. ₹4,999, pay in 2 parts.",
++    "6,500+ learners improved fluency since 2020. Free demo class. Certificate included. Book demo now.",
+     "For those who understand English but can't speak fluently. Live sessions, no recordings. Join SpeakEasy today."
+   ]
+ },
+ {
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -191,9 +191,9 @@
+     ],
+     "descriptions": [
+       "SpeakEasy English, Lucknow's trusted institute since 2020. 6,500+ learners trained. Live Zoom classes, join from anywhere.",
+       "Small batches of 8 with Hindi-speaking trainers. 48 classes over 60 days at 7 am or 8 pm. ₹4,999, pay in 2 UPI parts.",
+-      "Weekly mock interviews & group discussions. Free demo class. Certificate on completion. No recorded course, no app.",
++      "Weekly mock interviews & group discussions. Free demo class. Certificate included. No recorded course, no app.",
+       "For professionals & students in Lucknow. Book free demo today. Start speaking English confidently."
+     ]
+   }
+ ]
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: description 1 is 121 characters (90); English Speaking Practice: description 2 is 104 characters (90); English Speaking Practice: description 3 is 98 characters (90); English Speaking Practice: description 4 is 110 characters (90); Lucknow Spoken English: description 1 is 122 characters (90); Lucknow Spoken English: description 2 is 117 characters (90); Lucknow Spoken English: description 3 is 110 characters (90); Lucknow Spoken English: description 4 is 98 characters (90)
+WARN  Google ads: English Speaking Practice: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 260 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json[90m [limit=80, offset=127][0m
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -153,12 +153,12 @@
+     "Hindi Speaking Trainers",
+     "Free Demo Class"
+   ],
+   "descriptions": [
+-    "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews & discussions. Not an app or AI bot.",
+-    "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi-speaking trainers. ₹4,999, pay in 2 parts.",
+-    "6,500+ learners improved fluency since 2020. Free demo class. Certificate included. Book demo now.",
+-    "For those who understand English but can't speak fluently. Live sessions, no recordings. Join SpeakEasy today."
++    "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app or AI bot.",
++    "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi trainers. ₹4,999, pay in 2 parts.",
++    "6,500+ learners improved fluency since 2020. Free demo. Certificate included. Book now.",
++    "Understand English but can't speak fluently? Live sessions, no recordings. Join SpeakEasy today."
+   ]
+ },
+ {
+   "name": "Lucknow Spoken English",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -189,12 +189,12 @@
+         "Pay in 2 Parts UPI",
+         "Free Demo Class"
+       ],
+       "descriptions": [
+-        "SpeakEasy English, Lucknow's trusted institute since 2020. 6,500+ learners trained. Live Zoom classes, join from anywhere.",
+-        "Small batches of 8 with Hindi-speaking trainers. 48 classes over 60 days at 7 am or 8 pm. ₹4,999, pay in 2 UPI parts.",
+-        "Weekly mock interviews & group discussions. Free demo class. Certificate included. No recorded course, no app.",
+-        "For professionals & students in Lucknow. Book free demo today. Start speaking English confidently."
++        "SpeakEasy English, Lucknow's trusted institute since 2020. 6,500+ trained. Live Zoom classes, join anywhere.",
++        "Small batches of 8, Hindi-speaking trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts.",
++        "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course, no app.",
++        "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+       ]
+     }
+   ]
+ },
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: description 1 is 107 characters (90); English Speaking Practice: description 2 is 95 characters (90); English Speaking Practice: description 4 is 96 characters (90); Lucknow Spoken English: description 1 is 108 characters (90); Lucknow Spoken English: description 2 is 104 characters (90); Lucknow Spoken English: description 3 is 104 characters (90); Lucknow Spoken English: description 4 is 92 characters (90); Lucknow Spoken English: headline 'English Speaking Course Lucknow' is 31 characters (30)
+WARN  Google ads: English Speaking Practice: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 260 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json[90m [limit=60, offset=155][0m
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -173,10 +173,10 @@
+   ],
+   "negatives": ["free", "pdf", "download", "app", "jobs", "teacher", "grammar", "meaning", "home tutor", "home tuition"],
+   "headlines": [
+     "Spoken English Classes Lucknow",
+-    "English Speaking Course Lucknow",
+-    "Spoken English Institute Lucknow",
++    "English Speaking Course Lko",
++    "Spoken English Institute Lko",
+     "Best English Classes Lucknow",
+     "SpeakEasy English Lucknow",
+     "Teaching Since 2020",
+     "6,500+ Learners Trained",
+@@ -190,9 +190,9 @@
+     "Free Demo Class"
+   ],
+   "descriptions": [
+     "SpeakEasy English, Lucknow's trusted institute since 2020. 6,500+ trained. Live Zoom classes, join anywhere.",
+-    "Small batches of 8, Hindi-speaking trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts.",
++    "Small batches of 8, Hindi-speaking trainers. 48 classes, 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts.",
+     "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course, no app.",
+     "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+   ]
+ }
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -156,9 +156,9 @@
+   "descriptions": [
+     "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app or AI bot.",
+     "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi trainers. ₹4,999, pay in 2 parts.",
+     "6,500+ learners improved fluency since 2020. Free demo. Certificate included. Book now.",
+-    "Understand English but can't speak fluently? Live sessions, no recordings. Join SpeakEasy today."
++    "Understand English but can't speak? Live sessions, no recordings. Join SpeakEasy today."
+   ]
+ },
+ {
+   "name": "Lucknow Spoken English",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: description 1 is 107 characters (90); English Speaking Practice: description 2 is 95 characters (90); Lucknow Spoken English: description 1 is 108 characters (90); Lucknow Spoken English: description 2 is 100 characters (90); Lucknow Spoken English: description 3 is 104 characters (90); Lucknow Spoken English: description 4 is 92 characters (90); Spoken English Course: description 1 is 146 characters (90); Spoken English Course: description 2 is 150 characters (90)
+WARN  Google ads: English Speaking Practice: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 260 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -45,12 +45,12 @@
+     "6,500+ Learners Trained",
+     "Certificate on Completion"
+   ],
+   "descriptions": [
+-    "Live online spoken English classes with Hindi-speaking trainers. Small batches of 8, 48 classes over 60 days. Morning 7 am & evening 8 pm batches.",
+-    "Join 6,500+ learners who improved their English. ₹4,999 for full course, pay in 2 parts. Free demo class before you enroll. Certificate on completion.",
+-    "Built for working professionals & students who understand English but hesitate to speak. Weekly mock interviews & group discussions included.",
+-    "No recorded-only course, no app. Live Zoom classes with real trainers. Book a free demo class today and start speaking confidently."
++    "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days. 7 am & 8 pm batches.",
++    "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo class. Certificate on completion.",
++    "For professionals & students who understand English but hesitate. Weekly mock interviews & discussions.",
++    "No recorded course, no app. Live Zoom classes with real trainers. Book free demo today."
+   ]
+ },
+ {
+   "name": "Spoken English Hindi",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -81,12 +81,12 @@
+     "6,500+ Learners",
+     "Certificate Included"
+   ],
+   "descriptions": [
+-    "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live online classes, small batches of 8 learners.",
+-    "48 live classes over 60 days at 7 am or 8 pm. ₹4,999 full fee, pay in 2 parts of ₹2,500 via UPI. Free demo class before you commit.",
+-    "6,500+ learners trained since 2020. Weekly mock interviews & group discussions. Certificate on completion. Book free demo today.",
+-    "No recorded videos, no app. Real trainers on Zoom. Working professionals & college students welcome. Start speaking confidently."
++    "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live classes, small batches of 8.",
++    "48 live classes over 60 days at 7 am or 8 pm. ₹4,999 full fee, pay in 2 parts via UPI. Free demo class.",
++    "6,500+ learners trained since 2020. Weekly mock interviews & group discussions. Certificate included. Book demo.",
++    "No recorded videos, no app. Real trainers on Zoom. Professionals & students welcome. Start speaking confidently."
+   ]
+ },
+ {
+   "name": "Working Professionals English",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -117,12 +117,12 @@
+     "Pay in 2 Parts UPI",
+     "Free Demo Class"
+   ],
+   "descriptions": [
+-    "Designed for working professionals who understand English but hesitate to speak. Morning 7 am & evening 8 pm batches fit your schedule.",
+-    "Small batches of 8 ensure personal attention. 48 live Zoom classes over 60 days. Weekly mock interviews & group discussions for real practice.",
+-    "Hindi-speaking trainers, ₹4,999 payable in 2 UPI installments. Free demo class. 6,500+ professionals trained since 2020. Certificate included.",
+-    "No recorded course, no app. Live interactive classes with real trainers. Book your free demo and start speaking confidently at work."
++    "For professionals who understand English but hesitate. Morning 7 am & evening 8 pm batches fit your schedule.",
++    "Small batches of 8 ensure personal attention. 48 live Zoom classes over 60 days. Weekly mock interviews & discussions.",
++    "Hindi-speaking trainers, ₹4,999 payable in 2 UPI parts. Free demo. 6,500+ trained since 2020. Certificate included.",
++    "No recorded course, no app. Live interactive classes with real trainers. Book free demo, speak confidently at work."
+   ]
+ },
+ {
+   "name": "English Speaking Practice",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -154,10 +154,10 @@
+     "Free Demo Class"
+   ],
+   "descriptions": [
+     "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app or AI bot.",
+-    "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi trainers. ₹4,999, pay in 2 parts.",
+-    "6,500+ learners improved fluency since 2020. Free demo. Certificate included. Book now.",
++    "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi trainers. ₹4,999, 2 parts.",
++    "6,500+ improved fluency since 2020. Free demo. Certificate included. Book now.",
+     "Understand English but can't speak? Live sessions, no recordings. Join SpeakEasy today."
+   ]
+ },
+ {
+
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -189,10 +189,10 @@
+     "Pay in 2 Parts UPI",
+     "Free Demo Class"
+   ],
+   "descriptions": [
+-    "SpeakEasy English, Lucknow's trusted institute since 2020. 6,500+ trained. Live Zoom classes, join anywhere.",
+-    "Small batches of 8, Hindi-speaking trainers. 48 classes, 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts.",
++    "SpeakEasy English, Lucknow's trusted institute since 2020. 6,500+ trained. Live Zoom classes, join from anywhere.",
++    "Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts.",
+     "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course, no app.",
+     "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+   ]
+ }
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: description 1 is 107 characters (90); Lucknow Spoken English: description 1 is 113 characters (90); Lucknow Spoken English: description 2 is 95 characters (90); Lucknow Spoken English: description 3 is 104 characters (90); Lucknow Spoken English: description 4 is 92 characters (90); Spoken English Course: description 1 is 121 characters (90); Spoken English Course: description 2 is 101 characters (90); Spoken English Course: description 3 is 103 characters (90)
+WARN  Google ads: English Speaking Practice: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 260 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -45,12 +45,12 @@
+     "6,500+ Learners Trained",
+     "Certificate on Completion"
+   ],
+   "descriptions": [
+-    "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days. 7 am & 8 pm batches.",
+-    "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo class. Certificate on completion.",
++    "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days. 7 am & 8 pm.",
++    "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate on completion.",
+     "For professionals & students who understand English but hesitate. Weekly mock interviews & discussions.",
+-    "No recorded course, no app. Live Zoom classes with real trainers. Book free demo today."
++    "No recorded course, no app. Live Zoom with real trainers. Book free demo today."
+   ]
+ },
+ {
+   "name": "Spoken English Hindi",
+
+[0m
+## Objective
+- Create Google search ads (ad groups, headlines, descriptions, keywords, negative keywords) for SpeakEasy English spoken English course based on landing.md, facts.md, and search_terms.csv
+- Save spec as ads.json and build into ads/ folder
+
+## Important Details
+- Brand: SpeakEasy English, Lucknow, teaching online since 2020
+- Course: Live online spoken English, 60 days, 48 classes, small batches of 8, 7 am & 8 pm batches, Hindi-speaking trainers
+- Price: ₹4,999 full course, pay in 2 parts of ₹2,500 via UPI
+- Free demo class, 6,500+ learners trained, certificate on completion
+- No recorded-only course, no app
+- Target: Working professionals & college students who understand English but hesitate to speak
+- Negative keywords from search terms: free, pdf, download, app, jobs, teacher, grammar, meaning, home tutor
+- allowed_caps includes: UPI, GST, AI, AM, PM
+
+## Work State
+### Completed
+- Created ads.json with 5 ad groups: Spoken English Course, Spoken English Hindi, Working Professionals English, English Speaking Practice, Lucknow Spoken English
+- Built ads folder with ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+- Fixed all-capital word issues (AI, AM, PM added to allowed_caps)
+- Fixed headline length issues for English Speaking Practice (reduced to 15 headlines, all ≤30 chars)
+- Fixed most description length issues
+
+### Active
+- Fixing remaining description character limit violations (must be ≤90 chars)
+- Fixing one headline length violation in Lucknow Spoken English (31 chars → ≤30)
+- Addressing warning: English Speaking Practice needs ≥2 headlines containing a keyword
+
+### Blocked
+- check_ads.py still fails on 7 descriptions (4 in English Speaking Practice, 3 in Lucknow Spoken English) and 1 headline
+- Descriptions currently 92-108 chars, need ≤90
+
+## Next Move
+1. Shorten all failing descriptions to ≤90 characters (remove words like "included", "since 2020", "trusted", "institute", etc.)
+2. Shorten "English Speaking Course Lucknow" headline to ≤30 chars (e.g., "English Course Lucknow")
+3. Add 2+ keyword-containing headlines to English Speaking Practice ad group
+4. Re-run build_ads.py and check_ads.py until PASS
+
+## Relevant Files
+- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json: Main spec file being edited
+- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads/: Output folder with generated CSVs and markdown
+- /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py: Build script
+- /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py: Validation script
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -82,9 +82,9 @@
+     "Certificate Included"
+   ],
+   "descriptions": [
+     "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live classes, small batches of 8.",
+-    "48 live classes over 60 days at 7 am or 8 pm. ₹4,999 full fee, pay in 2 parts via UPI. Free demo class.",
++    "48 live classes over 60 days at 7 am or 8 pm. ₹4,999 full fee, pay in 2 parts via UPI. Free demo.",
+     "6,500+ learners trained since 2020. Weekly mock interviews & group discussions. Certificate included. Book demo.",
+     "No recorded videos, no app. Real trainers on Zoom. Professionals & students welcome. Start speaking confidently."
+   ]
+ },
+
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m
+[0m$ [0mpython3 -c "print(len('Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app or AI bot.'))"
+107
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -153,9 +153,9 @@
+   "Hindi Speaking Trainers",
+   "Free Demo Class"
+ ],
+ "descriptions": [
+-  "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app or AI bot.",
++  "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app or AI.",
+   "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi trainers. ₹4,999, 2 parts.",
+   "6,500+ improved fluency since 2020. Free demo. Certificate included. Book now.",
+   "Understand English but can't speak? Live sessions, no recordings. Join SpeakEasy today."
+ ]
+
+[0m
+[0m$ [0mpython3 -c "
+d1 = 'SpeakEasy English, Lucknow'\''s trusted institute since 2020. 6,500+ trained. Live Zoom classes, join from anywhere.'
+d2 = 'Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts.'
+d3 = 'Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course, no app.'
+d4 = 'For professionals & students in Lucknow. Book free demo. Start speaking English confidently.'
+print('d1:', len(d1))
+print('d2:', len(d2))
+print('d3:', len(d3))
+print('d4:', len(d4))
+"
+File "<string>", line 2
+    d1 = 'SpeakEasy English, Lucknow'\''s trusted institute since 2020. 6,500+ trained. Live Zoom classes, join from anywhere.'
+                                      ^
+SyntaxError: unexpected character after line continuation character
+[0m
+[0m$ [0mpython3 -c '
+d1 = "SpeakEasy English, Lucknow'\''s trusted institute since 2020. 6,500+ trained. Live Zoom classes, join from anywhere."
+d2 = "Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts."
+d3 = "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course, no app."
+d4 = "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+print("d1:", len(d1))
+print("d2:", len(d2))
+print("d3:", len(d3))
+print("d4:", len(d4))
+'
+d1: 113
+d2: 95
+d3: 104
+d4: 92
+[0m
+[0m$ [0mpython3 -c '
+d1 = "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days. 7 am & 8 pm."
+d2 = "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate on completion."
+d3 = "For professionals & students who understand English but hesitate. Weekly mock interviews & discussions."
+d4 = "No recorded course, no app. Live Zoom with real trainers. Book free demo today."
+print("d1:", len(d1))
+print("d2:", len(d2))
+print("d3:", len(d3))
+print("d4:", len(d4))
+'
+d1: 113
+d2: 95
+d3: 103
+d4: 79
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -46,9 +46,9 @@
+     "Certificate on Completion"
+   ],
+   "descriptions": [
+     "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days. 7 am & 8 pm.",
+-    "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate on completion.",
++    "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate included.",
+     "For professionals & students who understand English but hesitate. Weekly mock interviews & discussions.",
+     "No recorded course, no app. Live Zoom with real trainers. Book free demo today."
+   ]
+ },
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -189,9 +189,9 @@
+   "Pay in 2 Parts UPI",
+   "Free Demo Class"
+ ],
+ "descriptions": [
+-  "SpeakEasy English, Lucknow's trusted institute since 2020. 6,500+ trained. Live Zoom classes, join from anywhere.",
++  "SpeakEasy English, Lucknow trusted institute since 2020. 6,500+ trained. Live Zoom, join from anywhere.",
+   "Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts.",
+   "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course, no app.",
+   "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+ ]
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: description 1 is 103 characters (90); Lucknow Spoken English: description 1 is 103 characters (90); Lucknow Spoken English: description 2 is 95 characters (90); Lucknow Spoken English: description 3 is 104 characters (90); Lucknow Spoken English: description 4 is 92 characters (90); Spoken English Course: description 1 is 113 characters (90); Spoken English Course: description 3 is 103 characters (90); Spoken English Hindi: description 1 is 122 characters (90)
+WARN  Google ads: English Speaking Practice: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 260 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m$ [0mpython3 -c '
+# English Speaking Practice
+d1 = "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app or AI."
+print("ESP d1:", len(d1))
+
+# Lucknow
+d1 = "SpeakEasy English, Lucknow trusted institute since 2020. 6,500+ trained. Live Zoom, join from anywhere."
+d2 = "Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts."
+d3 = "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course, no app."
+d4 = "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+print("Lko d1:", len(d1))
+print("Lko d2:", len(d2))
+print("Lko d3:", len(d3))
+print("Lko d4:", len(d4))
+
+# Spoken English Course
+d1 = "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days. 7 am & 8 pm."
+d3 = "For professionals & students who understand English but hesitate. Weekly mock interviews & discussions."
+print("SEC d1:", len(d1))
+print("SEC d3:", len(d3))
+
+# Spoken English Hindi
+d1 = "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live classes, small batches of 8."
+print("SEH d1:", len(d1))
+'
+ESP d1: 103
+Lko d1: 103
+Lko d2: 95
+Lko d3: 104
+Lko d4: 92
+SEC d1: 113
+SEC d3: 103
+SEH d1: 122
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -153,9 +153,9 @@
+   "Hindi Speaking Trainers",
+   "Free Demo Class"
+ ],
+ "descriptions": [
+-  "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app or AI.",
++  "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app.",
+   "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi trainers. ₹4,999, 2 parts.",
+   "6,500+ improved fluency since 2020. Free demo. Certificate included. Book now.",
+   "Understand English but can't speak? Live sessions, no recordings. Join SpeakEasy today."
+ ]
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -189,11 +189,11 @@
+       "Pay in 2 Parts UPI",
+       "Free Demo Class"
+     ],
+     "descriptions": [
+-      "SpeakEasy English, Lucknow trusted institute since 2020. 6,500+ trained. Live Zoom, join from anywhere.",
+-      "Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 UPI parts.",
+-      "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course, no app.",
++      "SpeakEasy English, Lucknow trusted since 2020. 6,500+ trained. Live Zoom, join from anywhere.",
++      "Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 parts.",
++      "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course.",
+       "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+     ]
+   }
+ ]
+
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m
+[0m$ [0mpython3 -c '
+d = "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days. 7 am & 8 pm."
+print(len(d))
+'
+113
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -45,9 +45,9 @@
+   "6,500+ Learners Trained",
+   "Certificate on Completion"
+ ],
+ "descriptions": [
+-  "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days. 7 am & 8 pm.",
++  "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes, 60 days. 7 am & 8 pm.",
+   "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate included.",
+   "For professionals & students who understand English but hesitate. Weekly mock interviews & discussions.",
+   "No recorded course, no app. Live Zoom with real trainers. Book free demo today."
+ ]
+
+[0m
+[0m$ [0mpython3 -c '
+d = "For professionals & students who understand English but hesitate. Weekly mock interviews & discussions."
+print(len(d))
+
+d2 = "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live classes, small batches of 8."
+print(len(d2))
+'
+103
+122
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -47,9 +47,9 @@
+   ],
+   "descriptions": [
+     "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes, 60 days. 7 am & 8 pm.",
+     "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate included.",
+-    "For professionals & students who understand English but hesitate. Weekly mock interviews & discussions.",
++    "For professionals & students who understand English but hesitate. Weekly mock interviews & group discussions.",
+     "No recorded course, no app. Live Zoom with real trainers. Book free demo today."
+   ]
+ },
+ {
+
+[0m
+[0m$ [0mpython3 -c '
+d = "For professionals & students who understand English but hesitate. Weekly mock interviews & group discussions."
+print(len(d))
+'
+109
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -47,9 +47,9 @@
+   ],
+   "descriptions": [
+     "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes, 60 days. 7 am & 8 pm.",
+     "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate included.",
+-    "For professionals & students who understand English but hesitate. Weekly mock interviews & group discussions.",
++    "For professionals & students who understand English but hesitate. Weekly mock interviews & group practice.",
+     "No recorded course, no app. Live Zoom with real trainers. Book free demo today."
+   ]
+ },
+ {
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -80,10 +80,10 @@
+           "Free Demo Class",
+           "6,500+ Learners",
+           "Certificate Included"
+         ],
+-        "descriptions": [
+-          "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live classes, small batches of 8.",
++"descriptions": [
++          "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live classes, small batches.",
+           "48 live classes over 60 days at 7 am or 8 pm. ₹4,999 full fee, pay in 2 parts via UPI. Free demo.",
+           "6,500+ learners trained since 2020. Weekly mock interviews & group discussions. Certificate included. Book demo.",
+           "No recorded videos, no app. Real trainers on Zoom. Professionals & students welcome. Start speaking confidently."
+         ]
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json --out /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+built /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads: ads.md, google_ads.csv, google_keywords.csv, meta_ads.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads
+PASS  spec is valid
+FAIL  Google ads: English Speaking Practice: description 1 is 97 characters (90); Lucknow Spoken English: description 1 is 93 characters (90); Lucknow Spoken English: description 2 is 91 characters (90); Lucknow Spoken English: description 3 is 96 characters (90); Lucknow Spoken English: description 4 is 92 characters (90); Spoken English Course: description 1 is 109 characters (90); Spoken English Course: description 3 is 106 characters (90); Spoken English Hindi: description 1 is 117 characters (90)
+WARN  Google ads: English Speaking Practice: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  Meta ads follow the policy basics
+WARN  Meta ads: Offer Focused: description is 38 characters; phones cut it at about 30; Offer Focused: primary text is 283 characters; phones cut it at about 125; Proof & Results: description is 40 characters; phones cut it at about 30; Proof & Results: primary text is 260 characters; phones cut it at about 125; Working Professional Angle: description is 33 characters; phones cut it at about 30; Working Professional Angle: primary text is 297 characters; phones cut it at about 125
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m$ [0mpython3 -c '
+# English Speaking Practice
+d1 = "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app."
+print("ESP d1:", len(d1))
+
+# Lucknow
+d1 = "SpeakEasy English, Lucknow trusted since 2020. 6,500+ trained. Live Zoom, join from anywhere."
+d2 = "Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 parts."
+d3 = "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course."
+d4 = "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+print("Lko d1:", len(d1))
+print("Lko d2:", len(d2))
+print("Lko d3:", len(d3))
+print("Lko d4:", len(d4))
+
+# Spoken English Course
+d1 = "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes, 60 days. 7 am & 8 pm."
+d3 = "For professionals & students who understand English but hesitate. Weekly mock interviews & group practice."
+print("SEC d1:", len(d1))
+print("SEC d3:", len(d3))
+
+# Spoken English Hindi
+d1 = "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live classes, small batches."
+print("SEH d1:", len(d1))
+'
+ESP d1: 97
+Lko d1: 93
+Lko d2: 91
+Lko d3: 96
+Lko d4: 92
+SEC d1: 109
+SEC d3: 106
+SEH d1: 117
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -153,9 +153,9 @@
+   "Hindi Speaking Trainers",
+   "Free Demo Class"
+ ],
+ "descriptions": [
+-  "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews. Not an app.",
++  "Real speaking practice with live trainers. Small groups of 8, weekly mock interviews.",
+   "48 one-hour classes over 60 days. 7 am or 8 pm batches. Hindi trainers. ₹4,999, 2 parts.",
+   "6,500+ improved fluency since 2020. Free demo. Certificate included. Book now.",
+   "Understand English but can't speak? Live sessions, no recordings. Join SpeakEasy today."
+ ]
+
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m→ [0mRead ads.json[90m [limit=30, offset=190][0m
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -189,9 +189,9 @@
+   "Pay in 2 Parts UPI",
+   "Free Demo Class"
+ ],
+ "descriptions": [
+-  "SpeakEasy English, Lucknow trusted since 2020. 6,500+ trained. Live Zoom, join from anywhere.",
++  "SpeakEasy English, Lucknow trusted since 2020. 6,500+ trained. Live Zoom classes.",
+   "Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 parts.",
+   "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course.",
+   "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+ ]
+
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m
+[0m$ [0mpython3 -c '
+d = "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes, 60 days. 7 am & 8 pm."
+print(len(d))
+'
+109
+[0m
+[0m→ [0mRead ads.json[90m [offset=45, limit=30][0m
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -45,9 +45,9 @@
+   "6,500+ Learners Trained",
+   "Certificate on Completion"
+ ],
+ "descriptions": [
+-  "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes, 60 days. 7 am & 8 pm.",
++  "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes, 60 days.",
+   "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate included.",
+   "For professionals & students who understand English but hesitate. Weekly mock interviews & group practice.",
+   "No recorded course, no app. Live Zoom with real trainers. Book free demo today."
+ ]
+
+[0m
+[0m$ [0mpython3 -c '
+d = "For professionals & students who understand English but hesitate. Weekly mock interviews & group practice."
+print(len(d))
+
+d2 = "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live classes, small batches."
+print(len(d2))
+'
+106
+117
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m→ [0mRead ads.json[90m [limit=15, offset=48][0m
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -45,9 +45,9 @@
+   "6,500+ Learners Trained",
+   "Certificate on Completion"
+ ],
+ "descriptions": [
+-  "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes, 60 days.",
++  "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days.",
+   "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate included.",
+   "For professionals & students who understand English but hesitate. Weekly mock interviews & group practice.",
+   "No recorded course, no app. Live Zoom with real trainers. Book free demo today."
+ ]
+
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m→ [0mRead ads.json[90m [limit=20, offset=80][0m
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -81,9 +81,9 @@
+           "6,500+ Learners",
+           "Certificate Included"
+         ],
+ "descriptions": [
+-          "Hindi-speaking trainers explain in Hindi when needed. Perfect for Hindi medium students. Live classes, small batches.",
++          "Hindi-speaking trainers explain in Hindi. Perfect for Hindi medium students. Live classes, small batches.",
+           "48 live classes over 60 days at 7 am or 8 pm. ₹4,999 full fee, pay in 2 parts via UPI. Free demo.",
+           "6,500+ learners trained since 2020. Weekly mock interviews & group discussions. Certificate included. Book demo.",
+           "No recorded videos, no app. Real trainers on Zoom. Professionals & students welcome. Start speaking confidently."
+         ]
+
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
+[0m
+[0m$ [0mpython3 -c '
+d = "For professionals & students who understand English but hesitate. Weekly mock interviews & group practice."
+print(len(d))
+'
+106
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+===================================================================
+--- /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
++++ /tmp/tmp.bD4C3hjWU3/run/mangoman-ad-copy/spoken-english/ads.json
+@@ -47,9 +47,9 @@
+   ],
+   "descriptions": [
+     "Live online spoken English classes with Hindi trainers. Small batches of 8, 48 classes over 60 days.",
+     "Join 6,500+ learners. ₹4,999 full course, pay in 2 parts. Free demo. Certificate included.",
+-    "For professionals & students who understand English but hesitate. Weekly mock interviews & group practice.",
++    "For professionals & students who understand English but hesitate. Weekly mock interviews & practice.",
+     "No recorded course, no app. Live Zoom with real trainers. Book free demo today."
+   ]
+ },
+ {
+
+[0m
+[0m$ [0mpython3 -c '
+d1 = "SpeakEasy English, Lucknow trusted since 2020. 6,500+ trained. Live Zoom classes."
+d2 = "Small batches of 8, Hindi trainers. 48 classes over 60 days, 7 am or 8 pm. ₹4,999, 2 parts."
+d3 = "Weekly mock interviews & group discussions. Free demo. Certificate included. No recorded course."
+d4 = "For professionals & students in Lucknow. Book free demo. Start speaking English confidently."
+print("Lko d1:", len(d1))
+print("Lko d2:", len(d2))
+print("Lko d3:", len(d3))
+print("Lko d4:", len(d4))
+'
+Lko d1: 81
+Lko d2: 91
+Lko d3: 96
+Lko d4: 92
+[0m
+[0m→ [0mRead ads.json[90m [offset=190, limit=15][0m
