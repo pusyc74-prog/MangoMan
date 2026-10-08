@@ -1,0 +1,153 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mRead facts.md
+[0m→ [0mRead sources.md
+[0m→ [0mSkill "mangoman-seo-article"
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (617 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  617 words
+WARN  617 words against a target of 900
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description
+PASS  keyword used naturally (0.8% of words)
+WARN  title: aim for 30 to 60 characters: 68 characters
+WARN  description: aim for 120 to 160 characters: 172 characters
+PASS  sentences are easy to read (average 13 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+WARN  fewer than 2 links to your own pages (helps readers and search engines find related pages): 0
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article.json
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (757 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): description: 90%
+PASS  757 words
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading
+PASS  keyword used naturally (0.7% of words)
+PASS  title fits Google results (57)
+PASS  description fits Google results (146)
+PASS  sentences are easy to read (average 14 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article.json
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (944 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): description: 90%
+PASS  944 words
+PASS  keyword "dental implant cost in bangalore" in title, h1, opening, description, a subheading and address
+PASS  keyword used naturally (0.5% of words)
+PASS  title fits Google results (57)
+PASS  description fits Google results (151)
+PASS  sentences are easy to read (average 13 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article.json
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json
+@@ -6,9 +6,9 @@
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+   "title": "Dental Implant Cost in Bangalore: Prices & What to Expect",
+-  "description": "See real dental implant cost in Bangalore at Smile Square. Prices from ₹28,000, 3 visits, 10-yr survival above 90%. Book a consultation in Indiranagar.",
++  "description": "See real dental implant cost in Bangalore at Smile Square. Prices from ₹28,000, 3 visits, high long-term survival. Book a consultation in Indiranagar.",
+   "slug": "dental-implant-cost-in-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (944 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  944 words
+PASS  keyword "dental implant cost in bangalore" in title, h1, opening, description, a subheading and address
+PASS  keyword used naturally (0.5% of words)
+PASS  title fits Google results (57)
+PASS  description fits Google results (150)
+PASS  sentences are easy to read (average 13 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m$ [0mls -la /tmp/tmp.LXiKYszIK1/run/mangoman-seo-article/dental-implants/article/
+total 668
+drwxr-xr-x 2 runner runner   4096 Oct  8 06:49 .
+drwxr-xr-x 3 runner runner   4096 Oct  8 06:49 ..
+-rw-r--r-- 1 runner runner  12243 Oct  8 06:55 article.html
+-rw-r--r-- 1 runner runner   7004 Oct  8 06:55 article.md
+-rw-r--r-- 1 runner runner 648481 Oct  8 06:55 preview.png
+-rw-r--r-- 1 runner runner    789 Oct  8 06:55 seo.md
+[0m
+[0m→ [0mRead article/article.md
+[0m→ [0mRead article/seo.md
+Done. The article is built and all checks pass.
+
+**Summary:**
+- **944 words** (target ~900)
+- **Keyword** "dental implant cost in bangalore" in title, H1, opening, description, subheading, and URL
+- **All numbers** from your facts or cited sources [1]-[4]
+- **3 internal links**: `/implants`, `/team`, `/book`
+- **Title**: 57 chars, **Description**: 150 chars
+- **FAQ**: 5 questions with short answers
+
+**Files created in `article/`:**
+- `article.md` — ready to paste into WordPress/Shopify/Webflow
+- `seo.md` — title, description, slug for your SEO plugin
+- `article.html` — full page with Article + FAQ schema
+- `preview.png` — visual preview
+
+**Spec saved at:** `article.json`

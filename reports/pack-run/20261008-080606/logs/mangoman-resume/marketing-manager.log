@@ -1,0 +1,75 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead job_description.md
+[0m→ [0mRead candidate.md
+[0m→ [0mSkill "mangoman-resume"
+[0m
+[0m← [0mWrite resume.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/build.py /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json --template classic --out /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume
+built /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.html, /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.pdf, /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/check.py /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.pdf --pages 1
+FAIL  2 pages, target 1: tighten wording, drop the oldest or weakest bullets, or reduce the summary
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  85% of bullets show a measurable result
+PASS  dates use one format
+[0m
+[0m← [0mEdit resume.json
+Index: /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json
+===================================================================
+--- /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json
++++ /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json
+@@ -8,9 +8,9 @@
+   "links": [
+     {"label": "linkedin.com/in/farahshaikh", "url": "https://linkedin.com/in/farahshaikh"}
+   ]
+ },
+-"summary": "Performance marketing leader with 8 years in D2C and e-commerce. At Glowroot Naturals, manage ₹1.1 crore monthly budget across Meta and Google, cut blended CAC 30% (₹740 to ₹520), lifted Meta ROAS from 2.1 to 3.4, and grew repeat purchase rate from 18% to 27%. Lead a team of 6 and oversee marketplace expansion to Nykaa and Myntra (30% of revenue).",
++"summary": "Performance marketing leader with 8 years in D2C. At Glowroot, manage ₹1.1 crore monthly budget, cut CAC 30% (₹740 to ₹520), lifted Meta ROAS 2.1 to 3.4, grew repeat rate 18% to 27%. Lead team of 6; marketplace expansion to Nykaa/Myntra (30% revenue).",
+ "experience": [
+   {
+     "role": "Growth Marketing Lead",
+     "company": "Glowroot Naturals",
+
+[0m
+[0m← [0mEdit resume.json
+Index: /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json
+===================================================================
+--- /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json
++++ /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json
+@@ -46,10 +46,9 @@
+     "location": "Mumbai",
+     "start": "Aug 2016",
+     "end": "May 2019",
+     "bullets": [
+-      "Managed Facebook and Google Ads campaigns for 12 clients across retail and real estate verticals.",
+-      "Wrote high-converting ad copy and produced monthly performance reports for client reviews.",
++      "Managed Facebook and Google Ads for 12 retail and real estate clients; wrote ad copy and delivered monthly reports.",
+       "Awarded agency's \"Rising Star\" award in 2018 for consistent campaign delivery."
+     ]
+   }
+ ],
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/build.py /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json --template classic --out /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume
+built /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.html, /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.pdf, /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/check.py /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.json /tmp/tmp.LXiKYszIK1/run/mangoman-resume/marketing-manager/resume.pdf --pages 1
+FAIL  2 pages, target 1: tighten wording, drop the oldest or weakest bullets, or reduce the summary
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  92% of bullets show a measurable result
+PASS  dates use one format
+[0m

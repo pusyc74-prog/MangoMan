@@ -1,0 +1,230 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/nemotron-3-ultra-550b). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/nemotron-3-ultra-550b
+[0m
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m→ [0mRead competitors.md
+[0m→ [0mRead current_listing.md
+[0m→ [0mSkill "mangoman-ecommerce-listing"
+[0m
+[0m← [0mWrite listing.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json --out /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing
+spec problems:
+- image 1: file not found: main.jpg
+- image 2: file not found: insulation.jpg
+- image 3: file not found: cap-seal.jpg
+- image 4: file not found: sweat-proof.jpg
+- image 5: file not found: cup-holder.jpg
+- image 6: file not found: office.jpg
+- image 7: file not found: gym.jpg
+- image 8: file not found: in-box.jpg
+[0m
+[0m$ [0mls -la /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing/
+ls: cannot access '/tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing/': No such file or directory
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
+===================================================================
+--- /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
++++ /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
+@@ -70,51 +70,43 @@
+   "images": [
+     {
+       "slot": "main",
+       "brief": "Thermak 1L steel bottle standing upright on pure white background, label facing camera, filling ~85% of frame",
+-      "alt": "Thermak 1 Litre vacuum insulated steel water bottle on white background",
+-      "file": "main.jpg"
++      "alt": "Thermak 1 Litre vacuum insulated steel water bottle on white background"
+     },
+     {
+       "slot": "feature_1",
+       "brief": "Cutaway or exploded view showing double-wall vacuum insulation layer",
+-      "alt": "Double-wall vacuum insulation technology in Thermak bottle",
+-      "file": "insulation.jpg"
++      "alt": "Double-wall vacuum insulation technology in Thermak bottle"
+     },
+     {
+       "slot": "feature_2",
+       "brief": "Close-up of screw cap with visible silicone seal, showing leak-proof design",
+-      "alt": "Leak-proof screw cap with silicone seal on Thermak bottle",
+-      "file": "cap-seal.jpg"
++      "alt": "Leak-proof screw cap with silicone seal on Thermak bottle"
+     },
+     {
+       "slot": "feature_3",
+       "brief": "Bottle with ice water, dry exterior, on desk — demonstrating sweat-proof powder coat",
+-      "alt": "Sweat-proof powder coated Thermak bottle with cold water",
+-      "file": "sweat-proof.jpg"
++      "alt": "Sweat-proof powder coated Thermak bottle with cold water"
+     },
+     {
+       "slot": "feature_4",
+       "brief": "Bottle placed in car cup holder, showing 7.5 cm base fit",
+-      "alt": "Thermak 1L bottle fitting in car cup holder",
+-      "file": "cup-holder.jpg"
++      "alt": "Thermak 1L bottle fitting in car cup holder"
+     },
+     {
+       "slot": "lifestyle_1",
+       "brief": "Office desk scene: bottle next to laptop and notebook",
+-      "alt": "Thermak steel water bottle on office desk",
+-      "file": "office.jpg"
++      "alt": "Thermak steel water bottle on office desk"
+     },
+     {
+       "slot": "lifestyle_2",
+       "brief": "Gym bag open with bottle visible, towel and shoes",
+-      "alt": "Thermak bottle in gym bag",
+-      "file": "gym.jpg"
++      "alt": "Thermak bottle in gym bag"
+     },
+     {
+       "slot": "in_box",
+       "brief": "Bottle only on white background — what's in the box",
+-      "alt": "Thermak 1L steel bottle - package contents",
+-      "file": "in-box.jpg"
++      "alt": "Thermak 1L steel bottle - package contents"
+     }
+   ]
+ }
+\ No newline at end of file
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json --out /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing
+built /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing: listing.md, image-plan.md, amazon.csv, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing
+PASS  spec is valid
+FAIL  Amazon title: item name is 108 characters (limit 75); highlights are 127 characters (limit 125); title is 237 characters (limit 200); words used more than twice in the title: hrs, steel
+PASS  Amazon bullets within limits
+PASS  Amazon description 922 characters (limit 2,000)
+PASS  search terms 166 of 249 bytes
+WARN  search terms: words already in the title (304, cold, cup, holder, hot, insulated); use the space for other terms
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+PASS  every primary keyword is in a title or bullet
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m→ [0mRead listing.json
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
+===================================================================
+--- /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
++++ /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
+@@ -34,10 +34,10 @@
+ },
+ "competitors": ["Competitor A", "Competitor B"],
+ "marketplaces": ["amazon_in"],
+ "amazon": {
+-  "item_name": "Thermak Vacuum Insulated Steel Water Bottle 1 Litre, Hot 12 Hrs Cold 24 Hrs, Leak Proof, 304 Stainless Steel",
+-  "highlights": "Double-Wall Vacuum Insulation, Keeps Hot 12 Hrs Cold 24 Hrs, Leak-Proof Silicone Seal, 304 Stainless Steel, Fits Car Cup Holder",
++  "item_name": "Thermak Vacuum Insulated Steel Bottle 1L, Hot 12h Cold 24h, Leak Proof",
++  "highlights": "Double-Wall Vacuum Insulation, Keeps Hot 12h Cold 24h, Leak-Proof Seal, 304 SS, Fits Car Cup Holder",
+   "bullets": [
+     "DOUBLE-WALL VACUUM INSULATION: Keeps drinks hot for up to 12 hours and cold for up to 24 hours (tested at 25°C room temperature) — ideal for office, gym, travel and trekking",
+     "LEAK-PROOF DESIGN: Screw cap with food-grade silicone seal prevents spills in bags; BPA-free cap ensures no plastic touches your water",
+     "PREMIUM 304 STAINLESS STEEL: Food-grade 304 stainless steel inside and out — rust-resistant, durable and safe for daily use",
+
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
+===================================================================
+--- /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
++++ /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
+@@ -44,9 +44,9 @@
+   "SWEAT-PROOF POWDER COATING: Exterior powder coat eliminates condensation, keeping hands and bags dry; fits most car cup holders (7.5 cm base)",
+   "LIGHTWEIGHT & VERSATILE: Weighs only 420 g; available in Black, Sage Green and White; 1-year warranty against manufacturing defects"
+ ],
+ "description": "The Thermak 1 Litre Vacuum Insulated Steel Water Bottle is built for people who need their drinks at the right temperature all day. Its double-wall vacuum insulation keeps beverages hot for up to 12 hours and cold for up to 24 hours — tested at 25°C room temperature. The leak-proof screw cap uses a food-grade silicone seal so you can toss it in a bag without worry. Made from food-grade 304 stainless steel inside and out, the bottle is rust-resistant and BPA-free — no plastic touches your water. The powder-coated exterior prevents sweating, and the 7.5 cm base fits most car cup holders. At 420 g, it's light enough for school, office, gym or trekking. Available in Black, Sage Green and White. Hand wash only; not dishwasher safe; do not freeze. Backed by a 1-year warranty against manufacturing defects. Manufactured in India by Thermak Home Products LLP, Rajkot. Customer care: support@thermak.in, +91 81234 56789.",
+-"search_terms": "vacuum flask thermos insulated hot cold leakproof bpa-free sweatproof powder-coated cup-holder office gym school travel trekking 304 stainless steel 1000ml 1l 1000 ml",
++"search_terms": "vacuum flask thermos leakproof bpa-free sweatproof powder-coated office gym school travel trekking stainless 1000ml 1l 1000 ml",
+ "aplus": [
+   {
+     "module": "image and text",
+     "headline": "Keeps Temperature for Hours",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json --out /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing
+built /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing: listing.md, image-plan.md, amazon.csv, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing
+PASS  spec is valid
+PASS  Amazon title follows the title rules (171 characters)
+PASS  Amazon bullets within limits
+PASS  Amazon description 922 characters (limit 2,000)
+PASS  search terms 126 of 249 bytes
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+WARN  primary keywords not in any title or bullet: steel water bottle 1 litre
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m→ [0mRead listing.json
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
+===================================================================
+--- /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
++++ /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json
+@@ -37,9 +37,9 @@
+ "amazon": {
+   "item_name": "Thermak Vacuum Insulated Steel Bottle 1L, Hot 12h Cold 24h, Leak Proof",
+   "highlights": "Double-Wall Vacuum Insulation, Keeps Hot 12h Cold 24h, Leak-Proof Seal, 304 SS, Fits Car Cup Holder",
+   "bullets": [
+-    "DOUBLE-WALL VACUUM INSULATION: Keeps drinks hot for up to 12 hours and cold for up to 24 hours (tested at 25°C room temperature) — ideal for office, gym, travel and trekking",
++    "DOUBLE-WALL VACUUM INSULATION: This steel water bottle 1 litre keeps drinks hot for up to 12 hours and cold for up to 24 hours (tested at 25°C room temperature) — ideal for office, gym, travel and trekking",
+     "LEAK-PROOF DESIGN: Screw cap with food-grade silicone seal prevents spills in bags; BPA-free cap ensures no plastic touches your water",
+     "PREMIUM 304 STAINLESS STEEL: Food-grade 304 stainless steel inside and out — rust-resistant, durable and safe for daily use",
+     "SWEAT-PROOF POWDER COATING: Exterior powder coat eliminates condensation, keeping hands and bags dry; fits most car cup holders (7.5 cm base)",
+     "LIGHTWEIGHT & VERSATILE: Weighs only 420 g; available in Black, Sage Green and White; 1-year warranty against manufacturing defects"
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json --out /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing
+built /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing: listing.md, image-plan.md, amazon.csv, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing.json /tmp/tmp.LXiKYszIK1/run/mangoman-ecommerce-listing/steel-bottle/listing
+PASS  spec is valid
+PASS  Amazon title follows the title rules (171 characters)
+PASS  Amazon bullets within limits
+PASS  Amazon description 922 characters (limit 2,000)
+PASS  search terms 126 of 249 bytes
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+PASS  every primary keyword is in a title or bullet
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m→ [0mRead listing/listing.md
+[0m→ [0mRead listing/amazon.csv
+[0m→ [0mRead listing/image-plan.md
+Done. The optimized Amazon India listing is built in `steel-bottle/listing/` with all checks passing:
+
+**Files created:**
+- `listing.md` — ready-to-paste copy with character counts and limits
+- `amazon.csv` — bulk upload format for Amazon Seller Central
+- `image-plan.md` — 8-shot plan with alt text and Amazon rules
+- `preview.png` — phone-width preview of the listing
+
+**Key optimizations:**
+- **Title (70/75 chars):** `Thermak Vacuum Insulated Steel Bottle 1L, Hot 12h Cold 24h, Leak Proof` — primary keyword "steel water bottle 1 litre" in bullet 1
+- **Highlights (99/125 chars):** Double-wall vacuum, 12h hot/24h cold, leak-proof seal, 304 SS, fits car cup holder
+- **5 bullets** (131-205 chars each): insulation, leak-proof, 304 stainless, sweat-proof, lightweight/warranty
+- **Backend search terms (126/249 bytes):** vacuum flask, thermos, leakproof, bpa-free, sweatproof, office/gym/school/travel/trekking, 1000ml/1l
+- **A+ content:** 3 modules for temperature, leak-proof/BPA-free, sweat-proof
+- **Indian disclosures:** MRP, manufacturer, country of origin, customer care all present
+
+**Check result:** PASS — Amazon title/bullets/search-term limits, no banned characters/repeats, no unproven claims, every number from facts, Indian disclosures present, primary keywords covered.
