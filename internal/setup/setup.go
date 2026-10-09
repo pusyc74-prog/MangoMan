@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -40,6 +41,11 @@ func ConnectKey(ctx context.Context, cat *catalogue.Catalogue, store keys.Store,
 		vctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 		defer cancel()
 		if err := validate(vctx, p, key); err != nil {
+			var ue *url.Error
+			if errors.As(err, &ue) {
+				// The request never got an answer: not the key's fault.
+				return p, fmt.Errorf("could not reach %s to check the key; check the internet connection and try again", p.Name)
+			}
 			return p, err
 		}
 	}

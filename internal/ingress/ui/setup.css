@@ -1,0 +1,58 @@
+/* The setup page: three steps in one column; colours and buttons come from app.css. */
+.setup { max-width: 680px; margin: 0 auto; padding-top: 24px; }
+.warned { background: var(--leaf-wash); border-radius: 8px; padding: 10px 14px; margin: 0 0 16px; font-size: 14px; }
+
+.step { background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+.step-head { display: flex; align-items: center; gap: 12px; }
+.step-head h2 { flex: 1; }
+.step .num {
+  width: 28px; height: 28px; border-radius: 50%; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--leaf-wash); color: var(--leaf); font-weight: 650;
+}
+.step.is-now .num { background: var(--leaf); color: var(--leaf-ink); }
+.step.is-later { opacity: 0.55; }
+.step-body { margin-top: 12px; }
+.step.is-done .step-body, .step.is-later .step-body { display: none; }
+.tick { color: var(--good); font-weight: 600; font-size: 14px; }
+
+.guide { list-style: none; margin: 16px 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.guide li { display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+.guide svg { width: 100%; height: auto; max-width: 180px; }
+.guide .frame { fill: var(--page); stroke: var(--axis); }
+.guide .bar, .guide .menu { fill: var(--hair); }
+.guide .field { fill: var(--surface); stroke: var(--axis); }
+.guide .btn, .guide .pick { fill: var(--leaf); }
+.guide .line { fill: var(--axis); }
+.guide .mono { font: 9px ui-monospace, monospace; fill: var(--ink-2); }
+
+.keyform label { display: block; font-weight: 600; margin-bottom: 6px; }
+.keyform .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.keyform input {
+  flex: 1; min-width: 0; font: 14px ui-monospace, monospace; color: var(--ink);
+  background: var(--page); border: 1px solid var(--axis); border-radius: 6px; padding: 7px 10px;
+}
+.keyform .msg { margin-top: 8px; }
+.fine { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+
+.sizes { border-collapse: collapse; width: 100%; margin: 12px 0 4px; font-size: 14px; }
+.sizes td { padding: 6px 0; border-top: 1px solid var(--hair); vertical-align: top; }
+.sizes td.r { text-align: right; white-space: nowrap; padding-left: 16px; font-variant-numeric: tabular-nums; }
+.sizes .note { display: block; color: var(--muted); font-size: 13px; }
+.sizes tr.total td { font-weight: 650; }
+
+.progress p { margin: 8px 0 6px; }
+.progress .bar { height: 8px; border-radius: 4px; background: var(--hair); overflow: hidden; }
+.progress .bar span { display: block; height: 100%; width: 0; background: var(--leaf); transition: width 0.3s; }
+.progress .bar.busy span { width: 30%; animation: slide 1.4s ease-in-out infinite; }
+@keyframes slide { from { margin-left: -30%; } to { margin-left: 100%; } }
+@media (prefers-reduced-motion: reduce) { .progress .bar.busy span { animation: none; width: 100%; opacity: 0.5; } }
+
+.starts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.as-btn { text-decoration: none; display: inline-block; }
+
+@media (max-width: 560px) {
+  .guide { grid-template-columns: 1fr; }
+  .guide li { flex-direction: row; align-items: flex-start; }
+  .guide svg { width: 96px; flex: none; }
+}

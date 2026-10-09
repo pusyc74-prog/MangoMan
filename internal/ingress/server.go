@@ -20,6 +20,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/classify"
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
+	"github.com/pusyc74-prog/mangoman/internal/pyenv"
 	"github.com/pusyc74-prog/mangoman/internal/radar"
 	"github.com/pusyc74-prog/mangoman/internal/router"
 	"github.com/pusyc74-prog/mangoman/internal/setup"
@@ -46,7 +47,11 @@ type Server struct {
 	// Brain is the decision brain (also set on the router); nil = none.
 	Brain *brain.Brain
 
-	code codeState // the attached coding workspace, if any
+	// GetReady installs what MangoMan needs (default: setup.Ready).
+	GetReady func(home string, step pyenv.Step) error
+
+	code  codeState  // the attached coding workspace, if any
+	ready readyState // the setup page's Get ready step
 }
 
 // Handler returns the HTTP handler with all checks applied.

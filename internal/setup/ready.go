@@ -2,6 +2,7 @@ package setup
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/pusyc74-prog/mangoman/internal/opencode"
 	"github.com/pusyc74-prog/mangoman/internal/pyenv"
@@ -26,12 +27,28 @@ func needsOpenCode(home string) bool {
 	return err != nil || opencode.Outdated(home)
 }
 
+// openCodeSize asks GitHub for the OpenCode download's size once per run
+// (again only if it could not be found out).
+var openCodeSize = struct {
+	sync.Mutex
+	n int64
+}{}
+
+func openCodeBytes() int64 {
+	openCodeSize.Lock()
+	defer openCodeSize.Unlock()
+	if openCodeSize.n == 0 {
+		openCodeSize.n = opencode.Size()
+	}
+	return openCodeSize.n
+}
+
 // ReadyParts lists what Ready would download on this computer; empty when
 // everything is in place. The sizes are shown before anything is downloaded.
 func ReadyParts(home string) []Part {
 	var out []Part
 	if needsOpenCode(home) {
-		out = append(out, Part{Name: "Coding helper (OpenCode)", Bytes: opencode.Size()})
+		out = append(out, Part{Name: "Coding helper (OpenCode)", Bytes: openCodeBytes()})
 	}
 	if !pyenv.Installed(home) {
 		s, _ := pyenv.SizesHere()

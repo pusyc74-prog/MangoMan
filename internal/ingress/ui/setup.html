@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set up MangoMan</title>
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="setup.css">
+<script src="setup.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"></span>
+    <h1>MangoMan</h1>
+  </div>
+  <p class="runline">Free AI on your computer. Three steps, about five minutes.</p>
+</header>
+
+<main class="setup" id="app" hidden>
+  <p class="warned" id="warned" hidden></p>
+
+  <section class="step" id="s1" aria-labelledby="h1-key">
+    <div class="step-head"><span class="num" aria-hidden="true">1</span><h2 id="h1-key">Connect NVIDIA's free AI</h2><span class="tick" id="t1" hidden>Done</span></div>
+    <div class="step-body" id="b1">
+      <p class="sub">NVIDIA gives free AI models to anyone with a free account. No card needed. Get a key, then paste it here.</p>
+      <ol class="guide">
+        <li>
+          <svg viewBox="0 0 120 72" aria-hidden="true"><rect class="frame" x="2" y="2" width="116" height="68" rx="6"/><rect class="bar" x="2" y="2" width="116" height="12" rx="6"/><rect class="field" x="30" y="26" width="60" height="9" rx="2"/><rect class="btn" x="40" y="44" width="40" height="11" rx="3"/></svg>
+          <span>Open <a class="link" href="https://build.nvidia.com/" target="_blank" rel="noopener noreferrer">build.nvidia.com</a> and sign in, or make a free account.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 120 72" aria-hidden="true"><rect class="frame" x="2" y="2" width="116" height="68" rx="6"/><circle class="btn" cx="104" cy="12" r="6"/><rect class="menu" x="62" y="22" width="52" height="40" rx="3"/><rect class="line" x="68" y="30" width="36" height="5" rx="1"/><rect class="pick" x="68" y="42" width="40" height="7" rx="1"/></svg>
+          <span>Click your profile at the top right, then <b>Settings</b>, then <b>API keys</b>.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 120 72" aria-hidden="true"><rect class="frame" x="2" y="2" width="116" height="68" rx="6"/><rect class="field" x="12" y="28" width="70" height="14" rx="3"/><text class="mono" x="17" y="38">nvapi-…</text><rect class="btn" x="86" y="28" width="24" height="14" rx="3"/></svg>
+          <span>Create a key and copy it. It starts with <code>nvapi-</code> and is shown only once.</span>
+        </li>
+      </ol>
+      <form class="keyform" id="keyform">
+        <label for="key">Your NVIDIA key</label>
+        <div class="row">
+          <input id="key" type="password" autocomplete="off" spellcheck="false" placeholder="nvapi-..." required>
+          <button type="submit" class="primary" id="keysave">Check and save</button>
+        </div>
+        <p class="msg" id="keymsg" role="status"></p>
+        <p class="fine">The key is checked with NVIDIA and stays on this computer. MangoMan never sees what you ask the AI.</p>
+      </form>
+    </div>
+  </section>
+
+  <section class="step" id="s2" aria-labelledby="h2-ready">
+    <div class="step-head"><span class="num" aria-hidden="true">2</span><h2 id="h2-ready">Get ready</h2><span class="tick" id="t2" hidden>Done</span></div>
+    <div class="step-body" id="b2">
+      <p class="sub">MangoMan downloads its coding helper and its own Python, so you never install them yourself. Here is what it downloads first:</p>
+      <table class="sizes" id="sizes"><tbody></tbody></table>
+      <p class="fine" id="data-note">On mobile data, this uses about that much of your data. Wi-Fi is better if you have it.</p>
+      <p><button type="button" class="primary" id="go">Get ready</button></p>
+      <div class="progress" id="progress" hidden>
+        <p id="pstep" role="status"></p>
+        <div class="bar" id="pbar-wrap"><span id="pbar"></span></div>
+      </div>
+      <p class="msg err" id="readymsg" role="alert"></p>
+    </div>
+  </section>
+
+  <section class="step" id="s3" aria-labelledby="h3-done">
+    <div class="step-head"><span class="num" aria-hidden="true">3</span><h2 id="h3-done">Start</h2></div>
+    <div class="step-body" id="b3">
+      <p class="sub">All set. Pick where to begin. You can always come back: double-click MangoMan again.</p>
+      <div class="starts">
+        <a class="primary as-btn" href="/ui/" id="to-dash">Open the dashboard</a>
+        <button type="button" class="ghost" id="to-code">Open the coding screen</button>
+      </div>
+      <p class="msg" id="codemsg" role="status"></p>
+    </div>
+  </section>
+</main>
+
+<section class="gate" id="gate" hidden>
+  <h2>Open MangoMan by double-clicking it</h2>
+  <p>This page needs MangoMan's local key, which comes with the link MangoMan opens. Double-click MangoMan again, or run <code>mangoman</code> in a terminal.</p>
+</section>
+</body>
+</html>

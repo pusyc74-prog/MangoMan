@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -114,5 +115,11 @@ func TestConnectKeyErrors(t *testing.T) {
 	}
 	if _, err := ConnectKey(context.Background(), cat, mem{}, nil, "groq", "", "  "); err == nil {
 		t.Fatal("empty key accepted")
+	}
+	offline := func(context.Context, catalogue.Provider, string) error {
+		return &url.Error{Op: "Get", URL: "https://integrate.api.nvidia.com/v1/models", Err: errors.New("Forbidden")}
+	}
+	if _, err := ConnectKey(context.Background(), cat, mem{}, offline, "nvidia", "", "k"); err == nil || !strings.Contains(err.Error(), "internet connection") {
+		t.Fatalf("no network should say so plainly: %v", err)
 	}
 }

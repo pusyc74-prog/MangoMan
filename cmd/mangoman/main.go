@@ -382,9 +382,11 @@ func serve(port int, opened func(connected int)) error {
 	}()
 
 	logger.Printf("listening on http://%s/v1  (%d cloud providers connected, catalogue %s)", srv.Addr(), connected, cat.Version)
-	logger.Printf("dashboard: run `mangoman dashboard` in another terminal")
-	if connected == 0 {
-		logger.Printf("no provider keys yet: run `mangoman keys add groq`")
+	if opened == nil { // opened in the browser already: the hints would only confuse
+		logger.Printf("dashboard: run `mangoman dashboard` in another terminal")
+		if connected == 0 {
+			logger.Printf("no provider keys yet: run `mangoman keys add groq`")
+		}
 	}
 	errc := make(chan error, 1)
 	go func() { errc <- hs.Serve(ln) }()

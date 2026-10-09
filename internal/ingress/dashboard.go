@@ -117,6 +117,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /mangoman/now", s.auth(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, s.Router.Outlook()) })))
 	mux.Handle("POST /mangoman/weaker", s.auth(http.HandlerFunc(s.setWeaker)))
 	s.myListRoutes(mux)
+	s.readyRoutes(mux)
 	s.brainRoutes(mux)
 	s.agentRoutes(mux)
 	s.guardianRoutes(mux)
