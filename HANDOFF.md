@@ -48,7 +48,7 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 | Phase 1 (M1 to M4) | Built: router, dashboard, 17 skill packs, agent kit and marketplace (closed), Guardian, QA agent, team keys, people tokens. |
 | M5 (app for everyone) | **Parked** by the owner (7 Oct): teachers and first-time users cannot bring their own keys. Do not start it. |
 | M6 (coding screen, `mangoman code --ui`) | **Complete** (8 Oct). Passed a real-model check: 7 of 7 in 133 s. |
-| Real-model quality | Last three free/coder runs, one case per pack: 20261008-152455 passed **5 of 7** (listing and website copy scored 0), 20261008-161447 passed **7 of 7**, 20261009-065414 (after 3a) passed **7 of 7**. Best: SEO 99.7, social 100, website copy 100. |
+| Real-model quality | free/coder, one case per pack, installed the user's way since 9 Oct: 20261009-165742 passed **6 of 7** (website copy 0: answers cut at the old 180 s stall limit), 20261009-174404 (stall limit 300 s) passed **7 of 7**, average 90.6 (ad copy 90.7, listing 85, email 95, resume 86.7, SEO 96.5, social 86.4, website copy 94). Website copy alone: 2 failures in 6 runs from invalid site.json; the JSON error helper (3ef2091) is being measured with 3 runs. |
 | Easy setup (3b) | **Built and pushed (9 Oct).** Double-click opens a setup page; `mangoman ready` in a terminal. Windows check (`windows-check.yml`, stand-in model) passed: OpenCode ran pack commands in Windows PowerShell and all 19 pack samples passed with MangoMan's own Python and the computer's own browser. Waiting: the owner's own try on Windows. |
 | Release | **None yet.** The owner can try it from a CI build (section 12). |
 | Repo | **Public, by the owner's choice (9 Oct: "keep it public for now").** Do not ask again until they raise it. CI is already cut down for private minutes. |
@@ -177,6 +177,7 @@ while a run goes. The owner asked whether quality and "0 bugs" still hold
 | Fact | Source |
 |---|---|
 | Time to first word on NVIDIA: median 1.1 s, 90% 2.4 s, 99% 10.9 s, max 35.1 s (345 answers) | pack run 20261008-152455 |
+| Longest pause inside an answer, after its first word (run 20261009-174404, 117 answers): Kimi K3 117.9 s (SEO), Nemotron 3.5 Lightning 91.4 s (ad copy), Nemotron Ultra 84.1 s (email), Nemotron Super 34.0 s; none over 120 s. Nemotron Ultra writing website copy's whole site.json: about 171 s (065414) and over 180 s twice (165742): the reason for the 300 s stall limit | pack runs 20261009-174404, 065414, 165742 (serve.log "longest pause" since 20c2269) |
 | With the 30 s limit: 366 answers, max 6.3 s, median 0.8 s; 7 of 7 tasks passed | pack run 20261008-161447 |
 | NVIDIA "Service temporarily overloaded" about 1 request in 5 at busy times; 429s while MangoMan sent at most 9 a minute (published limit 40): load throttling, not a daily cap | runs 20261008-080606 and earlier |
 | No NVIDIA daily cap found yet | not measured end to end |
