@@ -50,7 +50,7 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 | M6 (coding screen, `mangoman code --ui`) | **Complete** (8 Oct). Passed a real-model check: 7 of 7 in 133 s. |
 | Real-model quality | Last two free/coder runs, one case per pack: **7 of 7 passed** both times. Best: email 100, website copy 100, SEO 97.3. |
 | Release | **None yet.** The owner can try it from a CI build (section 12). |
-| Repo | **Still public.** The owner must switch it to private on GitHub (section 6). CI is already cut down for private minutes. |
+| Repo | **Public, by the owner's choice (9 Oct: "keep it public for now").** Do not ask again until they raise it. CI is already cut down for private minutes. |
 | CI | Green on the last commit. No open issues. |
 | Next build | Agreed by the owner: (1) consolidate the router's failure handling, (2) easy setup (section 3). |
 
@@ -120,7 +120,7 @@ mobile data.
 `other-systems` job in `ci.yml` runs on Sundays and on manual runs; a session
 cannot start it: see section 7, consider adding a `repository_dispatch` type
 for it); the offline stand-in model (section 8); a real pack run; and ask the
-owner to try it on their own computer (they have not said Windows or Mac yet).
+owner to try it on their own computer (**Windows**, answered 9 Oct).
 
 ---
 
@@ -145,6 +145,8 @@ owner to try it on their own computer (they have not said Windows or Mac yet).
 | M5 parked; Claude Code or Codex alongside OpenCode: later | Owner. |
 | Expo Go for phone previews | Owner. |
 | Release only after the repo is private, from a separate public repo with only the built app | Owner: the code must not be public. |
+| Repo stays public for now (9 Oct) | Owner. Free Actions minutes; no self-hosted runner while public. |
+| The owner tests on Windows (9 Oct) | Windows is the first system the easy setup must work on. |
 
 **Discussed but not approved (do not build without asking):** run pack test
 cases in parallel to cut a 7-pack run from about 90 to about 15 minutes; batch
@@ -174,10 +176,10 @@ while a run goes. The owner asked whether quality and "0 bugs" still hold
 ## 6. The repo, CI and money
 
 - **Repo:** github.com/pusyc74-prog/MangoMan, branch `main`. **Still public**
-  at the end of 8 Oct. The owner asked for it to go private once the build is
-  done; **a session cannot change repository settings** (the proxy refuses
-  them). The owner switches it: Settings, General, Danger Zone, Change
-  visibility, Private. Remind them.
+  On 9 Oct the owner chose to **keep it public for now**; do not remind them.
+  When they decide to switch: **a session cannot change repository settings**
+  (the proxy refuses them); the owner does it in Settings, General, Danger
+  Zone, Change visibility, Private.
 - **Why it was public:** on 7 Oct the private repo's free Actions minutes ran
   out and every job was refused. Public repos run free. **Before anything
   that uses limited resources (minutes, credits), say the cost first.**
@@ -380,8 +382,8 @@ Touch files in the control dir to change the next coding request:
 
 | Item | Status |
 |---|---|
-| **Switch the repo to private** | Asked on 8 Oct; a session cannot do it. |
-| **Which computer to test on (Windows or Mac)** | Asked on 8 Oct, not answered. |
+| Switch the repo to private | **Answered 9 Oct: keep it public for now.** Release still waits for a private repo (section 4). |
+| Which computer to test on | **Answered 9 Oct: Windows.** Make the easy setup work on Windows first (the `python3.exe` shim, Chrome and Edge paths, the console window). |
 | Code signing (paid) | Not asked yet as a decision; mention with the easy setup. |
 | OPENCODE_ZEN_API_KEY, MARKETPLACE_KEY | Open. |
 | Telegram bot, a real app for Guardian, a Windows tester, first beta users | Open. |
