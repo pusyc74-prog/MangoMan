@@ -1,0 +1,43 @@
+name: pylock
+
+# Pins the skill packs' Python packages for every system and measures the
+# download size per system (scripts/lock-python.sh). A session cannot reach
+# PyPI, so this runs here and publishes requirements.txt and sizes.json to
+# the eval-reports branch under reports/pylock/; copy them into
+# internal/pyenv/. Run it by hand or by dispatch when requirements.in changes.
+
+on:
+  workflow_dispatch:
+  # POST /repos/<owner>/<repo>/dispatches with event_type pylock.
+  repository_dispatch:
+    types: [pylock]
+
+permissions:
+  contents: write # only to publish the result to the eval-reports branch
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Lock and measure
+        run: |
+          pip install -q uv==0.12.24
+          scripts/lock-python.sh out | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Publish to the eval-reports branch
+        run: |
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports
+          git worktree add ../reports origin/eval-reports
+          cd ../reports && git switch -C eval-reports
+          mkdir -p "reports/pylock/$stamp"
+          cp "$GITHUB_WORKSPACE"/out/* "reports/pylock/$stamp/"
+          git add -A
+          git commit -q -m "pylock $stamp (run ${{ github.run_id }})"
+          git push origin eval-reports

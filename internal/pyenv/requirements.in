@@ -1,0 +1,10 @@
+# What the skill packs import. scripts/lock-python.sh turns this into
+# requirements.txt (every package pinned with checksums) and sizes.json.
+pillow
+python-pptx
+python-docx
+pypdf
+openpyxl
+# Only the package: it drives the user's own Edge or Chrome (render.py),
+# so its browser download is never needed.
+playwright
