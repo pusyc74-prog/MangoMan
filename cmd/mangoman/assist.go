@@ -23,6 +23,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/mcp"
 	"github.com/pusyc74-prog/mangoman/internal/opencode"
+	"github.com/pusyc74-prog/mangoman/internal/pyenv"
 	"github.com/pusyc74-prog/mangoman/internal/skills"
 )
 
@@ -163,7 +164,7 @@ func offerOpenCode(home, why string) (string, error) {
 		return "", errors.New("opencode not installed")
 	}
 	fmt.Println("Downloading...")
-	p, err := opencode.Install(home)
+	p, err := opencode.Install(home, nil)
 	if err == nil {
 		fmt.Println("Installed.")
 	}
@@ -287,6 +288,13 @@ func cmdCode(args []string) error {
 		packs = strings.Join(names, ", ")
 	}
 	fmt.Printf("Opening OpenCode on MangoMan free models (%s). Web search %s. Skill packs: %s.\n", *model, map[bool]string{true: "off", false: "on"}[*noWeb], packs)
+	if packs != "none" {
+		// Checked before a pack task can start, so a missing Python is a plain
+		// message here instead of a failed step in the middle of a task.
+		if err := pyenv.Check(home); err != nil {
+			fmt.Println("Skill packs cannot run yet:", err)
+		}
+	}
 
 	// In a project Guardian looks after, your coding happens in a copy made
 	// from dev, never in production's code; ship it when it is ready.

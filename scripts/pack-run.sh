@@ -12,8 +12,8 @@
 # CASES to use only the first N cases of each pack (CASES=1 is a cheap smoke
 # run: one task per pack instead of three).
 #
-# Needs: provider keys in MANGOMAN_HOME, opencode on PATH, and the pack
-# dependencies (pandas, Pillow, python-pptx, python-docx, pypdf, playwright).
+# Needs: provider keys in MANGOMAN_HOME and `mangoman ready` run there (the
+# tested OpenCode and MangoMan's own Python), with that Python first in PATH.
 # Prints a Markdown table of pack, case, score, requests, tokens and seconds,
 # writes each case's output to pack-run-logs/<pack>/<case>.log and the usage so
 # far (with where the input tokens went) to <case>.usage.json, and exits 1 if

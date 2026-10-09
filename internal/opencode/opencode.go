@@ -4,15 +4,8 @@
 package opencode
 
 import (
-	"archive/tar"
-	"archive/zip"
-	"bytes"
-	"compress/gzip"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -20,6 +13,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/pusyc74-prog/mangoman/internal/download"
 )
 
 // Version is the OpenCode release MangoMan has tested. Moving it forward
@@ -103,79 +98,23 @@ func Size() int64 {
 }
 
 // Install downloads OpenCode into dir/tools and returns the program's path.
-func Install(dir string) (string, error) {
+// progress may be nil.
+func Install(dir string, progress func(done, total int64)) (string, error) {
 	name, err := asset(runtime.GOOS, runtime.GOARCH)
 	if err != nil {
 		return "", err
 	}
-	resp, err := http.Get(Releases + name)
+	data, err := download.Fetch(Releases+name, sums[name], maxSize, progress)
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("download failed: %s", resp.Status)
-	}
-	data, err := io.ReadAll(io.LimitReader(resp.Body, maxSize))
+	bin, err := download.Program(name, data, "opencode", maxSize)
 	if err != nil {
 		return "", err
 	}
-	if sum := sha256.Sum256(data); hex.EncodeToString(sum[:]) != sums[name] {
-		return "", errors.New("the download does not match the tested OpenCode release; not installing it")
-	}
-	bin, err := extract(name, data)
-	if err != nil {
+	dst := filepath.Join(dir, "tools", exeName())
+	if err := download.Save(dst, bin); err != nil {
 		return "", err
 	}
-	tools := filepath.Join(dir, "tools")
-	if err := os.MkdirAll(tools, 0o700); err != nil {
-		return "", err
-	}
-	dst := filepath.Join(tools, exeName())
-	tmp := dst + ".part"
-	if err := os.WriteFile(tmp, bin, 0o700); err != nil {
-		return "", err
-	}
-	if err := os.Rename(tmp, dst); err != nil {
-		return "", err
-	}
-	return dst, os.WriteFile(filepath.Join(tools, "opencode.version"), []byte(Version), 0o600)
-}
-
-// extract returns the OpenCode program from a downloaded archive.
-func extract(name string, data []byte) ([]byte, error) {
-	if filepath.Ext(name) == ".zip" {
-		z, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
-		if err != nil {
-			return nil, err
-		}
-		for _, f := range z.File {
-			if b := filepath.Base(f.Name); !f.FileInfo().IsDir() && (b == "opencode.exe" || b == "opencode") {
-				r, err := f.Open()
-				if err != nil {
-					return nil, err
-				}
-				defer r.Close()
-				return io.ReadAll(io.LimitReader(r, maxSize))
-			}
-		}
-		return nil, errors.New("the download has no opencode program")
-	}
-	gz, err := gzip.NewReader(bytes.NewReader(data))
-	if err != nil {
-		return nil, err
-	}
-	tr := tar.NewReader(gz)
-	for {
-		h, err := tr.Next()
-		if err == io.EOF {
-			return nil, errors.New("the download has no opencode program")
-		}
-		if err != nil {
-			return nil, err
-		}
-		if filepath.Base(h.Name) == "opencode" && h.Typeflag == tar.TypeReg {
-			return io.ReadAll(io.LimitReader(tr, maxSize))
-		}
-	}
+	return dst, os.WriteFile(filepath.Join(dir, "tools", "opencode.version"), []byte(Version), 0o600)
 }

@@ -58,7 +58,7 @@ func TestInstallThenFind(t *testing.T) {
 	if _, err := Path(dir); err == nil {
 		t.Fatal("nothing installed yet")
 	}
-	p, err := Install(dir)
+	p, err := Install(dir, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +76,7 @@ func TestInstallThenFind(t *testing.T) {
 		t.Fatal("an older recorded version should be outdated")
 	}
 	sums[name] = "bad"
-	if _, err := Install(t.TempDir()); err == nil {
+	if _, err := Install(t.TempDir(), nil); err == nil {
 		t.Fatal("a download that does not match the tested sum must be refused")
 	}
 }
@@ -93,19 +93,5 @@ func TestAssetNames(t *testing.T) {
 	}
 	if _, err := asset("freebsd", "amd64"); err == nil {
 		t.Error("freebsd has no download")
-	}
-}
-
-func TestBadDownloads(t *testing.T) {
-	if _, err := extract("x.tar.gz", []byte("not gzip")); err == nil {
-		t.Error("garbage should fail")
-	}
-	var buf bytes.Buffer
-	w := zip.NewWriter(&buf)
-	f, _ := w.Create("readme.txt")
-	f.Write([]byte("x"))
-	w.Close()
-	if _, err := extract("x.zip", buf.Bytes()); err == nil {
-		t.Error("an archive without the program should fail")
 	}
 }

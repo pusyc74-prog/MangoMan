@@ -1,10 +1,14 @@
 """Render HTML to PDF and PNG, and measure overflow, with whatever is installed.
 
-Order: Playwright (Python) with its Chromium, then a Chrome or Chromium binary
-in headless mode. Only the standard library is required to import this file.
+Order: Playwright (Python) driving the computer's own Edge, Chrome or
+Chromium (else Playwright's own Chromium, if one was downloaded), then that
+browser alone in headless mode. MangoMan's own Python has the Playwright
+package but never downloads a browser for it. Only the standard library is
+required to import this file.
 """
 import importlib.util
 import os
+import pathlib
 import shutil
 import subprocess
 import sys
@@ -18,12 +22,13 @@ MAC_PATHS = [
 WIN_PATHS = [
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
     r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
     r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
 ]
 
-INSTALL_HINT = ("No browser engine found to render PDF. Install one of: "
-                "`pip install playwright && python -m playwright install chromium`, "
-                "or Google Chrome / Chromium.")
+INSTALL_HINT = ("No browser found to make the PDF. Install Microsoft Edge or Google Chrome "
+                "(both free), then try again.")
 
 
 def _playwright():
@@ -41,6 +46,18 @@ def _chrome():
     return None
 
 
+def _launch(p):
+    """Start a headless browser for Playwright: the computer's own, else
+    Playwright's own Chromium."""
+    exe = _chrome()
+    if exe:
+        return p.chromium.launch(executable_path=exe)
+    try:
+        return p.chromium.launch()
+    except Exception as e:  # no browser at all: say what to do, not Playwright's install steps
+        raise RuntimeError(INSTALL_HINT) from e
+
+
 def engine():
     """Name of the engine that will be used, or None."""
     if _playwright():
@@ -51,7 +68,8 @@ def engine():
 
 
 def _url(path):
-    return "file://" + os.path.abspath(path)
+    # as_uri gives file:///C:/... on Windows, where "file://" + path does not.
+    return pathlib.Path(os.path.abspath(path)).as_uri()
 
 
 # Some fonts (Inter is the common one) put their alternate digits and dashes
@@ -101,7 +119,7 @@ def _print(html_path, pdf_path):
     if _playwright():
         from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
-            b = p.chromium.launch()
+            b = _launch(p)
             page = b.new_page()
             page.goto(_url(html_path), wait_until="networkidle")
             page.emulate_media(media="print")
@@ -122,7 +140,7 @@ def screenshot(html_path, png_path, width=1280, height=900, full_page=True, dark
     if _playwright():
         from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
-            b = p.chromium.launch()
+            b = _launch(p)
             page = b.new_page(viewport={"width": width, "height": height},
                               color_scheme="dark" if dark else "light")
             page.goto(_url(html_path), wait_until="networkidle")
@@ -154,7 +172,7 @@ def render_frames(jobs):
         from playwright.sync_api import sync_playwright
         out = []
         with sync_playwright() as p:
-            b = p.chromium.launch()
+            b = _launch(p)
             for html_path, png_path, w, h in jobs:
                 page = b.new_page(viewport={"width": w, "height": h})
                 page.goto(_url(html_path), wait_until="networkidle")
@@ -182,7 +200,7 @@ def inspect(html_path, js, widths=(390, 768, 1440), height=844, shots=None):
     from playwright.sync_api import sync_playwright
     out = {}
     with sync_playwright() as p:
-        b = p.chromium.launch()
+        b = _launch(p)
         for w in widths:
             page = b.new_page(viewport={"width": w, "height": height})
             page.goto(_url(html_path), wait_until="networkidle")
@@ -222,7 +240,7 @@ def overflow(html_path, selector, width=1280, height=720):
         return None
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
-        b = p.chromium.launch()
+        b = _launch(p)
         page = b.new_page(viewport={"width": width, "height": height})
         page.goto(_url(html_path), wait_until="networkidle")
         res = page.evaluate(OVERFLOW_JS, selector)

@@ -57,7 +57,7 @@ jobs:
           bin/mangoman init > /dev/null
           # Its own port: on the self-hosted runner the owner's MangoMan has 4141.
           python3 -c "import json,os;p=os.environ['MANGOMAN_HOME']+'/config.json';c=json.load(open(p));c['port']=4199;json.dump(c,open(p,'w'))"
-          scripts/install-opencode.sh
+          go run ./cmd/mangoman ready --yes
       - name: Open the coding screen and do one task
         run: |
           bin/mangoman serve > "$RUNNER_TEMP/serve.log" 2>&1 &

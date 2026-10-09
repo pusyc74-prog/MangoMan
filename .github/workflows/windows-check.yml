@@ -1,0 +1,113 @@
+name: windows-check
+
+# MangoMan on Windows the way a user meets it, with the stand-in model
+# (scripts/fake-model.py): no AI and no keys. mangoman ready installs the
+# coding helper and MangoMan's own Python; OpenCode then runs real pack
+# commands in Windows PowerShell 5.1, the shell every Windows computer has;
+# then every pack sample is built and checked with that Python and the
+# computer's own Edge or Chrome. MangoMan's folder has a space in its path,
+# as many Windows user names do. The report goes to the eval-reports branch
+# under reports/windows/. About 15 minutes (Windows minutes count twice).
+
+on:
+  workflow_dispatch:
+  # POST /repos/<owner>/<repo>/dispatches with event_type windows-check.
+  repository_dispatch:
+    types: [windows-check]
+
+permissions:
+  contents: write # only to publish the report to the eval-reports branch
+
+concurrency:
+  group: windows-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      MANGOMAN_HOME: C:\mm home
+      MANGOMAN_KEYSTORE: file
+      MANGOMAN_PASSPHRASE: ci
+      OPENCODE_DISABLE_MODELS_FETCH: "1"
+      OLLAMA_CONTEXT_LENGTH: "131072"
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        run: |
+          go build -o mm.exe ./cmd/mangoman
+          New-Item -ItemType Directory -Force out | Out-Null
+      - name: Get ready, as a user would
+        run: |
+          ./mm.exe init | Out-Null
+          $start = Get-Date
+          ./mm.exe ready --yes *>&1 | Tee-Object -FilePath out/ready.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "took {0:N0} s" -f ((Get-Date) - $start).TotalSeconds | Tee-Object -Append out/ready.txt
+          ./mm.exe ready *>&1 | Tee-Object -Append out/ready.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $mb = (Get-ChildItem -Recurse -File "$env:MANGOMAN_HOME\python" | Measure-Object Length -Sum).Sum / 1e6
+          "Python folder on disk: {0:N0} MB" -f $mb | Tee-Object -Append out/ready.txt
+      - name: OpenCode runs pack commands in Windows PowerShell
+        run: |
+          $py = "$env:MANGOMAN_HOME\python\env\Scripts\python3.exe"
+          $ctl = "$PWD\ctl"
+          New-Item -ItemType Directory -Force $ctl | Out-Null
+          $fake = Start-Process $py -ArgumentList "scripts/fake-model.py", "11434", "`"$ctl`"" -PassThru -NoNewWindow
+          $proj = "C:\my project"
+          New-Item -ItemType Directory -Force $proj | Out-Null
+          Copy-Item internal/skills/testdata/assets/*, internal/skills/testdata/resume/*, internal/skills/testdata/email/* $proj
+          $S = "$env:MANGOMAN_HOME\opencode\skills"
+          # What a model writes after reading the packs' SKILL.md, quoted for the space.
+          Set-Content "$ctl\cmd" ('python3 "{0}\mangoman-resume\scripts\build.py" resume.json --template modern --out resume; python3 "{0}\mangoman-email-campaign\scripts\build_emails.py" campaign.json --out emails' -f $S)
+          $env:SHELL = "powershell"
+          Push-Location $proj
+          & "$env:GITHUB_WORKSPACE\mm.exe" code --no-web --model strict/fake run --auto "make my resume and the emails" *>&1 | Tee-Object -FilePath "$env:GITHUB_WORKSPACE\out\code.txt"
+          $code = $LASTEXITCODE
+          Pop-Location
+          Stop-Process -Id $fake.Id -ErrorAction SilentlyContinue
+          Copy-Item "$ctl\requests.log" out/ -ErrorAction SilentlyContinue
+          Get-ChildItem -Recurse $proj | Select-Object -ExpandProperty FullName | Tee-Object out/project-files.txt
+          $bad = 0
+          foreach ($f in "hello.txt", "resume.pdf") {
+            if (-not (Test-Path "$proj\$f")) { "MISSING $f" | Tee-Object -Append out/code-checks.txt; $bad = 1 }
+          }
+          Push-Location $proj
+          & $py "$S\mangoman-resume\scripts\check.py" resume.json resume.pdf --pages 1 *>&1 | Tee-Object -Append "$env:GITHUB_WORKSPACE\out\code-checks.txt"
+          if ($LASTEXITCODE -ne 0) { $bad = 1 }
+          & $py "$S\mangoman-email-campaign\scripts\check_emails.py" campaign.json emails *>&1 | Tee-Object -Append "$env:GITHUB_WORKSPACE\out\code-checks.txt"
+          if ($LASTEXITCODE -ne 0) { $bad = 1 }
+          Pop-Location
+          "mangoman code exit $code" | Tee-Object -Append out/code-checks.txt
+          if ($code -ne 0 -or $bad) { exit 1 }
+      - name: Every pack sample with MangoMan's Python and the computer's browser
+        if: always()
+        shell: bash
+        run: |
+          export PATH="/c/mm home/python/env/Scripts:$PATH"
+          python3 -c "import sys, playwright; print(sys.executable)" | tee out/packs.txt
+          scripts/check-packs.sh 2>&1 | tee -a out/packs.txt
+          exit "${PIPESTATUS[0]}"
+      - name: Publish the report to the eval-reports branch
+        if: always()
+        shell: bash
+        run: |
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          cp "/c/mm home/serve.log" out/ 2>/dev/null || true
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports
+          git worktree add ../reports origin/eval-reports
+          cd ../reports && git switch -C eval-reports
+          mkdir -p "reports/windows/$stamp"
+          cp "$GITHUB_WORKSPACE"/out/* "reports/windows/$stamp/"
+          git add -A
+          git commit -q -m "windows check $stamp (run ${{ github.run_id }})"
+          git push origin eval-reports

@@ -345,7 +345,7 @@ mangoman skills install --for claude  # or one tool, or --dir PATH
 mangoman code                         # OpenCode with the packs already loaded, nothing installed
 ```
 
-Requirements on the user's machine: Python 3; for PDFs, Chrome, Chromium or Playwright; for PowerPoint, `pip install python-pptx`; pandas optional.
+Nothing to install by hand: `mangoman ready` (or **Get ready** on the setup page) downloads MangoMan's own Python with every package the packs use, and shows the size first. PDFs and layout checks use the Edge or Chrome already on the computer.
 
 ## Advanced agents
 

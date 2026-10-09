@@ -28,6 +28,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/ingress"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/providers"
+	"github.com/pusyc74-prog/mangoman/internal/pyenv"
 	"github.com/pusyc74-prog/mangoman/internal/radar"
 	"github.com/pusyc74-prog/mangoman/internal/router"
 	"github.com/pusyc74-prog/mangoman/internal/setup"
@@ -40,7 +41,9 @@ var version = "0.1.0-dev"
 const usage = `MangoMan: free-first local AI router
 
 Usage:
-  mangoman setup                guided setup: connect free providers step by step
+  mangoman                      open MangoMan in your browser (setup on the first run)
+  mangoman ready [--yes]        download what MangoMan needs here: the coding helper and its own Python
+  mangoman setup                guided setup in the terminal: connect free providers step by step
   mangoman init                 create config and local token, print tool setup
   mangoman serve [--port N]     run the local endpoint on 127.0.0.1
   mangoman keys add <provider>  store a provider key on this computer
@@ -77,12 +80,22 @@ Environment:
 
 func main() {
 	providers.Version = version
+	if home, err := config.Dir(); err == nil {
+		pyenv.UsePath(home)
+	}
 	if len(os.Args) < 2 {
-		fmt.Print(usage)
-		os.Exit(2)
+		// A double-click: no terminal knowledge needed.
+		if err := cmdOpen(); err != nil {
+			fmt.Fprintln(os.Stderr, "error:", err)
+			waitIfDoubleClicked()
+			os.Exit(1)
+		}
+		return
 	}
 	var err error
 	switch os.Args[1] {
+	case "ready":
+		err = cmdReady(os.Args[2:])
 	case "setup":
 		err = cmdSetup()
 	case "init":
@@ -271,6 +284,12 @@ func cmdServe(args []string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
+	return serve(*port, nil)
+}
+
+// serve runs the router until it is stopped. opened, if set, is called once
+// it listens, with the number of cloud providers connected.
+func serve(port int, opened func(connected int)) error {
 	cfg, err := config.Load()
 	if err != nil {
 		return err
@@ -337,7 +356,7 @@ func cmdServe(args []string) error {
 	br := ingress.BrainFromConfig(cfg, rt.InternalCall)
 	rt.Brain = br
 
-	srv := &ingress.Server{Router: rt, Cfg: cfg, Port: *port, Version: version, Started: time.Now(),
+	srv := &ingress.Server{Router: rt, Cfg: cfg, Port: port, Version: version, Started: time.Now(),
 		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl", Radar: rd, Brain: br}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
@@ -369,6 +388,9 @@ func cmdServe(args []string) error {
 	}
 	errc := make(chan error, 1)
 	go func() { errc <- hs.Serve(ln) }()
+	if opened != nil {
+		opened(connected)
+	}
 	select {
 	case <-ctx.Done():
 	case err := <-errc:

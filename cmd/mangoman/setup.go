@@ -14,12 +14,7 @@ import (
 )
 
 func cmdSetup() error {
-	if _, err := config.Load(); errors.Is(err, config.ErrNotInitialised) {
-		cfg := &config.Config{Port: config.DefaultPort, Token: config.NewToken(), MaxAttempts: 6}
-		if err := config.Save(cfg); err != nil {
-			return err
-		}
-	} else if err != nil {
+	if _, err := ensureConfig(); err != nil {
 		return err
 	}
 	if !stdinIsTerminal() {

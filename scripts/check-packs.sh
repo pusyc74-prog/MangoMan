@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build every skill pack's sample and run its checker; exits 1 if any fails.
-# Needs Python 3 with pandas, Pillow, python-pptx, python-docx, pypdf and Playwright.
+# Needs Python 3 with the packages in internal/pyenv/requirements.txt (mangoman ready installs them).
 set -u
 cd "$(dirname "$0")/.."
 work=$(mktemp -d)

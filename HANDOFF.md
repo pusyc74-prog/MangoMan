@@ -270,8 +270,10 @@ pyflakes was not installable from PyPI last time; it was found in
 `~/.cache/uv/archive-v0/*/pyflakes` (use `PYTHONPATH=<that dir> python3 -m pyflakes`),
 else CI runs it.
 
-**OpenCode locally:** `MANGOMAN_HOME=<dir> scripts/install-opencode.sh` (GitHub
-releases, pinned version and checksum), or download the release asset by hand.
+**OpenCode and Python locally:** `MANGOMAN_HOME=<dir> mangoman ready --yes`
+(pinned versions and checksums). In the session's sandbox PyPI and uv's
+Python host are blocked: set `UV_PYTHON_INSTALL_MIRROR=https://github.com/astral-sh/python-build-standalone/releases/download`
+and expect the package step to fail; CI (`windows-check.yml`) runs it fully.
 Last time it lived in `/tmp/claude-0/oc/x/opencode`.
 
 **Offline end-to-end tests with the stand-in model (`scripts/fake-model.py`):**
