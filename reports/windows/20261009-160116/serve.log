@@ -1,0 +1,3 @@
+mangoman 2026/10/09 15:59:45 listening on http://127.0.0.1:4141/v1  (0 cloud providers connected, catalogue seed-2026-10-01.7)
+mangoman 2026/10/09 15:59:45 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/09 15:59:45 no provider keys yet: run `mangoman keys add groq`

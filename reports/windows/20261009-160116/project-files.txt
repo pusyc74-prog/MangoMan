@@ -1,0 +1,7 @@
+C:\my project\agency-logo.png
+C:\my project\campaign.json
+C:\my project\logo.png
+C:\my project\main.jpg
+C:\my project\photo.jpg
+C:\my project\resume.json
+C:\my project\sales.csv

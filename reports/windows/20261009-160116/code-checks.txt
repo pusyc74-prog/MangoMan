@@ -1,0 +1,34 @@
+MISSING hello.txt
+MISSING resume.pdf
+Traceback (most recent call last):
+  File "C:\mm home\opencode\skills\mangoman-resume\scripts\check.py", line 136, in <module>
+    main()
+  File "C:\mm home\opencode\skills\mangoman-resume\scripts\check.py", line 48, in main
+    pages = render.pdf_pages(pdf)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\mm home\opencode\skills\mangoman-resume\scripts\render.py", line 259, in pdf_pages
+    with open(pdf_path, "rb") as f:
+         ^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'resume.pdf'
+PASS  spec is valid
+FAIL  emails not built: last-call; pick-your-box; preorders-open
+PASS  every email has an unsubscribe link (mailchimp)
+PASS  every email shows the sender's postal address
+PASS  every email under Gmail's 102 KB clipping size
+PASS  plain-text versions present
+PASS  subject lines are not overlong
+PASS  subject lines 15 to 60 characters (fit a phone)
+PASS  preview text 35 to 140 characters and adds to the subject
+PASS  every link is a real https, mailto or tel link
+PASS  every number comes from the facts the user gave
+PASS  no placeholder text
+PASS  no spam-trigger phrases
+PASS  no shouting in subject lines
+PASS  exclamation marks used sparingly
+PASS  emoji used sparingly in subjects
+PASS  no risky claims
+PASS  one clear action per email
+PASS  text-to-image balance is healthy
+WARN  images point to the local assets/ folder: upload them (your email tool's file manager or your site) and set assets_base_url, or replace the paths, before sending
+WARN  phone layout not measured (no Playwright): send yourself a test email and open it on a phone
+mangoman code exit 0

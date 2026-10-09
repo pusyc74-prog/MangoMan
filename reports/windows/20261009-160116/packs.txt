@@ -1,0 +1,149 @@
+C:\mm home\python\env\Scripts\python3.exe
+FAIL  dashboard
+      analysis failed:
+      Traceback (most recent call last):
+        File "C:\Users\runneradmin\AppData\Local\Temp\tmp.Bwci0tVw1W\dashboard\analysis.py", line 48, in <module>
+          print(json.dumps(spec, ensure_ascii=False))
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\encodings\cp1252.py", line 19, in encode
+          return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      UnicodeEncodeError: 'charmap' codec can't encode character '\u20b9' in position 164: character maps to <undefined>
+      
+FAIL  deck
+      analysis failed:
+      Traceback (most recent call last):
+        File "C:\Users\runneradmin\AppData\Local\Temp\tmp.Bwci0tVw1W\deck\analysis.py", line 48, in <module>
+          print(json.dumps(spec, ensure_ascii=False))
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\encodings\cp1252.py", line 19, in encode
+          return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      UnicodeEncodeError: 'charmap' codec can't encode character '\u20b9' in position 427: character maps to <undefined>
+      
+PASS  resume (13 checks)
+PASS  social (13 checks)
+PASS  landing (20 checks)
+FAIL  proposal
+      brand colours read from the logo: primary #123457, accent #00B4A0 (tell the user; they can set brand.primary and brand.accent to change them)
+      Traceback (most recent call last):
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\skills\mangoman-proposal\scripts\build_proposal.py", line 747, in <module>
+          main()
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\skills\mangoman-proposal\scripts\build_proposal.py", line 741, in main
+          print("total %s (subtotal %s, %s %s)" % (money(one["total"], nums["currency"]), money(one["subtotal"], nums["currency"]),
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\encodings\cp1252.py", line 19, in encode
+          return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      UnicodeEncodeError: 'charmap' codec can't encode character '\u20b9' in position 6: character maps to <undefined>
+PASS  email (23 checks)
+PASS  listing (15 checks)
+FAIL  invoice
+      brand colours read from the logo: primary #123457, accent #00B4A0
+      Traceback (most recent call last):
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\skills\mangoman-invoice\scripts\build_invoice.py", line 338, in <module>
+          main()
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\skills\mangoman-invoice\scripts\build_invoice.py", line 333, in main
+          print("%s %s: total %s (%s)" % (KINDS[spec.get("kind", "invoice")], spec["number"], inr(n["total"]), "IGST" if n["inter_state"] else "CGST + SGST"))
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\encodings\cp1252.py", line 19, in encode
+          return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      UnicodeEncodeError: 'charmap' codec can't encode character '\u20b9' in position 32: character maps to <undefined>
+PASS  ads (7 checks)
+PASS  seo (14 checks)
+FAIL  report
+      analysis failed:
+      Traceback (most recent call last):
+        File "C:\Users\runneradmin\AppData\Local\Temp\tmp.Bwci0tVw1W\report\analysis.py", line 36, in <module>
+          print(json.dumps(spec, ensure_ascii=False))
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\encodings\cp1252.py", line 19, in encode
+          return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      UnicodeEncodeError: 'charmap' codec can't encode character '\u20b9' in position 268: character maps to <undefined>
+      
+PASS  minutes (10 checks)
+PASS  brand (9 checks)
+PASS  review (7 checks)
+PASS  copy (18 checks)
+FAIL  webapp
+      brand colours read from the logo: primary #2B1710, accent #D62839
+      wrote starter\index.html
+      Traceback (most recent call last):
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\skills\mangoman-web-app\scripts\check_app.py", line 156, in <module>
+          main()
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\skills\mangoman-web-app\scripts\check_app.py", line 112, in main
+          b = p.chromium.launch()
+              ^^^^^^^^^^^^^^^^^^^
+        File "C:\mm home\python\env\Lib\site-packages\playwright\sync_api\_generated.py", line 16814, in launch
+          self._sync(
+        File "C:\mm home\python\env\Lib\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+          return task.result()
+                 ^^^^^^^^^^^^^
+        File "C:\mm home\python\env\Lib\site-packages\playwright\_impl\_browser_type.py", line 101, in launch
+          await self._channel.send(
+        File "C:\mm home\python\env\Lib\site-packages\playwright\_impl\_connection.py", line 76, in send
+          return await self._connection.wrap_api_call(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\mm home\python\env\Lib\site-packages\playwright\_impl\_connection.py", line 632, in wrap_api_call
+          raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+      playwright._impl._errors.Error: BrowserType.launch: Executable doesn't exist at C:\Users\runneradmin\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+      \u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
+      \u2551 Looks like Playwright was just installed or updated.       \u2551
+      \u2551 Please run the following command to download new browsers: \u2551
+      \u2551                                                            \u2551
+      \u2551     playwright install                                     \u2551
+      \u2551                                                            \u2551
+      \u2551 <3 Playwright Team                                         \u2551
+      \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
+FAIL  listing-pro
+      Your signing key is in C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\home\creator.key. Back it up: updates to your agents must be signed with it.
+      Public key: +yXcBnYnLkAZKdaTBIL8n87oXYxQmziJ6Oz2xUzMBo8=
+      Wrote a.mmagent
+      Installed amazon-listing-pro 1.0.0 by MangoMan (agents@mangoman.app).
+      Data policy: Runs on your computer. Your reports and listing never leave it; only the copy you approve goes to your AI model through MangoMan.
+      wrote research.json and research.md: 16 searches, top: mango pulp; current listing covers 30% of demand
+      demand covered: 97% (was 30%); top search leads the title: yes; backend 102 bytes; still missed: sugar free mango pulp
+      Traceback (most recent call last):
+        File "C:\mm home\python\env\Lib\site-packages\playwright\sync_api\_context_manager.py", line 41, in __enter__
+          self._loop = asyncio.get_running_loop()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+      RuntimeError: no running event loop
+      
+      During handling of the above exception, another exception occurred:
+      
+      Traceback (most recent call last):
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\home\agents\amazon-listing-pro\scripts\build_listing.py", line 296, in <module>
+          main()
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\home\agents\amazon-listing-pro\scripts\build_listing.py", line 289, in main
+          if render.inspect(os.path.join(out, "preview.html"), "() => true", widths=(420,), height=900,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\home\agents\amazon-listing-pro\scripts\render.py", line 202, in inspect
+          with sync_playwright() as p:
+               ^^^^^^^^^^^^^^^^^
+        File "C:\mm home\python\env\Lib\site-packages\playwright\sync_api\_context_manager.py", line 43, in __enter__
+          self._loop = asyncio.new_event_loop()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\asyncio\events.py", line 823, in new_event_loop
+          return get_event_loop_policy().new_event_loop()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\asyncio\events.py", line 720, in new_event_loop
+          return self._loop_factory()
+                 ^^^^^^^^^^^^^^^^^^^^
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\asyncio\windows_events.py", line 316, in __init__
+          super().__init__(proactor)
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 640, in __init__
+          self._make_self_pipe()
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 787, in _make_self_pipe
+          self._ssock, self._csock = socket.socketpair()
+                                     ^^^^^^^^^^^^^^^^^^^
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\socket.py", line 623, in _fallback_socketpair
+          csock.connect((addr, port))
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\home\agents\.guard\sitecustomize.py", line 131, in _hook
+          _deny("connect to %s" % addr[0])
+        File "C:\Users\RUNNER~1\AppData\Local\Temp\tmp.Bwci0tVw1W\home\agents\.guard\sitecustomize.py", line 98, in _deny
+          raise PermissionError("this agent is not allowed to %s (not declared in its agent.json)" % what)
+      PermissionError: this agent is not allowed to connect to 127.0.0.1 (not declared in its agent.json)
+      Exception ignored in: <function BaseEventLoop.__del__ at 0x000001CB319F1E40>
+      Traceback (most recent call last):
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\asyncio\base_events.py", line 732, in __del__
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 697, in close
+        File "C:\mm home\python\versions\cpython-3.12.15-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 779, in _close_self_pipe
+      AttributeError: 'ProactorEventLoop' object has no attribute '_ssock'
+PASS  ads-pro (6 checks)

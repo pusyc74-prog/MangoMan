@@ -1,0 +1,175 @@
+To get ready, MangoMan downloads:
+  Coding helper (OpenCode)            62 MB
+  Python 3.12.15                      38 MB (with its installer, uv)
+  Packages for the skill packs        74 MB (Playwright alone is 39 MB; it uses your Edge or Chrome, so no browser is downloaded)
+  In all                             174 MB
+
+Downloading the coding helper: 0% of 62 MB
+Downloading the coding helper: 1% of 62 MB
+Downloading the coding helper: 2% of 62 MB
+Downloading the coding helper: 3% of 62 MB
+Downloading the coding helper: 4% of 62 MB
+Downloading the coding helper: 5% of 62 MB
+Downloading the coding helper: 6% of 62 MB
+Downloading the coding helper: 8% of 62 MB
+Downloading the coding helper: 10% of 62 MB
+Downloading the coding helper: 13% of 62 MB
+Downloading the coding helper: 14% of 62 MB
+Downloading the coding helper: 15% of 62 MB
+Downloading the coding helper: 16% of 62 MB
+Downloading the coding helper: 17% of 62 MB
+Downloading the coding helper: 18% of 62 MB
+Downloading the coding helper: 19% of 62 MB
+Downloading the coding helper: 20% of 62 MB
+Downloading the coding helper: 21% of 62 MB
+Downloading the coding helper: 22% of 62 MB
+Downloading the coding helper: 23% of 62 MB
+Downloading the coding helper: 24% of 62 MB
+Downloading the coding helper: 25% of 62 MB
+Downloading the coding helper: 26% of 62 MB
+Downloading the coding helper: 27% of 62 MB
+Downloading the coding helper: 28% of 62 MB
+Downloading the coding helper: 29% of 62 MB
+Downloading the coding helper: 30% of 62 MB
+Downloading the coding helper: 31% of 62 MB
+Downloading the coding helper: 32% of 62 MB
+Downloading the coding helper: 33% of 62 MB
+Downloading the coding helper: 34% of 62 MB
+Downloading the coding helper: 35% of 62 MB
+Downloading the coding helper: 36% of 62 MB
+Downloading the coding helper: 37% of 62 MB
+Downloading the coding helper: 38% of 62 MB
+Downloading the coding helper: 39% of 62 MB
+Downloading the coding helper: 40% of 62 MB
+Downloading the coding helper: 41% of 62 MB
+Downloading the coding helper: 42% of 62 MB
+Downloading the coding helper: 43% of 62 MB
+Downloading the coding helper: 44% of 62 MB
+Downloading the coding helper: 45% of 62 MB
+Downloading the coding helper: 46% of 62 MB
+Downloading the coding helper: 47% of 62 MB
+Downloading the coding helper: 48% of 62 MB
+Downloading the coding helper: 49% of 62 MB
+Downloading the coding helper: 50% of 62 MB
+Downloading the coding helper: 51% of 62 MB
+Downloading the coding helper: 52% of 62 MB
+Downloading the coding helper: 53% of 62 MB
+Downloading the coding helper: 54% of 62 MB
+Downloading the coding helper: 55% of 62 MB
+Downloading the coding helper: 56% of 62 MB
+Downloading the coding helper: 57% of 62 MB
+Downloading the coding helper: 58% of 62 MB
+Downloading the coding helper: 59% of 62 MB
+Downloading the coding helper: 60% of 62 MB
+Downloading the coding helper: 61% of 62 MB
+Downloading the coding helper: 62% of 62 MB
+Downloading the coding helper: 63% of 62 MB
+Downloading the coding helper: 64% of 62 MB
+Downloading the coding helper: 66% of 62 MB
+Downloading the coding helper: 67% of 62 MB
+Downloading the coding helper: 68% of 62 MB
+Downloading the coding helper: 69% of 62 MB
+Downloading the coding helper: 70% of 62 MB
+Downloading the coding helper: 71% of 62 MB
+Downloading the coding helper: 72% of 62 MB
+Downloading the coding helper: 73% of 62 MB
+Downloading the coding helper: 74% of 62 MB
+Downloading the coding helper: 75% of 62 MB
+Downloading the coding helper: 76% of 62 MB
+Downloading the coding helper: 77% of 62 MB
+Downloading the coding helper: 78% of 62 MB
+Downloading the coding helper: 79% of 62 MB
+Downloading the coding helper: 80% of 62 MB
+Downloading the coding helper: 81% of 62 MB
+Downloading the coding helper: 82% of 62 MB
+Downloading the coding helper: 83% of 62 MB
+Downloading the coding helper: 84% of 62 MB
+Downloading the coding helper: 85% of 62 MB
+Downloading the coding helper: 86% of 62 MB
+Downloading the coding helper: 87% of 62 MB
+Downloading the coding helper: 88% of 62 MB
+Downloading the coding helper: 89% of 62 MB
+Downloading the coding helper: 90% of 62 MB
+Downloading the coding helper: 91% of 62 MB
+Downloading the coding helper: 92% of 62 MB
+Downloading the coding helper: 93% of 62 MB
+Downloading the coding helper: 94% of 62 MB
+Downloading the coding helper: 95% of 62 MB
+Downloading the coding helper: 96% of 62 MB
+Downloading the coding helper: 97% of 62 MB
+Downloading the coding helper: 98% of 62 MB
+Downloading the coding helper: 99% of 62 MB
+Downloading the coding helper: 100% of 62 MB
+
+Downloading uv: 0% of 16 MB
+Downloading uv: 1% of 16 MB
+Downloading uv: 2% of 16 MB
+Downloading uv: 3% of 16 MB
+Downloading uv: 4% of 16 MB
+Downloading uv: 5% of 16 MB
+Downloading uv: 7% of 16 MB
+Downloading uv: 8% of 16 MB
+Downloading uv: 11% of 16 MB
+Downloading uv: 13% of 16 MB
+Downloading uv: 17% of 16 MB
+Downloading uv: 21% of 16 MB
+Downloading uv: 26% of 16 MB
+Downloading uv: 27% of 16 MB
+Downloading uv: 31% of 16 MB
+Downloading uv: 32% of 16 MB
+Downloading uv: 33% of 16 MB
+Downloading uv: 34% of 16 MB
+Downloading uv: 40% of 16 MB
+Downloading uv: 41% of 16 MB
+Downloading uv: 42% of 16 MB
+Downloading uv: 43% of 16 MB
+Downloading uv: 44% of 16 MB
+Downloading uv: 45% of 16 MB
+Downloading uv: 46% of 16 MB
+Downloading uv: 47% of 16 MB
+Downloading uv: 48% of 16 MB
+Downloading uv: 49% of 16 MB
+Downloading uv: 50% of 16 MB
+Downloading uv: 51% of 16 MB
+Downloading uv: 52% of 16 MB
+Downloading uv: 53% of 16 MB
+Downloading uv: 61% of 16 MB
+Downloading uv: 62% of 16 MB
+Downloading uv: 63% of 16 MB
+Downloading uv: 64% of 16 MB
+Downloading uv: 65% of 16 MB
+Downloading uv: 66% of 16 MB
+Downloading uv: 67% of 16 MB
+Downloading uv: 69% of 16 MB
+Downloading uv: 70% of 16 MB
+Downloading uv: 71% of 16 MB
+Downloading uv: 72% of 16 MB
+Downloading uv: 73% of 16 MB
+Downloading uv: 74% of 16 MB
+Downloading uv: 75% of 16 MB
+Downloading uv: 76% of 16 MB
+Downloading uv: 77% of 16 MB
+Downloading uv: 78% of 16 MB
+Downloading uv: 79% of 16 MB
+Downloading uv: 80% of 16 MB
+Downloading uv: 81% of 16 MB
+Downloading uv: 82% of 16 MB
+Downloading uv: 83% of 16 MB
+Downloading uv: 84% of 16 MB
+Downloading uv: 92% of 16 MB
+Downloading uv: 93% of 16 MB
+Downloading uv: 94% of 16 MB
+Downloading uv: 95% of 16 MB
+Downloading uv: 96% of 16 MB
+Downloading uv: 97% of 16 MB
+Downloading uv: 98% of 16 MB
+Downloading uv: 99% of 16 MB
+Downloading uv: 100% of 16 MB
+Downloading Python 3.12.15...
+Downloading the packages for the skill packs...
+Checking it works...
+Ready...
+MangoMan is ready on this computer.
+took 18 s
+MangoMan is ready on this computer.
+Python folder on disk: 333 MB
