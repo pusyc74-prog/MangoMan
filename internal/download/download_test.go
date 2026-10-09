@@ -11,7 +11,9 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestProgramFromArchives(t *testing.T) {
@@ -55,6 +57,20 @@ func TestFetchChecksAndCounts(t *testing.T) {
 	}
 	if _, err := Fetch(srv.URL, "bad", 1<<20, nil); err == nil {
 		t.Fatal("a download that does not match must be refused")
+	}
+	// A download that stops moving is given up, with a plain message.
+	hang := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "100")
+		w.Write([]byte("start"))
+		w.(http.Flusher).Flush()
+		<-r.Context().Done()
+	}))
+	defer hang.Close()
+	old := stall
+	stall = 200 * time.Millisecond
+	defer func() { stall = old }()
+	if _, err := Fetch(hang.URL, "x", 1<<20, nil); err == nil || !strings.Contains(err.Error(), "stopped moving") {
+		t.Fatalf("a stalled download: %v", err)
 	}
 	dst := filepath.Join(t.TempDir(), "tools", "uv")
 	if err := Save(dst, data); err != nil {

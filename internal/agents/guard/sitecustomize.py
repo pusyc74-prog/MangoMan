@@ -12,6 +12,7 @@ at all. This guard is one layer; the marketplace review is the other.
 """
 import os
 import shutil
+import _socket
 import socket
 import sys
 import tempfile
@@ -98,15 +99,28 @@ def _deny(what):
     raise PermissionError("this agent is not allowed to %s (not declared in its agent.json)" % what)
 
 
-def _own_pair():
-    """Python's socket pair on Windows (asyncio, so Playwright) is a socket
-    connected to a listener it just made on 127.0.0.1: it never leaves the
-    process. Only that code may connect to loopback undeclared."""
+# The code objects of Python's own socket pair, taken before the agent runs,
+# so an agent cannot pass off a function of its own as them.
+_PAIR = {f.__code__ for f in (getattr(socket, "_fallback_socketpair", None), socket.socketpair)
+         if hasattr(f, "__code__")}
+
+
+def _own_pair(addr):
+    """Python's socket pair on Windows (asyncio, so Playwright) connects to a
+    listener it has just made on 127.0.0.1, which never leaves the process.
+    Only that code, connecting to that very listener, may reach loopback
+    undeclared. The listener's address is read with the C method, so a
+    patched socket class cannot point the pair somewhere else."""
     f = sys._getframe(2)
     while f is not None:
-        # Older Pythons do it inside socketpair itself.
-        if f.f_code.co_name in ("_fallback_socketpair", "socketpair") and f.f_globals.get("__name__") == "socket":
-            return True
+        if f.f_code in _PAIR:
+            lsock = f.f_locals.get("lsock")
+            if not isinstance(lsock, _socket.socket):
+                return False
+            try:
+                return tuple(_socket.socket.getsockname(lsock)[:2]) == tuple(addr[:2])
+            except OSError:
+                return False
         f = f.f_back
     return False
 
@@ -140,7 +154,7 @@ def _hook(event, args):
             _deny("reach %s" % args[0][0])
     elif event == "socket.connect":
         addr = args[1]
-        if isinstance(addr, tuple) and addr[0] not in _ips and not (addr[0] in ("127.0.0.1", "::1") and _own_pair()):
+        if isinstance(addr, tuple) and addr[0] not in _ips and not (addr[0] in ("127.0.0.1", "::1") and _own_pair(addr)):
             _deny("connect to %s" % addr[0])
         if isinstance(addr, (str, bytes)):
             _deny("connect to the local socket %s" % os.fsdecode(addr))

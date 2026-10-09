@@ -6,8 +6,13 @@ Status: **Phase 1 built (M1 to M4, 17 skill packs, Guardian, the M6 coding scree
 
 ## Quick start
 
+**Without a terminal:** double-click MangoMan (or run `mangoman` with nothing after it). The first time, a setup page opens in your browser: paste a free NVIDIA key, click **Get ready** (it shows the download size first, about 175 MB on Windows), and start. Later, the same double-click opens the dashboard. Keep MangoMan's window open while you use it. MangoMan is not signed yet: on Windows click **More info**, then **Run anyway**; on a Mac right-click it, choose **Open**, then **Open** again. For the commands below: `mangoman help`.
+
+**In a terminal:**
+
 ```sh
 go build -o bin/mangoman ./cmd/mangoman
+./bin/mangoman ready           # downloads the coding helper and MangoMan's own Python (sizes first)
 ./bin/mangoman setup           # guided: connect free providers one by one
 ./bin/mangoman serve           # http://127.0.0.1:4141/v1
 ./bin/mangoman dashboard       # opens the dashboard in your browser

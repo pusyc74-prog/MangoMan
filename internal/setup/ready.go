@@ -18,7 +18,11 @@ type Part struct {
 
 // NeedsReady reports whether Ready has anything to do, without asking the
 // network.
-func NeedsReady(home string) bool { return needsOpenCode(home) || !pyenv.Installed(home) }
+func NeedsReady(home string) bool { return needsOpenCode(home) || needsPython(home) }
+
+// needsPython: where MangoMan has no tested Python (Windows on ARM, for
+// one), there is nothing to install; pyenv.Check says so when a pack starts.
+func needsPython(home string) bool { return pyenv.Supported() && !pyenv.Installed(home) }
 
 // needsOpenCode reports whether OpenCode is missing, or MangoMan's own copy
 // is not the tested version.
@@ -50,7 +54,7 @@ func ReadyParts(home string) []Part {
 	if needsOpenCode(home) {
 		out = append(out, Part{Name: "Coding helper (OpenCode)", Bytes: openCodeBytes()})
 	}
-	if !pyenv.Installed(home) {
+	if needsPython(home) {
 		s, _ := pyenv.SizesHere()
 		out = append(out,
 			Part{Name: "Python " + pyenv.PythonVersion, Bytes: s.UV + s.Python, Note: "with its installer, uv"},
@@ -79,11 +83,10 @@ func Ready(home string, step pyenv.Step) error {
 			return fmt.Errorf("could not install the coding helper: %w", err)
 		}
 	}
-	if !pyenv.Installed(home) {
+	if needsPython(home) {
 		if err := pyenv.Install(home, step); err != nil {
 			return fmt.Errorf("could not set up Python: %w", err)
 		}
 	}
-	step("Ready", 0, 0)
 	return nil
 }

@@ -57,7 +57,7 @@ jobs:
           "Python folder on disk: {0:N0} MB" -f $mb | Tee-Object -Append out/ready.txt
       - name: OpenCode runs pack commands in Windows PowerShell
         run: |
-          $py = "$env:MANGOMAN_HOME\python\env\Scripts\python3.exe"
+          $py = "$env:MANGOMAN_HOME\python\env\shim\python3.exe"
           $ctl = "$PWD\ctl"
           New-Item -ItemType Directory -Force $ctl | Out-Null
           $fake = Start-Process $py -ArgumentList "scripts/fake-model.py", "11434", "`"$ctl`"" -PassThru -NoNewWindow
@@ -98,7 +98,7 @@ jobs:
         shell: bash
         run: |
           # As mangoman sets them for every program it starts (pyenv.Use).
-          export PATH="/c/mm home/python/env/Scripts:$PATH" PYTHONUTF8=1
+          export PATH="/c/mm home/python/env/shim:$PATH" PYTHONUTF8=1
           python3 -c "import sys, playwright; print(sys.executable)" | tee out/packs.txt
           scripts/check-packs.sh 2>&1 | tee -a out/packs.txt
           exit "${PIPESTATUS[0]}"

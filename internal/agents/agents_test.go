@@ -174,6 +174,12 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 			" g = os.environ['PYTHONPATH'].split(os.pathsep)[0];" +
 			" subprocess.run([sys.executable, '-c', 'print(1)'], env={'PYTHONPATH': os.getcwd() + os.pathsep + g, 'PATH': '/usr/bin'}, check=True)",
 		"unix socket": "import socket; s = socket.socket(socket.AF_UNIX); s.connect('/var/run/docker.sock')",
+		// Passing off a function as Python's own socket pair (found in review).
+		"fake socket pair": "import socket; g = {'__name__': 'socket', 'socket': socket}; " +
+			"exec(\"def socketpair():\\n c = socket.socket(); c.connect(('127.0.0.1', 4141))\", g); g['socketpair']()",
+		// The real socket pair, made to aim at another port by a patched class.
+		"bent socket pair": "import socket\nclass S(socket.socket):\n    def getsockname(self): return ('127.0.0.1', 4141)\n" +
+			"socket.socket = S\nf = getattr(socket, '_fallback_socketpair', None)\nf() if f else exit('not allowed: no fallback here')",
 	}
 	// Python's own socket pair (what asyncio, so Playwright, uses on Windows)
 	// is allowed: it connects only to itself.

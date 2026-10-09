@@ -51,7 +51,10 @@ def launch(p):
     Playwright's own Chromium."""
     exe = _chrome()
     if exe:
-        return p.chromium.launch(executable_path=exe)
+        try:
+            return p.chromium.launch(executable_path=exe)
+        except Exception:
+            pass  # a browser Playwright cannot drive (Ubuntu's snap Chromium): try its own
     try:
         return p.chromium.launch()
     except Exception as e:  # no browser at all: say what to do, not Playwright's install steps
@@ -67,7 +70,7 @@ def engine():
     return None
 
 
-def _url(path):
+def file_url(path):
     # as_uri gives file:///C:/... on Windows, where "file://" + path does not.
     return pathlib.Path(os.path.abspath(path)).as_uri()
 
@@ -121,7 +124,7 @@ def _print(html_path, pdf_path):
         with sync_playwright() as p:
             b = launch(p)
             page = b.new_page()
-            page.goto(_url(html_path), wait_until="networkidle")
+            page.goto(file_url(html_path), wait_until="networkidle")
             page.emulate_media(media="print")
             page.pdf(path=pdf_path, prefer_css_page_size=True, print_background=True)
             b.close()
@@ -129,7 +132,7 @@ def _print(html_path, pdf_path):
     chrome = _chrome()
     if chrome:
         subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
-                        "--print-to-pdf=" + os.path.abspath(pdf_path), _url(html_path)],
+                        "--print-to-pdf=" + os.path.abspath(pdf_path), file_url(html_path)],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
         return "chrome"
     raise RuntimeError(INSTALL_HINT)
@@ -143,7 +146,7 @@ def screenshot(html_path, png_path, width=1280, height=900, full_page=True, dark
             b = launch(p)
             page = b.new_page(viewport={"width": width, "height": height},
                               color_scheme="dark" if dark else "light")
-            page.goto(_url(html_path), wait_until="networkidle")
+            page.goto(file_url(html_path), wait_until="networkidle")
             page.screenshot(path=png_path, full_page=full_page)
             b.close()
         return True
@@ -151,7 +154,7 @@ def screenshot(html_path, png_path, width=1280, height=900, full_page=True, dark
     if chrome:
         subprocess.run([chrome, "--headless=new", "--disable-gpu", "--hide-scrollbars",
                         f"--window-size={width},{height}", "--screenshot=" + os.path.abspath(png_path),
-                        _url(html_path)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
+                        file_url(html_path)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
         return True
     return False
 
@@ -175,7 +178,7 @@ def render_frames(jobs):
             b = launch(p)
             for html_path, png_path, w, h in jobs:
                 page = b.new_page(viewport={"width": w, "height": h})
-                page.goto(_url(html_path), wait_until="networkidle")
+                page.goto(file_url(html_path), wait_until="networkidle")
                 out.append(page.evaluate(FRAME_JS))
                 page.screenshot(path=png_path, full_page=False)
                 page.close()
@@ -203,7 +206,7 @@ def inspect(html_path, js, widths=(390, 768, 1440), height=844, shots=None):
         b = launch(p)
         for w in widths:
             page = b.new_page(viewport={"width": w, "height": height})
-            page.goto(_url(html_path), wait_until="networkidle")
+            page.goto(file_url(html_path), wait_until="networkidle")
             out[w] = page.evaluate(js)
             if shots and w in shots:
                 # scroll through once so lazy images load before the full-page shot
@@ -242,7 +245,7 @@ def overflow(html_path, selector, width=1280, height=720):
     with sync_playwright() as p:
         b = launch(p)
         page = b.new_page(viewport={"width": width, "height": height})
-        page.goto(_url(html_path), wait_until="networkidle")
+        page.goto(file_url(html_path), wait_until="networkidle")
         res = page.evaluate(OVERFLOW_JS, selector)
         b.close()
     return res

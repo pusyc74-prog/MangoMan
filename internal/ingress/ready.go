@@ -1,11 +1,14 @@
 package ingress
 
 import (
+	"bytes"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
@@ -47,7 +50,10 @@ func (s *Server) readyRoutes(mux *http.ServeMux) {
 }
 
 func projectsDir() string {
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
 	return filepath.Join(home, "MangoMan Projects")
 }
 
@@ -120,9 +126,14 @@ func (s *Server) readyStart(w http.ResponseWriter, r *http.Request) {
 }
 
 // codeOpen starts the coding screen (mangoman code --ui) in the projects
-// folder, made if missing. It opens in the browser by itself.
+// folder, made if missing. It opens in the browser by itself; one that
+// stops within a few seconds failed, and its last words are the answer.
 func (s *Server) codeOpen(w http.ResponseWriter, _ *http.Request) {
 	dir := projectsDir()
+	if dir == "" {
+		core.WriteError(w, http.StatusInternalServerError, "no_folder", "could not find your home folder")
+		return
+	}
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		core.WriteError(w, http.StatusInternalServerError, "no_folder", err.Error())
 		return
@@ -132,12 +143,26 @@ func (s *Server) codeOpen(w http.ResponseWriter, _ *http.Request) {
 		core.WriteError(w, http.StatusInternalServerError, "no_program", err.Error())
 		return
 	}
+	var out bytes.Buffer
 	cmd := exec.Command(self, "code", "--ui")
-	cmd.Dir = dir
+	cmd.Dir, cmd.Stdout, cmd.Stderr = dir, &out, &out
 	if err := cmd.Start(); err != nil {
 		core.WriteError(w, http.StatusInternalServerError, "not_started", err.Error())
 		return
 	}
-	go func() { _ = cmd.Wait() }()
-	writeJSON(w, map[string]string{"folder": dir})
+	exited := make(chan error, 1)
+	go func() { exited <- cmd.Wait() }()
+	select {
+	case err := <-exited:
+		msg := strings.TrimSpace(out.String())
+		if i := strings.LastIndex(msg, "\n"); i >= 0 {
+			msg = msg[i+1:]
+		}
+		if msg == "" && err != nil {
+			msg = err.Error()
+		}
+		core.WriteError(w, http.StatusInternalServerError, "not_started", "the coding screen did not start: "+msg)
+	case <-time.After(4 * time.Second):
+		writeJSON(w, map[string]string{"folder": dir})
+	}
 }

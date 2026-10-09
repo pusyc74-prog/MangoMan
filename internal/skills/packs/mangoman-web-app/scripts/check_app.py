@@ -106,7 +106,7 @@ def main():
     except ImportError:
         rep.add("FAIL", "Playwright is missing: run mangoman ready (or click Get ready in the dashboard)")
         rep.finish()
-    url = render._url(app)
+    url = render.file_url(app)
     scen = tests.get("scenarios", [])
     rep.check([] if scen else ["none"], "%d test scenarios" % len(scen), "no scenarios in tests.json: write one per feature")
     with sync_playwright() as p:

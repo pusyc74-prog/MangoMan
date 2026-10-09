@@ -8,21 +8,42 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
+
+// client gives up on a site that does not answer; a slow download is fine
+// as long as it keeps moving (see stall).
+var client = &http.Client{Transport: &http.Transport{
+	Proxy:                 http.ProxyFromEnvironment,
+	DialContext:           (&net.Dialer{Timeout: 20 * time.Second}).DialContext,
+	TLSHandshakeTimeout:   20 * time.Second,
+	ResponseHeaderTimeout: 30 * time.Second,
+}}
+
+// stall is how long a download may receive nothing before it is given up.
+var stall = time.Minute
 
 // Fetch downloads url, at most max bytes, telling progress how far it got,
 // and returns the data only if its SHA-256 is sum. progress may be nil.
 func Fetch(url, sum string, max int64, progress func(done, total int64)) ([]byte, error) {
-	resp, err := http.Get(url)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -30,12 +51,17 @@ func Fetch(url, sum string, max int64, progress func(done, total int64)) ([]byte
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("download failed: %s", resp.Status)
 	}
-	var r io.Reader = io.LimitReader(resp.Body, max)
-	if progress != nil {
-		r = &counter{r: r, total: resp.ContentLength, f: progress}
+	if progress == nil {
+		progress = func(int64, int64) {}
 	}
-	data, err := io.ReadAll(r)
+	timer := time.AfterFunc(stall, cancel)
+	defer timer.Stop()
+	data, err := io.ReadAll(&counter{r: io.LimitReader(resp.Body, max), total: resp.ContentLength,
+		f: func(d, t int64) { timer.Reset(stall); progress(d, t) }})
 	if err != nil {
+		if ctx.Err() != nil {
+			return nil, errors.New("the download stopped moving; check the internet connection and try again")
+		}
 		return nil, err
 	}
 	if got := sha256.Sum256(data); hex.EncodeToString(got[:]) != sum {
@@ -52,8 +78,10 @@ type counter struct {
 
 func (c *counter) Read(p []byte) (int, error) {
 	n, err := c.r.Read(p)
-	c.done += int64(n)
-	c.f(c.done, c.total)
+	if n > 0 {
+		c.done += int64(n)
+		c.f(c.done, c.total)
+	}
 	return n, err
 }
 

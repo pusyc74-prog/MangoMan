@@ -56,8 +56,7 @@ var sizesJSON []byte
 
 func system() string { return runtime.GOOS + "-" + runtime.GOARCH }
 
-// Sizes is what Install downloads on this computer, in bytes. ok is false
-// where MangoMan has no tested Python.
+// Sizes is what Install downloads on this computer, in bytes.
 type Sizes struct {
 	UV, Python, Packages, Playwright int64 // Playwright is part of Packages
 }
@@ -65,7 +64,8 @@ type Sizes struct {
 // Total is everything Install downloads.
 func (s Sizes) Total() int64 { return s.UV + s.Python + s.Packages }
 
-// SizesHere returns the download sizes for this computer.
+// SizesHere returns the download sizes for this computer; ok is false
+// where MangoMan has no tested Python.
 func SizesHere() (Sizes, bool) {
 	p, ok := pins[system()]
 	if !ok {
@@ -81,14 +81,22 @@ func SizesHere() (Sizes, bool) {
 
 func root(home string) string { return filepath.Join(home, "python") }
 
-// Bin is the folder holding the private python3, put first in PATH for
-// everything MangoMan starts.
-func Bin(home string) string {
+// Bin is the folder put first in PATH for everything MangoMan starts. It
+// holds only python3, the name every pack runs, so the python and pip of a
+// user's own projects stay theirs. Python finds the environment from it
+// through env/pyvenv.cfg, one folder up.
+func Bin(home string) string { return filepath.Join(root(home), "env", "shim") }
+
+// envBin is the environment's own folder of programs.
+func envBin(home string) string {
 	if runtime.GOOS == "windows" {
 		return filepath.Join(root(home), "env", "Scripts")
 	}
 	return filepath.Join(root(home), "env", "bin")
 }
+
+// Supported reports whether MangoMan has a tested Python for this computer.
+func Supported() bool { _, ok := pins[system()]; return ok }
 
 // stamp names what is installed, so a newer pin or lock installs again.
 func stamp() string {
@@ -105,17 +113,22 @@ func Installed(home string) bool {
 // Check runs the private python3 and imports what the packs need. The error
 // says in plain words what to do.
 func Check(home string) error {
+	if !Supported() {
+		return fmt.Errorf("MangoMan has no Python for %s yet: skill packs need Python 3 with the packages in requirements.txt", system())
+	}
 	if !Installed(home) {
 		return errors.New("MangoMan's Python is not set up yet: click Get ready in the dashboard, or run mangoman ready")
 	}
 	py := filepath.Join(Bin(home), exe("python3"))
 	if out, err := exec.Command(py, "-c", Imports).CombinedOutput(); err != nil {
-		return fmt.Errorf("MangoMan's Python is broken (%s): run mangoman ready again", firstLine(out, err))
+		return fmt.Errorf("MangoMan's Python is broken (%s): run mangoman ready again", lastLine(out, err))
 	}
 	return nil
 }
 
-func firstLine(out []byte, err error) string {
+// lastLine is the last line of a program's output (where Python and uv put
+// the error), else the error itself.
+func lastLine(out []byte, err error) string {
 	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
 	if l := strings.TrimSpace(lines[len(lines)-1]); l != "" {
 		return l
@@ -156,10 +169,6 @@ func Install(home string, step Step) error {
 		return fmt.Errorf("MangoMan has no tested Python for %s yet", system())
 	}
 	dir := root(home)
-	// A half-finished or older install is removed first: uv then starts clean.
-	if err := os.RemoveAll(dir); err != nil {
-		return err
-	}
 	data, err := download.Fetch(releases+p.asset, p.sum, 64<<20, func(d, t int64) { step("Downloading uv", d, t) })
 	if err != nil {
 		return err
@@ -167,6 +176,11 @@ func Install(home string, step Step) error {
 	prog, err := download.Program(p.asset, data, "uv", 128<<20)
 	if err != nil {
 		return err
+	}
+	// Only now, with uv in hand, a half-finished or older install is
+	// removed, so a failed download never costs a Python that worked.
+	if err := os.RemoveAll(dir); err != nil {
+		return fmt.Errorf("could not replace the old Python (is a pack still running?): %w", err)
 	}
 	uv := filepath.Join(dir, exe("uv"))
 	if err := download.Save(uv, prog); err != nil {
@@ -188,7 +202,7 @@ func Install(home string, step Step) error {
 			"VIRTUAL_ENV=",
 		)
 		if out, err := cmd.CombinedOutput(); err != nil {
-			why := firstLine(out, err)
+			why := lastLine(out, err)
 			if offline(string(out)) {
 				why = "could not reach the download site; check the internet connection and try again"
 			}
@@ -202,21 +216,13 @@ func Install(home string, step Step) error {
 	if err := run("Downloading the packages for the skill packs", "pip", "install", "--python", env, "--require-hashes", "-r", req); err != nil {
 		return err
 	}
-	// Every pack runs "python3 ...". A Windows environment has python.exe
-	// only, so it gets a python3.exe too.
-	if runtime.GOOS == "windows" {
-		b, err := os.ReadFile(filepath.Join(Bin(home), "python.exe"))
-		if err != nil {
-			return err
-		}
-		if err := os.WriteFile(filepath.Join(Bin(home), "python3.exe"), b, 0o700); err != nil {
-			return err
-		}
+	if err := shim(home); err != nil {
+		return err
 	}
 	_ = os.RemoveAll(filepath.Join(dir, "cache"))
 	step("Checking it works", 0, 0)
 	if out, err := exec.Command(filepath.Join(Bin(home), exe("python3")), "-c", Imports).CombinedOutput(); err != nil {
-		return fmt.Errorf("the new Python does not work: %s", firstLine(out, err))
+		return fmt.Errorf("the new Python does not work: %s", lastLine(out, err))
 	}
 	return os.WriteFile(filepath.Join(dir, "installed"), []byte(stamp()), 0o600)
 }
@@ -228,7 +234,25 @@ func Install(home string, step Step) error {
 // rupee amount stops with an error (seen in the Windows check, 9 Oct).
 func Use(home string) {
 	_ = os.Setenv("PYTHONUTF8", "1")
-	if Installed(home) {
-		_ = os.Setenv("PATH", Bin(home)+string(os.PathListSeparator)+os.Getenv("PATH"))
+	first := Bin(home) + string(os.PathListSeparator)
+	if path := os.Getenv("PATH"); Installed(home) && !strings.HasPrefix(path, first) {
+		_ = os.Setenv("PATH", first+path)
 	}
+}
+
+// shim makes Bin: python3 alone. On Windows a copy of the environment's
+// python.exe (a launcher that reads pyvenv.cfg one folder up), elsewhere a
+// link to the environment's python3.
+func shim(home string) error {
+	if err := os.MkdirAll(Bin(home), 0o700); err != nil {
+		return err
+	}
+	if runtime.GOOS == "windows" {
+		b, err := os.ReadFile(filepath.Join(envBin(home), "python.exe"))
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(filepath.Join(Bin(home), "python3.exe"), b, 0o700)
+	}
+	return os.Symlink(filepath.Join("..", "bin", "python3"), filepath.Join(Bin(home), "python3"))
 }

@@ -83,7 +83,8 @@ function show() {
     $("pbar-wrap").classList.toggle("busy", pct < 0);
     $("pbar").style.width = pct >= 0 ? `${pct}%` : ""; // CSSOM: allowed by the page's strict CSP
   }
-  $("readymsg").textContent = view.error ? view.error[0].toUpperCase() + view.error.slice(1) + "." : "";
+  const e = view.error || "";
+  $("readymsg").textContent = e && e[0].toUpperCase() + e.slice(1) + (/[.!?]$/.test(e) ? "" : ".");
   $("app").hidden = false; // only once the right step is known
 }
 
@@ -140,7 +141,7 @@ $("to-code").addEventListener("click", async () => {
   try {
     const r = await api("/mangoman/code/open", { method: "POST" });
     msg.className = "msg ok";
-    msg.textContent = `The coding screen opens in a new tab in a few seconds. Your projects go in ${r.folder}.`;
+    msg.textContent = `The coding screen is opening in a new tab. Your projects go in ${r.folder}.`;
   } catch (e) {
     msg.className = "msg err";
     msg.textContent = e.message;

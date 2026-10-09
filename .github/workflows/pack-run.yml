@@ -81,7 +81,7 @@ jobs:
           # own Python with the locked packages and no browser download, so
           # Playwright drives the runner's Chrome. Scores then match users'.
           go run ./cmd/mangoman ready --yes
-          echo "$MANGOMAN_HOME/python/env/bin" >> "$GITHUB_PATH"
+          echo "$MANGOMAN_HOME/python/env/shim" >> "$GITHUB_PATH"
       - name: Run the packs
         timeout-minutes: 160
         run: |
