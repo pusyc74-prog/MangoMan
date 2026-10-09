@@ -73,8 +73,22 @@ def main():
 
     allt = [t for pg in pages for t in page_text(pg)] + [t for pg in pages for t in (pg["meta"]["title"], pg["meta"]["description"])]
     pool = C.fact_pool(spec.get("facts", {}))
-    bad = [n for t in allt for n in C.untraced(t, pool)]
-    rep.check(sorted(set(bad)), "every number is in the user's facts", "numbers not in the facts")
+    bad = sorted(set(n for t in allt for n in C.untraced(t, pool)))
+    # Numbers the user gave in facts.md but that never reached "facts" in
+    # site.json. Said plainly: measured 9 Oct, a model edited the built pages
+    # 7 times instead (they are rebuilt from site.json) and ran out of time.
+    md = os.path.join(os.path.dirname(os.path.abspath(src)), "facts.md")
+    given = []
+    if bad and os.path.exists(md):
+        with open(md, encoding="utf-8") as f:
+            md_pool = C.fact_pool(f.read())
+        given = [n for n in bad if not C.untraced(n, md_pool)]
+    if given:
+        rep.add("FAIL", "numbers in facts.md but missing from \"facts\" in site.json: %s. Copy those fact lines "
+                "into \"facts\" in site.json and build again (the pages in %s are rebuilt from site.json: "
+                "do not edit them)" % ("; ".join(given), out))
+    rep.check([n for n in bad if n not in given], "every number is in the user's facts",
+              "numbers the user never gave: take them out of the copy in site.json")
 
     claims = [(c.get("name", "a competitor"), cl) for c in spec.get("competitors", []) for cl in c.get("claims", [])]
     hits = ["%s (%s)" % (run, n) for n, cl in claims for t in allt for run in [copied(t, cl)] if run]
