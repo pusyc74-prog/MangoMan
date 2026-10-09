@@ -64,7 +64,7 @@ direction, not the details.
 
 ### 3a. Consolidate the router's failure handling
 
-**Status (9 Oct): built and pushed; the confirming pack run is in the PRD build log.**
+**Status (9 Oct): done.** Commit 650affa; confirming run 20261009-065414 passed 7 of 7 (details in the PRD build log). Next: 3b.
 
 **Why:** over 7 and 8 Oct, layers were added one at a time, each fixing a real
 problem seen in a real run. Each works and is tested, but together they are
