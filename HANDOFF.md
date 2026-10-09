@@ -41,7 +41,7 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 
 ---
 
-## 2. Where things stand (8 Oct 2026, end of day)
+## 2. Where things stand (9 Oct 2026, night)
 
 | Area | State |
 |---|---|
@@ -49,10 +49,11 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 | M5 (app for everyone) | **Parked** by the owner (7 Oct): teachers and first-time users cannot bring their own keys. Do not start it. |
 | M6 (coding screen, `mangoman code --ui`) | **Complete** (8 Oct). Passed a real-model check: 7 of 7 in 133 s. |
 | Real-model quality | Last three free/coder runs, one case per pack: 20261008-152455 passed **5 of 7** (listing and website copy scored 0), 20261008-161447 passed **7 of 7**, 20261009-065414 (after 3a) passed **7 of 7**. Best: SEO 99.7, social 100, website copy 100. |
+| Easy setup (3b) | **Built and pushed (9 Oct).** Double-click opens a setup page; `mangoman ready` in a terminal. Windows check (`windows-check.yml`, stand-in model) passed: OpenCode ran pack commands in Windows PowerShell and all 19 pack samples passed with MangoMan's own Python and the computer's own browser. Waiting: the owner's own try on Windows. |
 | Release | **None yet.** The owner can try it from a CI build (section 12). |
 | Repo | **Public, by the owner's choice (9 Oct: "keep it public for now").** Do not ask again until they raise it. CI is already cut down for private minutes. |
 | CI | Green on the last commit. No open issues. |
-| Next build | Agreed by the owner: (1) consolidate the router's failure handling, (2) easy setup (section 3). |
+| Next build | 3a and 3b are done. Next: the owner tries the easy setup on Windows; then pick from the open items (section 11) with the owner. |
 
 ---
 
@@ -98,6 +99,19 @@ runs 20261008-152455 and 20261008-161447). If the design is not clearly
 simpler, say so and stop: a smaller tidy-up is fine.
 
 ### 3b. Easy setup (options A, B and D; the owner said "yes this works")
+
+**Status (9 Oct): built.** What was built, and what changed from the notes
+below (the notes are kept as they were written):
+
+| Part | Built |
+|---|---|
+| A | `internal/pyenv`: uv 0.12.24 pinned by checksum per system installs Python 3.12.15 and `requirements.txt` (made by `scripts/lock-python.sh` in `pylock.yml`, every package with checksums) into `<home>/python`. Only `python3` goes first in PATH (`env/shim`), so users' own `python` and `pip` stay theirs; `pyenv.Use` also turns on Python's UTF-8 mode (Windows printed ₹ through cp1252 and five packs crashed). |
+| Packages | **pandas is kept**: the three data packs have the model write `analysis.py` with it (the note below was wrong). **Playwright is kept** (owner, 9 Oct): `render.inspect` and `render_frames` need it for layout checks; it drives the computer's own Edge or Chrome (`render.launch`), no browser download. |
+| B | `render.py`: Windows paths added, `file_url` fixed for Windows paths, plain message with no browser, fallback to Playwright's own Chromium. The web app checker and `mangoman qa` use `render.launch` too. |
+| D | `mangoman` alone: setup page (`ui/setup.html`) until set up, the dashboard after; one line in the terminal. Endpoints in `internal/ingress/ready.go`. `mangoman ready [--yes]` is the same in a terminal. |
+| Sizes (Windows, measured) | OpenCode 62 MB, uv 16 MB, Python 22 MB, packages 75 MB (Playwright 39 MB, pandas and numpy about 23 MB): **about 175 MB**. Python folder on disk: 333 MB. Get ready took 18 to 24 s in CI. |
+| Code signing | **Stays unsigned (owner, 9 Oct).** Windows Artifact Signing is not open to individuals in India; an OV certificate is from about USD 219 a year; Apple USD 99 a year. |
+| Agent sandbox | Allows Python's own socket pair on Windows (asyncio, so Playwright), checked by code object and listener address; a faked pair is refused (found by the review). |
 
 **The problem (owner, 8 Oct):** "not everyone will have Python 3; isn't this
 getting too complicated, like OpenCode's setup is a pain." Today a user must
@@ -201,6 +215,8 @@ while a run goes. The owner asked whether quality and "0 bugs" still hold
 | `pack-run.yml` | dispatch or manual only | real-model pack runs; reports on `eval-reports` under `reports/pack-run/` |
 | `workspace-check.yml` | dispatch or manual only | the coding screen through one real task; reports under `reports/workspace/` |
 | `agent-eval.yml` | manual | an advanced agent against its pack |
+| `windows-check.yml` | dispatch or manual only | Windows the user's way with the stand-in model: `mangoman ready`, OpenCode runs pack commands in Windows PowerShell 5.1, all pack samples; reports under `reports/windows/` (about 15 minutes, Windows minutes count twice) |
+| `pylock.yml` | dispatch or manual only | locks the packs' Python packages and measures sizes per system; result under `reports/pylock/`, copy into `internal/pyenv/` |
 
 - **Budget:** about 1,000 of 2,000 free minutes a month at about 20 pushes a
   day. **Push in batches.** A pack run takes about 45 to 60 minutes of
@@ -224,6 +240,8 @@ while a run goes. The owner asked whether quality and "0 bugs" still hold
 | Issues | `gh api repos/pusyc74-prog/MangoMan/issues` (the nightly qa opens one on failure). |
 | Start a pack run | `gh api -X POST repos/pusyc74-prog/MangoMan/dispatches --input -` with `{"event_type":"pack-run","client_payload":{"model":"free/coder","cases":"1","case_timeout":"900"}}`. Payload keys: model, packs (spaces or commas), variant, cases, case_timeout, runner. Leave `cases` out for three per pack. |
 | Start the coding screen check | event_type `workspace-check`, payload model, runner. |
+| Start the Windows check, or a new lock | event_type `windows-check` or `pylock`, no payload. |
+| A failed job's error | `gh api repos/pusyc74-prog/MangoMan/check-runs/<id>/annotations` shows the error lines (the Actions logs are blocked). |
 | Queue rule | Runs of one workflow go one at a time; GitHub keeps only **one** waiting run per group, so a third dispatch replaces the second. Dispatch the next after the previous starts. A dispatch runs the code of `main` at the moment you send it. |
 | Read results | `git clone -q --depth 1 -b eval-reports https://github.com/pusyc74-prog/MangoMan.git` then `reports/pack-run/<stamp>/report.md`, `logs/<pack>/<case>.log`, `serve.log` (router log, has "first word after Ns"), `usage.json`. Doctor: branch `doctor-reports`, `latest.txt`. |
 | Change repo settings | **Not possible** (visibility, secrets, runners): ask the owner. |
@@ -366,8 +384,10 @@ Touch files in the control dir to change the next coding request:
 
 | Item | Notes |
 |---|---|
-| Easy setup (section 3b) | Next build. Includes the Python check. |
-| Router consolidation (section 3a) | Next build, first. |
+| Owner tries the easy setup on Windows | Download the `mangoman` artifact from a ci run (manual), double-click `mangoman.exe`. |
+| Real-model run on Windows | Only the stand-in model ran on Windows so far; a pack run on a Windows runner would check real models' commands in PowerShell (quoting, `&&`). |
+| `mangoman ready` in a terminal and Get ready on the page at the same time | Both install into the same folder; no lock between processes (rare). |
+| packs.yml and qa.yml still download Playwright's Chromium | Unused now that the runner's Chrome is used; could be dropped to save minutes. |
 | Costly fix loops in packs | Ad copy 100 requests, website copy 156 in one run: help models fix in one pass (for example show the lines around a JSON syntax error in website copy's checker). |
 | Windows stall watchdog | Off (no pgrep). Could use PowerShell `Get-CimInstance Win32_Process` for child processes. |
 | Screen shows raw model ids ("kimi-k3") | Use display names. |
@@ -388,7 +408,8 @@ Touch files in the control dir to change the next coding request:
 |---|---|
 | Switch the repo to private | **Answered 9 Oct: keep it public for now.** Release still waits for a private repo (section 4). |
 | Which computer to test on | **Answered 9 Oct: Windows.** Make the easy setup work on Windows first (the `python3.exe` shim, Chrome and Edge paths, the console window). |
-| Code signing (paid) | Not asked yet as a decision; mention with the easy setup. |
+| Code signing (paid) | **Answered 9 Oct: stay unsigned for now.** |
+| Try the easy setup on Windows | Asked 9 Oct. |
 | OPENCODE_ZEN_API_KEY, MARKETPLACE_KEY | Open. |
 | Telegram bot, a real app for Guardian, a Windows tester, first beta users | Open. |
 
@@ -399,12 +420,13 @@ system); rename to `mangoman` (`mangoman.exe`); in a terminal: `mangoman setup`
 and in an empty folder `mangoman code --ui`. Skill packs need **Python 3**
 plus `pip install pillow python-pptx python-docx pypdf playwright` and
 `python -m playwright install chromium`; ad copy and email need only Python.
-Mac: right-click, Open (unsigned); Windows: More info, Run anyway. The easy
-setup (3b) removes all of this.
+Mac: right-click, Open (unsigned); Windows: More info, Run anyway. **Since
+9 Oct (3b):** just double-click `mangoman.exe`; the setup page does the rest
+(no Python, no pip, no terminal).
 
 ---
 
-## 13. Lessons from 8 Oct (so they do not repeat)
+## 13. Lessons (so they do not repeat)
 
 | What went wrong | Do instead |
 |---|---|
@@ -418,6 +440,8 @@ setup (3b) removes all of this.
 | Told the owner B needed Edge added; it already existed | Check the code before describing what a change involves. |
 | A typo-level bug (commas in a pack list) wasted a whole real run | Try a dispatch payload against the script locally first. |
 | Waited idle during long runs | Keep building while a run goes; read results when it ends. |
+| 9 Oct: planned to drop Playwright; the owner caught that `render.inspect` and `render_frames` need it | Before removing a dependency, find every call, including optional paths. |
+| 9 Oct: said pandas was used by one script; the model's own `analysis.py` uses it in three packs | Search the SKILL.md instructions and test samples too, not only the scripts. |
 
 ---
 
