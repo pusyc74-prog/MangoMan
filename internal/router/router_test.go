@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -391,9 +392,15 @@ func TestStallAfterFirstWordsIsWaitedOut(t *testing.T) {
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: pause}
 	rt := setup(t, a)
 	rt.StreamIdle, rt.StreamStall = 100*time.Millisecond, 3*time.Second
+	var logged []string
+	rt.Logf = func(f string, args ...any) { logged = append(logged, fmt.Sprintf(f, args...)) }
 	w := do(t, rt, helloStream)
 	if !strings.Contains(w.Body.String(), "and the rest") {
 		t.Fatalf("the answer was cut off mid-stream: %s", w.Body)
+	}
+	// The pause is logged, to check StreamStall against real answers.
+	if len(logged) != 1 || !regexp.MustCompile(`longest pause 0\.[4-9]s`).MatchString(logged[0]) {
+		t.Fatalf("pause not logged: %q", logged)
 	}
 }
 

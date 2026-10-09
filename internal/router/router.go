@@ -51,7 +51,13 @@ type Router struct {
 	// StreamStall is the gap allowed once the answer has started. It is
 	// longer than StreamIdle because by then the answer is already going to
 	// the client and there is no other model to fall back to, so waiting
-	// out a long pause beats killing the answer.
+	// out a long pause beats killing the answer. Measured on NVIDIA (9 Oct):
+	// Nemotron Ultra sends a long tool call (website copy's whole site.json)
+	// in one piece at the end, silent in between. In run 20261009-065414 that
+	// answer ended about 171 s after its first word, just inside the old
+	// 180 s; in 20261009-165742 the same step went past 180 s twice, both
+	// answers were cut and the task was lost. 300 s leaves room; serve.log
+	// now shows each answer's longest pause, to check it against.
 	StreamStall time.Duration
 	// NonStreamTimeout caps one non-streaming attempt.
 	NonStreamTimeout time.Duration
@@ -176,7 +182,7 @@ func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Route
 		Logf:             func(string, ...any) {},
 		Health:           NewHealth(),
 		StreamIdle:       30 * time.Second,
-		StreamStall:      180 * time.Second,
+		StreamStall:      300 * time.Second,
 		NonStreamTimeout: 180 * time.Second,
 	}
 	rt.active.mark(0)
@@ -198,8 +204,9 @@ type attemptResult struct {
 	errMsg   string
 	badBody  []byte // a complete answer that failed the guard, kept as last resort
 	badWhy   string
-	clientIn bool // upstream rejected the request itself (4xx client error)
-	tokens   int  // tokens counted against quota
+	clientIn bool          // upstream rejected the request itself (4xx client error)
+	tokens   int           // tokens counted against quota
+	pause    time.Duration // streams: the longest silence once bytes started coming
 }
 
 // Handle serves one Chat Completions request end to end.
@@ -318,6 +325,10 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		if res.firstOut > 0 {
 			// Measured to set StreamIdle: how long answers that do arrive take to start.
 			first = fmt.Sprintf(" first word after %.1fs", res.firstOut.Seconds())
+		}
+		if res.pause > 0 {
+			// Measured to set StreamStall: how long an answer goes quiet.
+			first += fmt.Sprintf(" longest pause %.1fs", res.pause.Seconds())
 		}
 		rt.Logf("req=%s attempt=%d %s -> %s (%d)%s %s", id, attempts, who, res.outcome, res.status, first, res.errMsg)
 		if res.done {

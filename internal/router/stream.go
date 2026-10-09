@@ -25,7 +25,7 @@ import (
 // later failure ends the stream with an error event (continuation is a P2
 // research item).
 func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.ResponseWriter,
-	req *core.Request, c Candidate, class string, n int, resp *http.Response, addedUsage bool, sent time.Time) attemptResult {
+	req *core.Request, c Candidate, class string, n int, resp *http.Response, addedUsage bool, sent time.Time) (res attemptResult) {
 
 	if mt, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type")); mt != "text/event-stream" {
 		data, _ := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
@@ -34,6 +34,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 
 	body := newIdleReader(resp.Body, rt.StreamIdle, cancel)
 	defer body.stop()
+	defer func() { res.pause = body.longest() }()
 	br := bufio.NewReaderSize(body, 64<<10)
 
 	flusher, _ := w.(http.Flusher)
@@ -297,13 +298,16 @@ func parseDelta(data []byte) delta {
 	return d
 }
 
-// idleReader cancels the attempt when the upstream sends nothing for too long.
+// idleReader cancels the attempt when the upstream sends nothing for too
+// long, and measures the longest pause once the first bytes came.
 type idleReader struct {
 	r       io.Reader
 	timeout time.Duration
 	timer   *time.Timer
 	once    sync.Once
 	fired   atomic.Bool
+	last    time.Time     // when bytes last came; zero before the first
+	gap     time.Duration // longest pause between them
 }
 
 func newIdleReader(r io.Reader, d time.Duration, cancel context.CancelFunc) *idleReader {
@@ -328,9 +332,24 @@ func (i *idleReader) grow(d time.Duration) {
 func (i *idleReader) Read(p []byte) (int, error) {
 	n, err := i.r.Read(p)
 	if n > 0 {
+		now := time.Now()
+		if !i.last.IsZero() {
+			i.gap = max(i.gap, now.Sub(i.last))
+		}
+		i.last = now
 		i.timer.Reset(i.timeout)
 	}
 	return n, err
+}
+
+// longest is the longest pause since the first bytes, counting the one at
+// the end (all of it, when the stall limit cut the stream). Read it on the
+// reading goroutine, after the stream.
+func (i *idleReader) longest() time.Duration {
+	if i.last.IsZero() {
+		return 0
+	}
+	return max(i.gap, time.Since(i.last))
 }
 
 func (i *idleReader) stop() { i.once.Do(func() { i.timer.Stop() }) }
