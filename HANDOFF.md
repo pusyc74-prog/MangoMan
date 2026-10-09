@@ -64,6 +64,8 @@ direction, not the details.
 
 ### 3a. Consolidate the router's failure handling
 
+**Status (9 Oct): built and pushed; the confirming pack run is in the PRD build log.**
+
 **Why:** over 7 and 8 Oct, layers were added one at a time, each fixing a real
 problem seen in a real run. Each works and is tested, but together they are
 hard to reason about, and some overlap. The owner asked whether "we have gone
@@ -73,15 +75,15 @@ too far with the code"; the honest answer was "not in size, yes in this area".
 
 | Mechanism | Where | What it does |
 |---|---|---|
-| Circuit breaker | `internal/breaker`, `router.New`: `breaker.New(3, 30*time.Second, 5*time.Minute)` | 3 failures in a row: the model is skipped for 30 s, doubling per trip up to 5 min; then one probe. |
+| **Place in line (done 9 Oct)** | `standing.go`: `ruleFor` (the one rule), `Line` (`judge`, `allow`, `order`, `SkippedUntil`, `probation`) | Replaced the circuit breaker package and the tried-last map. `ruleFor` maps each outcome to strikes, tried-last time and the screen's reason word. 3 strikes in a row: skipped for 30 s, doubling up to 5 min, then one probe. `Handle` calls `judge` once per attempt; nothing else demotes. |
 | Quota block | `internal/quota` (`Block`, `Allow`, `RetryAfter`) | A 429 blocks the key and model until the provider's reset (Retry-After, x-ratelimit-reset-*, OpenRouter's x-ratelimit-reset in unix ms). |
-| Tried last | `session.go`: `markBusy`, `busyLast`; durations `busyFor` 2 min (overloaded, empty answer), `silentFor` 10 min (no first word in time), `garbledFor` 30 min (leaked control tokens) | Moves the model behind the others; never removes it, so a pinned (strict/) model is still asked. |
+| Tried last | Now part of `standing.go`: `busyFor` 2 min (overloaded, empty answer), `silentFor` 10 min (no first word in time), `garbledFor` 30 min (leaked control tokens) | Moves the model behind the others; never removes it, so a pinned (strict/) model is still asked. |
 | Health ranking | `health.go`: `Rate` (needs 3 samples), `Speed` (needs 2 timed samples) | Feeds the candidate score. |
 | Retry after a dropped stream | `router.go` Handle loop: a `stream_error` candidate is appended again, `maxRetries` 2, 1 s pause (`asked` map) | For overloaded providers. |
 | Garbled stop | `stream.go`: `controlToken` regexp | Before the answer starts: fail over. After: error event to the client. |
 | Empty answer stop | `stream.go`: reasoning only, then the end | Holds back `[DONE]`, sends an error event so an unattended run continues. |
 | Time limits | `router.New`: `StreamIdle` 30 s (no first word; set from measurement on 8 Oct), `StreamStall` 180 s (gap after the answer started), `NonStreamTimeout` 180 s | |
-| Wait told to clients | `plan.go` (`EarliestReset` now includes breaker `OpenUntil`), `router.go` `activity.waitUntil` (`maxHold` 2 min) | Retry-After counts models only cooling off; watchdogs treat a told-to-wait client as busy. |
+| Wait told to clients | `plan.go` (`EarliestReset` includes `Line.SkippedUntil`), `router.go` `activity.waitUntil` (`maxHold` 2 min) | Retry-After counts models only cooling off; watchdogs treat a told-to-wait client as busy. |
 | Activity | `router.go`: `activity`, `Busy()`, `Trying()`, `Attempt`, `giveUpWord`; `GET /mangoman/busy` in `internal/ingress/server.go` | For the two watchdogs and the screen's messages. |
 | Run watchdog | `cmd/mangoman/assist.go`: `watchStall`, `commandRunning` (pgrep `-a`, then `-lf` on macOS), `languageServer`, `stallAfter` 1 min, `commandCeiling` 10 min, resume with `--continue` at most twice, then an error | `mangoman code run` only. Off on Windows (no pgrep). |
 | Screen watchdog | `internal/ingress/ui/code.js`: `watch()`, `restart()`, `settle()` | Restarts a step after a minute with nothing happening, twice at most. |

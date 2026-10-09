@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/brain"
-	"github.com/pusyc74-prog/mangoman/internal/breaker"
 	"github.com/pusyc74-prog/mangoman/internal/classify"
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
@@ -207,7 +206,7 @@ type ProviderStatus struct {
 	KeySource  string `json:"key_source,omitempty"`
 	Excluded   bool   `json:"excluded,omitempty"`
 	Models     int    `json:"models"`
-	OpenModels int    `json:"models_breaker_open,omitempty"`
+	OpenModels int    `json:"models_breaker_open,omitempty"` // skipped for now (router.Line); JSON name kept for clients
 	Policy     string `json:"data_policy"`
 }
 
@@ -217,7 +216,7 @@ func (s *Server) status(w http.ResponseWriter, _ *http.Request) {
 	open := map[string]int{}
 	for _, m := range cat.AllModels() {
 		counts[m.Provider]++
-		if s.Router.Breakers.StateOf(m.ID()) == breaker.Open {
+		if !s.Router.Line.SkippedUntil(m.ID()).IsZero() {
 			open[m.Provider]++
 		}
 	}

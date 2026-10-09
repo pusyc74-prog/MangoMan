@@ -19,7 +19,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/pusyc74-prog/mangoman/internal/breaker"
 	"github.com/pusyc74-prog/mangoman/internal/catalogue"
 	"github.com/pusyc74-prog/mangoman/internal/classify"
 	"github.com/pusyc74-prog/mangoman/internal/config"
@@ -33,15 +32,15 @@ import (
 
 // Router wires the routing pieces together.
 type Router struct {
-	Cat      *catalogue.Catalogue
-	Keys     *keys.Resolver
-	Quota    *quota.Tracker
-	Breakers *breaker.Set
-	Client   *providers.Client
-	Cfg      *config.Config
-	Log      *store.Log
-	Health   *Health
-	Logf     func(format string, args ...any)
+	Cat    *catalogue.Catalogue
+	Keys   *keys.Resolver
+	Quota  *quota.Tracker
+	Line   *Line
+	Client *providers.Client
+	Cfg    *config.Config
+	Log    *store.Log
+	Health *Health
+	Logf   func(format string, args ...any)
 
 	// StreamIdle aborts a stream that sends nothing for this long. Keep it
 	// short: measured on NVIDIA (8 Oct, 345 answers), half started within
@@ -144,21 +143,6 @@ func (rt *Router) Trying() (Attempt, bool) {
 	return *best, true
 }
 
-// giveUpWord says in one word why a model was given up on, for the screen.
-func giveUpWord(res attemptResult) string {
-	switch {
-	case overloaded(res), res.outcome == "rate_limited":
-		return "busy"
-	case res.outcome == "timeout":
-		return "slow"
-	case res.outcome == "garbled":
-		return "garbled"
-	case res.outcome == "no_answer":
-		return "empty"
-	}
-	return "failed"
-}
-
 func (a *activity) mark(d int64) {
 	a.inFlight.Add(d)
 	a.last.Store(time.Now().UnixNano())
@@ -182,12 +166,12 @@ type Brain interface {
 	YesNo(ctx context.Context, kind, key, question string) (bool, float64, bool)
 }
 
-// New returns a router with default breaker and timeout settings.
+// New returns a router with default timeout settings.
 func New(cat *catalogue.Catalogue, kr *keys.Resolver, cfg *config.Config) *Router {
 	rt := &Router{
 		Cat: cat, Keys: kr, Cfg: cfg,
 		Quota:            quota.New(),
-		Breakers:         breaker.New(3, 30*time.Second, 5*time.Minute),
+		Line:             NewLine(),
 		Client:           providers.NewClient(),
 		Logf:             func(string, ...any) {},
 		Health:           NewHealth(),
@@ -243,7 +227,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		rt.writeNoCandidate(w, info)
 		return
 	}
-	cands = rt.busyLast(rt.takeTurns(cands))
+	cands = rt.Line.order(rt.takeTurns(cands))
 	secret := req.HasSecret()
 	if secret {
 		cands = rt.privateFirst(cands)
@@ -274,7 +258,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		if ok, _ := rt.allow(c, req.EstTokens); !ok {
 			continue
 		}
-		if !rt.Breakers.Allow(c.Target()) {
+		if !rt.Line.allow(c.Target()) {
 			continue
 		}
 		if k := c.Target() + "|" + c.keyName(); asked[k] {
@@ -295,10 +279,11 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			})
 		}
 		res := rt.attempt(w, r, req, c, class, id, attempts)
+		verdict := ruleFor(res)
+		rt.Line.judge(c.Target(), verdict)
 		if !res.done && !req.Internal {
-			rt.active.set(req, func(a *Attempt) { a.After, a.Why = c.Model.Canonical, giveUpWord(res) })
+			rt.active.set(req, func(a *Attempt) { a.After, a.Why = c.Model.Canonical, verdict.word })
 		}
-		rt.Breakers.Release(c.Target())
 		if res.outcome != "client_gone" {
 			lat := res.firstOut
 			if lat == 0 {
@@ -335,16 +320,6 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			first = fmt.Sprintf(" first word after %.1fs", res.firstOut.Seconds())
 		}
 		rt.Logf("req=%s attempt=%d %s -> %s (%d)%s %s", id, attempts, who, res.outcome, res.status, first, res.errMsg)
-		switch {
-		case overloaded(res):
-			rt.markBusy(c.Target(), busyFor)
-		case res.outcome == "garbled":
-			rt.markBusy(c.Target(), garbledFor)
-		case res.outcome == "timeout":
-			rt.markBusy(c.Target(), silentFor)
-		case res.outcome == "no_answer":
-			rt.markBusy(c.Target(), busyFor)
-		}
 		if res.done {
 			if strings.HasPrefix(res.outcome, "ok") {
 				rt.answered(req, c, class)
@@ -447,7 +422,7 @@ func (rt *Router) writeNoCandidate(w http.ResponseWriter, info planInfo) {
 		core.WriteExhausted(w, info.EarliestReset, "free capacity is used up on every connected provider; it returns at the next reset")
 	case info.Considered > 0 && info.NoKey == info.Considered:
 		core.WriteError(w, http.StatusServiceUnavailable, "no_providers_connected", "no provider keys found: run `mangoman keys add groq` (or another provider)")
-	case info.DoesNotFit > 0 && info.DoesNotFit == info.LocalTooSmall && info.BreakerOpen == 0 && info.QuotaBlocked == 0:
+	case info.DoesNotFit > 0 && info.DoesNotFit == info.LocalTooSmall && info.Skipped == 0 && info.QuotaBlocked == 0:
 		n := 32768
 		for n < info.Need {
 			n *= 2
@@ -457,7 +432,7 @@ func (rt *Router) writeNoCandidate(w http.ResponseWriter, info planInfo) {
 	case info.OverMinute > 0 && info.DoesNotFit == info.OverMinute+info.LocalTooSmall:
 		core.WriteError(w, http.StatusBadRequest, "no_model_fits", fmt.Sprintf(
 			"this request needs about %d tokens, more than the connected free models take in a minute (at most %d). Connect Cerebras or NVIDIA, both free with larger limits: mangoman keys add cerebras", info.Need, info.MinuteCap))
-	case info.DoesNotFit > 0 && info.BreakerOpen == 0 && info.QuotaBlocked == 0:
+	case info.DoesNotFit > 0 && info.Skipped == 0 && info.QuotaBlocked == 0:
 		core.WriteError(w, http.StatusBadRequest, "no_model_fits", "no connected free model supports this request (context size, tools, JSON mode or images)")
 	default:
 		core.WriteError(w, http.StatusServiceUnavailable, "no_candidates", "no free candidate is available right now; providers may be down, see `mangoman status`")
@@ -508,7 +483,6 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 		if r.Context().Err() != nil {
 			return attemptResult{done: true, outcome: "client_gone"}
 		}
-		rt.Breakers.Failure(c.Target())
 		out := "network_error"
 		var ne net.Error
 		if timedOut || errors.Is(err, context.DeadlineExceeded) || errors.As(err, &ne) && ne.Timeout() {
@@ -528,7 +502,6 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 
 	data, err := io.ReadAll(io.LimitReader(resp.Body, maxBody))
 	if err != nil {
-		rt.Breakers.Failure(c.Target())
 		return attemptResult{outcome: "read_error", errMsg: err.Error()}
 	}
 	ans, ok := guard.ParseChatResponse(data)
@@ -539,13 +512,10 @@ func (rt *Router) attempt(w http.ResponseWriter, r *http.Request, req *core.Requ
 				rt.Quota.Block(c.QKey, time.Now().Add(time.Minute))
 				return attemptResult{outcome: "rate_limited", status: code, errMsg: msg}
 			}
-			rt.Breakers.Failure(c.Target())
 			return attemptResult{outcome: "error_in_200", status: code, errMsg: msg}
 		}
-		rt.Breakers.Failure(c.Target())
 		return attemptResult{outcome: "quality:" + guard.Unparseable, status: resp.StatusCode, errMsg: "unparseable response"}
 	}
-	rt.Breakers.Success(c.Target())
 	tokens := usageTokens(data, req.EstTokens, len(ans.Content))
 	rt.record(c, tokens)
 	why := guard.Check(req, ans)
@@ -586,20 +556,13 @@ func (rt *Router) upstreamError(resp *http.Response, c Candidate) attemptResult 
 		// A 403 is usually about this one model (OpenRouter: "only available
 		// on agentic harnesses", region or tier locks), not the key. Avoid
 		// the model; the provider's other models stay in use.
-		rt.Breakers.Failure(c.Target())
-		rt.Breakers.Failure(c.Target())
-		rt.Breakers.Failure(c.Target())
 		res.outcome = "model_forbidden"
 	case s == http.StatusNotFound || s == http.StatusGone:
 		// Model removed, renamed or retired (NVIDIA answers 410): avoid it.
-		rt.Breakers.Failure(c.Target())
-		rt.Breakers.Failure(c.Target())
-		rt.Breakers.Failure(c.Target())
 		res.outcome = "model_not_found"
 	case s == http.StatusRequestTimeout || s == http.StatusConflict || s == http.StatusRequestEntityTooLarge:
 		res.outcome = "retryable_" + strconv.Itoa(s)
 	case s >= 500:
-		rt.Breakers.Failure(c.Target())
 		res.outcome = "server_error"
 	default: // 400, 422 and other client errors
 		res.outcome = "client_error"

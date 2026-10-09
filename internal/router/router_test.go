@@ -185,7 +185,7 @@ func TestFailoverOn429BlocksBucket(t *testing.T) {
 	}
 }
 
-func TestFailoverOn5xxOpensBreaker(t *testing.T) {
+func TestFailoverOn5xxSkipsModel(t *testing.T) {
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: status(500, nil)}
 	b := &fake{id: "b", model: "m2", quality: 0.3, handler: okJSON("from b")}
 	rt := setup(t, a, b)
@@ -195,7 +195,7 @@ func TestFailoverOn5xxOpensBreaker(t *testing.T) {
 		}
 	}
 	if got := a.calls.Load(); got != 3 {
-		t.Fatalf("a called %d times, want 3 (breaker opens after 3)", got)
+		t.Fatalf("a called %d times, want 3 (skipped after 3)", got)
 	}
 }
 
@@ -876,7 +876,7 @@ func TestInternalCallSkipsBrainAndMyList(t *testing.T) {
 	}
 }
 
-func TestHalfOpenProbeReleasedAfter429(t *testing.T) {
+func TestProbeReleasedAfter429(t *testing.T) {
 	var mode atomic.Int32 // 0: 503, 1: 429, 2: ok
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: func(w http.ResponseWriter, r *http.Request) {
 		switch mode.Load() {
@@ -890,18 +890,18 @@ func TestHalfOpenProbeReleasedAfter429(t *testing.T) {
 	}}
 	rt := setup(t, a)
 	now := time.Now()
-	rt.Breakers.SetClock(func() time.Time { return now })
+	rt.Line.SetClock(func() time.Time { return now })
 	rt.Quota.SetClock(func() time.Time { return now })
 	for i := 0; i < 3; i++ {
 		do(t, rt, hello)
 	}
-	now = now.Add(time.Hour) // half-open
+	now = now.Add(time.Hour) // the skip is over: one probe
 	mode.Store(1)
 	do(t, rt, hello) // the probe gets a 429
 	now = now.Add(time.Hour)
 	mode.Store(2)
 	if w := do(t, rt, hello); w.Code != 200 {
-		t.Fatalf("target stuck half-open: %d %s", w.Code, w.Body)
+		t.Fatalf("model stuck on probation: %d %s", w.Code, w.Body)
 	}
 }
 
@@ -1210,7 +1210,7 @@ func TestLeakedControlTokensAreGarbled(t *testing.T) {
 }
 
 // Measured on NVIDIA: about one request in five came back overloaded, too
-// few in a row to trip the breaker, so every request tried the busy model
+// few in a row to skip the model, so every request tried the busy model
 // first. A model that says it is overloaded is tried last for two minutes,
 // but stays in the list.
 func TestOverloadedModelTriedLast(t *testing.T) {
@@ -1302,9 +1302,7 @@ func TestRetryAfterCountsModelsCoolingOff(t *testing.T) {
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: status(500, nil)}
 	b := &fake{id: "b", model: "m2", quality: 0.3, handler: okJSON("from b")}
 	rt := setup(t, a, b)
-	for i := 0; i < 3; i++ {
-		rt.Breakers.Failure("a/m1")
-	}
+	rt.Line.judge("a/m1", rule{strikes: skipAfter})
 	rt.Quota.Block(quota.Key{Provider: "b", Account: keys.Own, Model: "m2"}, time.Now().Add(5*time.Hour))
 	w := do(t, rt, hello)
 	secs, _ := strconv.Atoi(w.Header().Get("Retry-After"))

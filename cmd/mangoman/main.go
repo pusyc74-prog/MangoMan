@@ -678,7 +678,7 @@ func cmdStatus() error {
 	}
 	fmt.Printf("MangoMan %s, up %s, catalogue %s\n\n", st.Version, time.Duration(st.Uptime)*time.Second, st.Catalogue)
 	tw := tabwriter.NewWriter(os.Stdout, 0, 2, 2, ' ', 0)
-	fmt.Fprintln(tw, "PROVIDER\tCONNECTED\tMODELS\tBREAKER OPEN\tDATA POLICY")
+	fmt.Fprintln(tw, "PROVIDER\tCONNECTED\tMODELS\tCOOLING DOWN\tDATA POLICY")
 	for _, p := range st.Providers {
 		c := "no"
 		if p.Excluded {

@@ -29,7 +29,6 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 
 	if mt, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type")); mt != "text/event-stream" {
 		data, _ := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
-		rt.Breakers.Failure(c.Target())
 		return attemptResult{outcome: "not_a_stream", status: resp.StatusCode, errMsg: upstreamMessage(data)}
 	}
 
@@ -118,7 +117,6 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 							// before the answer has started the next model takes over;
 							// after, the client gets an error and an unattended run picks
 							// the task up again.
-							rt.Breakers.Failure(c.Target())
 							if !committed {
 								return attemptResult{outcome: "garbled", status: 200, errMsg: "garbled answer"}
 							}
@@ -138,7 +136,6 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 						}
 						if d.err != "" && !committed {
 							// Error delivered inside a 200 stream before any output.
-							rt.Breakers.Failure(c.Target())
 							return attemptResult{outcome: "stream_error", status: 200, errMsg: d.err}
 						}
 						if !committed && d.meaningful {
@@ -178,7 +175,6 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 	}
 	if !committed {
 		if readErr != nil || !sawDone {
-			rt.Breakers.Failure(c.Target())
 			msg := "stream ended early"
 			if readErr != nil {
 				msg = readErr.Error()
@@ -191,14 +187,12 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 			return attemptResult{outcome: "stream_error", status: 200, errMsg: msg}
 		}
 		// Clean end with no output at all: an empty answer.
-		rt.Breakers.Success(c.Target())
 		rt.record(c, tokens)
 		return attemptResult{outcome: "quality:" + guard.Empty, status: 200, errMsg: "empty stream", tokens: tokens}
 	}
 
 	rt.record(c, tokens)
 	if readErr != nil || !sawDone {
-		rt.Breakers.Failure(c.Target())
 		msg := "upstream stream ended early"
 		if readErr != nil {
 			msg = "upstream stream failed: " + readErr.Error()
@@ -210,12 +204,10 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		// Only reasoning, then the end: an agent sees no words and no tool
 		// call and quietly stops the task. End it with an error instead, so
 		// an unattended run picks the task up again on another model.
-		rt.Breakers.Failure(c.Target())
 		msg := "the model only thought and gave no answer"
 		writeStreamError(w, flusher, msg)
 		return attemptResult{done: true, outcome: "no_answer", status: 200, errMsg: msg, tokens: tokens, firstOut: firstOut}
 	}
-	rt.Breakers.Success(c.Target())
 	out := "ok"
 	switch {
 	case finish == "length" && req.MaxTokens == 0:

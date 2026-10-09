@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/brain"
-	"github.com/pusyc74-prog/mangoman/internal/breaker"
 	"github.com/pusyc74-prog/mangoman/internal/catalogue"
 	"github.com/pusyc74-prog/mangoman/internal/core"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
@@ -48,7 +47,7 @@ type DashProvider struct {
 	Models      int    `json:"models"`
 	Local       bool   `json:"local,omitempty"`
 	NeedsKey    bool   `json:"needs_key"`
-	BreakerOpen int    `json:"models_unavailable,omitempty"`
+	Skipped     int    `json:"models_unavailable,omitempty"`
 	// TeamKeys are teammates' keys added on this machine; requests take
 	// turns across them and the user's own key.
 	TeamKeys []DashTeamKey `json:"team_keys,omitempty"`
@@ -258,9 +257,9 @@ func (s *Server) overview(w http.ResponseWriter, _ *http.Request) {
 			dm.State = "not_connected"
 		case dm.BlockedUntil != nil:
 			dm.State = "rate_limited"
-		case rt.Breakers.StateOf(m.ID()) == breaker.Open:
+		case !rt.Line.SkippedUntil(m.ID()).IsZero():
 			dm.State = "cooling_down"
-			dp.BreakerOpen++
+			dp.Skipped++
 		default:
 			dm.State = "ready"
 		}

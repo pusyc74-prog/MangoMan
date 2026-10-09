@@ -308,7 +308,7 @@ func (c *Catalogue) DiscoveredModel(provider, upstream string) Model {
 		}
 		if x.Canonical == m.Canonical && x.Upstream != upstream {
 			// Another model of this provider has the short name: keep the
-			// full id, so the two never share a breaker or a list entry.
+			// full id, so the two never share a place in line or a list entry.
 			m.Canonical = strings.TrimSuffix(upstream, ":free")
 		}
 	}

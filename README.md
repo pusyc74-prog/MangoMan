@@ -48,7 +48,7 @@ It also runs daily at 08:00 IST in quick mode, which catches provider changes ea
 | Local security | Binds 127.0.0.1 only; local bearer token (or `x-api-key`); Host check against DNS rebinding; browser calls refused unless they come from the dashboard |
 | Providers | One OpenAI-compatible adapter covering Groq, Cerebras, OpenRouter (free), NVIDIA, Ollama (auto-discovered) |
 | Routing | Free-first scoring (quality, quota left, health, speed) per task class; same model on another provider first; local Ollama as last-resort backstop |
-| Failover | 429 (bucket blocked until reset), 5xx and timeouts (circuit breaker), 401/403 (key disabled), 404 (model avoided), unreachable provider (skip its other models), client errors (one retry, then return) |
+| Failover | 429 (bucket blocked until reset), 5xx and timeouts (three in a row: the model is skipped for a while; overloaded, silent or garbled: tried last), 401/403 (key disabled), 404 (model avoided), unreachable provider (skip its other models), client errors (one retry, then return) |
 | Streaming | Events held until the first real token, so empty or broken streams fail over invisibly; idle timeout; clean error event if a stream breaks after output started |
 | Quality guard | Empty, truncated, invalid JSON (when JSON mode asked), malformed or unknown tool calls; if every answer fails, the first is returned with `X-MangoMan-Guard` |
 | Quota | Per provider, account, model: requests and tokens per minute and per day; pre-flight check; corrected from rate-limit headers; survives restarts |
@@ -144,7 +144,6 @@ internal/core/       internal request model (OpenAI Chat shape), errors
 internal/classify/   rules-first task classifier, virtual models
 internal/router/     plan (filter, score, rank), failover loop, stream relay
 internal/quota/      buckets, reset parsing, persistence
-internal/breaker/    circuit breakers
 internal/guard/      quality guard
 internal/providers/  OpenAI-compatible client, key validation, Ollama discovery
 internal/catalogue/  catalogue model, embedded seed.json, signature check

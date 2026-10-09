@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pusyc74-prog/mangoman/internal/breaker"
 	"github.com/pusyc74-prog/mangoman/internal/catalogue"
 	"github.com/pusyc74-prog/mangoman/internal/classify"
 	"github.com/pusyc74-prog/mangoman/internal/core"
@@ -33,7 +32,7 @@ type Candidate struct {
 // Kimi, and treats the small, fast models as weak.
 const weakGap = 0.12
 
-// Target is the breaker key for a candidate.
+// Target is the key for a candidate's place in line.
 func (c Candidate) Target() string { return c.Model.ID() }
 
 // teamKey is the teammate whose key this candidate uses, or "" for the
@@ -67,7 +66,7 @@ type planInfo struct {
 	Considered    int
 	NoKey         int
 	QuotaBlocked  int
-	BreakerOpen   int
+	Skipped       int // models skipped for now after failing (see Line)
 	DoesNotFit    int
 	Weaker        int // weak models left out because the user did not allow them
 	LocalTooSmall int // local models that fit except for their context size
@@ -150,16 +149,15 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 				}
 			}
 			c.tight = size > 0 && size < 2*need
-			state := rt.Breakers.StateOf(c.Target())
-			if state == breaker.Open {
-				info.BreakerOpen++
+			if until := rt.Line.SkippedUntil(c.Target()); !until.IsZero() {
+				info.Skipped++
 				// A model cooling off after errors is back in seconds. Counting
 				// it here keeps the wait we tell clients short: measured once,
 				// with NVIDIA's model cooling off and OpenRouter used up until
 				// its daily reset, a coding agent was told to wait hours and
 				// sat for 17 minutes doing nothing.
-				if t := rt.Breakers.OpenUntil(c.Target()); !t.IsZero() && (info.EarliestReset.IsZero() || t.Before(info.EarliestReset)) {
-					info.EarliestReset = t
+				if info.EarliestReset.IsZero() || until.Before(info.EarliestReset) {
+					info.EarliestReset = until
 				}
 				continue
 			}
@@ -178,7 +176,7 @@ func (rt *Router) plan(req *core.Request, class string) ([]Candidate, planInfo) 
 			if r, ok := rt.Health.Rate(c.Target()); ok {
 				health = r
 			}
-			if state == breaker.HalfOpen {
+			if rt.Line.probation(c.Target()) {
 				health /= 2
 			}
 			speed := p.Speed

@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pusyc74-prog/mangoman/internal/breaker"
 	"github.com/pusyc74-prog/mangoman/internal/catalogue"
 )
 
@@ -28,7 +27,7 @@ func TestLoad(t *testing.T) {
 	}}
 	steady := &fake{id: "b", model: "m2", quality: 0.8, limits: catalogue.Limits{RPM: 1 << 30}, handler: okJSON("b")}
 	rt := setup(t, flaky, steady)
-	rt.Breakers = breaker.New(1<<30, time.Second, time.Second) // keep both in play: this measures the router, not the breaker
+	rt.Line.skipAfter = 1 << 30 // keep both in play: this measures the router, not the skipping
 	const total, workers = 3000, 300
 
 	var failed atomic.Int64

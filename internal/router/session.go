@@ -2,8 +2,6 @@ package router
 
 import (
 	"crypto/sha256"
-	"slices"
-	"sort"
 	"sync"
 	"time"
 
@@ -18,54 +16,7 @@ type session struct {
 	chats       map[[16]byte]chat
 	weakerUntil time.Time
 	last        Used
-	turns       map[string]int       // per model: whose key goes first next (team keys)
-	busy        map[string]time.Time // per model: overloaded, tried last until then
-}
-
-// How long a model is tried last: after it said it is overloaded; after it
-// stayed silent past the first-word limit (measured on NVIDIA: Kimi K3 and
-// DeepSeek did so 23 times in one run, each costing the user a minute); and
-// after it garbled an answer (a broken deployment, which does not mend in
-// minutes).
-const (
-	busyFor    = 2 * time.Minute
-	silentFor  = 10 * time.Minute
-	garbledFor = 30 * time.Minute
-)
-
-// markBusy notes that a model should be tried last for d.
-func (rt *Router) markBusy(target string, d time.Duration) {
-	rt.sess.mu.Lock()
-	defer rt.sess.mu.Unlock()
-	if rt.sess.busy == nil {
-		rt.sess.busy = map[string]time.Time{}
-	}
-	rt.sess.busy[target] = time.Now().Add(d)
-}
-
-// busyLast moves models that were overloaded or garbled lately behind the
-// others. They stay in the list: with one model to choose from
-// (strict mode), it is still asked. Measured on NVIDIA: about one request in
-// five came back "Service temporarily overloaded", too few in a row to trip
-// the breaker, so every request lost time on the same busy model first.
-func (rt *Router) busyLast(cs []Candidate) []Candidate {
-	rt.sess.mu.Lock()
-	now := time.Now()
-	busy := map[string]bool{}
-	for t, until := range rt.sess.busy {
-		if now.Before(until) {
-			busy[t] = true
-		} else {
-			delete(rt.sess.busy, t)
-		}
-	}
-	rt.sess.mu.Unlock()
-	if len(busy) == 0 {
-		return cs
-	}
-	out := slices.Clone(cs)
-	sort.SliceStable(out, func(i, j int) bool { return !busy[out[i].Target()] && busy[out[j].Target()] })
-	return out
+	turns       map[string]int // per model: whose key goes first next (team keys)
 }
 
 // turn returns how far to rotate a model's keys for this request, and moves
