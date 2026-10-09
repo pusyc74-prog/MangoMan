@@ -1,0 +1,4 @@
+{"time": 1791562045.8, "tools": 0, "max_tokens": 4096, "model": "fake", "stream": true, "stream_options": {"include_usage": true}}
+{"time": 1791562046.4, "tools": 10, "max_tokens": 8192, "model": "fake", "stream": true, "stream_options": {"include_usage": true}, "tool_choice": "auto"}
+{"time": 1791562046.8, "tools": 10, "max_tokens": 8192, "model": "fake", "stream": true, "stream_options": {"include_usage": true}, "tool_choice": "auto"}
+{"time": 1791562092.0, "tools": 10, "max_tokens": 8192, "model": "fake", "stream": true, "stream_options": {"include_usage": true}, "tool_choice": "auto"}
