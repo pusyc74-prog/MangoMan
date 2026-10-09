@@ -1,0 +1,645 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m→ [0mSkill "mangoman-website-copy"
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/brief_gate.py facts.md --pages 4
+PASS  15 facts for 4 pages
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+Facts gate passes. Writing site.json.
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+site.json problems:
+- page /: slug is lowercase words joined by dashes
+[0m
+[0m$ [0mgrep -n "slug" /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/checks.py | head -20
+(no output)
+[0m
+[0m$ [0mgrep -n "slug" /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:4:Writes into the out folder: copy/<slug>.md (one Markdown file per page, ready
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:10:/ is the first page (home); /about is the page whose slug is about.
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:44:def target(href, slugs):
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:45:    """The slug an internal link points to, or None when it points nowhere."""
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:47:        return slugs[0]
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:48:    return href.strip("/") if href.startswith("/") and href.strip("/") in slugs else None
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:68:    slugs = [pg.get("slug", "") for pg in pages]
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:70:        tag = "page %s" % pg.get("slug", "?")
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:71:        if not re.match(r"^[a-z0-9]+(?:-[a-z0-9]+)*$", pg.get("slug", "")):
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:72:            p.append("%s: slug is lowercase words joined by dashes" % tag)
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:73:        if slugs.count(pg.get("slug")) > 1:
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:74:            p.append("%s: slug used twice" % tag)
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:98:            if target(h, slugs) is None:
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:99:                p.append("%s: link %s points to no page (slugs: %s)" % (tag, h, ", ".join(slugs)))
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:136:    slugs = [pg["slug"] for pg in spec["pages"]]
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:139:        to = sorted({target(h, slugs) for h in internal_links(pg)} - {pg["slug"]})
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:140:        rows.append("| %s | %s | %s | %s | %s | %s |" % (pg["name"], "/" if i == 0 else "/" + pg["slug"], pg["goal"], pg["keyword"],
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:148:        with open(os.path.join(out, "copy", pg["slug"] + ".md"), "w", encoding="utf-8") as f:
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:152:        w.writerow(["slug", "name", "title", "description", "h1", "button", "body"])
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:154:            w.writerow([pg["slug"], pg["name"], pg["meta"]["title"], pg["meta"]["description"], pg["sections"][0]["headline"], pg["cta"]["label"], page_md(pg)])
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py:158:            "pages": [{"slug": pg["slug"], "meta": pg["meta"], "sections": pg["sections"]} for pg in spec["pages"]]}
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:68:    slugs = [pg["slug"] for pg in pages]
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:71:    need = ["pages.csv", "sitemap.md", "pages.json"] + [os.path.join("copy", s + ".md") for s in slugs]
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:116:            seo.append("%s: keyword '%s' in neither title nor h1" % (pg["slug"], k))
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:123:            soft.append("%s: title is %d characters (30 to 60)" % (pg["slug"], len(t)))
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:125:            soft.append("%s: description is %d characters (70 to 160)" % (pg["slug"], len(d)))
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:127:            soft.append("%s: keyword not in the description" % pg["slug"])
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:129:            soft.append("%s: keyword not in the first 100 words" % pg["slug"])
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:134:    nocta = [pg["slug"] for pg in pages if not any(isinstance(s.get("cta"), dict) for s in pg["sections"])]
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:140:    linked = {B.target(h, slugs) for pg in pages for h in B.internal_links(pg)}
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:141:    rep.check([s for s in slugs[1:] if s not in linked], "every page is linked from another page", "pages nobody links to", level="WARN")
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:147:            if seen.setdefault(key, pg["slug"]) != pg["slug"]:
+/home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py:151:    thin = ["%s (%d words)" % (pg["slug"], n) for pg in pages for n in [len(words(" ".join(page_text(pg))))] if n < 100]
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -29,9 +29,9 @@
+   {"name": "Home Bites", "url": "https://homebites.example.com", "claims": ["Fresh gourmet lunch boxes for busy professionals"]}
+ ],
+ "pages": [
+   {
+-    "slug": "/",
++    "slug": "home",
+     "name": "Home",
+     "goal": "Get the visitor to start a weekly plan on WhatsApp",
+     "keyword": "tiffin service in Baner Pune",
+     "meta": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+Built 4 pages into site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 9.9 words
+FAIL  keyword missing: about: keyword 'Savita Joshi Annapurna Tiffins Baner' in neither title nor h1; menu: keyword 'daily tiffin menu Pune' in neither title nor h1; plans: keyword 'tiffin weekly plan price Pune' in neither title nor h1
+WARN  search fit: about: keyword not in the description; about: keyword not in the first 100 words; home: keyword not in the description; home: keyword not in the first 100 words; menu: keyword not in the description; menu: keyword not in the first 100 words; plans: description is 164 characters (70 to 160); plans: keyword not in the description
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: A weekly plan of 6 lunches costs Rs 780.; Orders for the next day close at 8 pm.; Start your plan on WhatsApp
+PASS  no thin pages
+[0m
+[0m→ [0mRead site.json
+Fixing keyword presence and meta descriptions.
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -35,9 +35,9 @@
+ "goal": "Get the visitor to start a weekly plan on WhatsApp",
+ "keyword": "tiffin service in Baner Pune",
+ "meta": {
+   "title": "Tiffin Service in Baner Pune | Annapurna Tiffins",
+-  "description": "Home-style vegetarian tiffins delivered in Baner, Aundh, Balewadi and Pashan. Weekly plan of 6 lunches for Rs 780. Message us on WhatsApp to start."
++  "description": "Tiffin service in Baner Pune with home-style vegetarian lunches. Weekly plan of 6 lunches for Rs 780. Message us on WhatsApp to start."
+ },
+ "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+ "sections": [
+   {
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -41,9 +41,9 @@
+ "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "A hot, home-style lunch at your door every working day",
++    "headline": "Tiffin service in Baner Pune: a hot, home-style lunch at your door every working day",
+     "sub": "Annapurna Tiffins cooks vegetarian tiffins in our Baner kitchen and delivers across Baner, Aundh, Balewadi and Pashan between 12:00 and 1:00 pm.",
+     "proof": "About 240 tiffins leave our kitchen every day.",
+     "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+   },
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -97,17 +97,17 @@
+ "name": "Menu",
+ "goal": "Show the variety and value, then get the visitor to start a plan",
+ "keyword": "daily tiffin menu Pune",
+ "meta": {
+-  "title": "Daily Tiffin Menu, Fresh Every Day | Annapurna Tiffins",
+-  "description": "Our tiffin menu changes every day: 4 rotis, a dry sabzi, dal or curry, rice, and a sweet on Sundays. Jain meals at the same price. Menu on WhatsApp at 9 pm."
++  "title": "Daily Tiffin Menu Pune: Fresh Every Day | Annapurna Tiffins",
++  "description": "Daily tiffin menu Pune, fresh every day: 4 rotis, a dry sabzi, dal or curry, rice, and a sweet on Sundays. Menu on WhatsApp at 9 pm."
+ },
+ "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "A new menu every day, posted the night before",
+-    "sub": "Our menu changes daily and is posted on WhatsApp at 9 pm, so you always know what is coming for lunch tomorrow.",
++    "headline": "Daily tiffin menu Pune, posted the night before",
++    "sub": "Our daily tiffin menu in Pune changes every day and is posted on WhatsApp at 9 pm, so you always know what is coming for lunch tomorrow.",
+     "proof": "Jain meals are available at the same price.",
+     "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+   },
+   {
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -152,17 +152,17 @@
+ "name": "Plans",
+ "goal": "Get the visitor to pick a plan and message on WhatsApp",
+ "keyword": "tiffin weekly plan price Pune",
+ "meta": {
+-  "title": "Tiffin Plans: Rs 780 a Week, Rs 3,200 a Month",
+-  "description": "Weekly plan of 6 lunches for Rs 780, monthly plan of 26 lunches for Rs 3,200. Pause free with 1 day notice, pay by UPI. Delivered in Baner, Aundh, Balewadi, Pashan."
++  "title": "Tiffin Weekly Plan Price Pune: Rs 780 for 6 Lunches",
++  "description": "Tiffin weekly plan price Pune: Rs 780 for 6 lunches, Rs 3,200 for 26. Pause free, pay by UPI. Delivered in Baner, Aundh, Balewadi, Pashan."
+ },
+ "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+ "sections": [
+   {
+     "type": "hero",
+-    "headline": "Two simple plans, one honest price",
+-    "sub": "A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200. Jain meals are the same price.",
++    "headline": "Tiffin weekly plan price Pune: Rs 780 for 6 lunches",
++    "sub": "Our tiffin weekly plan price in Pune is simple: Rs 780 for 6 lunches or Rs 3,200 for 26. Jain meals are the same price.",
+     "proof": "Pause your plan for free with 1 day notice.",
+     "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+   },
+   {
+
+[0m
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mThe edit tool was called with invalid arguments: SchemaError(Missing key
+  at ["filePath"]).
+Please rewrite the input so it satisfies the expected schema.
+[0m✗ [0mEdit site.json failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+[0m→ [0mRead site.json[90m [offset=214, limit=10][0m
+[0m→ [0mRead site.json[90m [offset=223, limit=10][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -210,27 +210,27 @@
+       "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+     }
+   ]
+ },
+-{
+-  "slug": "about",
+-  "name": "About",
+-  "goal": "Build trust in the kitchen, then invite the visitor to start a plan",
+-  "keyword": "Savita Joshi Annapurna Tiffins Baner",
+-  "meta": {
+-    "title": "About Annapurna Tiffins: Savita's Baner Kitchen",
+-    "description": "Savita Joshi started Annapurna Tiffins in 2019 with 6 customers. Today her Baner kitchen sends about 240 home-style vegetarian tiffins across Pune every day."
+-  },
+-  "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+-  "sections": [
++ {
++   "slug": "about",
++   "name": "About",
++   "goal": "Build trust in the kitchen, then invite the visitor to start a plan",
++   "keyword": "Savita Joshi Annapurna Tiffins Baner",
++   "meta": {
++     "title": "Savita Joshi Annapurna Tiffins Baner: Our Kitchen Story",
++     "description": "Savita Joshi started Annapurna Tiffins in Baner in 2019 with 6 customers. Today her kitchen sends about 240 tiffins daily across Pune."
++   },
++   "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
++   "sections": [
++     {
++       "type": "hero",
++       "headline": "Savita Joshi Annapurna Tiffins Baner: 240 lunches a day from her kitchen",
++       "sub": "Savita Joshi started Annapurna Tiffins in 2019 with 6 customers. Today her kitchen in Baner sends out about 240 tiffins every day.",
++       "proof": "Every tiffin is cooked with cold-pressed groundnut oil and no ajinomoto.",
++       "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
++     },
+     {
+-      "type": "hero",
+-      "headline": "One woman's kitchen, 240 lunches a day",
+-      "sub": "Savita Joshi started Annapurna Tiffins in 2019 with 6 customers. Today her kitchen in Baner sends out about 240 tiffins every day.",
+-      "proof": "Every tiffin is cooked with cold-pressed groundnut oil and no ajinomoto.",
+-      "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+-    },
+-    {
+       "type": "text",
+       "headline": "How it began",
+       "body": [
+         "In 2019, Savita Joshi began cooking lunch for 6 neighbours in Baner. The same working people kept coming back, and they told their colleagues. There was no advertising. There was a tiffin that tasted like it came from home.",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -86,9 +86,9 @@
+     },
+     {
+       "type": "cta",
+       "headline": "Lunch sorted, from tomorrow",
+-      "sub": "Orders for the next day close at 8 pm. Message us now and your tiffin can start this week.",
++      "sub": "Orders close at 8 pm for next-day lunch. Message us now and your tiffin can start this week.",
+       "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+     }
+   ]
+ },
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -80,9 +80,9 @@
+   "type": "text",
+   "headline": "Why a tiffin and not a restaurant order",
+   "body": [
+     "Ordering lunch online every day means a different meal, a different delay, and a different bill each time. A tiffin plan is steady: the same kitchen, the same honest cooking, the same delivery window, and a fixed price you already know.",
+-    "Our [menu](/menu) changes every day, so lunch never gets boring. And the [story behind the kitchen](/about) is a simple one: Savita Joshi started cooking for 6 neighbours in 2019."
++    "Our [menu](/menu) changes every day, so lunch never gets boring. And the [story behind the kitchen](/about) is simple: Savita began cooking for six neighbours in 2019."
+   ]
+ },
+ {
+   "type": "cta",
+
+[0m
+[0m✗ [0mEdit site.json failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+[0m→ [0mRead site.json[90m [offset=199, limit=15][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -197,12 +197,12 @@
+ },
+ {
+   "type": "text",
+   "headline": "Not sure which plan to take?",
+-  "body": [
+-    "Start with the weekly plan. Six lunches is enough time to taste the range of the [daily menu](/menu), and you can move to the monthly plan whenever you like.",
+-    "If you are new to us, the [home page](/) walks through what comes in every tiffin."
+-  ]
++   "body": [
++     "Start with the weekly plan. Six lunches is enough time to taste the range of the [daily menu](/menu), and you can move to the monthly plan whenever you like.",
++     "If you are new to us, the [home page](/home) walks through what comes in every tiffin."
++   ]
+ },
+ {
+   "type": "cta",
+   "headline": "Start this week",
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -153,9 +153,9 @@
+ "goal": "Get the visitor to pick a plan and message on WhatsApp",
+ "keyword": "tiffin weekly plan price Pune",
+ "meta": {
+   "title": "Tiffin Weekly Plan Price Pune: Rs 780 for 6 Lunches",
+-  "description": "Tiffin weekly plan price Pune: Rs 780 for 6 lunches, Rs 3,200 for 26. Pause free, pay by UPI. Delivered in Baner, Aundh, Balewadi, Pashan."
++  "description": "Tiffin weekly plan price Pune: Rs 780 for 6 lunches, Rs 3,200 for 26. Pause with 1 day notice, pay by UPI. Delivered in Baner, Aundh, Balewadi, Pashan."
+ },
+ "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+ "sections": [
+   {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+Built 4 pages into site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 10.1 words
+PASS  each page has its keyword in the title or h1
+WARN  search fit: about: keyword not in the description
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: A weekly plan of 6 lunches costs Rs 780.; Orders for the next day close at 8 pm.; Start your plan on WhatsApp
+PASS  no thin pages
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -215,12 +215,12 @@
+  "slug": "about",
+  "name": "About",
+  "goal": "Build trust in the kitchen, then invite the visitor to start a plan",
+  "keyword": "Savita Joshi Annapurna Tiffins Baner",
+- "meta": {
+-   "title": "Savita Joshi Annapurna Tiffins Baner: Our Kitchen Story",
+-   "description": "Savita Joshi started Annapurna Tiffins in Baner in 2019 with 6 customers. Today her kitchen sends about 240 tiffins daily across Pune."
+- },
++"meta": {
++  "title": "Savita Joshi Annapurna Tiffins Baner: Our Kitchen Story",
++  "description": "Savita Joshi Annapurna Tiffins Baner: started in 2019 with 6 customers, now about 240 tiffins daily across Pune."
++},
+  "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+  "sections": [
+    {
+      "type": "hero",
+
+[0m
+[0m$ [0mgrep -n "A weekly plan of 6 lunches costs Rs 780" /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+12:    "weekly": "A weekly plan of 6 lunches costs Rs 780.",
+191:            {"q": "What does each plan cost?", "a": "A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200."},
+264:          "sub": "A weekly plan of 6 lunches costs Rs 780. See the [plans](/plans), check the [menu](/menu), or simply message us.",
+[0m
+[0m$ [0mgrep -n "Orders for the next day close at 8 pm" /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+16:    "cutoff": "Orders for the next day close at 8 pm.",
+182:            {"title": "Message us before 8 pm", "text": "Orders for the next day close at 8 pm. WhatsApp us at 98765 43210 with your plan and address."},
+195:            {"q": "What if I miss the 8 pm cutoff?", "a": "Orders for the next day close at 8 pm. Message us earlier to be sure your lunch starts tomorrow."}
+258:            {"title": "On time", "text": "Lunch reaches your door between 12:00 and 1:00 pm. Orders for the next day close at 8 pm."}
+[0m
+[0m$ [0mgrep -n "Start your plan on WhatsApp" /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+41:      "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+48:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+91:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+104:      "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+111:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+146:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+159:      "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+166:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+210:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+223:       "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+230:           "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+265:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+[0m
+[0m$ [0mgrep -n "Start your plan on WhatsApp" /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json | grep -v '"label":'
+(no output)
+[0m
+[0m$ [0mgrep -n "Start your plan" /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+41:      "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+48:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+91:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+104:      "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+111:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+146:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+159:      "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+166:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+210:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+223:       "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"},
+230:           "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+265:          "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+[0m
+[0m→ [0mRead site.json[90m [offset=190, limit=5][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -187,9 +187,9 @@
+ {
+   "type": "faq",
+   "headline": "Questions about plans",
+   "items": [
+-    {"q": "What does each plan cost?", "a": "A weekly plan of 6 lunches costs Rs 780. A monthly plan of 26 lunches costs Rs 3,200."},
++     {"q": "What does each plan cost?", "a": "For a weekly plan of 6 lunches, the price is Rs 780. For a monthly plan of 26 lunches, it's Rs 3,200."},
+     {"q": "Can I pause my plan?", "a": "Yes. Pause for free with 1 day notice and your remaining lunches carry forward."},
+     {"q": "Where do you deliver?", "a": "We deliver to Baner, Aundh, Balewadi and Pashan, between 12:00 and 1:00 pm."},
+     {"q": "When do I pay?", "a": "By UPI, at the start of the plan."},
+     {"q": "What if I miss the 8 pm cutoff?", "a": "Orders for the next day close at 8 pm. Message us earlier to be sure your lunch starts tomorrow."}
+
+[0m
+[0m→ [0mRead site.json[90m [offset=260, limit=10][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -260,9 +260,9 @@
+     },
+     {
+       "type": "cta",
+       "headline": "Eat from Savita's kitchen this week",
+-      "sub": "A weekly plan of 6 lunches costs Rs 780. See the [plans](/plans), check the [menu](/menu), or simply message us.",
++       "sub": "Weekly plan of 6 lunches: Rs 780. See the [plans](/plans), check the [menu](/menu), or simply message us.",
+       "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+     }
+   ]
+ }
+
+[0m
+[0m→ [0mRead site.json[90m [offset=180, limit=5][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -178,9 +178,9 @@
+ {
+   "type": "steps",
+   "headline": "Your first tiffin in three steps",
+   "items": [
+-    {"title": "Message us before 8 pm", "text": "Orders for the next day close at 8 pm. WhatsApp us at 98765 43210 with your plan and address."},
++     {"title": "Message us before 8 pm", "text": "Orders close at 8 pm for next-day lunch. WhatsApp us at 98765 43210 with your plan and address."},
+     {"title": "Pay by UPI", "text": "You pay for the plan at the start. That is all the paying you do."},
+     {"title": "Lunch at your door", "text": "Your tiffin arrives between 12:00 and 1:00 pm, anywhere in Baner, Aundh, Balewadi or Pashan."}
+   ]
+ },
+
+[0m
+[0m→ [0mRead site.json[90m [offset=194, limit=5][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -191,9 +191,9 @@
+      {"q": "What does each plan cost?", "a": "For a weekly plan of 6 lunches, the price is Rs 780. For a monthly plan of 26 lunches, it's Rs 3,200."},
+     {"q": "Can I pause my plan?", "a": "Yes. Pause for free with 1 day notice and your remaining lunches carry forward."},
+     {"q": "Where do you deliver?", "a": "We deliver to Baner, Aundh, Balewadi and Pashan, between 12:00 and 1:00 pm."},
+     {"q": "When do I pay?", "a": "By UPI, at the start of the plan."},
+-    {"q": "What if I miss the 8 pm cutoff?", "a": "Orders for the next day close at 8 pm. Message us earlier to be sure your lunch starts tomorrow."}
++     {"q": "What if I miss the 8 pm cutoff?", "a": "If you miss the 8 pm cutoff, message us earlier to ensure lunch starts tomorrow."},
+   ]
+ },
+ {
+   "type": "text",
+
+[0m
+[0m→ [0mRead site.json[90m [offset=255, limit=5][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -254,9 +254,9 @@
+   "items": [
+     {"title": "The oil", "text": "Cold-pressed groundnut oil, always. No shortcuts in the tadka."},
+     {"title": "No ajinomoto", "text": "Taste should come from slow cooking and whole spices, not a packet."},
+     {"title": "A sweet only on Sundays", "text": "Sunday tiffins carry a small sweet. Weekdays stay a simple, honest meal."},
+-    {"title": "On time", "text": "Lunch reaches your door between 12:00 and 1:00 pm. Orders for the next day close at 8 pm."}
++     {"title": "On time", "text": "Lunch reaches your door between 12:00 and 1:00 pm. The cutoff for next-day orders is 8 pm."}
+   ]
+ },
+ {
+   "type": "cta",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+site.json is not valid JSON: Expecting value (line 196, column 11).
+
+   193 |             {"q": "Where do you deliver?", "a": "We deliver to Baner, Aundh, Balewadi and Pashan, between 12:00 and 1:00 pm."},
+   194 |             {"q": "When do I pay?", "a": "By UPI, at the start of the plan."},
+   195 |              {"q": "What if I miss the 8 pm cutoff?", "a": "If you miss the 8 pm cutoff, message us earlier to ensure lunch starts tomorrow."},
+>  196 |           ]
+      |           ^
+   197 |         },
+
+This fix makes it valid: line 195: remove the comma at its end (nothing follows it).
+Change only that spot, then run the same command again.
+[0m
+[0m→ [0mRead site.json[90m [offset=190, limit=10][0m
+[0m→ [0mRead site.json[90m [offset=132, limit=10][0m
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -186,15 +186,15 @@
+ },
+ {
+   "type": "faq",
+   "headline": "Questions about plans",
+-  "items": [
++   "items": [
+      {"q": "What does each plan cost?", "a": "For a weekly plan of 6 lunches, the price is Rs 780. For a monthly plan of 26 lunches, it's Rs 3,200."},
+-    {"q": "Can I pause my plan?", "a": "Yes. Pause for free with 1 day notice and your remaining lunches carry forward."},
+-    {"q": "Where do you deliver?", "a": "We deliver to Baner, Aundh, Balewadi and Pashan, between 12:00 and 1:00 pm."},
+-    {"q": "When do I pay?", "a": "By UPI, at the start of the plan."},
+-     {"q": "What if I miss the 8 pm cutoff?", "a": "If you miss the 8 pm cutoff, message us earlier to ensure lunch starts tomorrow."},
+-  ]
++     {"q": "Can I pause my plan?", "a": "Yes. Pause for free with 1 day notice and your remaining lunches carry forward."},
++     {"q": "Where do you deliver?", "a": "We deliver to Baner, Aundh, Balewadi and Pashan, between 12:00 and 1:00 pm."},
++     {"q": "When do I pay?", "a": "By UPI, at the start of the plan."},
++     {"q": "What if I miss the 8 pm cutoff?", "a": "If you miss the 8 pm cutoff, message us earlier to ensure lunch starts tomorrow."}
++   ]
+ },
+ {
+   "type": "text",
+   "headline": "Not sure which plan to take?",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+Built 4 pages into site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 10.2 words
+PASS  each page has its keyword in the title or h1
+PASS  titles, descriptions and keyword placement fit
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: Orders close at 8 pm for next-day lunch.; Start your plan on WhatsApp
+PASS  no thin pages
+[0m
+[0m$ [0mgrep -n "Orders close at 8 pm for next-day lunch" /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+90:          "sub": "Orders close at 8 pm for next-day lunch. Message us now and your tiffin can start this week.",
+182:             {"title": "Message us before 8 pm", "text": "Orders close at 8 pm for next-day lunch. WhatsApp us at 98765 43210 with your plan and address."},
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.Qn0ypje8o6/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -86,9 +86,9 @@
+     },
+     {
+       "type": "cta",
+       "headline": "Lunch sorted, from tomorrow",
+-      "sub": "Orders close at 8 pm for next-day lunch. Message us now and your tiffin can start this week.",
++      "sub": "Order by 8 pm for next-day lunch. Message us now and your tiffin can start this week.",
+       "cta": {"label": "Start your plan on WhatsApp", "href": "https://wa.me/919876543210"}
+     }
+   ]
+ },
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+Built 4 pages into site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 10.2 words
+PASS  each page has its keyword in the title or h1
+PASS  titles, descriptions and keyword placement fit
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: Start your plan on WhatsApp
+PASS  no thin pages
+[0m
+[0m$ [0mls -la site/
+total 44
+drwxr-xr-x 3 runner runner  4096 Oct  9 20:06 .
+drwxr-xr-x 3 runner runner  4096 Oct  9 20:06 ..
+drwxr-xr-x 2 runner runner  4096 Oct  9 20:06 copy
+-rw-r--r-- 1 runner runner  9133 Oct  9 20:09 pages.csv
+-rw-r--r-- 1 runner runner 15946 Oct  9 20:09 pages.json
+-rw-r--r-- 1 runner runner   749 Oct  9 20:09 sitemap.md
+[0m
+Website copy completed. The spec is saved as site.json and built into the site folder. All checks pass except for the unavoidable repetition of the consistent button label, which is required. The site contains home, menu, plans, and about pages with copy derived strictly from your facts, avoiding competitor claims and following the voice guidelines. Output files are ready in site/.
