@@ -1,0 +1,17 @@
+mangoman 2026/10/09 18:36:03 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-01.7)
+mangoman 2026/10/09 18:36:03 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/09 18:36:09 req=9eeed2fdd07a attempt=1 nvidia/kimi-k3 -> ok (200) first word after 0.9s longest pause 0.7s 
+mangoman 2026/10/09 18:36:19 req=2652e364298a attempt=1 nvidia/kimi-k3 -> ok (200) first word after 10.0s longest pause 8.9s 
+mangoman 2026/10/09 18:36:23 req=8fe898ecd681 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 3.6s longest pause 2.5s 
+mangoman 2026/10/09 18:38:14 req=255b3d16cd91 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 1.0s longest pause 107.0s 
+mangoman 2026/10/09 18:38:18 req=a46c742eb134 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 4.1s longest pause 2.8s 
+mangoman 2026/10/09 18:38:26 req=6c0930145ac3 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 1.1s longest pause 5.2s 
+mangoman 2026/10/09 18:38:35 req=793976e5071e attempt=1 nvidia/kimi-k3 -> ok (200) first word after 1.1s longest pause 5.6s 
+mangoman 2026/10/09 18:38:39 req=21a3124b7eae attempt=1 nvidia/kimi-k3 -> ok (200) first word after 4.0s longest pause 2.8s 
+mangoman 2026/10/09 18:39:44 req=5057508c9686 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 1.3s longest pause 47.3s 
+mangoman 2026/10/09 18:39:50 req=299e9c020013 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 5.9s longest pause 4.3s 
+mangoman 2026/10/09 18:40:05 req=7e20e8db9cc6 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 1.7s longest pause 8.7s 
+mangoman 2026/10/09 18:40:14 req=3fcdee29fa83 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 9.5s longest pause 7.5s 
+mangoman 2026/10/09 18:40:20 req=dfcb9cb90471 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 0.9s longest pause 0.2s 
+mangoman 2026/10/09 18:40:20 req=2e616b995a5a attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) longest pause 25.9s 
+mangoman 2026/10/09 18:40:20 stopped
