@@ -1,0 +1,36 @@
+To get ready, MangoMan downloads:
+  Coding helper (OpenCode)            62 MB
+  Python 3.12.15                      38 MB (with its installer, uv)
+  Packages for the skill packs        75 MB (Playwright alone is 39 MB; it uses your Edge or Chrome, so no browser is downloaded)
+  In all                             174 MB
+
+Downloading the coding helper: 0% of 62 MB
+Downloading the coding helper: 10% of 62 MB
+Downloading the coding helper: 20% of 62 MB
+Downloading the coding helper: 30% of 62 MB
+Downloading the coding helper: 40% of 62 MB
+Downloading the coding helper: 50% of 62 MB
+Downloading the coding helper: 60% of 62 MB
+Downloading the coding helper: 70% of 62 MB
+Downloading the coding helper: 80% of 62 MB
+Downloading the coding helper: 90% of 62 MB
+Downloading the coding helper: 100% of 62 MB
+
+Downloading uv: 0% of 16 MB
+Downloading uv: 10% of 16 MB
+Downloading uv: 20% of 16 MB
+Downloading uv: 30% of 16 MB
+Downloading uv: 40% of 16 MB
+Downloading uv: 50% of 16 MB
+Downloading uv: 60% of 16 MB
+Downloading uv: 70% of 16 MB
+Downloading uv: 80% of 16 MB
+Downloading uv: 90% of 16 MB
+Downloading uv: 100% of 16 MB
+Downloading Python 3.12.15...
+Downloading the packages for the skill packs...
+Checking it works...
+MangoMan is ready on this computer.
+took 45 s
+MangoMan is ready on this computer.
+Python folder on disk: 333 MB
