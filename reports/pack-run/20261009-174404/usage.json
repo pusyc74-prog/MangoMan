@@ -1,0 +1,104 @@
+{
+  "since": "2026-10-08T17:44:06.031271378Z",
+  "requests": 108,
+  "served": 102,
+  "failed_over": 11,
+  "brain_calls": 0,
+  "rows": [
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3-super-120b",
+      "attempts": 63,
+      "ok": 62,
+      "rate_limited": 0,
+      "errors": 1,
+      "quality_fail": 0,
+      "tokens": 1395229,
+      "p50_ms": 2122
+    },
+    {
+      "provider": "nvidia",
+      "model": "kimi-k3",
+      "attempts": 35,
+      "ok": 27,
+      "rate_limited": 5,
+      "errors": 3,
+      "quality_fail": 0,
+      "tokens": 391312,
+      "p50_ms": 5856
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 17,
+      "ok": 10,
+      "rate_limited": 0,
+      "errors": 7,
+      "quality_fail": 0,
+      "tokens": 162403,
+      "p50_ms": 3970
+    },
+    {
+      "provider": "nvidia",
+      "model": "deepseek-v4.1-flash",
+      "attempts": 7,
+      "ok": 0,
+      "rate_limited": 0,
+      "errors": 7,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 30001
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3.5-lightning",
+      "attempts": 7,
+      "ok": 3,
+      "rate_limited": 0,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 22672,
+      "p50_ms": 131755
+    },
+    {
+      "provider": "openrouter",
+      "model": "laguna-s-2.1",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 39
+    },
+    {
+      "provider": "openrouter",
+      "model": "nemotron-3-super-120b",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 126
+    },
+    {
+      "provider": "openrouter",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 167
+    }
+  ],
+  "parts": {
+    "earlier_answers": 449078,
+    "instructions": 491201,
+    "tool_definitions": 525503,
+    "tool_results": 431953,
+    "user": 11237
+  }
+}

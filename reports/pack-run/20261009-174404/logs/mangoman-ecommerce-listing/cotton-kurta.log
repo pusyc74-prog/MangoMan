@@ -1,0 +1,230 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ecommerce-listing"
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m→ [0mRead competitors.md
+[0m→ [0mRead current_listing.md
+[0m
+[0m← [0mWrite listing.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing
+built listing: listing.md, image-plan.md, amazon.csv, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing
+PASS  spec is valid
+FAIL  Amazon title: item name is 126 characters (limit 75); title is 214 characters (limit 125)
+PASS  Amazon bullets within limits
+PASS  Amazon description 823 characters (limit 2,000)
+PASS  search terms 146 of 249 bytes
+WARN  search terms: repeated words: wear, women; words already in the title (bagru, blue, calf, cotton, daily, indigo); use the space for other terms
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+WARN  primary keywords not in any title or bullet: kurta for women, cotton kurta for women
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m→ [0mRead listing.json
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+===================================================================
+--- /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
++++ /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+@@ -32,10 +32,10 @@
+ },
+ "competitors": ["Competitor A", "Competitor B"],
+ "marketplaces": ["amazon_in"],
+ "amazon": {
+-  "item_name": "Saanjh Women's Cotton Hand Block Print Straight Kurta with Pockets, Indigo Blue Jaipuri Kurti for Office and Daily Wear (Blue)",
+-  "highlights": "100% Cotton Cambric, Bagru Hand Block Print, 46 Inch Calf Length, Three-Quarter Sleeve",
++  "item_name": "Saanjh Women's Indigo Cotton Kurta with Pockets, Jaipuri Hand Block Print",
++  "highlights": "100% Cotton Cambric, Bagru Block Print, Calf Length",
+   "bullets": [
+     "100% COTTON CAMBRIC: Soft, breathable pure cotton cambric fabric keeps you cool and comfortable through long office days and daily wear.",
+     "HAND BLOCK PRINT FROM JAIPUR: Authentic Bagru-style hand block print in indigo blue with white florals, made by artisans in Rajasthan.",
+     "CALF LENGTH WITH POCKETS: 46-inch calf-length straight kurta with side slits and two side pockets for phone and essentials.",
+
+[0m
+[0m→ [0mRead listing.json[90m [offset=35, limit=20][0m
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+===================================================================
+--- /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
++++ /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+@@ -35,12 +35,12 @@
+ "amazon": {
+   "item_name": "Saanjh Women's Indigo Cotton Kurta with Pockets, Jaipuri Hand Block Print",
+   "highlights": "100% Cotton Cambric, Bagru Block Print, Calf Length",
+   "bullets": [
+-    "100% COTTON CAMBRIC: Soft, breathable pure cotton cambric fabric keeps you cool and comfortable through long office days and daily wear.",
++    "KURTA FOR WOMEN: 100% Cotton Cambric fabric is soft, breathable and keeps you cool through long office days and daily wear.",
+     "HAND BLOCK PRINT FROM JAIPUR: Authentic Bagru-style hand block print in indigo blue with white florals, made by artisans in Rajasthan.",
+-    "CALF LENGTH WITH POCKETS: 46-inch calf-length straight kurta with side slits and two side pockets for phone and essentials.",
+-    "NECK AND SLEEVE DETAIL: Round neck with button placket and three-quarter sleeves give a neat, polished look for office, casual and daily wear.",
++    "CALF LENGTH WITH POCKETS: 46-inch calf-length straight kurta features side slits and two side pockets for phone and essentials.",
++    "NECK AND SLEEVE: Round neck with button placket and three-quarter sleeves give a neat, polished look suitable for office, casual and daily wear.",
+     "SIZES AND CARE: Available in S, M, L, XL, XXL; regular fit. Hand wash cold and dry in shade; indigo colour may bleed slightly in the first wash."
+   ],
+   "description": "The Saanjh women's straight kurta is made from 100% cotton cambric with an authentic Bagru-style hand block print from Jaipur, Rajasthan. The indigo blue base with a white floral print gives it a clean, classic look that works for office wear, daily wear and casual outings. The 46-inch calf length, round neck with button placket and three-quarter sleeves give a neat, structured fit, while side slits allow easy movement. Two side pockets hold your phone and keys. Available in sizes S to XXL in a regular straight fit. Net quantity: 1 kurta. Care: hand wash cold and dry in shade; the natural indigo colour may bleed slightly in the first wash, so wash separately. Manufacturer: Saanjh Textiles, Plot 14, Sanganer Industrial Area, Jaipur 302029. Country of origin: India. Customer care: hello@saanjh.in, +91 90010 22334.",
+   "search_terms": "kurti for women indigo blue office wear daily wear casual calf length three quarter sleeve bagru jaipuri ethnic floral women kurta cotton straight",
+
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+===================================================================
+--- /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
++++ /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+@@ -42,9 +42,9 @@
+   "NECK AND SLEEVE: Round neck with button placket and three-quarter sleeves give a neat, polished look suitable for office, casual and daily wear.",
+   "SIZES AND CARE: Available in S, M, L, XL, XXL; regular fit. Hand wash cold and dry in shade; indigo colour may bleed slightly in the first wash."
+ ],
+ "description": "The Saanjh women's straight kurta is made from 100% cotton cambric with an authentic Bagru-style hand block print from Jaipur, Rajasthan. The indigo blue base with a white floral print gives it a clean, classic look that works for office wear, daily wear and casual outings. The 46-inch calf length, round neck with button placket and three-quarter sleeves give a neat, structured fit, while side slits allow easy movement. Two side pockets hold your phone and keys. Available in sizes S to XXL in a regular straight fit. Net quantity: 1 kurta. Care: hand wash cold and dry in shade; the natural indigo colour may bleed slightly in the first wash, so wash separately. Manufacturer: Saanjh Textiles, Plot 14, Sanganer Industrial Area, Jaipur 302029. Country of origin: India. Customer care: hello@saanjh.in, +91 90010 22334.",
+-"search_terms": "kurti for women indigo blue office wear daily wear casual calf length three quarter sleeve bagru jaipuri ethnic floral women kurta cotton straight",
++"search_terms": "kurti ladies ethnic top casual workwear pocket kurta side slit three quarter sleeve round neck button placket straight fit regular fit hand wash care indigo dye floral print block print kurti jaipuri kurti office kurti daily wear kurti cotton kurti kurti with pockets",
+ "aplus": [
+   {"module": "image and text", "headline": "Authentic Bagru hand block print from Jaipur", "text": "Every kurta carries a hand block print made in the Bagru tradition of Rajasthan, in indigo blue with white florals. Because it is printed by hand, no two pieces are exactly alike.", "image_brief": "Close-up of the block print showing the indigo and white floral motif and block texture."},
+   {"module": "image and text", "headline": "Cotton cambric that stays cool all day", "text": "The 100% cotton cambric fabric is soft and breathable, comfortable through long workdays and warm weather.", "image_brief": "Fabric drape shot showing the lightweight cambric weave."},
+   {"module": "image and text", "headline": "Designed for daily life", "text": "46-inch calf length, side slits and two side pockets, with a round neck, button placket and three-quarter sleeves. Sizes S to XXL in a regular straight fit.", "image_brief": "Full-length model shot showing calf length, pockets and side slits."}
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing
+built listing: listing.md, image-plan.md, amazon.csv, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing
+PASS  spec is valid
+FAIL  Amazon title: title is 126 characters (limit 125)
+PASS  Amazon bullets within limits
+PASS  Amazon description 823 characters (limit 2,000)
+FAIL  search terms: 267 bytes (Amazon indexes 249)
+WARN  search terms: repeated words: fit, kurti, print; words already in the title (block, cotton, hand, indigo, jaipuri, kurta); use the space for other terms
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+PASS  every primary keyword is in a title or bullet
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m$ [0mecho -n "Saanjh Women's Indigo Cotton Kurta with Pockets, Jaipuri Hand Block Print" | wc -c
+73
+[0m
+[0m$ [0mecho -n "100% Cotton Cambric, Bagru Block Print, Calf Length" | wc -c
+51
+[0m
+[0m✗ [0mRead listing.md failed
+[91m[1mError: [0mFile not found: /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.md
+
+Did you mean one of these?
+/tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/current_listing.md
+/tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing
+[0m→ [0mRead listing/listing.md
+[0m
+[0m$ [0mecho -n "Saanjh Women's Indigo Cotton Kurta with Pockets, Jaipuri Hand Block Print, 100% Cotton Cambric, Bagru Block Print, Calf Length" | wc -c
+126
+[0m
+[0m$ [0mecho -n "Saanjh Women's Indigo Cotton Kurta with Pocket, Jaipuri Hand Block Print" | wc -c
+72
+[0m
+[0m$ [0mecho -n "kurti ladies ethnic top casual workwear pocket kurta side slit three quarter sleeve round neck button placket straight fit regular fit hand wash care indigo dye floral print block print kurti jaipuri kurti office kurti daily wear kurti cotton kurti kurti with pockets" | wc -c
+267
+[0m
+[0m$ [0mecho -n "ladies ethnic top casual workwear side slit three quarter sleeve round neck button placket straight fit regular wash care dye floral office daily wear kurti" | wc -c
+156
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+===================================================================
+--- /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
++++ /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+@@ -42,9 +42,9 @@
+   "NECK AND SLEEVE: Round neck with button placket and three-quarter sleeves give a neat, polished look suitable for office, casual and daily wear.",
+   "SIZES AND CARE: Available in S, M, L, XL, XXL; regular fit. Hand wash cold and dry in shade; indigo colour may bleed slightly in the first wash."
+ ],
+ "description": "The Saanjh women's straight kurta is made from 100% cotton cambric with an authentic Bagru-style hand block print from Jaipur, Rajasthan. The indigo blue base with a white floral print gives it a clean, classic look that works for office wear, daily wear and casual outings. The 46-inch calf length, round neck with button placket and three-quarter sleeves give a neat, structured fit, while side slits allow easy movement. Two side pockets hold your phone and keys. Available in sizes S to XXL in a regular straight fit. Net quantity: 1 kurta. Care: hand wash cold and dry in shade; the natural indigo colour may bleed slightly in the first wash, so wash separately. Manufacturer: Saanjh Textiles, Plot 14, Sanganer Industrial Area, Jaipur 302029. Country of origin: India. Customer care: hello@saanjh.in, +91 90010 22334.",
+-"search_terms": "kurti ladies ethnic top casual workwear pocket kurta side slit three quarter sleeve round neck button placket straight fit regular fit hand wash care indigo dye floral print block print kurti jaipuri kurti office kurti daily wear kurti cotton kurti kurti with pockets",
++"search_terms": "ladies ethnic top casual workwear side slit three quarter sleeve round neck button placket straight fit regular wash care dye floral office daily wear kurti",
+ "aplus": [
+   {"module": "image and text", "headline": "Authentic Bagru hand block print from Jaipur", "text": "Every kurta carries a hand block print made in the Bagru tradition of Rajasthan, in indigo blue with white florals. Because it is printed by hand, no two pieces are exactly alike.", "image_brief": "Close-up of the block print showing the indigo and white floral motif and block texture."},
+   {"module": "image and text", "headline": "Cotton cambric that stays cool all day", "text": "The 100% cotton cambric fabric is soft and breathable, comfortable through long workdays and warm weather.", "image_brief": "Fabric drape shot showing the lightweight cambric weave."},
+   {"module": "image and text", "headline": "Designed for daily life", "text": "46-inch calf length, side slits and two side pockets, with a round neck, button placket and three-quarter sleeves. Sizes S to XXL in a regular straight fit.", "image_brief": "Full-length model shot showing calf length, pockets and side slits."}
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing
+built listing: listing.md, image-plan.md, amazon.csv, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing
+PASS  spec is valid
+FAIL  Amazon title: title is 126 characters (limit 125)
+PASS  Amazon bullets within limits
+PASS  Amazon description 823 characters (limit 2,000)
+PASS  search terms 156 of 249 bytes
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+PASS  every primary keyword is in a title or bullet
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m→ [0mRead listing.json[90m [offset=35, limit=10][0m
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+===================================================================
+--- /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
++++ /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+@@ -32,9 +32,9 @@
+ },
+ "competitors": ["Competitor A", "Competitor B"],
+ "marketplaces": ["amazon_in"],
+ "amazon": {
+-  "item_name": "Saanjh Women's Indigo Cotton Kurta with Pockets, Jaipuri Hand Block Print",
++  "item_name": "Saanjh Women's Indigo Cotton Kurta with Pocket, Jaipuri Hand Block Print",
+   "highlights": "100% Cotton Cambric, Bagru Block Print, Calf Length",
+   "bullets": [
+     "KURTA FOR WOMEN: 100% Cotton Cambric fabric is soft, breathable and keeps you cool through long office days and daily wear.",
+     "HAND BLOCK PRINT FROM JAIPUR: Authentic Bagru-style hand block print in indigo blue with white florals, made by artisans in Rajasthan.",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing
+built listing: listing.md, image-plan.md, amazon.csv, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing
+PASS  spec is valid
+PASS  Amazon title follows the title rules (125 characters)
+PASS  Amazon bullets within limits
+PASS  Amazon description 823 characters (limit 2,000)
+PASS  search terms 156 of 249 bytes
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+PASS  every primary keyword is in a title or bullet
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m$ [0mls -la /tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing/
+total 172
+drwxr-xr-x 2 runner runner   4096 Oct  9 17:28 .
+drwxr-xr-x 3 runner runner   4096 Oct  9 17:28 ..
+-rw-r--r-- 1 runner runner   2097 Oct  9 17:29 amazon.csv
+-rw-r--r-- 1 runner runner   1733 Oct  9 17:29 image-plan.md
+-rw-r--r-- 1 runner runner   3767 Oct  9 17:29 listing.md
+-rw-r--r-- 1 runner runner   6208 Oct  9 17:29 listing.spec.json
+-rw-r--r-- 1 runner runner   3560 Oct  9 17:29 preview.html
+-rw-r--r-- 1 runner runner 141792 Oct  9 17:29 preview.png
+[0m
+Amazon India listing optimized and built. Files saved:
+
+- Specification: `/tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing.json`
+- Built listing folder: `/tmp/tmp.m5WWpa2DbK/run/mangoman-ecommerce-listing/cotton-kurta/listing/` (contains `listing.md`, `amazon.csv`, `image-plan.md`, `preview.png`, etc.)
+
+All checks passed: title length within limits, search terms within byte limit, no prohibited claims, all numbers from facts, primary keywords in title/bullets, Indian disclosures present. Ready for upload.
