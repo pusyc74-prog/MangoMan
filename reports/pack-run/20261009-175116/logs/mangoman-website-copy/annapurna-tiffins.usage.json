@@ -1,0 +1,104 @@
+{
+  "since": "2026-10-08T17:51:16.261936813Z",
+  "requests": 46,
+  "served": 46,
+  "failed_over": 4,
+  "brain_calls": 0,
+  "rows": [
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3-super-120b",
+      "attempts": 33,
+      "ok": 32,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 800211,
+      "p50_ms": 1424
+    },
+    {
+      "provider": "nvidia",
+      "model": "kimi-k3",
+      "attempts": 10,
+      "ok": 8,
+      "rate_limited": 2,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 142969,
+      "p50_ms": 8668
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 7,
+      "ok": 5,
+      "rate_limited": 0,
+      "errors": 2,
+      "quality_fail": 0,
+      "tokens": 102803,
+      "p50_ms": 3332
+    },
+    {
+      "provider": "nvidia",
+      "model": "deepseek-v4.1-flash",
+      "attempts": 2,
+      "ok": 0,
+      "rate_limited": 0,
+      "errors": 2,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 30001
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3.5-lightning",
+      "attempts": 1,
+      "ok": 1,
+      "rate_limited": 0,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 4721,
+      "p50_ms": 271923
+    },
+    {
+      "provider": "openrouter",
+      "model": "laguna-s-2.1",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 32
+    },
+    {
+      "provider": "openrouter",
+      "model": "nemotron-3-super-120b",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 118
+    },
+    {
+      "provider": "openrouter",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 112
+    }
+  ],
+  "parts": {
+    "earlier_answers": 400297,
+    "instructions": 217683,
+    "tool_definitions": 234135,
+    "tool_results": 201368,
+    "user": 4295
+  }
+}

@@ -1,0 +1,59 @@
+mangoman 2026/10/09 17:44:41 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-01.7)
+mangoman 2026/10/09 17:44:41 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/09 17:44:51 req=c742d9e36235 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 2.4s longest pause 3.6s 
+mangoman 2026/10/09 17:44:59 req=fc27f5a43f49 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 7.6s longest pause 5.3s 
+mangoman 2026/10/09 17:44:59 req=35bb3299de7f attempt=1 nvidia/kimi-k3 -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/09 17:47:51 req=35bb3299de7f attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.9s longest pause 161.4s 
+mangoman 2026/10/09 17:47:53 req=f4c7acc0b518 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 0.7s 
+mangoman 2026/10/09 17:47:57 req=c99fa2623d20 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 1.9s 
+mangoman 2026/10/09 17:48:04 req=ac71455a300e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.1s longest pause 5.1s 
+mangoman 2026/10/09 17:48:05 req=d956b6b53f06 attempt=1 nvidia/nemotron-3-ultra-550b -> stream_error (200) longest pause 0.0s Service temporarily overloaded
+mangoman 2026/10/09 17:48:05 req=d956b6b53f06 attempt=2 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/09 17:48:35 req=d956b6b53f06 attempt=3 nvidia/deepseek-v4.1-flash -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/09 17:48:40 req=d956b6b53f06 attempt=4 nvidia/kimi-k3 -> ok (200) first word after 2.2s longest pause 1.7s 
+mangoman 2026/10/09 17:48:51 req=c11251db59ed attempt=1 nvidia/kimi-k3 -> ok (200) first word after 5.4s longest pause 2.7s 
+mangoman 2026/10/09 17:49:02 req=ecbdd1b285dc attempt=1 nvidia/kimi-k3 -> ok (200) first word after 2.2s longest pause 5.1s 
+mangoman 2026/10/09 17:49:11 req=714efc4db7b8 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 2.2s longest pause 6.3s 
+mangoman 2026/10/09 17:49:16 req=53ca3e939eac attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) first word after 0.3s longest pause 6.7s 
+mangoman 2026/10/09 17:49:34 req=7066a2b9293e attempt=1 nvidia/kimi-k3 -> ok (200) first word after 2.9s longest pause 20.0s 
+mangoman 2026/10/09 17:49:35 req=b86bac31c982 attempt=1 nvidia/kimi-k3 -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/09 17:49:38 req=b86bac31c982 attempt=2 nvidia/nemotron-3-super-120b -> ok (200) first word after 1.4s longest pause 1.9s 
+mangoman 2026/10/09 17:49:40 req=0b8cbc070702 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.5s longest pause 1.4s 
+mangoman 2026/10/09 17:49:43 req=93f57a06fb4a attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 1.7s 
+mangoman 2026/10/09 17:49:45 req=d00b03777fde attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 0.5s 
+mangoman 2026/10/09 17:49:46 req=b74bd0fef191 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 0.4s 
+mangoman 2026/10/09 17:49:49 req=13bafaf07073 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.5s longest pause 2.4s 
+mangoman 2026/10/09 17:49:52 req=e27e27b0d8d2 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 1.6s 
+mangoman 2026/10/09 17:49:53 req=bab504e3553f attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 0.5s 
+mangoman 2026/10/09 17:49:54 req=be2222f7f3b7 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.5s longest pause 0.3s 
+mangoman 2026/10/09 17:49:56 req=835b596f4d99 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.5s longest pause 0.9s 
+mangoman 2026/10/09 17:49:58 req=0d6918cc48c7 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.8s longest pause 0.6s 
+mangoman 2026/10/09 17:49:59 req=398a0830ed6b attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 0.3s 
+mangoman 2026/10/09 17:50:00 req=14d884c2cdfb attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 0.5s 
+mangoman 2026/10/09 17:50:02 req=fc468e86cad9 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.8s longest pause 0.6s 
+mangoman 2026/10/09 17:50:03 req=f60026846b8e attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 0.5s 
+mangoman 2026/10/09 17:50:04 req=550ec2ef2ee6 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 0.3s 
+mangoman 2026/10/09 17:50:06 req=02428da18379 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.8s longest pause 0.6s 
+mangoman 2026/10/09 17:50:07 req=c2f24842e6cf attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.4s longest pause 0.4s 
+mangoman 2026/10/09 17:50:09 req=4f13cd878765 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 0.7s 
+mangoman 2026/10/09 17:50:10 req=d64878dbe31c attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 0.4s 
+mangoman 2026/10/09 17:50:11 req=424cc97cc1fe attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 0.7s 
+mangoman 2026/10/09 17:50:13 req=5113838e40f1 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 0.7s 
+mangoman 2026/10/09 17:50:14 req=2ad2c1d11ab0 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 0.5s 
+mangoman 2026/10/09 17:50:17 req=ec8d8f41668f attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 1.4s 
+mangoman 2026/10/09 17:50:19 req=fe6252fe0156 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 1.6s 
+mangoman 2026/10/09 17:50:21 req=63d09b2f6e08 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 1.2s 
+mangoman 2026/10/09 17:50:22 req=4cf696d26018 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.6s longest pause 0.4s 
+mangoman 2026/10/09 17:50:24 req=a9d6768fb92b attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.4s longest pause 0.9s 
+mangoman 2026/10/09 17:50:26 req=0d55ac2bbc68 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 1.1s 
+mangoman 2026/10/09 17:50:27 req=12ddb921aec1 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 0.4s 
+mangoman 2026/10/09 17:50:30 req=d9d5d85b0d6a attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 2.0s longest pause 0.4s 
+mangoman 2026/10/09 17:50:31 req=64bf83f94eab attempt=1 nvidia/nemotron-3-super-120b -> ok (200) first word after 0.7s longest pause 0.4s 
+mangoman 2026/10/09 17:50:31 req=1daa379b2791 attempt=1 nvidia/nemotron-3-super-120b -> rate_limited (429) {"status":429,"title":"Too Many Requests"}
+mangoman 2026/10/09 17:50:32 req=1daa379b2791 attempt=2 openrouter/nemotron-3-super-120b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/09 17:50:32 req=1daa379b2791 attempt=3 nvidia/nemotron-3-ultra-550b -> stream_error (200) longest pause 0.0s Service temporarily overloaded
+mangoman 2026/10/09 17:50:32 req=1daa379b2791 attempt=4 openrouter/laguna-s-2.1 -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/09 17:51:02 req=1daa379b2791 attempt=5 nvidia/deepseek-v4.1-flash -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/09 17:51:07 req=1daa379b2791 attempt=6 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 1.4s 
+mangoman 2026/10/09 17:51:15 req=a6f936f43127 attempt=1 nvidia/kimi-k3 -> ok (200) first word after 2.9s longest pause 0.4s 
+mangoman 2026/10/09 17:51:16 stopped
