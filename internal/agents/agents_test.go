@@ -177,7 +177,7 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 	}
 	// Python's own socket pair (what asyncio, so Playwright, uses on Windows)
 	// is allowed: it connects only to itself.
-	pkg, _ := packDemo(t, root, map[string]string{"scripts/ok.py": "import os, socket, subprocess, sys\nopen('ok.txt','w').write(os.environ.get('GROQ_API_KEY','none') + os.environ.get('DATABASE_URL','none'))\nsubprocess.run([sys.executable, '-c', 'pass'], check=True)\ntry:\n    [s.close() for s in socket._fallback_socketpair()]\nexcept PermissionError:\n    raise\nexcept OSError:\n    pass  # no loopback in the Linux sandbox: not the guard's doing\n"})
+	pkg, _ := packDemo(t, root, map[string]string{"scripts/ok.py": "import os, socket, subprocess, sys\nopen('ok.txt','w').write(os.environ.get('GROQ_API_KEY','none') + os.environ.get('DATABASE_URL','none'))\nsubprocess.run([sys.executable, '-c', 'pass'], check=True)\npair = getattr(socket, '_fallback_socketpair', None)\ntry:\n    [s.close() for s in (pair() if pair else [])]\nexcept PermissionError:\n    raise\nexcept OSError:\n    pass  # no loopback in the Linux sandbox: not the guard's doing\n"})
 	dir := filepath.Join(root, "agents")
 	if _, err := Install(pkg, dir); err != nil {
 		t.Fatal(err)

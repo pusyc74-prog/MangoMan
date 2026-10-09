@@ -104,7 +104,8 @@ def _own_pair():
     process. Only that code may connect to loopback undeclared."""
     f = sys._getframe(2)
     while f is not None:
-        if f.f_code.co_name == "_fallback_socketpair" and f.f_globals.get("__name__") == "socket":
+        # Older Pythons do it inside socketpair itself.
+        if f.f_code.co_name in ("_fallback_socketpair", "socketpair") and f.f_globals.get("__name__") == "socket":
             return True
         f = f.f_back
     return False
