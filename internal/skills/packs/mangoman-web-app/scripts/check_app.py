@@ -20,6 +20,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import checks as C  # noqa: E402
+import render  # noqa: E402
 
 AUDIT_JS = r"""
 () => ({
@@ -103,13 +104,13 @@ def main():
     try:
         from playwright.sync_api import sync_playwright, Error as PWError
     except ImportError:
-        rep.add("FAIL", "Playwright is needed to test the app: pip install playwright && python -m playwright install chromium")
+        rep.add("FAIL", "Playwright is missing: run mangoman ready (or click Get ready in the dashboard)")
         rep.finish()
-    url = "file://" + os.path.abspath(app)
+    url = render._url(app)
     scen = tests.get("scenarios", [])
     rep.check([] if scen else ["none"], "%d test scenarios" % len(scen), "no scenarios in tests.json: write one per feature")
     with sync_playwright() as p:
-        b = p.chromium.launch()
+        b = render.launch(p)
         for w in (390, 1280):
             ctx = b.new_context(viewport={"width": w, "height": 844})
             page = ctx.new_page()

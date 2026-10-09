@@ -98,6 +98,18 @@ def _deny(what):
     raise PermissionError("this agent is not allowed to %s (not declared in its agent.json)" % what)
 
 
+def _own_pair():
+    """Python's socket pair on Windows (asyncio, so Playwright) is a socket
+    connected to a listener it just made on 127.0.0.1: it never leaves the
+    process. Only that code may connect to loopback undeclared."""
+    f = sys._getframe(2)
+    while f is not None:
+        if f.f_code.co_name == "_fallback_socketpair" and f.f_globals.get("__name__") == "socket":
+            return True
+        f = f.f_back
+    return False
+
+
 def _hook(event, args):
     if event == "open":
         path, mode, flags = args
@@ -127,7 +139,7 @@ def _hook(event, args):
             _deny("reach %s" % args[0][0])
     elif event == "socket.connect":
         addr = args[1]
-        if isinstance(addr, tuple) and addr[0] not in _ips:
+        if isinstance(addr, tuple) and addr[0] not in _ips and not (addr[0] in ("127.0.0.1", "::1") and _own_pair()):
             _deny("connect to %s" % addr[0])
         if isinstance(addr, (str, bytes)):
             _deny("connect to the local socket %s" % os.fsdecode(addr))

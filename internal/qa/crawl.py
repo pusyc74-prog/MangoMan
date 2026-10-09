@@ -12,6 +12,9 @@ from urllib.parse import urldefrag, urljoin, urlparse
 
 from playwright.sync_api import sync_playwright
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import render  # noqa: E402  (written next to this file: the computer's own browser)
+
 PHONE = {"width": 390, "height": 844}
 
 
@@ -21,7 +24,7 @@ def main():
     origin = urlparse(start).netloc
     queue, seen, visited, findings = [start], {urldefrag(start)[0]}, [], []
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        browser = render.launch(p)
         while queue and len(visited) < limit:
             url = queue.pop(0)
             visited.append(url)

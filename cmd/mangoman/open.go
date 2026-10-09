@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
 	"runtime"
 	"strings"
 
@@ -133,6 +134,12 @@ func cmdReady(args []string) error {
 			return errors.New("nothing downloaded")
 		}
 	}
+	// On a screen the percentage updates in place; in a log, every 10%.
+	fi, _ := os.Stdout.Stat()
+	step := int64(10)
+	if fi != nil && fi.Mode()&os.ModeCharDevice != 0 {
+		step = 1
+	}
 	last, pct := "", int64(-1)
 	err = setup.Ready(home, func(what string, done, total int64) {
 		if what != last {
@@ -145,7 +152,7 @@ func cmdReady(args []string) error {
 			}
 		}
 		if total > 0 {
-			if p := done * 100 / total; p != pct {
+			if p := done * 100 / total / step * step; p != pct {
 				pct = p
 				fmt.Printf("\r%s: %d%% of %s", what, p, setup.MB(total))
 			}

@@ -57,6 +57,7 @@ func Command(agentsDir, name, workdir, script string, args []string) (*exec.Cmd,
 	env := []string{
 		"PYTHONPATH=" + guard + string(os.PathListSeparator) + filepath.Join(dir, "scripts"),
 		"PYTHONDONTWRITEBYTECODE=1",
+		"PYTHONUTF8=1", // Windows: print ₹ (see pyenv.Use)
 		"MANGOMAN_WORKDIR=" + work,
 		"TMPDIR=" + tmp, "TEMP=" + tmp, "TMP=" + tmp,
 		"MANGOMAN_AGENT_DIR=" + dir,

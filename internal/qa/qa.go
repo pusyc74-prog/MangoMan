@@ -16,6 +16,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/pusyc74-prog/mangoman/internal/skills"
 )
 
 //go:embed crawl.py
@@ -96,6 +98,9 @@ func Crawl(ctx context.Context, url string, pages int, shots string) (visited []
 	defer os.RemoveAll(dir)
 	script := filepath.Join(dir, "crawl.py")
 	if err := os.WriteFile(script, crawlPy, 0o644); err != nil {
+		return nil, nil, err
+	}
+	if err := skills.CopyShared(dir); err != nil {
 		return nil, nil, err
 	}
 	var stderr bytes.Buffer

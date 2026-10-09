@@ -175,7 +175,9 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 			" subprocess.run([sys.executable, '-c', 'print(1)'], env={'PYTHONPATH': os.getcwd() + os.pathsep + g, 'PATH': '/usr/bin'}, check=True)",
 		"unix socket": "import socket; s = socket.socket(socket.AF_UNIX); s.connect('/var/run/docker.sock')",
 	}
-	pkg, _ := packDemo(t, root, map[string]string{"scripts/ok.py": "import os, subprocess, sys\nopen('ok.txt','w').write(os.environ.get('GROQ_API_KEY','none') + os.environ.get('DATABASE_URL','none'))\nsubprocess.run([sys.executable, '-c', 'pass'], check=True)\n"})
+	// Python's own socket pair (what asyncio, so Playwright, uses on Windows)
+	// is allowed: it connects only to itself.
+	pkg, _ := packDemo(t, root, map[string]string{"scripts/ok.py": "import os, socket, subprocess, sys\nopen('ok.txt','w').write(os.environ.get('GROQ_API_KEY','none') + os.environ.get('DATABASE_URL','none'))\nsubprocess.run([sys.executable, '-c', 'pass'], check=True)\ntry:\n    [s.close() for s in socket._fallback_socketpair()]\nexcept PermissionError:\n    raise\nexcept OSError:\n    pass  # no loopback in the Linux sandbox: not the guard's doing\n"})
 	dir := filepath.Join(root, "agents")
 	if _, err := Install(pkg, dir); err != nil {
 		t.Fatal(err)

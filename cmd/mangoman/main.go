@@ -81,7 +81,7 @@ Environment:
 func main() {
 	providers.Version = version
 	if home, err := config.Dir(); err == nil {
-		pyenv.UsePath(home)
+		pyenv.Use(home)
 	}
 	if len(os.Args) < 2 {
 		// A double-click: no terminal knowledge needed.

@@ -46,7 +46,7 @@ def _chrome():
     return None
 
 
-def _launch(p):
+def launch(p):
     """Start a headless browser for Playwright: the computer's own, else
     Playwright's own Chromium."""
     exe = _chrome()
@@ -119,7 +119,7 @@ def _print(html_path, pdf_path):
     if _playwright():
         from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
-            b = _launch(p)
+            b = launch(p)
             page = b.new_page()
             page.goto(_url(html_path), wait_until="networkidle")
             page.emulate_media(media="print")
@@ -140,7 +140,7 @@ def screenshot(html_path, png_path, width=1280, height=900, full_page=True, dark
     if _playwright():
         from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
-            b = _launch(p)
+            b = launch(p)
             page = b.new_page(viewport={"width": width, "height": height},
                               color_scheme="dark" if dark else "light")
             page.goto(_url(html_path), wait_until="networkidle")
@@ -172,7 +172,7 @@ def render_frames(jobs):
         from playwright.sync_api import sync_playwright
         out = []
         with sync_playwright() as p:
-            b = _launch(p)
+            b = launch(p)
             for html_path, png_path, w, h in jobs:
                 page = b.new_page(viewport={"width": w, "height": h})
                 page.goto(_url(html_path), wait_until="networkidle")
@@ -200,7 +200,7 @@ def inspect(html_path, js, widths=(390, 768, 1440), height=844, shots=None):
     from playwright.sync_api import sync_playwright
     out = {}
     with sync_playwright() as p:
-        b = _launch(p)
+        b = launch(p)
         for w in widths:
             page = b.new_page(viewport={"width": w, "height": height})
             page.goto(_url(html_path), wait_until="networkidle")
@@ -240,7 +240,7 @@ def overflow(html_path, selector, width=1280, height=720):
         return None
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
-        b = _launch(p)
+        b = launch(p)
         page = b.new_page(viewport={"width": width, "height": height})
         page.goto(_url(html_path), wait_until="networkidle")
         res = page.evaluate(OVERFLOW_JS, selector)

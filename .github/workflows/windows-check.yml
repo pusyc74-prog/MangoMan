@@ -61,6 +61,12 @@ jobs:
           $ctl = "$PWD\ctl"
           New-Item -ItemType Directory -Force $ctl | Out-Null
           $fake = Start-Process $py -ArgumentList "scripts/fake-model.py", "11434", "`"$ctl`"" -PassThru -NoNewWindow
+          # The router looks for local models when it starts: the stand-in must be up first.
+          $up = $false
+          for ($i = 0; $i -lt 60 -and -not $up; $i++) {
+            try { Invoke-WebRequest -UseBasicParsing http://127.0.0.1:11434/v1/models -TimeoutSec 2 | Out-Null; $up = $true } catch { Start-Sleep 1 }
+          }
+          if (-not $up) { "the stand-in model did not start" | Tee-Object out/code-checks.txt; exit 1 }
           $proj = "C:\my project"
           New-Item -ItemType Directory -Force $proj | Out-Null
           Copy-Item internal/skills/testdata/assets/*, internal/skills/testdata/resume/*, internal/skills/testdata/email/* $proj
@@ -91,7 +97,8 @@ jobs:
         if: always()
         shell: bash
         run: |
-          export PATH="/c/mm home/python/env/Scripts:$PATH"
+          # As mangoman sets them for every program it starts (pyenv.Use).
+          export PATH="/c/mm home/python/env/Scripts:$PATH" PYTHONUTF8=1
           python3 -c "import sys, playwright; print(sys.executable)" | tee out/packs.txt
           scripts/check-packs.sh 2>&1 | tee -a out/packs.txt
           exit "${PIPESTATUS[0]}"

@@ -221,10 +221,13 @@ func Install(home string, step Step) error {
 	return os.WriteFile(filepath.Join(dir, "installed"), []byte(stamp()), 0o600)
 }
 
-// UsePath puts the private Python's folder first in PATH for this process,
-// so every program MangoMan starts (OpenCode, pack scripts, agents) finds
-// its python3 first. It does nothing until the Python is installed.
-func UsePath(home string) {
+// Use sets up this process so every program MangoMan starts (OpenCode,
+// pack scripts, agents) gets the private python3 first in PATH, once it is
+// installed, and Python's UTF-8 mode: on Windows, Python otherwise prints
+// through the old code page, which has no ₹, and a script that prints a
+// rupee amount stops with an error (seen in the Windows check, 9 Oct).
+func Use(home string) {
+	_ = os.Setenv("PYTHONUTF8", "1")
 	if Installed(home) {
 		_ = os.Setenv("PATH", Bin(home)+string(os.PathListSeparator)+os.Getenv("PATH"))
 	}

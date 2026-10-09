@@ -56,8 +56,9 @@ func TestInstalledAndPath(t *testing.T) {
 		t.Fatal("nothing is installed yet")
 	}
 	t.Setenv("PATH", "/usr/bin")
-	UsePath(home)
-	if os.Getenv("PATH") != "/usr/bin" {
+	t.Setenv("PYTHONUTF8", "")
+	Use(home)
+	if os.Getenv("PATH") != "/usr/bin" || os.Getenv("PYTHONUTF8") != "1" {
 		t.Fatal("PATH changed before the Python was installed")
 	}
 	os.MkdirAll(root(home), 0o700)
@@ -65,7 +66,7 @@ func TestInstalledAndPath(t *testing.T) {
 	if !Installed(home) {
 		t.Fatal("not seen as installed")
 	}
-	UsePath(home)
+	Use(home)
 	if got := os.Getenv("PATH"); !strings.HasPrefix(got, Bin(home)+string(os.PathListSeparator)) {
 		t.Fatalf("PATH = %q", got)
 	}
