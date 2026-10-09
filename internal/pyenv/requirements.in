@@ -5,6 +5,9 @@ python-pptx
 python-docx
 pypdf
 openpyxl
+# The data packs (dashboard, CEO deck, client report) have the model write
+# its own analysis.py, with pandas when it is installed.
+pandas
 # Only the package: it drives the user's own Edge or Chrome (render.py),
 # so its browser download is never needed.
 playwright
