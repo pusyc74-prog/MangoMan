@@ -15,6 +15,9 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import checks as C  # noqa: E402
+
 TYPES = ("hero", "text", "features", "steps", "stats", "testimonials", "faq", "cta")
 LIST_KEY = {"features": "items", "steps": "items", "stats": "items", "testimonials": "items", "faq": "items", "text": "body"}
 SKIP = {"type", "href", "id", "nav", "tone"}
@@ -22,8 +25,7 @@ LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+|/[a-z0-9-]*)\)")
 
 
 def load(path):
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
+    return C.load_json(path)
 
 
 def texts(o):

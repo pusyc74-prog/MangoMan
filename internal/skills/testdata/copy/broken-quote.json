@@ -1,0 +1,235 @@
+{
+  "brand": "Kesari Foods",
+  "url": "https://kesarifoods.example.com",
+  "language": "English",
+  "promise": "Naturally ripened Devgad Alphonso mangoes, picked and shipped within 48 hours.",
+  "voice": {
+    "rules": [
+      "Warm and plain",
+      "Short sentences"
+    ],
+    "use": [
+      "Devgad",
+      "ripen"
+    ],
+    "avoid": [
+      "cheap",
+      "premium"
+    ]
+  },
+  "facts": {
+    "box": "A box of 12 mangoes costs Rs 1,499 with delivery included.",
+    "ship": "Mangoes are "picked" and shipped within 48 hours.",
+    "days": "Boxes reach customers across India in 3 to 5 days.",
+    "families": "4,200 families ordered from us last season.",
+    "rating": "Customers rate us 4.7 out of 5 from 860 reviews.",
+    "ripen": "Every mango ripens naturally. We never use carbide.",
+    "replace": "If more than 2 mangoes in a box arrive spoiled, we send a free replacement.",
+    "pulp": "Mango pulp comes in 500 g tins at Rs 349.",
+    "support": "Our support team answers on WhatsApp from 9 am to 8 pm."
+  },
+  "competitors": [
+    {
+      "name": "Rival Mangoes",
+      "url": "https://rival.example.com",
+      "claims": [
+        "India's number one mango store with farm fresh fruit at your door"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "slug": "home",
+      "name": "Home",
+      "goal": "Get first-time visitors to order a box",
+      "keyword": "buy alphonso mangoes online",
+      "meta": {
+        "title": "Buy Alphonso Mangoes Online from Devgad",
+        "description": "Buy Alphonso mangoes online from Devgad farms. Picked and shipped within 48 hours. Delivery across India in 3 to 5 days."
+      },
+      "cta": {
+        "label": "Order a box",
+        "href": "/boxes"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "headline": "Buy Alphonso mangoes online, straight from Devgad",
+          "sub": "We pick each mango when it is ready and ship it within 48 hours. Every mango ripens naturally.",
+          "proof": "4,200 families ordered from us last season.",
+          "cta": {
+            "label": "Order a box",
+            "href": "/boxes"
+          }
+        },
+        {
+          "type": "features",
+          "headline": "Why families come back",
+          "items": [
+            {
+              "title": "Picked and shipped fast",
+              "text": "Mangoes leave the farm within 48 hours and reach you in 3 to 5 days."
+            },
+            {
+              "title": "No carbide, ever",
+              "text": "Every mango ripens naturally in rice straw."
+            },
+            {
+              "title": "Free replacement",
+              "text": "If more than 2 mangoes in your box arrive spoiled, we send new ones."
+            }
+          ]
+        },
+        {
+          "type": "stats",
+          "headline": "What customers say in numbers",
+          "items": [
+            {
+              "value": "4.7",
+              "label": "average rating from 860 reviews"
+            },
+            {
+              "value": "4,200",
+              "label": "families ordered last season"
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "headline": "Questions before you order",
+          "items": [
+            {
+              "q": "How can I pay?",
+              "a": "Pay by UPI, card or cash on delivery."
+            },
+            {
+              "q": "When is the mango season?",
+              "a": "The season runs from April to June."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Your box is one tap away",
+          "sub": "Read about [our Devgad farms](/about) or pick a box.",
+          "cta": {
+            "label": "Order a box",
+            "href": "/boxes"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "boxes",
+      "name": "Mango boxes",
+      "goal": "Get the visitor to order a 12 mango box",
+      "keyword": "alphonso mango box price",
+      "meta": {
+        "title": "Alphonso Mango Box Price: Rs 1,499 for 12",
+        "description": "The Alphonso mango box price is Rs 1,499 for 12 mangoes, delivery included. Pay by UPI, card or cash on delivery."
+      },
+      "cta": {
+        "label": "Order a box",
+        "href": "https://wa.me/910000000000"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "headline": "Alphonso mango box price: Rs 1,499 for 12",
+          "sub": "Delivery is included. Each box is packed by hand and padded with rice straw.",
+          "cta": {
+            "label": "Order a box",
+            "href": "https://wa.me/910000000000"
+          }
+        },
+        {
+          "type": "steps",
+          "headline": "How your order works",
+          "items": [
+            {
+              "title": "Choose your box",
+              "text": "Pick 12 mangoes or add a 500 g tin of pulp at Rs 349."
+            },
+            {
+              "title": "We pick and pack",
+              "text": "Your mangoes are picked and shipped within 48 hours."
+            },
+            {
+              "title": "Enjoy in 3 to 5 days",
+              "text": "Let the mangoes finish ripening, then eat them."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "headline": "What is in the box",
+          "body": [
+            "You get 12 Devgad Alphonso mangoes. They ripen naturally, so give them a day or two on the counter.",
+            "Need help? Our team answers on WhatsApp from 9 am to 8 pm. You can also [read our story](/about)."
+          ]
+        },
+        {
+          "type": "faq",
+          "headline": "Box questions",
+          "items": [
+            {
+              "q": "What if mangoes arrive spoiled?",
+              "a": "If more than 2 mangoes arrive spoiled, we send a free replacement."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Ready for the season?",
+          "cta": {
+            "label": "Order a box",
+            "href": "https://wa.me/910000000000"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "about",
+      "name": "About",
+      "goal": "Build trust in the farms and the founder",
+      "keyword": "devgad alphonso farm",
+      "meta": {
+        "title": "Our Devgad Alphonso Farm and Family",
+        "description": "Meet the Devgad Alphonso farm partners behind Kesari Foods, started by Meera Kesari in Pune."
+      },
+      "cta": {
+        "label": "Order a box",
+        "href": "/boxes"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "headline": "A Devgad Alphonso farm story",
+          "sub": "Meera Kesari started Kesari Foods in Pune to bring honest mangoes home.",
+          "cta": {
+            "label": "Order a box",
+            "href": "/boxes"
+          }
+        },
+        {
+          "type": "text",
+          "headline": "How we work",
+          "body": [
+            "We work with partner farms in Devgad, Maharashtra. We never use carbide, so every mango ripens naturally.",
+            "Each box is packed by hand. Customers rate us 4.7 out of 5 from 860 reviews, and that rating is why we keep going.",
+            "We pick when the fruit is ready, not when the calendar says so. That is why a box ships within 48 hours and reaches you in 3 to 5 days. A spoiled box is our problem, so we replace it free when more than 2 mangoes go bad."
+          ]
+        },
+        {
+          "type": "cta",
+          "headline": "Taste the difference",
+          "sub": "See the [box and its price](/boxes).",
+          "cta": {
+            "label": "Order a box",
+            "href": "/boxes"
+          }
+        }
+      ]
+    }
+  ]
+}
