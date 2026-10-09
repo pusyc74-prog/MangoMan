@@ -389,8 +389,8 @@ Touch files in the control dir to change the next coding request:
 | Real-model run on Windows | Only the stand-in model ran on Windows so far; a pack run on a Windows runner would check real models' commands in PowerShell (quoting, `&&`). |
 | `mangoman ready` in a terminal and Get ready on the page at the same time | Both install into the same folder; no lock between processes (rare). |
 | packs.yml and qa.yml still download Playwright's Chromium | Unused now that the runner's Chrome is used; could be dropped to save minutes. |
-| Website copy writes `site.json` page by page | Owner, 9 Oct: a separate change with its own scored run; not started. Why: Nemotron Ultra sends the whole file as one tool call, silent for about 3 minutes (run 20261009-165742 lost the task at the old 180 s stall limit). Smaller writes mean shorter silences and may cut the fix loops below. |
-| Costly fix loops in packs | Ad copy 100 requests, website copy 156 in one run: help models fix in one pass (for example show the lines around a JSON syntax error in website copy's checker). |
+| Website copy writes `site.json` page by page | Owner, 9 Oct: a separate change with its own scored run; **not needed so far**. After the JSON error helper (3ef2091) and the facts message (cc02610), 6 of 6 website copy runs passed (100, 82, 97, 94, 100, 97). Revisit if site.json breaks again in a way the helper cannot name, or if a pause nears the 300 s stall limit (longest seen: 161 s, Kimi K3 and Nemotron Ultra). |
+| Costly fix loops in packs | Ad copy 100 requests, website copy 156 in one run (8 Oct). Website copy: done for JSON errors (`checks.load_json` names the exact fix; first real case fixed in one edit, run 20261009-200959) and for facts missing from site.json (check_copy says where they go). Other packs that read model-written JSON (ad copy, listing, email and more) could use `checks.load_json` too. |
 | Windows stall watchdog | Off (no pgrep). Could use PowerShell `Get-CimInstance Win32_Process` for child processes. |
 | Screen shows raw model ids ("kimi-k3") | Use display names. |
 | The waiting seconds on the screen sometimes jump back when two requests run | Cosmetic. |
