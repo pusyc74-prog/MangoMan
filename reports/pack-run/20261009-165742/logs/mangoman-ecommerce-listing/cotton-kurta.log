@@ -1,0 +1,155 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ecommerce-listing"
+[0m
+[0m$ [0mls
+competitors.md
+current_listing.md
+facts.md
+prompt.txt
+run.log
+search_terms.csv
+[0m
+[0m→ [0mRead current_listing.md
+[0m→ [0mRead competitors.md
+[0m→ [0mRead search_terms.csv
+[0m→ [0mRead facts.md
+[0m
+[0m← [0mWrite listing.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing
+built listing: listing.md, image-plan.md, amazon.csv, preview.png
+PASS  spec is valid
+FAIL  Amazon title: title is 144 characters (limit 125)
+PASS  Amazon bullets within limits
+PASS  Amazon description 728 characters (limit 2,000)
+PASS  search terms 176 of 249 bytes
+WARN  search terms: words already in the title (blue, calf, length, neck, round, sleeve); use the space for other terms
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+PASS  every primary keyword is in a title or bullet
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+@@ -33,9 +33,9 @@
+ },
+ "competitors": ["Competitor A", "Competitor B"],
+ "marketplaces": ["amazon_in"],
+ "amazon": {
+-  "item_name": "Saanjh Women Cotton Kurta Indigo Blue, Bagru Hand Block Print, Calf Length",
++  "item_name": "Saanjh Indigo Cotton Kurta, Bagru Hand Block Print, Calf Length with Pockets",
+   "highlights": "Straight Fit, Round Neck, 3/4 Sleeve, 2 Pockets, 100% Cotton Cambric",
+   "bullets": [
+     "FABRIC: 100% cotton cambric that is soft, lightweight and breathable, keeping you comfortable through long office hours and daily wear in warm weather.",
+     "HAND BLOCK PRINT: Traditional Bagru-style hand block print from Jaipur, Rajasthan, in indigo blue with a white floral pattern; slight variation is the mark of a hand-printed fabric.",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing
+built listing: listing.md, image-plan.md, amazon.csv, preview.png
+PASS  spec is valid
+FAIL  Amazon title: item name is 76 characters (limit 75); title is 146 characters (limit 125)
+PASS  Amazon bullets within limits
+PASS  Amazon description 728 characters (limit 2,000)
+PASS  search terms 176 of 249 bytes
+WARN  search terms: words already in the title (calf, length, neck, round, sleeve, straight); use the space for other terms
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+WARN  primary keywords not in any title or bullet: kurta for women, cotton kurta for women
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+@@ -33,10 +33,10 @@
+ },
+ "competitors": ["Competitor A", "Competitor B"],
+ "marketplaces": ["amazon_in"],
+ "amazon": {
+-  "item_name": "Saanjh Indigo Cotton Kurta, Bagru Hand Block Print, Calf Length with Pockets",
+-  "highlights": "Straight Fit, Round Neck, 3/4 Sleeve, 2 Pockets, 100% Cotton Cambric",
++  "item_name": "Saanjh Women Indigo Cotton Kurta Bagru Hand Block Print Calf Length",
++  "highlights": "Straight Fit, Round Neck, 3/4 Sleeve, Pockets, 100% Cotton",
+   "bullets": [
+     "FABRIC: 100% cotton cambric that is soft, lightweight and breathable, keeping you comfortable through long office hours and daily wear in warm weather.",
+     "HAND BLOCK PRINT: Traditional Bagru-style hand block print from Jaipur, Rajasthan, in indigo blue with a white floral pattern; slight variation is the mark of a hand-printed fabric.",
+     "FIT & LENGTH: Straight, regular-fit kurta, 46 inches (calf length), with three-quarter sleeves, a round neck with button placket, and side slits for easy movement.",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing
+built listing: listing.md, image-plan.md, amazon.csv, preview.png
+PASS  spec is valid
+FAIL  Amazon title: title is 127 characters (limit 125)
+PASS  Amazon bullets within limits
+PASS  Amazon description 728 characters (limit 2,000)
+PASS  search terms 176 of 249 bytes
+WARN  search terms: words already in the title (calf, length, neck, round, sleeve, straight); use the space for other terms
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+PASS  every primary keyword is in a title or bullet
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m← [0mEdit listing.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-ecommerce-listing/cotton-kurta/listing.json
+@@ -34,9 +34,9 @@
+ "competitors": ["Competitor A", "Competitor B"],
+ "marketplaces": ["amazon_in"],
+ "amazon": {
+   "item_name": "Saanjh Women Indigo Cotton Kurta Bagru Hand Block Print Calf Length",
+-  "highlights": "Straight Fit, Round Neck, 3/4 Sleeve, Pockets, 100% Cotton",
++  "highlights": "Straight Fit,Round Neck,3/4 Sleeve,Pockets,100% Cotton",
+   "bullets": [
+     "FABRIC: 100% cotton cambric that is soft, lightweight and breathable, keeping you comfortable through long office hours and daily wear in warm weather.",
+     "HAND BLOCK PRINT: Traditional Bagru-style hand block print from Jaipur, Rajasthan, in indigo blue with a white floral pattern; slight variation is the mark of a hand-printed fabric.",
+     "FIT & LENGTH: Straight, regular-fit kurta, 46 inches (calf length), with three-quarter sleeves, a round neck with button placket, and side slits for easy movement.",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/build_listing.py listing.json --out listing && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ecommerce-listing/scripts/check_listing.py listing.json listing
+built listing: listing.md, image-plan.md, amazon.csv, preview.png
+PASS  spec is valid
+PASS  Amazon title follows the title rules (123 characters)
+PASS  Amazon bullets within limits
+PASS  Amazon description 728 characters (limit 2,000)
+PASS  search terms 176 of 249 bytes
+WARN  search terms: words already in the title (calf, length, neck, round, sleeve, straight); use the space for other terms
+PASS  every number in the copy comes from the product facts
+PASS  no health or purity claims that need approval
+PASS  no placeholder text
+PASS  no competitor brand names
+PASS  every primary keyword is in a title or bullet
+PASS  Indian listing disclosures present
+PASS  image plan covers what shoppers need
+[0m
+[0m$ [0mls -la listing/
+total 172
+drwxr-xr-x 2 runner runner   4096 Oct  9 16:35 .
+drwxr-xr-x 3 runner runner   4096 Oct  9 16:34 ..
+-rw-r--r-- 1 runner runner   2126 Oct  9 16:37 amazon.csv
+-rw-r--r-- 1 runner runner   1934 Oct  9 16:37 image-plan.md
+-rw-r--r-- 1 runner runner   3855 Oct  9 16:37 listing.md
+-rw-r--r-- 1 runner runner   6606 Oct  9 16:37 listing.spec.json
+-rw-r--r-- 1 runner runner   3598 Oct  9 16:37 preview.html
+-rw-r--r-- 1 runner runner 141969 Oct  9 16:37 preview.png
+[0m
+Listing optimized and built. Files saved in listing/ folder. Check passed with only a warning about search term overlap (non-blocking). Ready for upload.

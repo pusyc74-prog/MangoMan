@@ -1,0 +1,144 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+All facts present. I'll structure three ad groups based on converting search terms (a2 ghee core, gir cow, bilona) and set up negatives from zero-conversion terms like organic, machine, jobs, wholesale, franchise, and recipe.
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 ghee: all-capital word COD in 'Delivered across India in 3 to 6 days. Pay by UPI, card or COD.'; A2 ghee: all-capital word COD in 'Pay by UPI or COD'; Bilona ghee: all-capital word COD in 'Delivered across India in 3 to 6 days. Pay by UPI, card or COD.'; Buy ghee online: all-capital word COD in 'Free delivery on orders above ₹1,500. Pay by UPI, card or COD.'
+WARN  Google ads: Buy ghee online: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -41,9 +41,9 @@
+   "Use Code FIRST10",
+   "Free Delivery Above ₹1,500",
+   "Delivered in 3 to 6 Days",
+   "Order A2 Ghee Online",
+-  "Pay by UPI or COD"
++  "Pay by UPI or cash on delivery"
+ ],
+ "descriptions": [
+   "Bilona ghee from our own 140 Gir cows. 500 ml jar ₹1,250, lab tested.",
+   "Every batch lab tested, report on the QR code. Order A2 ghee online.",
+
+[0m
+[0m✗ [0mEdit ads.json failed
+[91m[1mError: [0mFound multiple matches for oldString. Provide more surrounding context to make the match unique.
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -47,9 +47,9 @@
+   "descriptions": [
+     "Bilona ghee from our own 140 Gir cows. 500 ml jar ₹1,250, lab tested.",
+     "Every batch lab tested, report on the QR code. Order A2 ghee online.",
+     "10% off your first order with code FIRST10. Free delivery above ₹1,500.",
+-    "Delivered across India in 3 to 6 days. Pay by UPI, card or COD."
++    "Delivered across India in 3 to 6 days. Pay by UPI, card or cash on delivery."
+   ]
+ },
+ {
+   "name": "Bilona ghee",
+@@ -80,9 +80,9 @@
+   "descriptions": [
+     "Curd set from A2 Gir milk, churned by hand with a wooden bilona.",
+     "Small batches from our own farm near Gondal. Lab tested every batch.",
+     "10% off first order, code FIRST10. Free delivery above ₹1,500.",
+-    "Delivered across India in 3 to 6 days. Pay by UPI, card or COD."
++    "Delivered across India in 3 to 6 days. Pay by UPI, card or cash on delivery."
+   ]
+ },
+ {
+   "name": "Buy ghee online",
+@@ -112,9 +112,9 @@
+     "Every Batch Lab Tested"
+   ],
+   "descriptions": [
+     "Order A2 Gir cow ghee online. 500 ml ₹1,250, 1 litre ₹2,350.",
+-    "Free delivery on orders above ₹1,500. Pay by UPI, card or COD.",
++    "Free delivery on orders above ₹1,500. Pay by UPI, card or cash on delivery.",
+     "10% off your first order with code FIRST10. Lab tested ghee.",
+     "Same week in Ahmedabad and Rajkot, 3 to 6 days across India."
+   ]
+ }
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -99,9 +99,9 @@
+ "negatives": ["wholesale", "franchise", "distributor", "jobs", "machine", "free", "15 kg", "tin"],
+ "headlines": [
+   "Buy A2 Ghee Online",
+   "Order Gir Cow Ghee Online",
+-  "Gauveda A2 Gir Ghee",
++  "Desi Cow Ghee Online",
+   "Farm Fresh, Home Delivered",
+   "₹1,250 for 500 ml Jar",
+   "₹2,350 for 1 Litre Jar",
+   "10% Off First Order",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -100,9 +100,9 @@
+ "headlines": [
+   "Buy A2 Ghee Online",
+   "Order Gir Cow Ghee Online",
+   "Desi Cow Ghee Online",
+-  "Farm Fresh, Home Delivered",
++  "A2 Ghee Online Order",
+   "₹1,250 for 500 ml Jar",
+   "₹2,350 for 1 Litre Jar",
+   "10% Off First Order",
+   "Use Code FIRST10",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.mIUlwuCjce/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+The Google search ads have been generated and validated. All checks pass.
+
+Files are ready in the `ads/` folder:
+- `ads.md` – ad copy for review
+- `google_ads.csv` – import into Google Ads Editor
+- `google_keywords.csv` – keyword list for import
+
+Checked: Google ads follow limits and editorial rules, every number from your facts, no risky claims, no placeholder text.
+
+You can now import the CSV files into Google Ads Editor to launch the campaign.

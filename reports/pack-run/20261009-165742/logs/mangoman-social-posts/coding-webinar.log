@@ -1,0 +1,51 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-social-posts"
+[0m
+[0m$ [0mls
+brief.md
+prompt.txt
+run.log
+[0m
+[0m→ [0mRead brief.md
+[0m
+[0m← [0mWrite posts.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py posts.json --out posts
+built in posts/: captions.md, 12 images, webinar-agenda-carousel.pdf, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py posts.json posts
+PASS  spec is valid
+PASS  every image built at the right size
+PASS  all text fits
+PASS  text is at full size
+PASS  captions fit every platform
+PASS  hashtags are valid
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  promised counts match the content
+PASS  alt text on every post
+PASS  brand shown on every image
+[0m
+All social media posts for the SkillSetu webinar have been created successfully!
+
+✅ **Spec saved**: posts.json  
+✅ **Built**: posts/ folder with:
+- 12 platform-optimized images (Instagram, LinkedIn, X formats)
+- Carousel PDF for LinkedIn
+- Captions file (captions.md)
+- Preview image (preview.png)
+
+✅ **Checks passed**: All validation checks succeeded (spec validity, image sizing, text fitting, caption limits, hashtags, facts verification, no risky claims, alt text, brand consistency)
+
+The set includes 4 posts across LinkedIn, Instagram, and X:
+1. **Announce**: Webinar announcement (Sat 14 Nov, 11am IST, Zoom, 500 free seats)
+2. **Stat**: 71% placement rate of 2025 batch within 6 months
+3. **Quote**: Learner testimonial from Imran Pasha (sales exec → frontend dev)
+4. **Carousel**: Webinar agenda (roles hiring switchers, 6-month plan, portfolio tips, live Q&A)
+
+All content uses only the facts provided in brief.md and adheres to brand guidelines (navy #14213D, orange #FCA311, professional/friendly tone). Ready for scheduling!

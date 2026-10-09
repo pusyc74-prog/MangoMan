@@ -1,0 +1,186 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-seo-article"
+[0m→ [0mRead brief.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mRead sources.md
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py article.json --out article && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article
+built article: article.html, article.md, seo.md, preview.png (876 words)
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): faq: ₹4,667; section: How long do dental implants last?: 15, 20; section: Paying for your implant: ₹4,667
+PASS  876 words
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description
+PASS  keyword used naturally (1.1% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (156)
+PASS  sentences are easy to read (average 13 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+WARN  sources never cited: 2
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m$ [0mrg -n "paragraphs_tail|subsections|h3" /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/render.py /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/checks.py | head -30
+/bin/bash: line 1: rg: command not found
+[0m
+[0m✱ [0mGrep "paragraphs_tail|subsections"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts · 5 matches[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py article.json --out article && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article
+built article: article.html, article.md, seo.md, preview.png (943 words)
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  943 words
+PASS  keyword "dental implant cost in bangalore" in title, h1, opening, description, a subheading and address
+PASS  keyword used naturally (1.1% of words)
+PASS  title fits Google results (50)
+WARN  description: aim for 120 to 160 characters: 172 characters
+PASS  sentences are easy to read (average 13 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
+@@ -6,9 +6,9 @@
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+   "title": "Dental Implant Cost in Bangalore: 2026 Price Guide",
+-  "description": "What the dental implant cost in Bangalore is for a single tooth, what changes the price, the steps involved, and how implants compare with bridges. From a Bengaluru clinic.",
++  "description": "What a single dental implant costs in Bangalore, what changes the price, the steps involved, and how implants compare with bridges. From a Bengaluru clinic.",
+   "slug": "dental-implant-cost-in-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py article.json --out article && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article
+built article: article.html, article.md, seo.md, preview.png (943 words)
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  943 words
+WARN  keyword "dental implant cost in bangalore" missing from: description
+PASS  keyword used naturally (1.1% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (156)
+PASS  sentences are easy to read (average 13 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
+@@ -6,9 +6,9 @@
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+   "title": "Dental Implant Cost in Bangalore: 2026 Price Guide",
+-  "description": "What a single dental implant costs in Bangalore, what changes the price, the steps involved, and how implants compare with bridges. From a Bengaluru clinic.",
++  "description": "What the dental implant cost in Bangalore is for a single tooth, what changes the price, the steps involved, and how implants compare with bridges. From a Bengaluru clinic.",
+   "slug": "dental-implant-cost-in-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m$ [0mpython3 -c "s='What the dental implant cost in Bangalore is for a single tooth, what changes the price, the steps involved, and how implants compare with bridges. From a Bengaluru clinic.'; print(len(s))"
+172
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
+@@ -6,9 +6,9 @@
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+   "title": "Dental Implant Cost in Bangalore: 2026 Price Guide",
+-  "description": "What the dental implant cost in Bangalore is for a single tooth, what changes the price, the steps involved, and how implants compare with bridges. From a Bengaluru clinic.",
++  "description": "The dental implant cost in Bangalore for a single tooth, what changes the price, the procedure steps, and how implants compare with bridges. From a Bengaluru clinic.",
+   "slug": "dental-implant-cost-in-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m$ [0mpython3 -c "s='The dental implant cost in Bangalore for a single tooth, what changes the price, the procedure steps, and how implants compare with bridges. From a Bengaluru clinic.'; print(len(s))"
+165
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.mIUlwuCjce/run/mangoman-seo-article/dental-implants/article.json
+@@ -6,9 +6,9 @@
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+   "title": "Dental Implant Cost in Bangalore: 2026 Price Guide",
+-  "description": "The dental implant cost in Bangalore for a single tooth, what changes the price, the procedure steps, and how implants compare with bridges. From a Bengaluru clinic.",
++  "description": "The dental implant cost in Bangalore for a single tooth, what changes the price, the steps, and how implants compare with bridges. From a Bengaluru clinic.",
+   "slug": "dental-implant-cost-in-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m$ [0mpython3 -c "s='The dental implant cost in Bangalore for a single tooth, what changes the price, the steps, and how implants compare with bridges. From a Bengaluru clinic.'; print(len(s))"
+155
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py article.json --out article && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py article.json article
+built article: article.html, article.md, seo.md, preview.png (943 words)
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  943 words
+PASS  keyword "dental implant cost in bangalore" in title, h1, opening, description, a subheading and address
+PASS  keyword used naturally (1.1% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (155)
+PASS  sentences are easy to read (average 13 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article/article.md
+All checks pass. The article is ready in the `article` folder.
+Done. The article is built in the `article` folder with all checks passing:
+
+- **article.md** – ready to paste into WordPress/Shopify/Webflow
+- **article.html** – full page with structured data (Article + FAQ schema)
+- **seo.md** – title (50 chars), description (155 chars), slug, keywords
+- **preview.png** – mobile preview
+
+**Checked:** every figure sourced or from your facts, keyword in title/h1/opening/description/subheading/address, 943 words, readable on phone, 3 internal links (/book, /team, /implants), all 4 sources cited.
