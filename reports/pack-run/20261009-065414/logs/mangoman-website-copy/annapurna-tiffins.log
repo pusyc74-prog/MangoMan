@@ -1,0 +1,189 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-website-copy"
+[0m→ [0mRead facts.md
+[0m→ [0mRead competitors.md
+[0m→ [0mRead brief.md
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/brief_gate.py facts.md --pages 4
+PASS  15 facts for 4 pages
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site
+site.json problems:
+- page : slug is lowercase words joined by dashes
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BLKN2GPLpL/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BLKN2GPLpL/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BLKN2GPLpL/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -46,9 +46,9 @@
+   }
+ ],
+ "pages": [
+   {
+-    "slug": "",
++    "slug": "home",
+     "name": "Home",
+     "goal": "Get the visitor to start a weekly plan on WhatsApp",
+     "keyword": "tiffin delivery Pune",
+     "meta": {
+
+[0m
+[0m✗ [0mEdit site.json failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+[0m✱ [0mGrep "\(/\)"[90m in . · 0 matches[0m
+[0m✱ [0mGrep "\]\(/"[90m in . · 0 matches[0m
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site
+Built 4 pages into site
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+PASS  spec is valid
+PASS  all output files exist
+FAIL  numbers not in the facts: 100; 11; 123; 130; 30; 420
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+WARN  risky claims (only keep them if the facts prove them): guarantee
+PASS  no clichés
+PASS  no avoided words
+WARN  voice words never used: family
+PASS  average sentence is 8.9 words
+FAIL  keyword missing: about: keyword 'Annapurna Tiffins Pune story' in neither title nor h1; home: keyword 'tiffin delivery Pune' in neither title nor h1; menu: keyword 'home tiffin menu Pune' in neither title nor h1; plans: keyword 'weekly tiffin plan price Pune' in neither title nor h1
+WARN  search fit: about: description is 165 characters (70 to 160); about: keyword not in the description; about: keyword not in the first 100 words; about: title is 69 characters (30 to 60); home: keyword not in the description; home: keyword not in the first 100 words; menu: keyword not in the description; menu: keyword not in the first 100 words
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+WARN  pages nobody links to: about; menu; plans
+WARN  sentences repeated across pages: Jain meals at the same price.; Menu posted on WhatsApp at 9 pm.; Pause anytime with one day's notice.
+PASS  no thin pages
+[0m
+[0m✱ [0mGrep "keyword"[90m in /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/checks.py · 11 matches[0m
+Multiple fixes needed. Let me check how the checker matches keywords first.
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py[90m [offset=90, limit=30][0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py
+Now checking how keywords and numbers are verified to fix precisely.
+[0m
+[0m← [0mWrite site.json
+Wrote file successfully.
+[0m
+Rewriting the spec to fix every issue (invented/derived numbers, keyword placement, meta lengths, internal links, unique sentences).
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+Built 4 pages into site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 10.7 words
+PASS  each page has its keyword in the title or h1
+PASS  titles, descriptions and keyword placement fit
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+WARN  sentences repeated across pages: Jain meals are available at the same price.; We deliver to Baner, Aundh, Balewadi and Pashan.
+PASS  no thin pages
+[0m
+[0m→ [0mRead site.json
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BLKN2GPLpL/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BLKN2GPLpL/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BLKN2GPLpL/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -86,9 +86,9 @@
+       "text": "Lunch reaches your door between 12:00 and 1:00 pm, Monday to Sunday."
+     },
+     {
+       "title": "Jain meals too",
+-      "text": "Jain meals are available at the same price. Just tell us when you start."
++      "text": "Jain meals cost exactly the same as regular ones. Just tell us when you start."
+     }
+   ]
+ },
+ {
+
+[0m
+[0m← [0mEdit site.json
+Index: /tmp/tmp.BLKN2GPLpL/run/mangoman-website-copy/annapurna-tiffins/site.json
+===================================================================
+--- /tmp/tmp.BLKN2GPLpL/run/mangoman-website-copy/annapurna-tiffins/site.json
++++ /tmp/tmp.BLKN2GPLpL/run/mangoman-website-copy/annapurna-tiffins/site.json
+@@ -134,9 +134,9 @@
+ {
+   "type": "text",
+   "headline": "Where we deliver",
+   "body": [
+-    "We deliver to Baner, Aundh, Balewadi and Pashan. The menu changes every day and is posted on WhatsApp at 9 pm, so you always know what is coming. Have a look at the [menu](/menu) to see what a week of lunches looks like.",
++    "Our delivery reaches Baner, Aundh, Balewadi and Pashan. The menu changes every day and is posted on WhatsApp at 9 pm, so you always know what is coming. Have a look at the [menu](/menu) to see what a week of lunches looks like.",
+     "Choose between two simple [plans](/plans): a week of 6 lunches for Rs 780, or a month of 26 lunches for Rs 3,200. You can pause a plan for free with 1 day notice."
+   ]
+ },
+ {
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/build_copy.py site.json --out site && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-website-copy/scripts/check_copy.py site.json site
+Built 4 pages into site
+PASS  spec is valid
+PASS  all output files exist
+PASS  every number is in the user's facts
+PASS  nothing copied from competitor claims
+PASS  no placeholders
+PASS  no risky claims
+PASS  no clichés
+PASS  no avoided words
+PASS  voice words used
+PASS  average sentence is 10.7 words
+PASS  each page has its keyword in the title or h1
+PASS  titles, descriptions and keyword placement fit
+PASS  titles and descriptions are unique
+PASS  every page has a button
+PASS  buttons are consistent
+PASS  every page is linked from another page
+PASS  no sentence repeated across pages
+PASS  no thin pages
+[0m
+[0m$ [0mls -la site/
+total 44
+drwxr-xr-x 3 runner runner  4096 Oct  9 06:45 .
+drwxr-xr-x 3 runner runner  4096 Oct  9 06:45 ..
+drwxr-xr-x 2 runner runner  4096 Oct  9 06:45 copy
+-rw-r--r-- 1 runner runner  8738 Oct  9 06:54 pages.csv
+-rw-r--r-- 1 runner runner 15322 Oct  9 06:54 pages.json
+-rw-r--r-- 1 runner runner   630 Oct  9 06:54 sitemap.md
+[0m
+[0m$ [0mls -la site/copy/
+total 24
+drwxr-xr-x 2 runner runner 4096 Oct  9 06:45 .
+drwxr-xr-x 3 runner runner 4096 Oct  9 06:45 ..
+-rw-r--r-- 1 runner runner 1598 Oct  9 06:54 about.md
+-rw-r--r-- 1 runner runner 1732 Oct  9 06:54 home.md
+-rw-r--r-- 1 runner runner 2120 Oct  9 06:54 menu.md
+-rw-r--r-- 1 runner runner 2210 Oct  9 06:54 plans.md
+[0m
+The website copy has been successfully built and checked. All checks pass.
+
+Files generated:
+- site/copy/home.md
+- site/copy/menu.md  
+- site/copy/plans.md
+- site/copy/about.md
+- site/pages.csv (for CMS import)
+- site/sitemap.md
+- site/pages.json (landing page pack format)
+
+Final check result:
+**Checked: every figure from your facts, nothing copied from competitors, each page has its keyword, a button and a link in**

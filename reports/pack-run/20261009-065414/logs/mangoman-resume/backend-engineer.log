@@ -1,0 +1,114 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead job_description.md
+[0m→ [0mRead candidate.md
+[0m→ [0mSkill "mangoman-resume"
+[0m
+[0m← [0mWrite resume.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/build.py /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json --template classic --out /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume
+built /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.html, /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.pdf, /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/check.py /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.pdf --pages 1
+FAIL  2 pages, target 1: tighten wording, drop the oldest or weakest bullets, or reduce the summary
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  81% of bullets show a measurable result
+PASS  dates use one format
+[0m
+[0m← [0mEdit resume.json
+Index: /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json
+===================================================================
+--- /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json
++++ /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json
+@@ -8,9 +8,9 @@
+   "links": [
+     {"label": "github.com/arjunmenon-dev", "url": "https://github.com/arjunmenon-dev"}
+   ]
+ },
+-"summary": "Backend engineer with 4+ years building payment systems and high-throughput microservices in Java and Spring Boot. At Tiffinly, split a monolith into 4 services, cut p99 latency from 900 ms to 180 ms with Kafka, and integrated Razorpay plus UPI Autopay processing ₹14 crore/month. On-call lead who reduced P1 incidents from 7 to 2 per month. AWS Certified Developer.",
++"summary": "Backend engineer with 4+ years building payment systems and microservices in Java and Spring Boot. Cut p99 latency from 900 ms to 180 ms with Kafka, process ₹14 crore/month via Razorpay and UPI Autopay, and reduced P1 incidents from 7 to 2 per month.",
+ "experience": [
+   {
+     "role": "Software Engineer 2",
+     "company": "Tiffinly",
+
+[0m
+Fixing the length issue by tightening content:
+[0m← [0mEdit resume.json
+Index: /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json
+===================================================================
+--- /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json
++++ /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json
+@@ -17,14 +17,14 @@
+   "location": "Bengaluru",
+   "start": "Apr 2023",
+   "end": "Present",
+   "bullets": [
+-    "Split the monolithic order service into 4 microservices using Java 17 and Spring Boot, enabling daily deployments from weekly.",
+-    "Migrated order events to Kafka; pipeline now processes 1.2 million events/day with p99 latency dropping from 900 ms to 180 ms.",
++    "Split the monolithic order service into 4 microservices using Java 17 and Spring Boot; deployments increased from weekly to daily.",
++    "Migrated order events to Kafka; pipeline handles 1.2 million events/day with p99 latency down from 900 ms to 180 ms.",
+     "Added Redis caching for menu and pricing reads, cutting PostgreSQL load by 35% at dinner peak.",
+     "Integrated Razorpay and UPI Autopay for subscriptions, now processing ₹14 crore of payments per month.",
+-    "On-call lead for the payments squad: reduced monthly P1 incidents from 7 to 2 with improved alerts, runbooks, and Grafana/Prometheus observability.",
+-    "Mentor 2 junior engineers and run weekly code review sessions to raise code quality standards."
++    "On-call lead for payments: reduced monthly P1 incidents from 7 to 2 with better alerts and runbooks.",
++    "Mentor 2 junior engineers; run weekly code reviews."
+   ]
+ },
+ {
+   "role": "Software Engineer",
+
+[0m
+[0m← [0mEdit resume.json
+Index: /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json
+===================================================================
+--- /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json
++++ /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json
+@@ -32,12 +32,11 @@
+   "location": "Kochi",
+   "start": "Jul 2020",
+   "end": "Mar 2023",
+   "bullets": [
+-    "Built 40 REST APIs in Java and Spring Boot for a Gulf insurance client's claims portal serving 30 million rows in PostgreSQL.",
+-    "Designed PostgreSQL schema and migrations for claims data at 30 million rows with optimised indexing.",
+-    "Containerised services with Docker and deployed on AWS (ECS, RDS, S3, SQS); reduced build time from 25 min to 8 min with Jenkins pipelines.",
+-    "Participated in sprint planning and resolved production bugs across the claims processing pipeline."
++    "Built 40 REST APIs in Java and Spring Boot for a Gulf insurance client's claims portal (30 million rows in PostgreSQL).",
++    "Set up Docker builds and Jenkins pipelines; reduced deployment time from 25 min to 8 min.",
++    "Deployed services on AWS (ECS, RDS, S3, SQS)."
+   ]
+ },
+ {
+   "role": "Trainee Software Engineer",
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/build.py /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json --template classic --out /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume
+built /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.html, /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.pdf, /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/check.py /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.json /tmp/tmp.BLKN2GPLpL/run/mangoman-resume/backend-engineer/resume.pdf --pages 1
+PASS  1 page as planned
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  the page is well filled
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  90% of bullets show a measurable result
+PASS  dates use one format
+[0m
+Done. The resume is built and passes all checks:
+
+- **resume.json** — spec saved in the folder
+- **resume.pdf** — one-page, A4, classic ATS-friendly design
+- **resume.html** & **resume.png** — also generated
+
+All checks pass: 1 page, selectable text, well filled, action verbs, no first person, concise bullets, 90% measurable results, consistent date format.

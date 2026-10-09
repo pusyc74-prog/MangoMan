@@ -1,0 +1,67 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py ads.json ads
+built ads: ads.md, google_ads.csv, google_keywords.csv
+PASS  spec is valid
+FAIL  Google ads: A2 ghee: description 1 'Bilona ghee from our own 140 Gir cows near Gondal. Curd churned by hand, slow heated on wood fire.' is 98 characters, cut 8 (90); A2 ghee: description 2 'Every batch is lab tested. Scan the QR code on your jar to read the report before you open it.' is 94 characters, cut 4 (90); A2 ghee: description 4 '500 ml glass jar at ₹1,250, 1 litre at ₹2,350. Delivered across India in 3 to 6 days. Pay by UPI.' is 97 characters, cut 7 (90); Buy A2 ghee online: all-capital word COD in 'Pay By UPI Or COD'
+WARN  Google ads: Buy A2 ghee online: fewer than 2 headlines contain a keyword; ads match searches better when they do
+FAIL  numbers not in facts (ask the user, or remove them): 500
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/tracenum.py
+[91m[1mError: [0m{"message":"the model's answer came out garbled; stopped it","type":"upstream_stream_error"}
+
+The model's answer was cut off; continuing the task.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead ads.json
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py ads.json --out ads && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py ads.json ads
+built ads: ads.md, google_ads.csv, google_keywords.csv
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+WARN  Google ads: Buy A2 ghee online: fewer than 2 headlines contain a keyword; ads match searches better when they do
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m✗ [0mRead ads.md failed
+[91m[1mError: [0mFile not found: /tmp/tmp.BLKN2GPLpL/run/mangoman-ad-copy/a2-ghee/ads.md
+
+Did you mean one of these?
+/tmp/tmp.BLKN2GPLpL/run/mangoman-ad-copy/a2-ghee/ads
+The ads pass all checks. Only a warning about keyword density in one ad group remains. Let me verify the output files.
+[0m✱ [0mGlob "ads/*"[90m in . · 3 matches[0m
+[0m→ [0mRead ads/ads.md
+[0m→ [0mRead ads/google_ads.csv
+[0m→ [0mRead ads/google_keywords.csv
+Done. The Google search ads are built and checked. 
+
+**Output files in `ads/`:**
+- `ads.md` — readable spec with both ad groups
+- `google_ads.csv` — import into Google Ads Editor (Account → Import → From file)
+- `google_keywords.csv` — keywords and negatives for both ad groups
+
+**Check result:** All PASS — every headline ≤30 chars, descriptions ≤90 chars, no exclamation marks or phone numbers, every number traced to your facts. Only a minor warning about keyword density in one ad group.
+
+**Ad groups:**
+1. **A2 ghee** — broad awareness keywords (a2 ghee, bilona ghee, etc.)
+2. **Buy A2 ghee online** — high-intent purchase keywords (buy a2 ghee online, 1 litre, ahmedabad)
+
+Both target `https://gauveda.in/a2-ghee` with display paths `/a2-ghee/bilona` and `/buy/ghee`. Negatives exclude organic, machine, jobs, wholesale, franchise, recipe, bulk, free.

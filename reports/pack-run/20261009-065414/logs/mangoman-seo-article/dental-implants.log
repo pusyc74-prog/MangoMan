@@ -1,0 +1,123 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mRead facts.md
+[0m→ [0mRead sources.md
+[0m→ [0mSkill "mangoman-seo-article"
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (648 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): section: Dental implant vs bridge: which should you choose?: 15; section: Dental implant vs bridge: which should you choose?: 90%; section: The dental implant procedure: how many visits does it take?: 30, 45
+PASS  648 words
+WARN  648 words against a target of 900
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description, first 100 words
+PASS  keyword used naturally (0.0% of words)
+WARN  title: aim for 30 to 60 characters: 68 characters
+WARN  description: aim for 120 to 160 characters: 181 characters
+PASS  sentences are easy to read (average 12 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+WARN  fewer than 2 links to your own pages (helps readers and search engines find related pages): 0
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+Fixing all issues: shorter title/description, keyword placement, internal links, citations, and ~900 words.
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (995 words)
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  995 words
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading
+PASS  keyword used naturally (1.0% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (153)
+PASS  sentences are easy to read (average 15 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+Adding the keyword to a subheading:
+[0m← [0mEdit article.json
+Index: /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article.json
+@@ -57,9 +57,9 @@
+   "If you have lost a tooth and are searching for the dental implant cost in Bangalore, here is the short answer: a single tooth implant with crown starts at ₹28,000 at our clinic, Smile Square Dental Clinic in Indiranagar. The final price depends on the implant brand you choose and whether you need a bone graft. This guide breaks down every cost, explains the procedure step by step, and compares implants with bridges so you can decide with confidence."
+ ],
+ "sections": [
+   {
+-    "h2": "How much does a single tooth implant cost in Bangalore?",
++    "h2": "Dental implant cost in Bangalore: what does a single tooth implant cost?",
+     "paragraphs": [
+       "At Smile Square, a single tooth implant cost falls into three clear tiers based on the implant brand. An Indian-brand implant with crown is ₹28,000. A Korean brand is ₹42,000. A Swiss brand is ₹55,000. Every price includes the consultation, a 3D CBCT scan, the implant, the abutment and the crown. There are no hidden extras.",
+       "If your jawbone needs a bone graft before the implant can be placed, that adds ₹8,000 to ₹15,000. We tell you this upfront after the scan, not after treatment has started. For patients comparing dental implants in Bangalore, always ask whether the quoted price covers the scan, abutment and crown — many clinics quote only the fixture."
+     ],
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article && python3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (995 words)
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  995 words
+PASS  keyword "dental implant cost in bangalore" in title, h1, opening, description, a subheading and address
+PASS  keyword used naturally (1.0% of words)
+PASS  title fits Google results (50)
+PASS  description fits Google results (153)
+PASS  sentences are easy to read (average 15 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  3 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m$ [0mls -la /tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article/
+total 668
+drwxr-xr-x 2 runner runner   4096 Oct  9 06:36 .
+drwxr-xr-x 3 runner runner   4096 Oct  9 06:36 ..
+-rw-r--r-- 1 runner runner  12662 Oct  9 06:38 article.html
+-rw-r--r-- 1 runner runner   7067 Oct  9 06:38 article.md
+-rw-r--r-- 1 runner runner 645934 Oct  9 06:38 preview.png
+-rw-r--r-- 1 runner runner    785 Oct  9 06:38 seo.md
+[0m
+Here is your SEO article on "dental implant cost in bangalore":
+
+**Files created in `/tmp/tmp.BLKN2GPLpL/run/mangoman-seo-article/dental-implants/article/`:**
+- `article.md` (paste into WordPress/Shopify/Webflow)
+- `article.html` (full page with structured data)
+- `seo.md` (title, description, URL for CMS)
+- `preview.png` (social preview)
+
+**Check result:** ✅ **Checked: every figure sourced or from your facts, keyword in title, opening and a subheading, 995 words, readable on a phone**
+
+The article covers:
+- Dental implant cost in Bangalore (₹28,000–₹55,000 all-inclusive)
+- Why prices vary between clinics
+- The 3-visit procedure
+- Longevity (90%+ 10-year survival)
+- Implant vs bridge comparison
+- Payment options (no-cost EMI)
+- FAQ addressing reader concerns
+
+All facts are from your provided data or trusted sources (NHS, Mayo Clinic, IDA, Journal of Dental Research). The article links to your /book, /implants, and /team pages.
