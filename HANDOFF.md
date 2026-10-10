@@ -41,7 +41,7 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 
 ---
 
-## 2. Where things stand (9 Oct 2026, night)
+## 2. Where things stand (10 Oct 2026, night)
 
 | Area | State |
 |---|---|
@@ -52,7 +52,7 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 | Easy setup (3b) | **Built and pushed (9 Oct).** Double-click opens a setup page; `mangoman ready` in a terminal. Windows check (`windows-check.yml`, stand-in model) passed: OpenCode ran pack commands in Windows PowerShell and all 19 pack samples passed with MangoMan's own Python and the computer's own browser. Waiting: the owner's own try on Windows. |
 | Release | **None yet.** The owner can try it from a CI build (section 12). |
 | Repo | **Public, by the owner's choice (9 Oct: "keep it public for now").** Do not ask again until they raise it. CI is already cut down for private minutes. |
-| CI | Green on the last commit. No open issues. |
+| CI | Green on 2933a9c, Linux, Mac and Windows (ci run 38074112513, which has the build to try). Issue #2 closed. mac-check passed 19 of 19 pack samples. |
 | Next build | 3a and 3b are done. Next: the owner tries the easy setup on Windows; then pick from the open items (section 11) with the owner. |
 
 ---
@@ -393,7 +393,7 @@ Touch files in the control dir to change the next coding request:
 | Mac and Linux downloads need `chmod +x` and, on a Mac, Terminal | The artifact zip drops the program flag (upload-artifact keeps no permissions). A `.tar.gz` per system (keeps the flag) or a Mac `.app` in the release would remove the Terminal step; part of the release work. |
 | Website copy writes `site.json` page by page | Owner, 9 Oct: a separate change with its own scored run; **not needed so far**. After the JSON error helper (3ef2091) and the facts message (cc02610), 6 of 6 website copy runs passed (100, 82, 97, 94, 100, 97). Revisit if site.json breaks again in a way the helper cannot name, or if a pause nears the 300 s stall limit (longest seen: 161 s, Kimi K3 and Nemotron Ultra). |
 | Costly fix loops in packs | Ad copy 100 requests, website copy 156 in one run (8 Oct). Website copy: done for JSON errors (`checks.load_json` names the exact fix; first real case fixed in one edit, run 20261009-200959) and for facts missing from site.json (check_copy says where they go). Other packs that read model-written JSON (ad copy, listing, email and more) could use `checks.load_json` too. |
-| Windows stall watchdog | Off (no pgrep). Could use PowerShell `Get-CimInstance Win32_Process` for child processes. |
+| Windows stall watchdog | No pgrep on Windows, so any run counts as "command running" and a stall is caught only after 10 minutes (Mac fixed 10 Oct: it needs `pgrep -lf`). Could use PowerShell `Get-CimInstance Win32_Process` for child processes. |
 | Screen shows raw model ids ("kimi-k3") | Use display names. |
 | The waiting seconds on the screen sometimes jump back when two requests run | Cosmetic. |
 | NVIDIA daily cap | Not measured end to end. |
