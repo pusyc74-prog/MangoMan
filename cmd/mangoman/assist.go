@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -445,12 +446,14 @@ func watchStall(cfg *config.Config, p *os.Process, done <-chan struct{}, stalled
 // task. A command that hangs is ended by OpenCode's own command time limit.
 func commandRunning(pid int) bool {
 	// Full command lines: a language server started as "node .../pyright"
-	// shows only as node by name. Linux pgrep takes -a, macOS -lf.
-	out, err := exec.Command("pgrep", "-a", "-P", strconv.Itoa(pid)).Output()
-	var ee *exec.ExitError
-	if errors.As(err, &ee) && ee.ExitCode() > 1 {
-		out, err = exec.Command("pgrep", "-lf", "-P", strconv.Itoa(pid)).Output()
+	// shows only as node by name. Linux pgrep takes -a; on macOS -a means
+	// "include ancestors" and prints bare numbers, so it takes -lf.
+	full := "-a"
+	if runtime.GOOS == "darwin" {
+		full = "-lf"
 	}
+	out, err := exec.Command("pgrep", full, "-P", strconv.Itoa(pid)).Output()
+	var ee *exec.ExitError
 	if errors.As(err, &ee) && ee.ExitCode() == 1 {
 		return false // no children
 	}
