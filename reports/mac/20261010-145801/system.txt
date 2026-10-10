@@ -1,0 +1,8 @@
+ProductName:		macOS
+ProductVersion:		26.6.2
+BuildVersion:		25G83
+arm64
+shell: /bin/bash
+/Applications/Google Chrome for Testing.app
+/Applications/Google Chrome.app
+/Applications/Microsoft Edge.app
