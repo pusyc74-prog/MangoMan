@@ -422,7 +422,7 @@ system); rename to `mangoman` (`mangoman.exe`); in a terminal: `mangoman setup`
 and in an empty folder `mangoman code --ui`. Skill packs need **Python 3**
 plus `pip install pillow python-pptx python-docx pypdf playwright` and
 `python -m playwright install chromium`; ad copy and email need only Python.
-Mac: right-click, Open (unsigned); Windows: More info, Run anyway. **Since
+Mac (macOS 15 and later): `chmod +x mangoman` once (the artifact zip drops the program flag), then System Settings, Privacy & Security, Open Anyway (right-click Open no longer works); Windows: More info, Run anyway. **Since
 9 Oct (3b):** just double-click `mangoman.exe`; the setup page does the rest
 (no Python, no pip, no terminal).
 

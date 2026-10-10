@@ -1,0 +1,109 @@
+name: mac-check
+
+# MangoMan on a Mac the way a user meets it, with the stand-in model
+# (scripts/fake-model.py): no AI and no keys. Same steps as windows-check:
+# mangoman ready installs the coding helper and MangoMan's own Python;
+# OpenCode then runs real pack commands in zsh, the Mac's own shell; then
+# every pack sample is built and checked with that Python and the Mac's
+# Chrome. MangoMan keeps its usual folder, ~/Library/Application Support/
+# mangoman, which has a space in it. Not covered: Gatekeeper's warning for a
+# file downloaded in a browser (a CI build carries no quarantine flag). The
+# report goes to the eval-reports branch under reports/mac/. About 15 minutes
+# (free while the repo is public; macOS minutes count ten times once private).
+
+on:
+  workflow_dispatch:
+  # POST /repos/<owner>/<repo>/dispatches with event_type mac-check.
+  repository_dispatch:
+    types: [mac-check]
+
+permissions:
+  contents: write # only to publish the report to the eval-reports branch
+
+concurrency:
+  group: mac-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      MANGOMAN_KEYSTORE: file
+      MANGOMAN_PASSPHRASE: ci
+      OPENCODE_DISABLE_MODELS_FETCH: "1"
+      OLLAMA_CONTEXT_LENGTH: "131072"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        run: |
+          go build -o mm ./cmd/mangoman
+          mkdir -p out
+          { sw_vers; uname -m; echo "shell: $SHELL"; ls -d /Applications/*Chrome*.app /Applications/*Edge*.app 2>/dev/null; } | tee out/system.txt
+          echo "HOMEDIR=$HOME/Library/Application Support/mangoman" >> "$GITHUB_ENV"
+      - name: Get ready, as a user would
+        run: |
+          ./mm init > /dev/null
+          start=$(date +%s)
+          ./mm ready --yes 2>&1 | tee out/ready.txt
+          [ "${PIPESTATUS[0]}" = 0 ] || exit 1
+          echo "took $(( $(date +%s) - start )) s" | tee -a out/ready.txt
+          ./mm ready 2>&1 | tee -a out/ready.txt
+          [ "${PIPESTATUS[0]}" = 0 ] || exit 1
+          echo "Python folder on disk: $(du -sm "$HOMEDIR/python" | cut -f1) MB" | tee -a out/ready.txt
+      - name: OpenCode runs pack commands in zsh
+        run: |
+          py="$HOMEDIR/python/env/shim/python3"
+          ctl="$PWD/ctl"
+          mkdir -p "$ctl"
+          "$py" scripts/fake-model.py 11434 "$ctl" &
+          fake=$!
+          # The router looks for local models when it starts: the stand-in must be up first.
+          for i in $(seq 60); do curl -sf http://127.0.0.1:11434/v1/models > /dev/null && break; sleep 1; done
+          curl -sf http://127.0.0.1:11434/v1/models > /dev/null || { echo "the stand-in model did not start" | tee out/code-checks.txt; exit 1; }
+          proj="$HOME/my project"
+          mkdir -p "$proj"
+          cp internal/skills/testdata/assets/* internal/skills/testdata/resume/* internal/skills/testdata/email/* "$proj"
+          S="$HOMEDIR/opencode/skills"
+          # What a model writes after reading the packs' SKILL.md, quoted for the space.
+          printf 'python3 "%s/mangoman-resume/scripts/build.py" resume.json --template modern --out resume && python3 "%s/mangoman-email-campaign/scripts/build_emails.py" campaign.json --out emails' "$S" "$S" > "$ctl/cmd"
+          export SHELL=/bin/zsh
+          (cd "$proj" && "$GITHUB_WORKSPACE/mm" code --no-web --model strict/fake run --auto "make my resume and the emails" 2>&1) | tee out/code.txt
+          code=${PIPESTATUS[0]}
+          kill $fake || true
+          cp "$ctl/requests.log" out/ 2>/dev/null || true
+          ls -R "$proj" > out/project-files.txt
+          bad=0
+          for f in hello.txt resume.pdf; do [ -e "$proj/$f" ] || { echo "MISSING $f" | tee -a out/code-checks.txt; bad=1; }; done
+          (cd "$proj" && "$py" "$S/mangoman-resume/scripts/check.py" resume.json resume.pdf --pages 1) 2>&1 | tee -a out/code-checks.txt
+          [ "${PIPESTATUS[0]}" = 0 ] || bad=1
+          (cd "$proj" && "$py" "$S/mangoman-email-campaign/scripts/check_emails.py" campaign.json emails) 2>&1 | tee -a out/code-checks.txt
+          [ "${PIPESTATUS[0]}" = 0 ] || bad=1
+          echo "mangoman code exit $code" | tee -a out/code-checks.txt
+          [ "$code" = 0 ] && [ "$bad" = 0 ]
+      - name: Every pack sample with MangoMan's Python and the Mac's browser
+        if: always()
+        run: |
+          # As mangoman sets them for every program it starts (pyenv.Use).
+          export PATH="$HOMEDIR/python/env/shim:$PATH" PYTHONUTF8=1
+          python3 -c "import sys, playwright; print(sys.executable)" | tee out/packs.txt
+          scripts/check-packs.sh 2>&1 | tee -a out/packs.txt
+          exit "${PIPESTATUS[0]}"
+      - name: Publish the report to the eval-reports branch
+        if: always()
+        run: |
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          cp "$HOMEDIR/serve.log" out/ 2>/dev/null || true
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports
+          git worktree add ../reports origin/eval-reports
+          cd ../reports && git switch -C eval-reports
+          mkdir -p "reports/mac/$stamp"
+          cp "$GITHUB_WORKSPACE"/out/* "reports/mac/$stamp/"
+          git add -A
+          git commit -q -m "mac check $stamp (run ${{ github.run_id }})"
+          git push origin eval-reports

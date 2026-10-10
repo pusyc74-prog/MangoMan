@@ -153,7 +153,7 @@ $("to-code").addEventListener("click", async () => {
 function warnedNote() {
   const ua = navigator.userAgent;
   if (/Windows/.test(ua)) return "Did Windows show \"Windows protected your PC\" before this? It shows for apps that are not signed yet. Next time, click More info, then Run anyway.";
-  if (/Mac OS X|Macintosh/.test(ua)) return "Did your Mac say it cannot check this app? It says that for apps that are not signed yet. Right-click MangoMan, choose Open, then Open again.";
+  if (/Mac OS X|Macintosh/.test(ua)) return "Did your Mac say it cannot check this app? It says that for apps that are not signed yet. Next time it will not ask: you already allowed it in System Settings, Privacy & Security, Open Anyway.";
   return "";
 }
 

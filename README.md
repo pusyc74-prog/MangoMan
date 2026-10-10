@@ -1,12 +1,18 @@
 # MangoMan
 
-Free-first, local AI router. One signed Go binary on your machine pools every free model you can reach, fails over when one runs dry or gives a bad answer, and never sends your keys or prompts anywhere except the provider you are calling.
+Free-first, local AI router. One Go binary on your machine pools every free model you can reach, fails over when one runs dry or gives a bad answer, and never sends your keys or prompts anywhere except the provider you are calling.
 
 Status: **Phase 1 built (M1 to M4, 17 skill packs, Guardian, the M6 coding screen); not released yet.** To try it now, build it from the Actions tab (ci, Run workflow, then download the mangoman artifact). See the [PRD](https://claude.ai/code/artifact/cca2344e-8ddc-431f-b053-6c0b2617c29e) and the [Phase 1 build plan](https://claude.ai/code/artifact/1b002e4f-d746-47c0-be64-d6fad377d2d0).
 
 ## Quick start
 
-**Without a terminal:** double-click MangoMan (or run `mangoman` with nothing after it). The first time, a setup page opens in your browser: paste a free NVIDIA key, click **Get ready** (it shows the download size first, about 175 MB on Windows), and start. Later, the same double-click opens the dashboard. Keep MangoMan's window open while you use it. MangoMan is not signed yet: on Windows click **More info**, then **Run anyway**; on a Mac right-click it, choose **Open**, then **Open** again. For the commands below: `mangoman help`.
+**Without a terminal:** double-click MangoMan (or run `mangoman` with nothing after it). The first time, a setup page opens in your browser: paste a free NVIDIA key, click **Get ready** (it shows the download size first, about 175 MB on Windows), and start. Later, the same double-click opens the dashboard. Keep MangoMan's window open while you use it. For the commands below: `mangoman help`.
+
+MangoMan is not signed yet, so the first start needs a few extra clicks:
+
+- **Windows:** when "Windows protected your PC" appears, click **More info**, then **Run anyway**.
+- **Mac** (macOS 15 Sequoia and later, including 26 Tahoe and 27 Golden Gate): take `mangoman-darwin-arm64` for an Apple silicon Mac (M1 or later) or `mangoman-darwin-amd64` for an Intel Mac, and rename it `mangoman`. The download is not marked as a program, so once, in Terminal: `chmod +x ~/Downloads/mangoman`. Double-click it. When the Mac says it cannot check MangoMan, open **System Settings**, then **Privacy & Security**, scroll down and click **Open Anyway** (within an hour), enter your password, double-click MangoMan again and click **Open Anyway**. Right-click, then **Open** no longer works for this since macOS 15.
+- **Linux:** `chmod +x mangoman`, then run it.
 
 **In a terminal:**
 
