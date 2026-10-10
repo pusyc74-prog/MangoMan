@@ -10,6 +10,9 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # POST /repos/<owner>/<repo>/dispatches with event_type ci.
+  repository_dispatch:
+    types: [ci]
   schedule:
     - cron: "15 20 * * 0" # Sundays 01:45 IST: macOS, Windows and the builds
 
@@ -57,6 +60,7 @@ jobs:
   other-systems:
     if: github.event_name != 'push' && github.event_name != 'pull_request'
     strategy:
+      fail-fast: false # one system failing should not hide the other's result
       matrix:
         os: [macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -65,7 +69,17 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - run: go test -count=1 ./...
+      - name: Test
+        shell: bash
+        run: |
+          set +e
+          go test -count=1 ./... 2>&1 | tee test.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" != 0 ]; then
+            { grep -E -B2 -A12 -- "--- FAIL|panic:|^FAIL|cannot|undefined" test.log || tail -40 test.log; } | tail -c 3500 > fail.txt
+            echo "::error::$(awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}' fail.txt)"
+          fi
+          exit $status
 
   build:
     # All five targets in one job.
