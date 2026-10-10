@@ -1,0 +1,56 @@
+/Users/runner/Library/Application Support/mangoman/python/env/shim/python3
+PASS  dashboard (5 checks)
+PASS  deck (13 checks)
+PASS  resume (13 checks)
+PASS  social (13 checks)
+PASS  landing (20 checks)
+PASS  proposal (11 checks)
+PASS  email (23 checks)
+PASS  listing (15 checks)
+PASS  invoice (8 checks)
+PASS  ads (7 checks)
+PASS  seo (14 checks)
+PASS  report (10 checks)
+PASS  minutes (10 checks)
+PASS  brand (9 checks)
+PASS  review (7 checks)
+PASS  copy (18 checks)
+PASS  webapp (16 checks)
+FAIL  listing-pro
+      Your signing key is in /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.LAMfugrtZ2/home/creator.key. Back it up: updates to your agents must be signed with it.
+      Public key: INPpNSUwq2i6Fy24ihhvzeGQ+0hvCJFRGAggtLjN4s0=
+      Wrote a.mmagent
+      Installed amazon-listing-pro 1.0.0 by MangoMan (agents@mangoman.app).
+      Data policy: Runs on your computer. Your reports and listing never leave it; only the copy you approve goes to your AI model through MangoMan.
+      Traceback (most recent call last):
+        File "/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.LAMfugrtZ2/home/agents/amazon-listing-pro/scripts/research.py", line 12, in <module>
+          import csv
+        File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+        File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+        File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+        File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+        File "<frozen importlib._bootstrap_external>", line 1132, in get_code
+        File "<frozen importlib._bootstrap_external>", line 1190, in get_data
+        File "/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.LAMfugrtZ2/home/agents/.guard/sitecustomize.py", line 135, in _hook
+          _deny("read " + p)
+        File "/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.LAMfugrtZ2/home/agents/.guard/sitecustomize.py", line 99, in _deny
+          raise PermissionError("this agent is not allowed to %s (not declared in its agent.json)" % what)
+      PermissionError: this agent is not allowed to read /Users/runner/Library/Application Support/mangoman/python/versions/cpython-3.12.15-macos-aarch64-none/lib/python3.12/csv.py (not declared in its agent.json)
+FAIL  ads-pro
+      Wrote g.mmagent
+      Installed google-ads-pro 1.0.0 by MangoMan (agents@mangoman.app).
+      Data policy: Runs on your computer. Your reports and ads never leave it; only the copy you approve goes to your AI model through MangoMan.
+      Traceback (most recent call last):
+        File "/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.LAMfugrtZ2/home/agents/google-ads-pro/scripts/mine.py", line 15, in <module>
+          import csv
+        File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+        File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+        File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+        File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+        File "<frozen importlib._bootstrap_external>", line 1132, in get_code
+        File "<frozen importlib._bootstrap_external>", line 1190, in get_data
+        File "/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.LAMfugrtZ2/home/agents/.guard/sitecustomize.py", line 135, in _hook
+          _deny("read " + p)
+        File "/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.LAMfugrtZ2/home/agents/.guard/sitecustomize.py", line 99, in _deny
+          raise PermissionError("this agent is not allowed to %s (not declared in its agent.json)" % what)
+      PermissionError: this agent is not allowed to read /Users/runner/Library/Application Support/mangoman/python/versions/cpython-3.12.15-macos-aarch64-none/lib/python3.12/csv.py (not declared in its agent.json)

@@ -1,0 +1,14 @@
+Started MangoMan for this session (log: /Users/runner/Library/Application Support/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/fake). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · strict/fake
+[0m
+[0m← [0mWrite hello.txt
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 "/Users/runner/Library/Application Support/mangoman/opencode/skills/mangoman-resume/scripts/build.py" resume.json --template modern --out resume && python3 "/Users/runner/Library/Application Support/mangoman/opencode/skills/mangoman-email-campaign/scripts/build_emails.py" campaign.json --out emails
+built resume.html, resume.pdf, resume.png, resume-letter.html, resume-letter.pdf
+brand colours read from the logo: primary #2B1710, accent #D62839 (tell the user; they can set brand.primary and brand.accent to change them)
+built emails: 3 emails (.html and .txt), sequence.md, assets/, previews
+[0m
+Done. I made hello.txt and started the app.
