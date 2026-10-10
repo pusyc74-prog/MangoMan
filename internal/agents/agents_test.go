@@ -174,6 +174,13 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 			" g = os.environ['PYTHONPATH'].split(os.pathsep)[0];" +
 			" subprocess.run([sys.executable, '-c', 'print(1)'], env={'PYTHONPATH': os.getcwd() + os.pathsep + g, 'PATH': '/usr/bin'}, check=True)",
 		"unix socket": "import socket; s = socket.socket(socket.AF_UNIX); s.connect('/var/run/docker.sock')",
+		// MangoMan's own folder (here root: the agents live in root/agents),
+		// wherever it is: its key file and other agents stay out of reach.
+		"mangoman keys": "open(" + quote(filepath.Join(root, "keys.enc")) + ").read()",
+		"another agent": "open(" + quote(filepath.Join(root, "agents", "other", "notes.txt")) + ").read()",
+		// A Python child given other settings would trust them (found in review).
+		"child env": "import os, subprocess, sys; k = " + quote(filepath.Join(root, "keys.enc")) + "; e = dict(os.environ, MANGOMAN_AGENT_DIR=k, MANGOMAN_WORKDIR=k);" +
+			" subprocess.run([sys.executable, '-c', 'import sys; print(open(sys.argv[1]).read())', k], env=e, check=True)",
 		// Passing off a function as Python's own socket pair (found in review).
 		"fake socket pair": "import socket; g = {'__name__': 'socket', 'socket': socket}; " +
 			"exec(\"def socketpair():\\n c = socket.socket(); c.connect(('127.0.0.1', 4141))\", g); g['socketpair']()",
@@ -183,7 +190,12 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 	}
 	// Python's own socket pair (what asyncio, so Playwright, uses on Windows)
 	// is allowed: it connects only to itself.
-	pkg, _ := packDemo(t, root, map[string]string{"scripts/ok.py": "import os, socket, subprocess, sys\nopen('ok.txt','w').write(os.environ.get('GROQ_API_KEY','none') + os.environ.get('DATABASE_URL','none'))\nsubprocess.run([sys.executable, '-c', 'pass'], check=True)\npair = getattr(socket, '_fallback_socketpair', None)\ntry:\n    [s.close() for s in (pair() if pair else [])]\nexcept PermissionError:\n    raise\nexcept OSError:\n    pass  # no loopback in the Linux sandbox: not the guard's doing\n"})
+	// It may also read its own files and write its temp files inside
+	// MangoMan's folder (10 Oct: no agent could start from the usual folder).
+	os.WriteFile(filepath.Join(root, "keys.enc"), []byte("secret"), 0o600)
+	os.MkdirAll(filepath.Join(root, "agents", "other"), 0o755)
+	os.WriteFile(filepath.Join(root, "agents", "other", "notes.txt"), []byte("theirs"), 0o600)
+	pkg, _ := packDemo(t, root, map[string]string{"scripts/helper.py": "WORD = 'own'\n", "scripts/ok.py": "import os, socket, subprocess, sys, tempfile\nimport helper\nopen(os.path.join(tempfile.gettempdir(), 't'), 'w').write(helper.WORD)\nopen('ok.txt','w').write(os.environ.get('GROQ_API_KEY','none') + os.environ.get('DATABASE_URL','none'))\nsubprocess.run([sys.executable, '-c', 'pass'], check=True)\npair = getattr(socket, '_fallback_socketpair', None)\ntry:\n    [s.close() for s in (pair() if pair else [])]\nexcept PermissionError:\n    raise\nexcept OSError:\n    pass  # no loopback in the Linux sandbox: not the guard's doing\n"})
 	dir := filepath.Join(root, "agents")
 	if _, err := Install(pkg, dir); err != nil {
 		t.Fatal(err)
@@ -193,8 +205,7 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 	for name, code := range cases {
 		writeAgent(t, filepath.Join(dir, "demo-agent"), map[string]string{"scripts/" + strings.ReplaceAll(name, " ", "_") + ".py": code + "\n"})
 	}
-	work := filepath.Join(root, "work")
-	os.MkdirAll(work, 0o755)
+	work := t.TempDir() // outside MangoMan's folder, as a user's project is
 	t.Setenv("GROQ_API_KEY", "secret-value")
 	t.Setenv("DATABASE_URL", "postgres://u:p@h/db")
 	if runtime.GOOS == "windows" {
@@ -208,6 +219,17 @@ func TestGuardBlocksUndeclaredAccess(t *testing.T) {
 		out, err := cmd.CombinedOutput()
 		if err == nil || !strings.Contains(string(out), "not allowed") {
 			t.Errorf("%s was not blocked: %v %s", name, err, out)
+		}
+	}
+	// Run from MangoMan's folder or its agents folder, the key file and the
+	// other agents are still out of reach.
+	for _, c := range []struct{ work, script string }{{root, "mangoman_keys.py"}, {dir, "another_agent.py"}} {
+		cmd, err := Command(dir, "demo-agent", c.work, c.script, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if out, err := cmd.CombinedOutput(); err == nil || !strings.Contains(string(out), "not allowed") {
+			t.Errorf("%s from %s was not blocked: %v %s", c.script, c.work, err, out)
 		}
 	}
 	cmd, _ := Command(dir, "demo-agent", work, "ok.py", nil)

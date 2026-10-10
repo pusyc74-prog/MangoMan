@@ -38,6 +38,30 @@ SECRET = [_real(os.path.join(_home, p)) for p in (
     ".config/gh", ".git-credentials", ".local/share/keyrings", "Library/Keychains", "Library/Application Support/mangoman",
     ".config/google-chrome", ".config/chromium", ".mozilla", "Library/Application Support/Google/Chrome",
     "AppData/Roaming/mangoman", "AppData/Local/Google/Chrome")]
+# MangoMan's own folder (keys, config, usage), wherever MANGOMAN_HOME put it:
+# the agent lives in <that folder>/agents/<name>.
+_agent = _real(os.environ.get("MANGOMAN_AGENT_DIR", ""))
+if _agent:
+    SECRET.append(os.path.dirname(os.path.dirname(_agent)))
+# Inside a secret folder, an agent may still read its own files and temp
+# folder, and the Python running it (MangoMan's own Python lives in
+# MangoMan's folder). Measured 10 Oct: without this no agent could start
+# from MangoMan's usual folder, and on a Mac not even import csv. Its work
+# and temp folders count only outside every secret folder, and no entry may
+# hold a secret folder (an agent run in the home folder must not reach ~/.ssh).
+_mine = [_agent, _real(os.path.join(os.path.dirname(_agent), ".tmp", os.path.basename(_agent)))] if _agent else []
+_mine += [_real(sys.prefix), _real(sys.base_prefix)]
+READ_OK = [r for r in _mine + [w for w in WRITE_OK[:2] if not _under(w, SECRET)]
+           if r and not any(_under(s, [r]) for s in SECRET)]
+
+
+def _secret(p):
+    return _under(p, SECRET) and not _under(p, READ_OK)
+
+
+# What a Python child must inherit unchanged: these decide what it may reach.
+TRUSTED = ("MANGOMAN_AGENT_DIR", "MANGOMAN_WORKDIR", "MANGOMAN_ALLOW_HOSTS", "MANGOMAN_ALLOW_CMDS",
+           "TMPDIR", "TEMP", "TMP", "PYTHONHOME")
 _ips = {"127.0.0.1", "::1"} if "localhost" in HOSTS else set()
 
 
@@ -80,7 +104,10 @@ def _program_ok(exe, argv=None, env=None):
             return False
         if env is None:
             return True
-        pp = os.fsdecode(env.get("PYTHONPATH", env.get(b"PYTHONPATH", b"")))
+        env = {(os.fsdecode(k).upper() if os.name == "nt" else os.fsdecode(k)): os.fsdecode(v) for k, v in env.items()}
+        if any(env.get(k) != os.environ.get(k) for k in TRUSTED):
+            return False
+        pp = env.get("PYTHONPATH", "")
         return bool(pp) and os.path.realpath(pp.split(os.pathsep)[0]) == GUARD_DIR
     return name in CMDS or "playwright" + os.sep + "driver" in _real(exe)
 
@@ -131,7 +158,7 @@ def _hook(event, args):
         if path is None or isinstance(path, int):
             return
         p = _real(path)
-        if _under(p, SECRET):
+        if _secret(p):
             _deny("read " + p)
         writing = (isinstance(mode, str) and any(c in mode for c in "wax+")) or \
             (isinstance(flags, int) and flags & (os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_APPEND | os.O_TRUNC))
@@ -142,7 +169,7 @@ def _hook(event, args):
             if not isinstance(a, (str, bytes, os.PathLike)):
                 continue
             p = _real(a)
-            if _under(p, SECRET):
+            if _secret(p):
                 _deny("touch " + p)
             if not _under(p, WRITE_OK) and not (event == "os.symlink" and a is args[0]):
                 _deny("change " + p)
