@@ -29,6 +29,10 @@ func TestLoad(t *testing.T) {
 	rt := setup(t, flaky, steady)
 	rt.Line.skipAfter = 1 << 30 // keep both in play: this measures the router, not the skipping
 	const total, workers = 3000, 300
+	// Reuse connections as MangoMan's own client does. The test client keeps
+	// 2, so 300 workers kept opening new TLS connections and Windows dropped
+	// a few (3 of 3000, 10 Oct): a test of Windows' loopback, not the router.
+	rt.Client.HTTP.Transport.(*http.Transport).MaxIdleConnsPerHost = workers
 
 	var failed atomic.Int64
 	jobs := make(chan int)
