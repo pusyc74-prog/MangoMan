@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/pusyc74-prog/mangoman/internal/guardian"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -256,5 +257,26 @@ func TestPersonToken(t *testing.T) {
 	s.Cfg.SetPerson("ravi", "")
 	if w := call(h, "GET", "/v1/models", "127.0.0.1:4141", ok, ""); w.Code != 401 {
 		t.Fatalf("a removed person's token must stop working: %d", w.Code)
+	}
+}
+
+// Every page names its icon, which the server has: a browser asks for
+// /favicon.ico otherwise, gets a 404 and logs a console error (the nightly QA
+// found one on 10 Oct, issue #2).
+func TestPagesHaveAnIcon(t *testing.T) {
+	h, _ := dashServer(t, mem{})
+	pages, _ := fs.Glob(uiFiles, "ui/*.html")
+	if len(pages) < 3 {
+		t.Fatalf("pages: %v", pages)
+	}
+	for _, p := range pages {
+		b, _ := fs.ReadFile(uiFiles, p)
+		if !strings.Contains(string(b), `<link rel="icon" href="icon.svg"`) {
+			t.Errorf("%s names no icon", p)
+		}
+	}
+	w := call(h, "GET", "/ui/icon.svg", "127.0.0.1:4141", nil, "")
+	if w.Code != 200 || w.Header().Get("Content-Type") != "image/svg+xml" {
+		t.Fatalf("icon: %d %s", w.Code, w.Header().Get("Content-Type"))
 	}
 }
