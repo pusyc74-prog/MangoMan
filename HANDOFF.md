@@ -218,6 +218,7 @@ while a run goes. The owner asked whether quality and "0 bugs" still hold
 | `agent-eval.yml` | manual | an advanced agent against its pack |
 | `windows-check.yml` | dispatch or manual only | Windows the user's way with the stand-in model: `mangoman ready`, OpenCode runs pack commands in Windows PowerShell 5.1, all pack samples; reports under `reports/windows/` (about 15 minutes, Windows minutes count twice) |
 | `pylock.yml` | dispatch or manual only | locks the packs' Python packages and measures sizes per system; result under `reports/pylock/`, copy into `internal/pyenv/` |
+| `mac-check.yml` | dispatch or manual only | the Windows check's steps on macos-latest (Apple silicon): `mangoman ready` in the usual folder (~/Library/Application Support/mangoman), OpenCode runs pack commands in zsh, all pack samples; reports under `reports/mac/`. Gatekeeper is not covered (a CI build has no quarantine flag) |
 
 - **Budget:** about 1,000 of 2,000 free minutes a month at about 20 pushes a
   day. **Push in batches.** A pack run takes about 45 to 60 minutes of
@@ -241,7 +242,7 @@ while a run goes. The owner asked whether quality and "0 bugs" still hold
 | Issues | `gh api repos/pusyc74-prog/MangoMan/issues` (the nightly qa opens one on failure). |
 | Start a pack run | `gh api -X POST repos/pusyc74-prog/MangoMan/dispatches --input -` with `{"event_type":"pack-run","client_payload":{"model":"free/coder","cases":"1","case_timeout":"900"}}`. Payload keys: model, packs (spaces or commas), variant, cases, case_timeout, runner. Leave `cases` out for three per pack. |
 | Start the coding screen check | event_type `workspace-check`, payload model, runner. |
-| Start the Windows check, or a new lock | event_type `windows-check` or `pylock`, no payload. |
+| Start the Windows check, or a new lock | event_type `windows-check`, `mac-check` or `pylock`, no payload. |
 | A failed job's error | `gh api repos/pusyc74-prog/MangoMan/check-runs/<id>/annotations` shows the error lines (the Actions logs are blocked). |
 | Queue rule | Runs of one workflow go one at a time; GitHub keeps only **one** waiting run per group, so a third dispatch replaces the second. Dispatch the next after the previous starts. A dispatch runs the code of `main` at the moment you send it. |
 | Read results | `git clone -q --depth 1 -b eval-reports https://github.com/pusyc74-prog/MangoMan.git` then `reports/pack-run/<stamp>/report.md`, `logs/<pack>/<case>.log`, `serve.log` (router log, has "first word after Ns"), `usage.json`. Doctor: branch `doctor-reports`, `latest.txt`. |
@@ -389,6 +390,7 @@ Touch files in the control dir to change the next coding request:
 | Real-model run on Windows | Only the stand-in model ran on Windows so far; a pack run on a Windows runner would check real models' commands in PowerShell (quoting, `&&`). |
 | `mangoman ready` in a terminal and Get ready on the page at the same time | Both install into the same folder; no lock between processes (rare). |
 | packs.yml and qa.yml still download Playwright's Chromium | Unused now that the runner's Chrome is used; could be dropped to save minutes. |
+| Mac and Linux downloads need `chmod +x` and, on a Mac, Terminal | The artifact zip drops the program flag (upload-artifact keeps no permissions). A `.tar.gz` per system (keeps the flag) or a Mac `.app` in the release would remove the Terminal step; part of the release work. |
 | Website copy writes `site.json` page by page | Owner, 9 Oct: a separate change with its own scored run; **not needed so far**. After the JSON error helper (3ef2091) and the facts message (cc02610), 6 of 6 website copy runs passed (100, 82, 97, 94, 100, 97). Revisit if site.json breaks again in a way the helper cannot name, or if a pause nears the 300 s stall limit (longest seen: 161 s, Kimi K3 and Nemotron Ultra). |
 | Costly fix loops in packs | Ad copy 100 requests, website copy 156 in one run (8 Oct). Website copy: done for JSON errors (`checks.load_json` names the exact fix; first real case fixed in one edit, run 20261009-200959) and for facts missing from site.json (check_copy says where they go). Other packs that read model-written JSON (ad copy, listing, email and more) could use `checks.load_json` too. |
 | Windows stall watchdog | Off (no pgrep). Could use PowerShell `Get-CimInstance Win32_Process` for child processes. |
@@ -444,6 +446,7 @@ Mac (macOS 15 and later): `chmod +x mangoman` once (the artifact zip drops the p
 | Waited idle during long runs | Keep building while a run goes; read results when it ends. |
 | 9 Oct: planned to drop Playwright; the owner caught that `render.inspect` and `render_frames` need it | Before removing a dependency, find every call, including optional paths. |
 | 9 Oct: said pandas was used by one script; the model's own `analysis.py` uses it in three packs | Search the SKILL.md instructions and test samples too, not only the scripts. |
+| 10 Oct: every test moved MangoMan's folder somewhere temporary, so no agent had ever run from the usual folder, where the sandbox refused its own files; the first Mac check found it | Test the way users run it: the usual folder too, not only a temporary one. |
 
 ---
 
