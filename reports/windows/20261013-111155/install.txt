@@ -1,0 +1,8 @@
+Downloading MangoMan for Windows (about 10 MB)...
+The download was damaged. Please run the line again.
+At line:29 char:9
++         throw 'The download was damaged. Please run the line again.'
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (The download wa...the line again.:String) [], RuntimeException
+    + FullyQualifiedErrorId : The download was damaged. Please run the line again.
+ 
