@@ -5,7 +5,11 @@
 # found with Spotlight; it opens MangoMan in a Terminal window. Linux:
 # ~/.local/bin/mangoman. MANGOMAN_SITE fetches from another copy of the site
 # and MANGOMAN_NO_START skips starting MangoMan (both for the CI checks).
+# Everything is in main, called on the last line: a download cut off halfway
+# runs nothing.
 set -eu
+
+main() {
 site="${MANGOMAN_SITE:-__SITE__}"
 
 case "$(uname -s)" in
@@ -29,7 +33,7 @@ trap 'rm -rf "$tmp"' EXIT
 echo "Downloading MangoMan for $name (about 10 MB)..."
 curl -fSL --progress-bar "$site/$file" -o "$tmp/mangoman"
 curl -fsSL "$site/SHA256SUMS.txt" -o "$tmp/sums"
-want=$(awk -v f="$file" '$2 == f { print $1 }' "$tmp/sums")
+want=$(awk -v f="$file" '{ sub(/^\*/, "", $2) } $2 == f { print $1 }' "$tmp/sums")
 if command -v sha256sum >/dev/null 2>&1; then
 	got=$(sha256sum "$tmp/mangoman" | cut -d' ' -f1)
 else
@@ -74,5 +78,9 @@ else
 	*":$bin:"*) echo "MangoMan is installed. Next time, run: mangoman" ;;
 	*) echo "MangoMan is installed. Next time, run: $bin/mangoman" ;;
 	esac
-	[ -n "${MANGOMAN_NO_START:-}" ] || exec "$bin/mangoman"
+	# The keyboard, not the script coming through the pipe from curl.
+	[ -n "${MANGOMAN_NO_START:-}" ] || "$bin/mangoman" </dev/tty
 fi
+}
+
+main "$@"

@@ -31,7 +31,7 @@
     <ol class="steps">
       <li><b>Open PowerShell.</b> Press the Windows key, type <kbd>PowerShell</kbd>, and press Enter.</li>
       <li><b>Paste this line and press Enter.</b>
-        <div class="cmd"><code>irm __SITE__/install.ps1 | iex</code><button type="button" class="copy">Copy</button></div>
+        <div class="cmd"><code>[Net.ServicePointManager]::SecurityProtocol=3072; irm __SITE__/install.ps1 | iex</code><button type="button" class="copy">Copy</button></div>
       </li>
       <li><b>MangoMan opens in your browser.</b> Paste your free NVIDIA key, click <b>Get ready</b>, then <b>Open the coding screen</b>.</li>
     </ol>

@@ -53,7 +53,7 @@ jobs:
           Start-Sleep 3
           $env:MANGOMAN_SITE = 'http://127.0.0.1:8800'
           $env:MANGOMAN_NO_START = '1'
-          powershell -NoProfile -Command "irm http://127.0.0.1:8800/install.ps1 | iex" *>&1 | Tee-Object out/install.txt
+          powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=3072; irm http://127.0.0.1:8800/install.ps1 | iex" *>&1 | Tee-Object out/install.txt
           $exe = "$env:LOCALAPPDATA\MangoMan\mangoman.exe"
           $link = Join-Path ([Environment]::GetFolderPath('Programs')) 'MangoMan.lnk'
           & $exe version *>&1 | Tee-Object -Append out/install.txt
