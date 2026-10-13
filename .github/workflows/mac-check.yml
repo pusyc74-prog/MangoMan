@@ -46,12 +46,13 @@ jobs:
           echo "HOMEDIR=$HOME/Library/Application Support/mangoman" >> "$GITHUB_ENV"
       - name: Install from a copy of the download site with the line from the page
         shell: bash # with pipefail: a failed install fails the step through tee
+        timeout-minutes: 10 # a hang fails this step, and the report still goes out
         run: |
           # curl reads file:// like a web address; a local web server here
           # timed out (13 Oct).
           site="file://$PWD/dist/site"
-          scripts/make-site.sh "$site"
-          curl -fsSL "$site/install.sh" | MANGOMAN_SITE="$site" MANGOMAN_NO_START=1 sh 2>&1 | tee out/install.txt
+          { date; scripts/make-site.sh "$site"; date; } 2>&1 | tee out/install.txt
+          curl -fsSL "$site/install.sh" | MANGOMAN_SITE="$site" MANGOMAN_NO_START=1 sh -x 2>&1 | tee -a out/install.txt
           app="$HOME/Applications/MangoMan.app"
           plutil -lint "$app/Contents/Info.plist" | tee -a out/install.txt
           "$app/Contents/MacOS/mangoman" version | tee -a out/install.txt
