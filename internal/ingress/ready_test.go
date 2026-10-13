@@ -82,7 +82,7 @@ func TestGetReady(t *testing.T) {
 	if v.Running || v.Error != "" {
 		t.Fatalf("a second try: %+v", v)
 	}
-	for _, path := range []string{"/mangoman/ready", "/mangoman/code/open"} {
+	for _, path := range []string{"/mangoman/ready", "/mangoman/code/open", "/mangoman/files/open"} {
 		if w := call(h, "POST", path, "127.0.0.1:4141", nil, ""); w.Code != 401 {
 			t.Errorf("%s without the token: %d", path, w.Code)
 		}

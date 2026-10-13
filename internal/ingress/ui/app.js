@@ -808,6 +808,22 @@ document.addEventListener("DOMContentLoaded", () => {
   state.token = readToken();
   if (!state.token) { $("gate").hidden = false; $("runline").textContent = "No access token."; return; }
   $("refresh").addEventListener("click", load);
+  for (const [id, path, said] of [
+    ["to-code", "/mangoman/code/open", "The coding screen is opening in a new tab. Your files are saved in"],
+    ["to-files", "/mangoman/files/open", "Opened your files:"],
+  ]) {
+    $(id).addEventListener("click", async () => {
+      const msg = $("codemsg");
+      try {
+        const r = await api(path, { method: "POST" });
+        msg.className = "msg ok";
+        msg.textContent = `${said} ${r.folder}.`;
+      } catch (err) {
+        msg.className = "msg err";
+        msg.textContent = err.message;
+      }
+    });
+  }
   $("mylist-add").addEventListener("submit", (e) => {
     e.preventDefault();
     const v = $("mylist-pick").value;

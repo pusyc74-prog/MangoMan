@@ -15,6 +15,8 @@
     <h1>MangoMan</h1>
   </div>
   <p class="runline" id="runline">Connecting to the router…</p>
+  <button type="button" class="primary" id="to-code">Open coding screen</button>
+  <button type="button" class="ghost" id="to-files">Open my files</button>
   <button type="button" class="ghost" id="refresh">Refresh</button>
   <button type="button" class="fab" id="fab" hidden aria-controls="drawer" aria-expanded="false">
     <span class="fab-dot" aria-hidden="true"></span><span id="fab-text">New models</span>
@@ -22,6 +24,7 @@
 </header>
 
 <main id="app" hidden>
+  <p class="msg" id="codemsg" role="status"></p>
   <aside class="now" id="now" aria-labelledby="h-now" aria-live="polite">
     <h2 id="h-now">Model in use</h2>
     <p class="now-model" id="now-model">Waiting for the first request</p>

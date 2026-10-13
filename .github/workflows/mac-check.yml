@@ -44,6 +44,20 @@ jobs:
           mkdir -p out
           { sw_vers; uname -m; echo "shell: $SHELL"; ls -d /Applications/*Chrome*.app /Applications/*Edge*.app 2>/dev/null; } | tee out/system.txt
           echo "HOMEDIR=$HOME/Library/Application Support/mangoman" >> "$GITHUB_ENV"
+      - name: Install from a copy of the download site with the line from the page
+        run: |
+          scripts/make-site.sh http://127.0.0.1:8800
+          python3 -m http.server 8800 --directory dist/site > /dev/null 2>&1 &
+          srv=$!
+          sleep 2
+          curl -fsSL http://127.0.0.1:8800/install.sh | MANGOMAN_SITE=http://127.0.0.1:8800 MANGOMAN_NO_START=1 sh 2>&1 | tee out/install.txt
+          kill $srv
+          app="$HOME/Applications/MangoMan.app"
+          plutil -lint "$app/Contents/Info.plist" | tee -a out/install.txt
+          "$app/Contents/MacOS/mangoman" version | tee -a out/install.txt
+          # No quarantine flag: Gatekeeper will not stop the app.
+          ! xattr "$app/Contents/MacOS/mangoman" | grep -q quarantine
+          echo "no quarantine flag" | tee -a out/install.txt
       - name: Get ready, as a user would
         run: |
           ./mm init > /dev/null

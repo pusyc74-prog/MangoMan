@@ -44,6 +44,22 @@ jobs:
         run: |
           go build -o mm.exe ./cmd/mangoman
           New-Item -ItemType Directory -Force out | Out-Null
+      - name: Build a copy of the download site
+        shell: bash
+        run: scripts/make-site.sh http://127.0.0.1:8800
+      - name: Install from it with the line from the page, in Windows PowerShell 5.1
+        run: |
+          $srv = Start-Process python -ArgumentList '-m', 'http.server', '8800', '--directory', 'dist/site' -PassThru -WindowStyle Hidden
+          Start-Sleep 3
+          $env:MANGOMAN_SITE = 'http://127.0.0.1:8800'
+          $env:MANGOMAN_NO_START = '1'
+          powershell -NoProfile -Command "irm http://127.0.0.1:8800/install.ps1 | iex" *>&1 | Tee-Object out/install.txt
+          $exe = "$env:LOCALAPPDATA\MangoMan\mangoman.exe"
+          $link = Join-Path ([Environment]::GetFolderPath('Programs')) 'MangoMan.lnk'
+          & $exe version *>&1 | Tee-Object -Append out/install.txt
+          $ran = $LASTEXITCODE
+          Stop-Process $srv
+          if ($ran -ne 0 -or -not (Test-Path $link)) { 'the install check failed' | Tee-Object -Append out/install.txt; exit 1 }
       - name: Get ready, as a user would
         run: |
           ./mm.exe init | Out-Null

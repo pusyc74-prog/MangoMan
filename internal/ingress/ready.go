@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -47,6 +48,39 @@ func (s *Server) readyRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /mangoman/ready", s.auth(http.HandlerFunc(s.readyGet)))
 	mux.Handle("POST /mangoman/ready", s.auth(http.HandlerFunc(s.readyStart)))
 	mux.Handle("POST /mangoman/code/open", s.auth(http.HandlerFunc(s.codeOpen)))
+	mux.Handle("POST /mangoman/files/open", s.auth(http.HandlerFunc(s.filesOpen)))
+}
+
+// projects returns the projects folder, made if missing, or writes the error.
+func projects(w http.ResponseWriter) string {
+	dir := projectsDir()
+	if dir == "" {
+		core.WriteError(w, http.StatusInternalServerError, "no_folder", "could not find your home folder")
+		return ""
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "no_folder", err.Error())
+		return ""
+	}
+	return dir
+}
+
+// filesOpen shows the projects folder in Explorer, Finder or the Linux file
+// manager, where the coding screen saves what it makes.
+func (s *Server) filesOpen(w http.ResponseWriter, _ *http.Request) {
+	dir := projects(w)
+	if dir == "" {
+		return
+	}
+	open := setup.OpenURL // Finder (open) or the Linux file manager (xdg-open)
+	if runtime.GOOS == "windows" {
+		open = func(dir string) error { return exec.Command("explorer", dir).Start() }
+	}
+	if err := open(dir); err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "not_opened", err.Error())
+		return
+	}
+	writeJSON(w, map[string]string{"folder": dir})
 }
 
 func projectsDir() string {
@@ -129,13 +163,8 @@ func (s *Server) readyStart(w http.ResponseWriter, r *http.Request) {
 // folder, made if missing. It opens in the browser by itself; one that
 // stops within a few seconds failed, and its last words are the answer.
 func (s *Server) codeOpen(w http.ResponseWriter, _ *http.Request) {
-	dir := projectsDir()
+	dir := projects(w)
 	if dir == "" {
-		core.WriteError(w, http.StatusInternalServerError, "no_folder", "could not find your home folder")
-		return
-	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		core.WriteError(w, http.StatusInternalServerError, "no_folder", err.Error())
 		return
 	}
 	self, err := os.Executable()

@@ -82,7 +82,8 @@ jobs:
           exit $status
 
   build:
-    # All five targets in one job.
+    # All five systems in one job. The artifact is the download site, ready
+    # to drop on Netlify.
     if: github.event_name != 'push' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -90,15 +91,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: Build
-        env:
-          CGO_ENABLED: "0"
-        run: |
-          for t in darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64; do
-            GOOS=${t%/*} GOARCH=${t#*/}; ext=""; [ "$GOOS" = windows ] && ext=".exe"
-            GOOS=$GOOS GOARCH=$GOARCH go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_SHA::7}" -o dist/mangoman-$GOOS-$GOARCH$ext ./cmd/mangoman
-          done
+      - name: Build the download site (every system, the page and the install scripts)
+        run: scripts/make-site.sh
       - uses: actions/upload-artifact@v4
         with:
           name: mangoman
-          path: dist/
+          path: dist/site/

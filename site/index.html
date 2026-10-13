@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get MangoMan</title>
+<meta name="description" content="Free AI on your own computer: resumes, emails, websites and more.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="site.css">
+<script src="site.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <span class="mark" aria-hidden="true"></span>
+  <h1>MangoMan</h1>
+</header>
+
+<main>
+  <section class="hero">
+    <h2>Free AI on your own computer</h2>
+    <p>Ask in plain words. MangoMan makes your resume, emails, website, social posts and more, and saves them on your computer. It uses free AI, so it costs nothing.</p>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Your computer">
+    <button type="button" role="tab" id="tab-windows" aria-controls="windows" aria-selected="true">Windows</button>
+    <button type="button" role="tab" id="tab-mac" aria-controls="mac" aria-selected="false">Mac</button>
+    <button type="button" role="tab" id="tab-linux" aria-controls="linux" aria-selected="false">Linux</button>
+  </nav>
+
+  <section class="os" id="windows" role="tabpanel" aria-labelledby="tab-windows">
+    <ol class="steps">
+      <li><b>Open PowerShell.</b> Press the Windows key, type <kbd>PowerShell</kbd>, and press Enter.</li>
+      <li><b>Paste this line and press Enter.</b>
+        <div class="cmd"><code>irm __SITE__/install.ps1 | iex</code><button type="button" class="copy">Copy</button></div>
+      </li>
+      <li><b>MangoMan opens in your browser.</b> Paste your free NVIDIA key, click <b>Get ready</b>, then <b>Open the coding screen</b>.</li>
+    </ol>
+    <p class="next">Next time: open <b>MangoMan</b> from the Start menu or your desktop. A black window opens with it; keep it open while you use MangoMan.</p>
+    <details>
+      <summary>Prefer a normal download?</summary>
+      <p><a class="primary" href="mangoman-windows-amd64.exe" download="MangoMan.exe">Download MangoMan.exe</a> <span class="size">about 10 MB</span></p>
+      <p>Double-click it in your Downloads. Windows may say "Windows protected your PC" because MangoMan is new: click <b>More info</b>, then <b>Run anyway</b>. The line above avoids this warning and adds MangoMan to your Start menu.</p>
+    </details>
+  </section>
+
+  <section class="os" id="mac" role="tabpanel" aria-labelledby="tab-mac" hidden>
+    <ol class="steps">
+      <li><b>Open Terminal.</b> Press <kbd>Cmd</kbd> + <kbd>Space</kbd>, type <kbd>Terminal</kbd>, and press Enter.</li>
+      <li><b>Paste this line and press Enter.</b>
+        <div class="cmd"><code>curl -fsSL __SITE__/install.sh | sh</code><button type="button" class="copy">Copy</button></div>
+      </li>
+      <li><b>MangoMan opens in your browser.</b> Paste your free NVIDIA key, click <b>Get ready</b>, then <b>Open the coding screen</b>.</li>
+    </ol>
+    <p class="next">Next time: press <kbd>Cmd</kbd> + <kbd>Space</kbd>, type <kbd>MangoMan</kbd>, and press Enter. A Terminal window opens with it; keep it open while you use MangoMan.</p>
+    <p class="fine">It works on Apple chips (M1 and newer) and Intel Macs, macOS 11 or later. The line picks the right one.</p>
+  </section>
+
+  <section class="os" id="linux" role="tabpanel" aria-labelledby="tab-linux" hidden>
+    <ol class="steps">
+      <li><b>Open a terminal.</b></li>
+      <li><b>Paste this line and press Enter.</b>
+        <div class="cmd"><code>curl -fsSL __SITE__/install.sh | sh</code><button type="button" class="copy">Copy</button></div>
+      </li>
+      <li><b>MangoMan opens in your browser.</b> Paste your free NVIDIA key and click <b>Get ready</b>.</li>
+    </ol>
+    <p class="next">Next time: run <code>mangoman</code> in a terminal.</p>
+  </section>
+
+  <section class="need">
+    <h3>What you need</h3>
+    <ul>
+      <li>Windows 10 or 11, macOS 11 or later, or Linux.</li>
+      <li>Google Chrome or Microsoft Edge, to make PDFs. Edge comes with Windows.</li>
+      <li>A free NVIDIA key. MangoMan shows you how to get one in two minutes.</li>
+      <li>About 200 MB of internet the first time. Wi-Fi is better than mobile data.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="foot">Version __VERSION__. Coding engine: <a href="https://github.com/anomalyco/opencode" rel="noopener noreferrer">OpenCode</a>, open source under the MIT licence.</footer>
+</body>
+</html>
