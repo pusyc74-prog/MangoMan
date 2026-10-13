@@ -435,6 +435,7 @@ Mac (macOS 15 and later): `chmod +x mangoman` once (the artifact zip drops the p
 
 | What went wrong | Do instead |
 |---|---|
+| 13 Oct: the download site sent to the owner was built in the session, whose GOFLAGS (`-modfile=/tmp/dev.mod`) swap the key store for a stand-in; on Windows it said "could not store key: stub" | Releases come only from ci's build job (its artifact is the site folder). `make-site.sh` now empties GOFLAGS, so a session build fails instead. |
 | Asked the owner for a Cerebras key that this file already ruled out | Read this file and the PRD before asking for anything. |
 | Garbled sentences in replies and in the PRD | Reread every reply and every PRD row before sending. |
 | Quoted a provider's message from memory | Copy messages exactly from the log. |
