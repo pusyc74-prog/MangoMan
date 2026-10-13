@@ -46,7 +46,9 @@ jobs:
           echo "HOMEDIR=$HOME/Library/Application Support/mangoman" >> "$GITHUB_ENV"
       - name: Install from a copy of the download site with the line from the page
         shell: bash # with pipefail: a failed install fails the step through tee
-        timeout-minutes: 10 # a hang fails this step, and the report still goes out
+        # Each step has its own limit: a hang fails that step and the report
+        # still goes out (a job past its limit publishes nothing).
+        timeout-minutes: 10
         run: |
           # curl reads file:// like a web address; a local web server here
           # timed out (13 Oct).
@@ -60,6 +62,7 @@ jobs:
           if xattr "$app/Contents/MacOS/mangoman" | grep -q quarantine; then echo "quarantine flag set" | tee -a out/install.txt; exit 1; fi
           echo "no quarantine flag" | tee -a out/install.txt
       - name: Get ready, as a user would
+        timeout-minutes: 8
         run: |
           ./mm init > /dev/null
           start=$(date +%s)
@@ -70,6 +73,7 @@ jobs:
           [ "${PIPESTATUS[0]}" = 0 ] || exit 1
           echo "Python folder on disk: $(du -sm "$HOMEDIR/python" | cut -f1) MB" | tee -a out/ready.txt
       - name: OpenCode runs pack commands in zsh
+        timeout-minutes: 12
         run: |
           py="$HOMEDIR/python/env/shim/python3"
           ctl="$PWD/ctl"
@@ -100,6 +104,7 @@ jobs:
           echo "mangoman code exit $code" | tee -a out/code-checks.txt
           [ "$code" = 0 ] && [ "$bad" = 0 ]
       - name: Every pack sample with MangoMan's Python and the Mac's browser
+        timeout-minutes: 12
         if: always()
         run: |
           # As mangoman sets them for every program it starts (pyenv.Use).
