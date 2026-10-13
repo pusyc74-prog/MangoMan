@@ -1,0 +1,3 @@
+Downloading MangoMan for Windows (about 10 MB)...
+MangoMan is installed. Next time, open MangoMan from the Start menu or your desktop.
+mangoman 372a7e2
