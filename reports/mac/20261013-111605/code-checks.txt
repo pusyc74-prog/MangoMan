@@ -1,0 +1,39 @@
+PASS  1 page as planned
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  the page is well filled
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  100% of bullets show a measurable result
+PASS  dates use one format
+PASS  letter names the company and role
+WARN  letter is 166 words; aim for 200 to 400
+PASS  every number in the letter is in the resume
+PASS  no placeholder text in the letter
+PASS  letter fits one page
+PASS  spec is valid
+PASS  every email built
+PASS  every email has an unsubscribe link (mailchimp)
+PASS  every email shows the sender's postal address
+PASS  every email under Gmail's 102 KB clipping size
+PASS  plain-text versions present
+PASS  subject lines are not overlong
+PASS  subject lines 15 to 60 characters (fit a phone)
+PASS  preview text 35 to 140 characters and adds to the subject
+PASS  every link is a real https, mailto or tel link
+PASS  every number comes from the facts the user gave
+PASS  no placeholder text
+PASS  no spam-trigger phrases
+PASS  no shouting in subject lines
+PASS  exclamation marks used sparingly
+PASS  emoji used sparingly in subjects
+PASS  no risky claims
+PASS  one clear action per email
+PASS  text-to-image balance is healthy
+WARN  images point to the local assets/ folder: upload them (your email tool's file manager or your site) and set assets_base_url, or replace the paths, before sending
+PASS  no sideways scrolling on a phone
+PASS  every image loads in the preview
+PASS  buttons are easy to tap
+PASS  text is readable on a phone
+mangoman code exit 0
