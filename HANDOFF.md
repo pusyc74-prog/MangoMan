@@ -50,7 +50,7 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 | M6 (coding screen, `mangoman code --ui`) | **Complete** (8 Oct). Passed a real-model check: 7 of 7 in 133 s. |
 | Real-model quality | free/coder, one case per pack, installed the user's way since 9 Oct: 20261009-165742 passed **6 of 7** (website copy 0: answers cut at the old 180 s stall limit), 20261009-174404 (stall limit 300 s) passed **7 of 7**, average 90.6 (ad copy 90.7, listing 85, email 95, resume 86.7, SEO 96.5, social 86.4, website copy 94). Website copy alone: 2 failures in 6 runs from invalid site.json; the JSON error helper (3ef2091) is being measured with 3 runs. |
 | Easy setup (3b) | **Built and pushed (9 Oct).** Double-click opens a setup page; `mangoman ready` in a terminal. Windows check (`windows-check.yml`, stand-in model) passed: OpenCode ran pack commands in Windows PowerShell and all 19 pack samples passed with MangoMan's own Python and the computer's own browser. Waiting: the owner's own try on Windows. |
-| Release | **None yet.** The owner can try it from a CI build (section 12). |
+| Release | **Download site (13 Oct).** `scripts/make-site.sh` builds `dist/site` (page, `install.sh`, `install.ps1`, five binaries, `SHA256SUMS.txt`); the ci build job's artifact is that folder. The owner drops it on Netlify by hand (Sites, Add new site, Deploy manually), site name `getmangoman` (https://getmangoman.netlify.app). Users paste one line: Windows PowerShell or Mac Terminal. |
 | Repo | **Public, by the owner's choice (9 Oct: "keep it public for now").** Do not ask again until they raise it. CI is already cut down for private minutes. |
 | CI | Green on 2933a9c, Linux, Mac and Windows (ci run 38074112513, which has the build to try). Issue #2 closed. mac-check passed 19 of 19 pack samples. |
 | Next build | 3a and 3b are done. Next: the owner tries the easy setup on Windows; then pick from the open items (section 11) with the owner. |
@@ -160,7 +160,7 @@ owner to try it on their own computer (**Windows**, answered 9 Oct).
 | My list, ask before weaker models, one model per chat | 6 Oct decisions, still in force. |
 | M5 parked; Claude Code or Codex alongside OpenCode: later | Owner. |
 | Expo Go for phone previews | Owner. |
-| Release only after the repo is private, from a separate public repo with only the built app | Owner: the code must not be public. |
+| Release from Netlify, dropped by hand; the owner's own domain later (owner, 13 Oct) | Replaces "a separate public repo": only built files go to Netlify, the code stays here. Free plan: 300 credits a month, 15 per deploy, 20 per GB served (about 1,000 downloads a month); past that the site pauses until the next month. Automatic deploys need a Netlify token (`NETLIFY_AUTH_TOKEN`), later. |
 | Repo stays public for now (9 Oct) | Owner. Free Actions minutes; no self-hosted runner while public. |
 | The owner tests on Windows (9 Oct) | Windows is the first system the easy setup must work on. |
 
@@ -386,7 +386,7 @@ Touch files in the control dir to change the next coding request:
 
 | Item | Notes |
 |---|---|
-| Owner tries the easy setup on Windows | Download the `mangoman` artifact from a ci run (manual), double-click `mangoman.exe`. |
+| Owner tries the download site | Drop `dist/site` on Netlify, then install with the line on the page (Windows and Mac). |
 | Real-model run on Windows | Only the stand-in model ran on Windows so far; a pack run on a Windows runner would check real models' commands in PowerShell (quoting, `&&`). |
 | `mangoman ready` in a terminal and Get ready on the page at the same time | Both install into the same folder; no lock between processes (rare). |
 | packs.yml and qa.yml still download Playwright's Chromium | Unused now that the runner's Chrome is used; could be dropped to save minutes. |
@@ -399,7 +399,8 @@ Touch files in the control dir to change the next coding request:
 | NVIDIA daily cap | Not measured end to end. |
 | Garbling cause | Not proven; a test sending a sensible temperature (for example 0.6) could tell. |
 | Quality after a mid-task model switch | Not measured. |
-| Release | One-line installer and release page from a separate public repo, after the repo is private and the easy setup exists. Code signing is the owner's cost decision. |
+| Release, next steps | Automatic Netlify deploy from ci (token); the owner's domain; MangoMan in the background with a Stop button (the Mac app opens a Terminal window, Windows a black window); Windows Smart App Control (new Windows 11 installs) may block the unsigned app whatever the install route. Code signing is the owner's cost decision. |
+| mac-check stuck on 13 Oct | Runs after the installer step was added sat "in progress" until the 45 min limit with no report, while GitHub showed a macOS arm64 capacity notice. Every step now has its own limit so a hang still reports. Not yet known whether it was the runner queue or a hang. |
 | `OPENCODE_ZEN_API_KEY` secret | So the doctor also checks Zen. |
 | Guardian real run | Needs a Telegram bot from @BotFather and a real app. |
 | Payments, revenue share | Razorpay or Stripe; owner decision. |
