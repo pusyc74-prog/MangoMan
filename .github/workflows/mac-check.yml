@@ -47,12 +47,11 @@ jobs:
       - name: Install from a copy of the download site with the line from the page
         shell: bash # with pipefail: a failed install fails the step through tee
         run: |
-          scripts/make-site.sh http://127.0.0.1:8800
-          python3 -m http.server 8800 --directory dist/site > /dev/null 2>&1 &
-          srv=$!
-          sleep 2
-          curl -fsSL http://127.0.0.1:8800/install.sh | MANGOMAN_SITE=http://127.0.0.1:8800 MANGOMAN_NO_START=1 sh 2>&1 | tee out/install.txt
-          kill $srv
+          # curl reads file:// like a web address; a local web server here
+          # timed out (13 Oct).
+          site="file://$PWD/dist/site"
+          scripts/make-site.sh "$site"
+          curl -fsSL "$site/install.sh" | MANGOMAN_SITE="$site" MANGOMAN_NO_START=1 sh 2>&1 | tee out/install.txt
           app="$HOME/Applications/MangoMan.app"
           plutil -lint "$app/Contents/Info.plist" | tee -a out/install.txt
           "$app/Contents/MacOS/mangoman" version | tee -a out/install.txt
