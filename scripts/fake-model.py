@@ -18,13 +18,25 @@ next coding request gets; *_once files are removed when used:
     garble_once    words with a leaked <|close|> token
     delay          seconds to wait before answering (the file holds the number)
     cmd            the command for the run step (default: echo ... localhost:5173)
-Every request is logged to requests.log in the control dir.
+Every request is logged to requests.log in the control dir (with "rules": whether
+MangoMan's working rules reached the model).
+
+    python3 scripts/fake-model.py rules <control dir>
+
+checks afterwards that every coding request carried those rules (exit 1 if not).
 """
 import json
 import os
 import sys
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+if sys.argv[1] == "rules":
+    with open(os.path.join(sys.argv[2], "requests.log")) as f:
+        coding = [r for r in map(json.loads, f) if r["tools"]]
+    ok = bool(coding) and all(r["rules"] for r in coding)
+    print("%d coding requests; all carry MangoMan's working rules: %s" % (len(coding), ok))
+    sys.exit(0 if ok else 1)
 
 PORT = int(sys.argv[1])
 CTL = sys.argv[2] if len(sys.argv) > 2 else "fake-model-control"
@@ -77,8 +89,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         tools = body.get("tools") or []
+        # rules: MangoMan's working rules reached the model (mangoman code).
+        rules = "# Working on this computer" in json.dumps(body.get("messages", []))
         with open(os.path.join(CTL, "requests.log"), "a") as f:
-            f.write(json.dumps({"time": round(time.time(), 1), "tools": len(tools),
+            f.write(json.dumps({"time": round(time.time(), 1), "tools": len(tools), "rules": rules,
                                 **{k: v for k, v in body.items() if k not in ("messages", "tools")}}) + "\n")
         if os.path.exists(os.path.join(CTL, "fail_always")):
             return self.reply(500, {"error": {"message": "internal error"}})

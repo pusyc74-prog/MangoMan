@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -11,13 +12,54 @@ import (
 )
 
 func TestOpenCodeConfig(t *testing.T) {
-	// OpenCode keeps its own tools and instructions (measured better on 8 Oct).
+	// OpenCode keeps its own tools (measured on 8 Oct); instructions only with a rules file.
 	for _, mode := range []int{modeTUI, modeRun} {
 		var c map[string]any
-		_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", mode)), &c)
+		_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", mode, "")), &c)
 		if c["tools"] != nil || c["instructions"] != nil || c["model"] != "mangoman/free/coder" {
 			t.Fatalf("mode %d: %v", mode, c)
 		}
+	}
+}
+
+func TestCodeRules(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	projects := filepath.Join(home, "MangoMan Projects")
+	if err := os.Mkdir(projects, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if !inProjects(projects) || inProjects(home) {
+		t.Fatal("MangoMan Projects not told apart from another folder")
+	}
+	base := codeRules(false, false)
+	if !strings.Contains(base, "skill's folder") || strings.Contains(base, "MangoMan Projects") || strings.Contains(base, "PowerShell") {
+		t.Fatalf("a project folder on Mac or Linux gets only the skill folder rule:\n%s", base)
+	}
+	all := codeRules(true, true)
+	for _, want := range []string{"skill's folder", "folder named after it", "agent or bot", `"2>$null"`} {
+		if !strings.Contains(all, want) {
+			t.Errorf("rules in MangoMan Projects on Windows lack %q:\n%s", want, all)
+		}
+	}
+	for _, c := range []struct {
+		goos, shell string
+		ps          bool
+	}{{"windows", "", true}, {"windows", "powershell", true}, {"windows", `C:\Program Files\PowerShell\7\pwsh.exe`, true},
+		{"windows", `C:\Program Files\Git\bin\bash.exe`, false}, {"darwin", "", false}, {"linux", "/bin/bash", false}} {
+		if psShell(c.goos, c.shell) != c.ps {
+			t.Errorf("psShell(%q, %q) should be %v", c.goos, c.shell, c.ps)
+		}
+	}
+	path, err := writeCodeRules(home, true)
+	if b, _ := os.ReadFile(path); err != nil || !strings.Contains(string(b), "folder named after it") {
+		t.Fatalf("rules file %s: %v", path, err)
+	}
+	var c struct{ Instructions []string }
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeUI, path)), &c)
+	if len(c.Instructions) != 1 || c.Instructions[0] != path {
+		t.Fatalf("instructions: %v", c.Instructions)
 	}
 }
 
@@ -28,7 +70,7 @@ func TestOpenCodeConfigUIAsksFirst(t *testing.T) {
 		} `json:"permission"`
 		Tools map[string]bool `json:"tools"`
 	}
-	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeUI)), &c)
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeUI, "")), &c)
 	if c.Permission.Bash["*"] != "ask" || c.Permission.Bash["git status*"] != "allow" {
 		t.Fatalf("the coding screen should ask before commands, except reading ones: %v", c.Permission.Bash)
 	}

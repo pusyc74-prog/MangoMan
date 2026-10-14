@@ -16,7 +16,7 @@ const st = {
   running: new Set(),  // tool steps still running (a command can take minutes)
   waiting: new Set(),  // approvals and questions waiting for you
   restarts: 0,         // stalls restarted since your last message
-  restartedAt: 0,      // a restart needs a minute of its own before the next
+  restartedAt: 0,      // a send or a restart needs a minute of its own before the next restart
 };
 
 function $(id) { return document.getElementById(id); }
@@ -164,6 +164,9 @@ async function send(text) {
     });
     $("prompt").value = "";
     st.restarts = 0;
+    // The router's idle time counts from its last request, which can be long
+    // before this message: a minute of nothing is measured from sending.
+    st.restartedAt = Date.now();
     busy(true);
   } catch (err) { note(`Not sent: ${err.message}`, true); }
   $("send").disabled = false;

@@ -53,7 +53,7 @@ func (s *Server) readyRoutes(mux *http.ServeMux) {
 
 // projects returns the projects folder, made if missing, or writes the error.
 func projects(w http.ResponseWriter) string {
-	dir := projectsDir()
+	dir := ProjectsDir()
 	if dir == "" {
 		core.WriteError(w, http.StatusInternalServerError, "no_folder", "could not find your home folder")
 		return ""
@@ -83,7 +83,9 @@ func (s *Server) filesOpen(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, map[string]string{"folder": dir})
 }
 
-func projectsDir() string {
+// ProjectsDir is where the coding screen opens from the setup page and the
+// dashboard, one folder per task inside it.
+func ProjectsDir() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return ""
@@ -106,7 +108,7 @@ func (s *Server) readyGet(w http.ResponseWriter, _ *http.Request) {
 	st := &s.ready
 	st.mu.Lock()
 	v := ReadyView{Parts: parts, Ready: len(parts) == 0, Running: st.running, Step: st.what,
-		Done: st.done, Of: st.total, Error: st.err, Projects: projectsDir()}
+		Done: st.done, Of: st.total, Error: st.err, Projects: ProjectsDir()}
 	st.mu.Unlock()
 	for _, p := range v.Parts {
 		v.Total += p.Bytes

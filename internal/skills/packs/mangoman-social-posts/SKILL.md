@@ -27,7 +27,7 @@ question tool if you have one):
 6. **Language and tone:** English, Hindi or Hinglish; friendly, premium, playful or formal.
 
 If the user says "just do it", pick sensible answers, state them in one line,
-and continue. Never hold the work back waiting for a logo.
+and continue (facts are never among them: use only the ones the user gave). Never hold the work back waiting for a logo.
 
 ## 2. Plan the set
 
@@ -54,7 +54,7 @@ to override (`square`, `portrait`, `story`, `landscape`, `link`).
 ## 3. Write
 
 Rules (these are what make posts perform and keep the user safe):
-- **Never invent facts.** Every number, price, date, result or quote must come from the user. Put them in `facts`; the checker fails any number that is not there.
+- **Never invent facts.** Every number, price, date, result or quote must come from the user. Put them in `facts`; the checker fails any number that is not there. A made-up or demo brand changes nothing: without real numbers or quotes from the user, use `statement`, `list`, `announce` and `carousel`, never `stat` or `quote`.
 - **One idea per image.** Headlines at most about 10 words; the image is read in a second.
 - **Hook first.** Instagram shows about 125 characters before "more"; LinkedIn about 210. Lead with the point.
 - **Captions per platform:** Instagram and Facebook warm and short with a clear action; LinkedIn plain, professional, a little longer; X under 280 characters; WhatsApp very short.

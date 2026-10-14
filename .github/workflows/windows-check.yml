@@ -98,6 +98,12 @@ jobs:
           Copy-Item "$ctl\requests.log" out/ -ErrorAction SilentlyContinue
           Get-ChildItem -Recurse $proj | Select-Object -ExpandProperty FullName | Tee-Object out/project-files.txt
           $bad = 0
+          # MangoMan's working rules reach the model, with the PowerShell rule.
+          & $py scripts/fake-model.py rules "$ctl" *>&1 | Tee-Object -Append out/code-checks.txt
+          if ($LASTEXITCODE -ne 0) { $bad = 1 }
+          $rules = Get-Content "$env:MANGOMAN_HOME\opencode\rules-powershell.md" -Raw -ErrorAction SilentlyContinue
+          $rules | Tee-Object -Append out/code-checks.txt
+          if ($rules -notmatch 'skill.s folder' -or $rules -notmatch '2>\$null') { 'RULES file wrong' | Tee-Object -Append out/code-checks.txt; $bad = 1 }
           foreach ($f in "hello.txt", "resume.pdf") {
             if (-not (Test-Path "$proj\$f")) { "MISSING $f" | Tee-Object -Append out/code-checks.txt; $bad = 1 }
           }

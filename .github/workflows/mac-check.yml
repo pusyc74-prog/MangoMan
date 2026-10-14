@@ -96,6 +96,11 @@ jobs:
           cp "$ctl/requests.log" out/ 2>/dev/null || true
           ls -R "$proj" > out/project-files.txt
           bad=0
+          # MangoMan's working rules reach the model, without the PowerShell rule.
+          "$py" scripts/fake-model.py rules "$ctl" 2>&1 | tee -a out/code-checks.txt
+          [ "${PIPESTATUS[0]}" = 0 ] || bad=1
+          cat "$HOMEDIR/opencode/rules.md" 2>&1 | tee -a out/code-checks.txt
+          grep -q "skill's folder" "$HOMEDIR/opencode/rules.md" && ! grep -q PowerShell "$HOMEDIR/opencode/rules.md" || { echo "RULES file wrong" | tee -a out/code-checks.txt; bad=1; }
           for f in hello.txt resume.pdf; do [ -e "$proj/$f" ] || { echo "MISSING $f" | tee -a out/code-checks.txt; bad=1; }; done
           (cd "$proj" && "$py" "$S/mangoman-resume/scripts/check.py" resume.json resume.pdf --pages 1) 2>&1 | tee -a out/code-checks.txt
           [ "${PIPESTATUS[0]}" = 0 ] || bad=1

@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/config"
+	"github.com/pusyc74-prog/mangoman/internal/ingress"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/mcp"
 	"github.com/pusyc74-prog/mangoman/internal/opencode"
@@ -62,14 +63,73 @@ const (
 )
 
 // uiAllowed are commands the coding screen runs without asking: they only
-// read. Everything else is shown with Allow and Deny first.
-var uiAllowed = []string{"ls*", "pwd", "git status*", "git diff*", "git log*"}
+// read. Everything else is shown with Allow and Deny first. The Windows ones
+// were asked about on the owner's first Windows try (13 Oct).
+// Not cat or type: OpenCode checks a command without its redirections, so
+// "cat > file" would pass as cat and write without asking.
+var uiAllowed = []string{"ls*", "pwd", "git status*", "git diff*", "git log*", "dir*", "Get-ChildItem*", "Get-Content *"}
+
+// codeRules is what every session is told about this computer: where to work
+// and how commands are written here, never how to do the task (a "use the
+// skill first" rule lowered ad copy scores, 8 Oct). Each rule answers what the
+// owner's first Windows try showed (13 Oct): the model changed into a skill's
+// folder and wrote there, left every task's files loose in MangoMan Projects,
+// used 2>/dev/null in PowerShell, and called a planner page "a social media
+// agent". projects is a session in the MangoMan Projects folder; powershell
+// is a session whose commands run in PowerShell (see psShell).
+func codeRules(projects, powershell bool) string {
+	r := []string{"Run a skill's scripts by their full path. Never change into a skill's folder or write files in it: skill folders belong to MangoMan."}
+	if projects {
+		r = append(r,
+			"This is the user's MangoMan Projects folder. For each new task, make a folder named after it in plain words (for example diwali-sale-posts), keep all of that task's files in it, and run that task's commands from inside it. For changes to an earlier task, use its folder.",
+			"Nothing made here runs by itself: MangoMan has no way yet to run an agent or bot that posts, replies or watches on its own. If the user asks for one, say so plainly first, then offer what you can make.")
+	}
+	if powershell {
+		r = append(r, `Commands run in Windows PowerShell: join commands with ";" not "&&", send errors away with "2>$null" not "2>/dev/null", and put paths with spaces in quotes.`)
+	}
+	return "# Working on this computer\n\n- " + strings.Join(r, "\n- ") + "\n"
+}
+
+// writeCodeRules saves codeRules for OpenCode's instructions setting and
+// returns the file's path. One file per kind of session, named by its rules,
+// and written only when it changed: sessions running side by side never
+// rewrite each other's file.
+func writeCodeRules(home string, projects bool) (string, error) {
+	ps := psShell(runtime.GOOS, os.Getenv("SHELL"))
+	name := "rules" + map[bool]string{true: "-projects"}[projects] + map[bool]string{true: "-powershell"}[ps] + ".md"
+	path := filepath.Join(home, "opencode", name)
+	text := codeRules(projects, ps)
+	if old, err := os.ReadFile(path); err == nil && string(old) == text {
+		return path, nil
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return "", err
+	}
+	return path, os.WriteFile(path, []byte(text), 0o644)
+}
+
+// psShell reports whether OpenCode runs commands in PowerShell: on Windows
+// it uses SHELL when set, else pwsh or Windows PowerShell (OpenCode 1.18.34).
+func psShell(goos, shell string) bool {
+	s := strings.ToLower(shell)
+	return goos == "windows" && (s == "" || strings.Contains(s, "powershell") || strings.Contains(s, "pwsh"))
+}
+
+// inProjects reports whether dir is the MangoMan Projects folder.
+func inProjects(dir string) bool {
+	a, err := os.Stat(dir)
+	if err != nil {
+		return false
+	}
+	b, err := os.Stat(ingress.ProjectsDir())
+	return err == nil && os.SameFile(a, b)
+}
 
 // openCodeConfig is OpenCode's inline config that points it at MangoMan;
-// mode is how OpenCode is shown. Measured on 8 Oct: adding a "use the skill
-// first" rule and switching off tools nobody used saved almost no tokens per
-// request and lowered ad copy scores, so OpenCode runs with its own defaults.
-func openCodeConfig(cfg *config.Config, model string, mode int) string {
+// mode is how OpenCode is shown and rules the file from writeCodeRules ("" for
+// none). Measured on 8 Oct: switching off tools nobody used saved almost no
+// tokens per request, so OpenCode keeps its own tools and prompts.
+func openCodeConfig(cfg *config.Config, model string, mode int, rules string) string {
 	models := map[string]any{
 		"free/coder": map[string]any{"name": "Free coder", "limit": map[string]int{"context": 65536, "output": 8192}},
 		"free/auto":  map[string]any{"name": "Free auto", "limit": map[string]int{"context": 65536, "output": 8192}},
@@ -112,6 +172,9 @@ func openCodeConfig(cfg *config.Config, model string, mode int) string {
 		bash["*"+ad+"*"], bash["*mangoman/agents/*"], bash["*agents/*/scripts/*"] = "deny", "deny", "deny"
 	}
 	c["permission"] = map[string]any{"bash": bash}
+	if rules != "" {
+		c["instructions"] = []string{rules}
+	}
 	b, _ := json.Marshal(c)
 	return string(b)
 }
@@ -275,7 +338,13 @@ func cmdCode(args []string) error {
 	case fs.Arg(0) == "run":
 		mode = modeRun
 	}
-	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, mode))
+	wd, _ := os.Getwd()
+	rules, err := writeCodeRules(home, inProjects(wd))
+	if err != nil {
+		fmt.Println("Working rules not saved:", err)
+		rules = ""
+	}
+	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, mode, rules))
 	if !*noWeb {
 		// OpenCode's web search (via Exa) lets it research while it codes.
 		env = append(env, "OPENCODE_ENABLE_EXA=1")
