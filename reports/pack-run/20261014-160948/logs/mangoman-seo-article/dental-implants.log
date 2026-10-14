@@ -1,0 +1,200 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mRead facts.md
+[0m→ [0mRead sources.md
+[0m→ [0mSkill "mangoman-seo-article"
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (748 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): faq: 15; faq: 90%
+PASS  748 words
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description
+PASS  keyword used naturally (1.3% of words)
+WARN  title: aim for 30 to 60 characters: 68 characters
+WARN  description: aim for 120 to 160 characters: 196 characters
+PASS  sentences are easy to read (average 14 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+WARN  fewer than 2 links to your own pages (helps readers and search engines find related pages): 0
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article.json
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+@@ -5,10 +5,10 @@
+ "date": "2026-10-14",
+ "target_words": 900,
+ "language": "en",
+ "meta": {
+-  "title": "Dental Implant Cost in Bangalore: Prices, Procedure & What to Expect",
+-  "description": "Learn the real cost of dental implants in Bangalore, what affects pricing, how many visits you need, and how implants compare to bridges. Book a consult at Smile Square Dental Clinic, Indiranagar.",
++  "title": "Dental Implant Cost in Bangalore: Prices & Procedure Guide",
++  "description": "Real dental implant cost in Bangalore from ₹28,000. See what affects price, visits needed, implant vs bridge, and book at Smile Square Indiranagar.",
+   "slug": "dental-implant-cost-bangalore",
+   "url": "https://smilesquare.in/blog"
+ },
+ "facts": {
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+@@ -81,9 +81,9 @@
+ },
+ {
+   "h2": "How long do dental implants last?",
+   "paragraphs": [
+-    "With good oral hygiene and regular check-ups, the implant fixture can last many years — often decades. A systematic review in the Journal of Dental Research reported a 10-year survival rate above 90% [4]. The crown on top may need replacement after 10 to 15 years due to normal wear, which the NHS also highlights [1]. We use high-quality crowns and guide you on maintenance to maximise lifespan."
++    "With good oral hygiene and regular check-ups, the implant fixture can last many years — often decades. A systematic review in the Journal of Dental Research reported a 10-year survival rate above 90% [4]. The crown on top may need replacement after 10 to 15 years due to normal wear, which the NHS also highlights [1]. We use high-quality crowns and guide you on maintenance to maximise lifespan. See our [implant services](/implants) for details."
+   ]
+ },
+ {
+   "h2": "Is an implant better than a bridge?",
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+@@ -69,9 +69,9 @@
+ },
+ {
+   "h2": "Why do implant prices differ so much between clinics?",
+   "paragraphs": [
+-    "Three main factors drive the difference: the implant brand and its track record, the clinician's experience, and what the quoted price actually covers. A cheaper quote may exclude the CBCT scan, the abutment or the crown. At our clinic, Dr. Kavya Rao has placed implants for 14 years and holds an MDS in Prosthodontics, so the planning and surgical phase are handled by a specialist. We also include no-cost EMI over 6 months, which many clinics do not offer."
++    "Three main factors drive the difference: the implant brand and its track record, the clinician's experience, and what the quoted price actually covers. A cheaper quote may exclude the CBCT scan, the abutment or the crown. At our clinic, Dr. Kavya Rao has placed implants for 14 years and holds an MDS in Prosthodontics, so the planning and surgical phase are handled by a specialist. Meet our [team](/team) and see why experience matters. We also include no-cost EMI over 6 months, which many clinics do not offer."
+   ]
+ },
+ {
+   "h2": "How many visits does a dental implant take?",
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+@@ -55,9 +55,9 @@
+   "If you have lost a tooth and are researching the dental implant cost in Bangalore, you are in the right place. A single tooth implant with crown at our clinic in Indiranagar starts at ₹28,000 and goes up to ₹55,000 depending on the implant brand you choose. This guide breaks down what you pay for, why prices vary, how the procedure works, and how implants compare with bridges so you can decide with confidence."
+ ],
+ "sections": [
+   {
+-    "h2": "How much does a single tooth implant cost in Bangalore?",
++    "h2": "Dental Implant Cost in Bangalore: What You Pay For",
+     "paragraphs": [
+       "At Smile Square Dental Clinic in Indiranagar, a single tooth implant with crown costs ₹28,000 with an Indian implant brand, ₹42,000 with a Korean brand, and ₹55,000 with a Swiss brand. Every price includes the consultation, a 3D CBCT scan for precise planning, the implant fixture, the abutment and the final crown. If a bone graft is needed because the jawbone is too thin, that adds ₹8,000 to ₹15,000."
+     ],
+     "bullets": [
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+@@ -117,9 +117,9 @@
+   "a": "Typically three: scan and planning, implant placement, and crown fitting 3–6 months later."
+ },
+ {
+   "q": "How long do dental implants last?",
+-  "a": "The implant fixture can last decades with good care. Studies show over 90% survival at 10 years. The crown may need replacement after 10–15 years."
++  "a": "The implant fixture can last decades with good care. Studies show over 90% survival at 10 years [4]. The crown may need replacement after 10–15 years [1]."
+ },
+ {
+   "q": "Can I get an implant if I have bone loss?",
+   "a": "Yes. A bone graft (₹8,000–₹15,000) can rebuild the jawbone before or during implant placement. Our 3D scan tells us exactly what is needed."
+
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+@@ -121,9 +121,9 @@
+   "a": "The implant fixture can last decades with good care. Studies show over 90% survival at 10 years [4]. The crown may need replacement after 10–15 years [1]."
+ },
+ {
+   "q": "Can I get an implant if I have bone loss?",
+-  "a": "Yes. A bone graft (₹8,000–₹15,000) can rebuild the jawbone before or during implant placement. Our 3D scan tells us exactly what is needed."
++  "a": "Yes. A bone graft (₹8,000–₹15,000) can rebuild the jawbone before or during implant placement [2]. Our 3D scan tells us exactly what is needed."
+ },
+ {
+   "q": "Is there EMI for dental implants?",
+   "a": "Yes, we offer no-cost EMI over 6 months on all implant treatments."
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article
+spec problems:
+- image https://smilesquare.in/images/implant-price-breakdown.jpg: after must be intro or a section's h2
+[0m
+[0m← [0mEdit article.json
+Index: /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+===================================================================
+--- /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
++++ /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json
+@@ -144,9 +144,9 @@
+   "alt": "Dental implant procedure steps: scan, implant placement, crown fitting",
+   "caption": "The three-visit implant journey at Smile Square Dental Clinic"
+ },
+ {
+-  "after": "How much does a single tooth implant cost in Bangalore?",
++  "after": "Dental Implant Cost in Bangalore: What You Pay For",
+   "src": "https://smilesquare.in/images/implant-price-breakdown.jpg",
+   "alt": "Price breakdown for Indian, Korean and Swiss implant brands",
+   "caption": "Transparent pricing: what you pay for each implant brand"
+ },
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (765 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  765 words
+WARN  keyword "dental implant cost in bangalore" missing from: address
+PASS  keyword used naturally (1.3% of words)
+PASS  title fits Google results (58)
+PASS  description fits Google results (147)
+PASS  sentences are easy to read (average 14 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  2 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article/article.md
+[0m→ [0mRead article/seo.md
+Done. The article is built in `/tmp/tmp.kiHkjLthZ9/run/mangoman-seo-article/dental-implants/article` with:
+
+- **article.md** — ready to paste into WordPress/Shopify/Webflow
+- **article.html** — full page with Article + FAQ structured data
+- **seo.md** — title (58 chars), description (147 chars), URL, keywords
+- **preview.png** — visual preview
+
+**Check result:** All checks pass. Every number comes from your facts or cites a source. Keyword in title, intro, and H2. Two internal links (`/team`, `/implants`). 765 words, readable on mobile.
+
+The only minor warning is the exact keyword phrase not in the slug (`dental-implant-cost-bangalore` contains all terms but not "in"), which is fine for SEO.

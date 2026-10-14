@@ -1,0 +1,115 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee: description 1 'Bilona ghee from our 140 Gir cows. Hand churned curd slow heated on wood fire. Lab tested with QR code on every jar.' is 116 characters, cut 26 (90); A2 Ghee: description 2 '500ml ₹1,250 1L ₹2,350. 10% off first order with code FIRST10. Free delivery above ₹1,500. Delivered in 3 to 6 days.' is 116 characters, cut 26 (90); A2 Ghee: description 3 'Own herd near Gondal Gujarat. No wholesale no franchise. Pay by UPI cards or cash on delivery. Order your jar today.' is 116 characters, cut 26 (90); A2 Ghee: description 4 'Traditional bilona method glass jar packed. Every batch tested report on QR. Trusted by families across India.' is 110 characters, cut 20 (90); Bilona Ghee: description 1 'Real bilona method curd hand churned wooden bilona slow heated wood fire. Small batches glass jar packed.' is 105 characters, cut 15 (90); Bilona Ghee: description 2 'From our own 140 Gir cows near Gondal. Every batch lab tested report on QR code. No wholesale direct only.' is 106 characters, cut 16 (90); Bilona Ghee: description 3 '500ml ₹1,250 1 litre ₹2,350. 10% off first order FIRST10. Free delivery above ₹1,500. UPI cards COD.' is 100 characters, cut 10 (90); Bilona Ghee: description 4 'Traditional ghee made the slow way. Delivered across India in 3 to 6 days. Order now pay on delivery.' is 101 characters, cut 11 (90)
+WARN  Google ads: A2 Ghee: fewer than 2 headlines contain a keyword; ads match searches better when they do; Buy A2 Ghee Online: fewer than 2 headlines contain a keyword; ads match searches better when they do
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee: description 1 'Bilona ghee from our 140 Gir cows. Hand churned curd slow heated on wood fire. Lab tested QR code.' is 98 characters, cut 8 (90); Bilona Ghee: description 1 'Real bilona method curd hand churned wooden bilona slow heated wood fire. Small batches glass jar.' is 98 characters, cut 8 (90); Bilona Ghee: description 2 'From our 140 Gir cows near Gondal. Every batch lab tested QR code. No wholesale direct only.' is 92 characters, cut 2 (90); Bilona Ghee: description 4 'Traditional ghee made the slow way. Delivered across India in 3 to 6 days. Order now pay on delivery.' is 101 characters, cut 11 (90); Buy A2 Ghee Online: description 1 'Buy authentic bilona ghee online. 500ml ₹1,250 1 litre ₹2,350. 10% off FIRST10. Free delivery above ₹1,500.' is 107 characters, cut 17 (90); Buy A2 Ghee Online: description 2 'From our 140 Gir cows farm near Gondal. Hand churned wood fire. Lab tested QR code. Delivered 3 to 6 days.' is 106 characters, cut 16 (90); Buy A2 Ghee Online: description 3 'Pay by UPI cards or cash on delivery. No wholesale direct to homes only. Order your glass jar today.' is 100 characters, cut 10 (90); Buy A2 Ghee Online: description 4 'Traditional A2 ghee made the slow way. Every batch tested report on jar. Trusted by families across India.' is 106 characters, cut 16 (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Buy A2 Ghee Online: description 2 'From our 140 Gir cows near Gondal. Hand churned wood fire. Lab tested QR code. Delivery 3-6 days.' is 97 characters, cut 7 (90); Buy A2 Ghee Online: description 4 'Traditional A2 ghee made the slow way. Every batch tested report on jar. Trusted by families India.' is 99 characters, cut 9 (90); Gir Cow Ghee: description 1 'A2 ghee from our own Gir cows bilona method. Hand churned curd wood fire slow heated. Glass jar.' is 96 characters, cut 6 (90); Gir Cow Ghee: description 2 '140 cows on our farm near Gondal Gujarat. Every batch lab tested QR code on jar. No wholesale.' is 94 characters, cut 4 (90)
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Buy A2 Ghee Online: description 1 'Buy authentic bilona ghee online. 500ml ₹1,250 1 litre ₹2,350. 10% off FIRST10. Free delivery.' is 94 characters, cut 4 (90); Buy A2 Ghee Online: description 2 'From our 140 Gir cows near Gondal. Hand churned wood fire. Lab tested QR. Delivery 3-6 days.' is 92 characters, cut 2 (90); Buy A2 Ghee Online: description 4 'Traditional A2 ghee made slow way. Every batch tested report on jar. Trusted by families India.' is 95 characters, cut 5 (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Buy A2 Ghee Online: description 2 'From our 140 Gir cows near Gondal. Hand churned woodfire. Lab tested QR. Delivery 3-6 days.' is 91 characters, cut 1 (90); Buy A2 Ghee Online: description 4 'Traditional A2 ghee made slow way. Every batch tested report on jar. Trusted by Indian families.' is 96 characters, cut 6 (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m$ [0mls -la /tmp/tmp.kiHkjLthZ9/run/mangoman-ad-copy/a2-ghee/ads
+total 24
+drwxr-xr-x 2 runner runner 4096 Oct 14 15:27 .
+drwxr-xr-x 3 runner runner 4096 Oct 14 15:27 ..
+-rw-r--r-- 1 runner runner 5170 Oct 14 15:30 ads.md
+-rw-r--r-- 1 runner runner 3733 Oct 14 15:30 google_ads.csv
+-rw-r--r-- 1 runner runner 3995 Oct 14 15:30 google_keywords.csv
+[0m
+[0m→ [0mRead ads/ads.md
+Google search ads created successfully for Gauveda A2 Gir Cow Ghee.
+
+**Files generated:**
+- `ads.md` - Ad copy review (see below)
+- `google_ads.csv` - For Google Ads Editor import
+- `google_keywords.csv` - Keywords for import
+
+**Summary:**
+- 4 ad groups: A2 Ghee, Bilona Ghee, Gir Cow Ghee, Buy A2 Ghee Online
+- 15 headlines per group (all ≤30 characters)
+- 4 descriptions per group (all ≤90 characters)
+- Keywords and negative keywords included
+- All numbers from facts, no risky claims
+
+**Check result:** Passed all validation - specs valid, ads follow limits and editorial rules, numbers from facts, no risky claims or placeholder text.
+
+The ads are ready for import into Google Ads Editor using the provided CSV files.

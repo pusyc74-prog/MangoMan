@@ -1,0 +1,40 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead job_description.md
+[0m→ [0mRead candidate.md
+[0m→ [0mSkill "mangoman-resume"
+[0m
+[0m← [0mWrite resume.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/build.py /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.json --template classic --out /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume
+built /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.html, /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.pdf, /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-resume/scripts/check.py /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.json /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.pdf --pages 1
+PASS  1 page as planned
+PASS  text is selectable (applicant tracking systems can read it)
+PASS  the page is well filled
+PASS  all sections filled
+PASS  bullets start with an action
+PASS  no first person
+PASS  bullets are concise
+PASS  90% of bullets show a measurable result
+PASS  dates use one format
+[0m
+[0m$ [0mls -la /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.*
+-rw-r--r-- 1 runner runner   4435 Oct 14 15:43 /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.html
+-rw-r--r-- 1 runner runner   2892 Oct 14 15:43 /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.json
+-rw-r--r-- 1 runner runner  38640 Oct 14 15:43 /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.pdf
+-rw-r--r-- 1 runner runner 147325 Oct 14 15:43 /tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/resume.png
+[0m
+Done. Created `resume.json` and built `resume.pdf` (classic template, A4, one page).
+
+**Check results:** All PASS — 1 page, ATS-readable, well-filled, action-oriented bullets with measurable results, consistent date format.
+
+Files in `/tmp/tmp.kiHkjLthZ9/run/mangoman-resume/backend-engineer/`:
+- `resume.json` — spec
+- `resume.pdf` — final resume
+- `resume.html` / `resume.png` — preview/debug

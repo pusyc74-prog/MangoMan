@@ -1,0 +1,101 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mSkill "mangoman-social-posts"
+[0m
+[0m← [0mWrite posts.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts
+built in /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts/: captions.md, 12 images, agenda-carousel-carousel.pdf, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts
+PASS  spec is valid
+PASS  every image built at the right size
+PASS  all text fits
+PASS  text is at full size
+FAIL  webinar-announce on x is 281 characters, limit 280
+WARN  webinar-announce: Instagram shows about 125 characters before 'more'; put the hook first
+PASS  hashtags are valid
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  promised counts match the content
+PASS  alt text on every post
+PASS  brand shown on every image
+[0m
+[0m→ [0mRead posts.json
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -49,9 +49,9 @@
+   "caption": {
+     "default": "Ready to switch from a non-tech role to software development? Join our free live webinar with Kavitha Reddy, lead mentor at SkillSetu, who made the switch from banking operations to full-stack development. She'll share a realistic 6-month learning plan, portfolio tips, and which roles actually hire career switchers. Limited to 500 seats — register now!",
+     "instagram": "Ready to switch from a non-tech role to software development? 🚀 Join our FREE live webinar with Kavitha Reddy, lead mentor at SkillSetu, who made the switch from banking ops to full-stack dev. She'll share a realistic 6-month plan, portfolio tips, and which roles hire career switchers. Link in bio to register! Limited to 500 seats.",
+     "linkedin": "Thinking about switching from a non-technical career to software development? Join our free live webinar \"Non-tech to developer in 2027\" on Saturday, 14 November 2026 at 11:00 AM IST.\n\nKavitha Reddy, our lead mentor (ex-banking operations, now a full-stack developer for 6 years), will cover:\n• Which developer roles hire career switchers\n• A realistic 6-month learning plan\n• Building a portfolio that gets interviews\n• Live Q&A\n\nRegister free at skillsetu.in/webinar — only 500 seats available.",
+-    "x": "Free webinar: Non-tech → developer in 2027 🎯\nSat 14 Nov, 11 AM IST on Zoom\nKavitha Reddy (ex-banking → full-stack dev) shares:\n• Roles that hire switchers\n• 6-month learning plan\n• Portfolio tips\n• Live Q&A\n\n500 seats. Register: skillsetu.in/webinar"
++    "x": "Free webinar: Non-tech → developer in 2027 🎯\nSat 14 Nov, 11 AM IST\nKavitha Reddy (ex-banking → full-stack) shares:\n• Roles hiring switchers\n• 6-month plan\n• Portfolio tips\n• Live Q&A\n\n500 seats. Register: skillsetu.in/webinar"
+   },
+   "hashtags": ["SkillSetu", "CareerSwitch", "LearnToCode", "SoftwareDeveloper", "Webinar", "Hyderabad", "TechCareers", "FullStack"],
+   "alt": "Webinar announcement poster: Non-tech to developer in 2027, Saturday 14 November 2026, 11 AM to 12:30 PM IST on Zoom, 500 seats, free registration at skillsetu.in/webinar"
+ },
+
+[0m
+[0m← [0mEdit posts.json
+Index: /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json
+===================================================================
+--- /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json
++++ /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json
+@@ -47,9 +47,9 @@
+ ],
+ "cta": "Register free at skillsetu.in/webinar",
+ "caption": {
+   "default": "Ready to switch from a non-tech role to software development? Join our free live webinar with Kavitha Reddy, lead mentor at SkillSetu, who made the switch from banking operations to full-stack development. She'll share a realistic 6-month learning plan, portfolio tips, and which roles actually hire career switchers. Limited to 500 seats — register now!",
+-  "instagram": "Ready to switch from a non-tech role to software development? 🚀 Join our FREE live webinar with Kavitha Reddy, lead mentor at SkillSetu, who made the switch from banking ops to full-stack dev. She'll share a realistic 6-month plan, portfolio tips, and which roles hire career switchers. Link in bio to register! Limited to 500 seats.",
++  "instagram": "FREE webinar: Non-tech → developer in 2027 🎯\n\nSat 14 Nov, 11 AM IST on Zoom with Kavitha Reddy (ex-banking → full-stack dev, 6 yrs). She'll share:\n• Which roles hire career switchers\n• Realistic 6-month learning plan\n• Portfolio that gets interviews\n• Live Q&A\n\n🔗 Link in bio to register (skillsetu.in/webinar)\nOnly 500 seats!",
+   "linkedin": "Thinking about switching from a non-technical career to software development? Join our free live webinar \"Non-tech to developer in 2027\" on Saturday, 14 November 2026 at 11:00 AM IST.\n\nKavitha Reddy, our lead mentor (ex-banking operations, now a full-stack developer for 6 years), will cover:\n• Which developer roles hire career switchers\n• A realistic 6-month learning plan\n• Building a portfolio that gets interviews\n• Live Q&A\n\nRegister free at skillsetu.in/webinar — only 500 seats available.",
+   "x": "Free webinar: Non-tech → developer in 2027 🎯\nSat 14 Nov, 11 AM IST\nKavitha Reddy (ex-banking → full-stack) shares:\n• Roles hiring switchers\n• 6-month plan\n• Portfolio tips\n• Live Q&A\n\n500 seats. Register: skillsetu.in/webinar"
+ },
+ "hashtags": ["SkillSetu", "CareerSwitch", "LearnToCode", "SoftwareDeveloper", "Webinar", "Hyderabad", "TechCareers", "FullStack"],
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/build_posts.py /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json --out /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts
+built in /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts/: captions.md, 12 images, agenda-carousel-carousel.pdf, preview.png
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-social-posts/scripts/check_posts.py /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts.json /tmp/tmp.kiHkjLthZ9/run/mangoman-social-posts/coding-webinar/posts
+PASS  spec is valid
+PASS  every image built at the right size
+PASS  all text fits
+PASS  text is at full size
+PASS  captions fit every platform
+PASS  hashtags are valid
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  promised counts match the content
+PASS  alt text on every post
+PASS  brand shown on every image
+[0m
+All social media posts for the SkillSetu webinar have been created and validated.
+
+**Summary:**
+- 4 posts created for LinkedIn, Instagram, and X platforms
+- Spec saved as `posts.json`
+- Built assets saved in the `posts` folder including:
+  - 12 images (various sizes per platform)
+  - Carousel PDF for LinkedIn
+  - Captions file (`captions.md`)
+  - Preview image (`preview.png`)
+- All checks passed: valid spec, correct image sizes, text fits, platform limits respected, facts verified, no risky claims
+
+The set includes:
+1. **Announcement post** - Webinar details and registration CTA
+2. **Stat post** - 71% placement rate for 2025 batch
+3. **Quote post** - Learner testimonial from Imran Pasha
+4. **Carousel post** - Webinar agenda with 4 key topics
+
+All content uses only the facts provided in the brief, follows brand colors (navy #14213D, orange #FCA311), and maintains a professional but friendly tone.
