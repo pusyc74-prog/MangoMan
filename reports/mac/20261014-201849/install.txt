@@ -1,0 +1,47 @@
+Wed Oct 14 20:00:42 UTC 2026
+Built dist/site for file:///Users/runner/work/MangoMan/MangoMan/dist/site (version 90ebfbc).
+Wed Oct 14 20:01:41 UTC 2026
++ set -eu
++ main
++ site=file:///Users/runner/work/MangoMan/MangoMan/dist/site
++ case "$(uname -s)" in
+++ uname -s
++ os=darwin
++ name=Mac
++ case "$(uname -m)" in
+++ uname -m
++ arch=arm64
++ '[' darwin = darwin ']'
+++ sysctl -n sysctl.proc_translated
++ '[' 0 = 1 ']'
++ file=mangoman-darwin-arm64
+++ mktemp -d
++ tmp=/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.PeHSCfz7Vl
++ trap 'rm -rf "$tmp"' EXIT
++ echo 'Downloading MangoMan for Mac (about 10 MB)...'
+Downloading MangoMan for Mac (about 10 MB)...
++ curl -fSL --progress-bar file:///Users/runner/work/MangoMan/MangoMan/dist/site/mangoman-darwin-arm64 -o /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.PeHSCfz7Vl/mangoman
+######################################################################## 100.0%
++ curl -fsSL file:///Users/runner/work/MangoMan/MangoMan/dist/site/SHA256SUMS.txt -o /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.PeHSCfz7Vl/sums
+++ awk -v f=mangoman-darwin-arm64 '{ sub(/^\*/, "", $2) } $2 == f { print $1 }' /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.PeHSCfz7Vl/sums
++ want=51f132a8d19512c8e68134f1ad923662d7a5c6864e7abea3de0c71fc68d61af8
++ command -v sha256sum
+++ sha256sum /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.PeHSCfz7Vl/mangoman
+++ cut '-d ' -f1
++ got=51f132a8d19512c8e68134f1ad923662d7a5c6864e7abea3de0c71fc68d61af8
++ '[' -z 51f132a8d19512c8e68134f1ad923662d7a5c6864e7abea3de0c71fc68d61af8 ']'
++ '[' 51f132a8d19512c8e68134f1ad923662d7a5c6864e7abea3de0c71fc68d61af8 '!=' 51f132a8d19512c8e68134f1ad923662d7a5c6864e7abea3de0c71fc68d61af8 ']'
++ chmod +x /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.PeHSCfz7Vl/mangoman
++ '[' darwin = darwin ']'
++ app=/Users/runner/Applications/MangoMan.app
++ mkdir -p /Users/runner/Applications/MangoMan.app/Contents/MacOS
++ mv -f /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.PeHSCfz7Vl/mangoman /Users/runner/Applications/MangoMan.app/Contents/MacOS/mangoman
++ cat
++ chmod +x /Users/runner/Applications/MangoMan.app/Contents/MacOS/MangoMan
++ cat
++ echo 'MangoMan is installed. Next time: press Cmd + Space, type MangoMan, press Enter.'
+MangoMan is installed. Next time: press Cmd + Space, type MangoMan, press Enter.
++ '[' -n 1 ']'
++ rm -rf /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.PeHSCfz7Vl
+/Users/runner/Applications/MangoMan.app/Contents/Info.plist: OK
+no quarantine flag
