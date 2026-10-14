@@ -53,7 +53,8 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 | Release | **Download site (13 Oct).** `scripts/make-site.sh` builds `dist/site` (page, `install.sh`, `install.ps1`, five binaries, `SHA256SUMS.txt`); the ci build job's artifact is that folder. The owner drops it on Netlify by hand (Sites, Add new site, Deploy manually), site name `getmangoman` (https://getmangoman.netlify.app). Users paste one line: Windows PowerShell or Mac Terminal. |
 | Repo | **Public, by the owner's choice (9 Oct: "keep it public for now").** Do not ask again until they raise it. CI is already cut down for private minutes. |
 | CI | Green on 2933a9c, Linux, Mac and Windows (ci run 38074112513, which has the build to try). Issue #2 closed. mac-check passed 19 of 19 pack samples. |
-| Next build | 3a and 3b are done. Next: the owner tries the easy setup on Windows; then pick from the open items (section 11) with the owner. |
+| App layout (15 Oct) | **Built, owner's request.** The dashboard is one app with a left menu: + New task, Super Agents, Chargesheets (owner's name; empty "coming soon" page until the owner decides its features), Templates, My Files, History (coming soon); Connections, Usage, Settings hold every old dashboard part with the same IDs. Agents and templates live in `internal/ingress/ui/starters.json` (12 ready agents, 4 "coming later" with the reason, 17 templates; `TestStartersMatchPacks` keeps it in step with the packs). Start opens the coding screen in one named tab with the agent's first message in a fresh chat (the user reads and sends it). |
+| Next build | Owner to try the new layout and the agents. Then: History page, Chargesheets features (owner decides), the scheduler for agents that run on their own (Social Media Manager weekly, waiting on the owner's three answers). |
 
 ---
 
@@ -144,6 +145,8 @@ owner to try it on their own computer (**Windows**, answered 9 Oct).
 
 | Decision | Why |
 |---|---|
+| Left menu: + New task, Super Agents, Chargesheets, Templates, My Files, History; bottom: Connections, Usage, Settings (owner, 15 Oct) | Owner: "like Claude's sidebar". "Chargesheets" is the owner's name for a data analysis and tracking section like Claude Dashboards; build only the empty section until the owner decides. |
+| The coding screen stays in its own tab, not inside the app page (15 Oct) | The pages refuse to be framed (frame-ancestors 'none', X-Frame-Options DENY) against clickjacking; kept. |
 | **Cerebras stays out** | Its free trial asks for a credit card. Setup order is NVIDIA, Groq, OpenRouter, OpenCode Zen, Cerebras last (`internal/setup` `Order`, `app.js` `ORDER`). |
 | NVIDIA carries pack work | Groq's free per-minute token limits (6,000 to 8,000) are smaller than one request of a skill task (about 14,500 tokens). OpenRouter allows 50 requests a day per account. |
 | GLM 5.3 on NVIDIA removed from the catalogue (`seed-2026-10-01.6`) and from the radar | Its answers came out as noise with chat-template tokens (`<|close|>`). |
@@ -395,6 +398,8 @@ Touch files in the control dir to change the next coding request:
 | Costly fix loops in packs | Ad copy 100 requests, website copy 156 in one run (8 Oct). Website copy: done for JSON errors (`checks.load_json` names the exact fix; first real case fixed in one edit, run 20261009-200959) and for facts missing from site.json (check_copy says where they go). Other packs that read model-written JSON (ad copy, listing, email and more) could use `checks.load_json` too. |
 | Windows stall watchdog | No pgrep on Windows, so any run counts as "command running" and a stall is caught only after 10 minutes (Mac fixed 10 Oct: it needs `pgrep -lf`). Could use PowerShell `Get-CimInstance Win32_Process` for child processes. |
 | Screen shows raw model ids ("kimi-k3") | Use display names. |
+| Agents not built (15 Oct) | Customer Support, Appointment Scheduler, Lead Follow-up (need app connections and a scheduler) and Market Research (OpenCode's web search is on but untested for free users, and no pack checks a research report). Listed as coming later on the Super Agents page. |
+| History page | Placeholder. OpenCode keeps the chats (the coding screen resumes the last one); a page listing them needs OpenCode's session list through the router. |
 | Social media agent (owner, 13 Oct) | The coding screen built a planner page and 5 posts and called it an agent. Nothing in MangoMan runs on its own yet (no scheduler, no posting). Asked the owner: which platforms, post automatically or draft for approval, how often. Facts given: LinkedIn and Telegram posting free; Instagram and Facebook need a Business account, a Page and a Meta app; X's free API is limited (check current terms); WhatsApp Status has no API; runs only while the computer is on. |
 | NVIDIA slow at Indian evening hours (13 Oct, owner's PC) | kimi-k3, then deepseek-v4.1-flash, missed the 30 s first-word limit at 23:00 IST; the doctor check at 15:10 IST had kimi-k3 first word in 1.3 s. When every model of a provider is slow, hopping restarts the wait. Measure before changing the 30 s limit (it came from measurements); maybe more time for large first requests. |
 | "Next if it runs out: kimi-k3 (nvidia), kimi-k3 (nvidia)" | Shown once per team key on the dashboard; show each model once. |
