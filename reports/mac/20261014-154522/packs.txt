@@ -1,0 +1,2 @@
+/Users/runner/Library/Application Support/mangoman/python/env/shim/python3
+PASS  dashboard (5 checks)

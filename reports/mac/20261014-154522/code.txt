@@ -1,0 +1,16 @@
+Started MangoMan for this session (log: /Users/runner/Library/Application Support/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (strict/fake). Web search off. Skill packs: ad copy, brand kit, ceo deck, client report, code review, data dashboard, ecommerce listing, email campaign, invoice, landing page, meeting minutes, proposal, resume, seo article, social posts, web app, website copy.
+
+Nothing happened for a minute; continuing the task.
+[0m
+> build · strict/fake
+[0m
+
+Nothing happened for a minute; continuing the task.
+[0m
+> build · strict/fake
+[0m
+[0m← [0mWrite hello.txt
+Wrote file successfully.
+[0m
+error: the task stalled three times; the free models may be overloaded, try again in a few minutes

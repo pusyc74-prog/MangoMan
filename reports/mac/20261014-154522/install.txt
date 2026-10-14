@@ -1,0 +1,47 @@
+Wed Oct 14 15:24:29 UTC 2026
+Built dist/site for file:///Users/runner/work/MangoMan/MangoMan/dist/site (version 0fb4c3e).
+Wed Oct 14 15:25:17 UTC 2026
++ set -eu
++ main
++ site=file:///Users/runner/work/MangoMan/MangoMan/dist/site
++ case "$(uname -s)" in
+++ uname -s
++ os=darwin
++ name=Mac
++ case "$(uname -m)" in
+++ uname -m
++ arch=arm64
++ '[' darwin = darwin ']'
+++ sysctl -n sysctl.proc_translated
++ '[' 0 = 1 ']'
++ file=mangoman-darwin-arm64
+++ mktemp -d
++ tmp=/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.ZlDoy2wWkX
++ trap 'rm -rf "$tmp"' EXIT
++ echo 'Downloading MangoMan for Mac (about 10 MB)...'
+Downloading MangoMan for Mac (about 10 MB)...
++ curl -fSL --progress-bar file:///Users/runner/work/MangoMan/MangoMan/dist/site/mangoman-darwin-arm64 -o /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.ZlDoy2wWkX/mangoman
+######################################################################## 100.0%
++ curl -fsSL file:///Users/runner/work/MangoMan/MangoMan/dist/site/SHA256SUMS.txt -o /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.ZlDoy2wWkX/sums
+++ awk -v f=mangoman-darwin-arm64 '{ sub(/^\*/, "", $2) } $2 == f { print $1 }' /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.ZlDoy2wWkX/sums
++ want=1c3332a939568b415a43d8ef361e47c18cd2422c9960d4e66b7248543874636a
++ command -v sha256sum
+++ sha256sum /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.ZlDoy2wWkX/mangoman
+++ cut '-d ' -f1
++ got=1c3332a939568b415a43d8ef361e47c18cd2422c9960d4e66b7248543874636a
++ '[' -z 1c3332a939568b415a43d8ef361e47c18cd2422c9960d4e66b7248543874636a ']'
++ '[' 1c3332a939568b415a43d8ef361e47c18cd2422c9960d4e66b7248543874636a '!=' 1c3332a939568b415a43d8ef361e47c18cd2422c9960d4e66b7248543874636a ']'
++ chmod +x /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.ZlDoy2wWkX/mangoman
++ '[' darwin = darwin ']'
++ app=/Users/runner/Applications/MangoMan.app
++ mkdir -p /Users/runner/Applications/MangoMan.app/Contents/MacOS
++ mv -f /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.ZlDoy2wWkX/mangoman /Users/runner/Applications/MangoMan.app/Contents/MacOS/mangoman
++ cat
++ chmod +x /Users/runner/Applications/MangoMan.app/Contents/MacOS/MangoMan
++ cat
++ echo 'MangoMan is installed. Next time: press Cmd + Space, type MangoMan, press Enter.'
+MangoMan is installed. Next time: press Cmd + Space, type MangoMan, press Enter.
++ '[' -n 1 ']'
++ rm -rf /var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T/tmp.ZlDoy2wWkX
+/Users/runner/Applications/MangoMan.app/Contents/Info.plist: OK
+no quarantine flag
