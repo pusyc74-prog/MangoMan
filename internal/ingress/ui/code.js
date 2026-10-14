@@ -60,7 +60,8 @@ async function api(path, opts = {}) {
   return body;
 }
 
-function offline(text) {
+function offline(text, waiting) {
+  $("offline").className = waiting ? "msg" : "msg err";
   $("offline").textContent = text;
   $("offline").hidden = !text;
 }
@@ -68,11 +69,29 @@ function offline(text) {
 // ---------- start ----------
 
 async function start() {
+  // An agent or template started from the dashboard brings its first message
+  // (read before readToken clears the address).
+  const prompt = new URLSearchParams(location.hash.slice(1)).get("prompt") || "";
   st.token = readToken();
   if (!st.token) { offline("Open this screen with mangoman code --ui."); return; }
-  try { st.info = await api("/mangoman/code/info"); }
-  catch (err) { offline(`The router did not answer: ${err.message}`); return; }
-  if (!st.info.attached) { offline("No coding workspace is open. In your project folder, run: mangoman code --ui"); return; }
+  // Opened from the dashboard, the workspace may still be starting: wait up
+  // to 90 s for it.
+  // Opened from the dashboard (?open=), it must be the MangoMan Projects
+  // workspace: never put an agent's message in a developer's own project.
+  const fromDashboard = new URLSearchParams(location.search).has("open");
+  for (let i = 0; ; i++) {
+    try { st.info = await api("/mangoman/code/info"); }
+    catch (err) { offline(`The router did not answer: ${err.message}`); return; }
+    if (st.info.attached && fromDashboard && !st.info.in_projects) {
+      offline(`A coding workspace is open in ${st.info.dir} (from mangoman code --ui). Close it there, then press Start again.`);
+      return;
+    }
+    if (st.info.attached) break;
+    if (i >= 45) { offline("No coding workspace is open. In your project folder, run: mangoman code --ui"); return; }
+    offline("Starting the coding screen\u2026", true);
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  offline("");
   $("where").textContent = st.info.dir;
   $("ship").hidden = !st.info.can_ship;
   $("ws").hidden = false;
@@ -81,7 +100,8 @@ async function start() {
   const sessions = await api(`${OC}/session`).catch(() => []);
   const mine = (sessions || []).filter((s) => !s.parentID && s.directory === st.info.dir)
     .sort((a, b) => (b.time?.updated || 0) - (a.time?.updated || 0));
-  st.session = mine[0] || await api(`${OC}/session`, { method: "POST", body: JSON.stringify({ title: "MangoMan Code" }) });
+  // A started agent gets a fresh chat; otherwise the last chat goes on.
+  st.session = (!prompt && mine[0]) || await api(`${OC}/session`, { method: "POST", body: JSON.stringify({ title: "MangoMan Code" }) });
   const history = await api(`${OC}/session/${st.session.id}/message`).catch(() => []);
   for (const m of history || []) {
     addMessage(m.info);
@@ -90,6 +110,7 @@ async function start() {
   await refreshChanges();
   await pending();
   listen();
+  if (prompt) { $("prompt").value = prompt; $("prompt").focus(); }
 }
 
 // ---------- chat ----------

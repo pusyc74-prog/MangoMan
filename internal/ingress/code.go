@@ -34,16 +34,20 @@ type codeBackend struct {
 }
 
 type codeState struct {
-	mu sync.Mutex
-	b  *codeBackend
+	mu       sync.Mutex
+	b        *codeBackend
+	starting time.Time // when the dashboard last started a workspace (codeOpen)
 }
 
 // CodeInfo is what the coding screen needs to know about the workspace.
 type CodeInfo struct {
 	Attached bool   `json:"attached"`
 	Dir      string `json:"dir,omitempty"`
-	CanShip  bool   `json:"can_ship,omitempty"`
-	LANIP    string `json:"lan_ip,omitempty"` // for opening a preview on a phone on the same Wi-Fi
+	// InProjects: the workspace is MangoMan Projects, where the dashboard's
+	// agents and templates start.
+	InProjects bool   `json:"in_projects,omitempty"`
+	CanShip    bool   `json:"can_ship,omitempty"`
+	LANIP      string `json:"lan_ip,omitempty"` // for opening a preview on a phone on the same Wi-Fi
 }
 
 func (s *Server) codeRoutes(mux *http.ServeMux) {
@@ -84,7 +88,7 @@ func (s *Server) codeAttach(w http.ResponseWriter, r *http.Request) {
 		FlushInterval: -1, // the event stream must reach the page as it happens
 	}
 	s.code.mu.Lock()
-	s.code.b = b
+	s.code.b, s.code.starting = b, time.Time{}
 	s.code.mu.Unlock()
 	writeJSON(w, map[string]string{"id": b.id})
 }
@@ -113,7 +117,7 @@ func (s *Server) codeInfo(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(w, CodeInfo{})
 		return
 	}
-	writeJSON(w, CodeInfo{Attached: true, Dir: b.dir, CanShip: b.shipDir != "", LANIP: lanIP()})
+	writeJSON(w, CodeInfo{Attached: true, Dir: b.dir, InProjects: sameDir(b.dir, ProjectsDir()), CanShip: b.shipDir != "", LANIP: lanIP()})
 }
 
 func (s *Server) codeProxy(w http.ResponseWriter, r *http.Request) {

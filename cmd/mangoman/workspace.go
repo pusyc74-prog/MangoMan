@@ -21,9 +21,10 @@ import (
 
 // openWorkspace runs OpenCode as a local server for the coding screen
 // (mangoman code --ui), attaches it to the router and opens the screen in the
-// browser. It runs until Ctrl-C or until OpenCode stops. dir is the folder to
-// work in ("" = here); shipDir is the Guardian project to ship from.
-func openWorkspace(cfg *config.Config, oc string, env []string, dir, shipDir string) error {
+// browser (not with openBrowser false: the dashboard opens it). It runs until
+// Ctrl-C or until OpenCode stops. dir is the folder to work in ("" = here);
+// shipDir is the Guardian project to ship from.
+func openWorkspace(cfg *config.Config, oc string, env []string, dir, shipDir string, openBrowser bool) error {
 	if dir == "" {
 		dir, _ = os.Getwd()
 	}
@@ -79,9 +80,12 @@ func openWorkspace(cfg *config.Config, oc string, env []string, dir, shipDir str
 	page := fmt.Sprintf("http://127.0.0.1:%d/ui/code.html", cfg.Port)
 	// The token travels in the URL fragment, which browsers never send to a
 	// server or put in logs.
-	if err := setup.OpenURL(page + "#token=" + cfg.Token); err != nil {
+	switch {
+	case !openBrowser:
+		fmt.Println("The coding screen is ready:", page)
+	case setup.OpenURL(page+"#token="+cfg.Token) != nil:
 		fmt.Printf("Open this in your browser:\n  %s#token=%s\n", page, cfg.Token)
-	} else {
+	default:
 		fmt.Println("Opened the coding screen:", page)
 	}
 	fmt.Printf("Working in %s. Press Ctrl-C here to close the workspace.\n", dir)

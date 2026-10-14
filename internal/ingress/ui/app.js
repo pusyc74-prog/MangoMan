@@ -779,12 +779,95 @@ async function setWeaker(mode) {
   try { renderNow(await api("/mangoman/weaker", { method: "POST", body: JSON.stringify({ mode }) })); } catch (err) { alert(err.message); }
 }
 
+// ---------- the menu ----------
+
+const VIEWS = ["agents", "chargesheets", "templates", "files", "history", "connections", "usage", "settings"];
+
+function showView() {
+  const want = location.hash.slice(1);
+  const v = VIEWS.includes(want) ? want : "agents";
+  for (const id of VIEWS) $("view-" + id).hidden = id !== v;
+  for (const a of document.querySelectorAll(".nav a")) {
+    if (a.dataset.view === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  }
+  // The chart takes its width from the page, which a hidden section has none of.
+  if (v === "usage" && state.overview) renderChart(state.activity, state.overview);
+  if (v === "files" || v === "settings") loadFiles();
+}
+
+function say(text, kind) {
+  const msg = $("codemsg");
+  msg.className = "msg" + (kind ? " " + kind : "");
+  msg.textContent = text;
+}
+
+// openCoding opens the coding screen in its own tab, the same tab every time.
+// The tab is opened in the click itself (browsers block tabs opened later)
+// and waits there until the workspace is ready. prompt is put in the message
+// box of a fresh chat, for the user to read and send.
+function openCoding(prompt) {
+  const frag = new URLSearchParams({ token: state.token });
+  if (prompt) frag.set("prompt", prompt);
+  // The query makes it a new page load, also when that tab is already open.
+  const tab = window.open(`code.html?open=${Date.now()}#${frag}`, "mangoman-code");
+  if (!tab) { say("Your browser blocked the coding screen's tab: allow pop-ups for 127.0.0.1, then try again.", "err"); return; }
+  say("Opening the coding screen in its own tab\u2026");
+  api("/mangoman/code/open", { method: "POST" })
+    .then((r) => say(`The coding screen is open in its own tab. Files are saved in ${r.folder}.`, "ok"))
+    .catch((err) => say(err.message, "err"));
+}
+
+// ---------- Super Agents and Templates ----------
+
+function list(label, items) {
+  return [el("p", { class: "label" }, label), el("ul", {}, ...items.map((t) => el("li", {}, t)))];
+}
+
+function startButton(prompt) {
+  return el("button", { type: "button", class: "primary start", onclick: () => openCoding(prompt) }, "Start");
+}
+
+async function loadStarters() {
+  let d;
+  try { d = await (await fetch("starters.json")).json(); }
+  catch (err) { say(`Could not load the agents: ${err.message}`, "err"); return; }
+  $("agent-cards").replaceChildren(...d.agents.map((a) => el("li", { class: "card" },
+    el("h3", {}, a.title), el("p", {}, a.summary), ...list("You get", a.gets), ...list("Have ready", a.needs),
+    startButton(a.prompt))));
+  $("later-cards").replaceChildren(...d.later.map((a) => el("li", { class: "card" },
+    el("h3", {}, a.title), el("p", {}, a.summary), el("p", {}, a.why))));
+  $("template-cards").replaceChildren(...d.templates.map((t) => el("li", { class: "card" },
+    el("h3", {}, t.title), el("p", {}, t.summary), t.prompt ? startButton(t.prompt) : el("p", {}, t.dev))));
+}
+
+// ---------- My Files ----------
+
+async function loadFiles() {
+  let r;
+  try { r = await api("/mangoman/files"); }
+  catch (err) { say(`Could not list your files: ${err.message}`, "err"); return; }
+  $("set-projects").textContent = r.folder;
+  $("files-sub").textContent = `Each task keeps its files in its own folder in ${r.folder}.`;
+  $("files-empty").hidden = r.items.length > 0;
+  $("files").replaceChildren(...r.items.map((f) => el("li", {},
+    el("span", { class: "name" }, f.name), el("span", { class: "when" }, new Date(f.modified).toLocaleString()),
+    el("button", { type: "button", class: "ghost", onclick: () => openEntry(f.name) }, "Open"))));
+}
+
+async function openEntry(name) {
+  try {
+    const r = await api("/mangoman/files/open", name ? { method: "POST", body: JSON.stringify({ name }) } : { method: "POST" });
+    say(`Opened ${name || r.folder}.`, "ok");
+  } catch (err) { say(err.message, "err"); }
+}
+
 async function load() {
   try {
     const [ov, act, rv] = await Promise.all([api("/mangoman/overview"), api("/mangoman/activity?hours=24"),
       api("/mangoman/radar").catch(() => null)]);
     state.overview = ov; state.activity = act; state.radar = rv;
-    $("app").hidden = false; $("gate").hidden = true;
+    $("app").hidden = false; $("nav").hidden = false; $("gate").hidden = true;
+    $("set-version").textContent = ov.version;
     renderHead(ov, act);
     loadNow();
     renderBoard(ov, act);
@@ -799,7 +882,7 @@ async function load() {
     renderModels(ov, act);
     renderRecent(ov, act);
   } catch (err) {
-    if (err.status === 401) { $("app").hidden = true; $("gate").hidden = false; $("runline").textContent = "No access token."; return; }
+    if (err.status === 401) { $("app").hidden = true; $("nav").hidden = true; $("gate").hidden = false; $("runline").textContent = "No access token."; return; }
     $("runline").replaceChildren(el("span", { class: "lamp bad", "aria-hidden": "true" }), `Can't reach the router: ${err.message}. Is mangoman serve running?`);
   }
 }
@@ -808,22 +891,11 @@ document.addEventListener("DOMContentLoaded", () => {
   state.token = readToken();
   if (!state.token) { $("gate").hidden = false; $("runline").textContent = "No access token."; return; }
   $("refresh").addEventListener("click", load);
-  for (const [id, path, said] of [
-    ["to-code", "/mangoman/code/open", "The coding screen is opening in a new tab. Your files are saved in"],
-    ["to-files", "/mangoman/files/open", "Opened your files:"],
-  ]) {
-    $(id).addEventListener("click", async () => {
-      const msg = $("codemsg");
-      try {
-        const r = await api(path, { method: "POST" });
-        msg.className = "msg ok";
-        msg.textContent = `${said} ${r.folder}.`;
-      } catch (err) {
-        msg.className = "msg err";
-        msg.textContent = err.message;
-      }
-    });
-  }
+  $("to-code").addEventListener("click", () => openCoding(""));
+  $("to-files").addEventListener("click", () => openEntry(""));
+  window.addEventListener("hashchange", showView);
+  showView();
+  loadStarters();
   $("mylist-add").addEventListener("submit", (e) => {
     e.preventDefault();
     const v = $("mylist-pick").value;

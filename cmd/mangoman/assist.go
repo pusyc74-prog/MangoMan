@@ -243,6 +243,7 @@ func cmdCode(args []string) error {
 	noWeb := fs.Bool("no-web", false, "turn off OpenCode's web search")
 	as := fs.String("as", "", "use this person's local token (mangoman people), so usage shows per person")
 	ui := fs.Bool("ui", false, "open the coding screen in the browser instead of the terminal")
+	noBrowser := fs.Bool("no-browser", false, "with --ui: start the workspace but leave opening the screen to the dashboard")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -383,7 +384,7 @@ func cmdCode(args []string) error {
 		fmt.Printf("Working in a copy of dev on branch %s.\nWhen it is ready: mangoman guardian ship (QA tests it in dev, then you approve it for production).\n", branch)
 	}
 	if mode == modeUI {
-		return openWorkspace(cfg, oc, env, workDir, shipDir)
+		return openWorkspace(cfg, oc, env, workDir, shipDir, !*noBrowser)
 	}
 	// Ctrl-C belongs to OpenCode while it runs. A terminate or hang-up
 	// (closing the terminal) is passed on, so OpenCode ends and the router

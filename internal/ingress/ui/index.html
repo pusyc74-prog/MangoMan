@@ -8,15 +8,30 @@
 <link rel="stylesheet" href="app.css">
 <script src="app.js" defer></script>
 </head>
-<body>
-<header class="top">
+<body class="app">
+<aside class="nav" id="nav" aria-label="MangoMan" hidden>
   <div class="brand">
     <span class="mark" aria-hidden="true"></span>
     <h1>MangoMan</h1>
   </div>
+  <button type="button" class="primary new-task" id="to-code">+ New task</button>
+  <nav class="nav-main" aria-label="Sections">
+    <a href="#agents" data-view="agents">Super Agents</a>
+    <a href="#chargesheets" data-view="chargesheets">Chargesheets</a>
+    <a href="#templates" data-view="templates">Templates</a>
+    <a href="#files" data-view="files">My Files</a>
+    <a href="#history" data-view="history">History</a>
+  </nav>
+  <nav class="nav-bottom" aria-label="Setup">
+    <a href="#connections" data-view="connections">Connections</a>
+    <a href="#usage" data-view="usage">Usage</a>
+    <a href="#settings" data-view="settings">Settings</a>
+  </nav>
+</aside>
+
+<div class="page">
+<header class="top">
   <p class="runline" id="runline">Connecting to the router…</p>
-  <button type="button" class="primary" id="to-code">Open coding screen</button>
-  <button type="button" class="ghost" id="to-files">Open my files</button>
   <button type="button" class="ghost" id="refresh">Refresh</button>
   <button type="button" class="fab" id="fab" hidden aria-controls="drawer" aria-expanded="false">
     <span class="fab-dot" aria-hidden="true"></span><span id="fab-text">New models</span>
@@ -25,175 +40,226 @@
 
 <main id="app" hidden>
   <p class="msg" id="codemsg" role="status"></p>
-  <aside class="now" id="now" aria-labelledby="h-now" aria-live="polite">
-    <h2 id="h-now">Model in use</h2>
-    <p class="now-model" id="now-model">Waiting for the first request</p>
-    <p class="now-next" id="now-next"></p>
-    <div class="now-ask" id="now-ask" hidden>
-      <p id="now-ask-text"></p>
-      <div class="now-btns">
-        <button type="button" class="primary" data-weaker="hour">Use a smaller model for 1 hour</button>
-        <button type="button" class="ghost" data-weaker="always">Always</button>
+
+  <div class="view" id="view-agents" hidden>
+    <div class="view-head">
+      <h2>Super Agents</h2>
+      <p class="sub">Pick an agent and press Start. It asks what it needs, then makes your files. Everything is saved in My Files.</p>
+    </div>
+    <ul class="cards" id="agent-cards"></ul>
+    <h3 class="later-head">Coming later</h3>
+    <ul class="cards later" id="later-cards"></ul>
+    <section class="block" aria-labelledby="h-agents">
+      <div class="block-head">
+        <h2 id="h-agents">Advanced agents</h2>
+        <p class="sub">Specialists that do a whole job and beat the free skill pack on its test set. They run on this computer in a sandbox.</p>
       </div>
-    </div>
-    <p class="now-weaker" id="now-weaker" hidden><span id="now-weaker-text"></span> <button type="button" class="ghost" data-weaker="off">Stop</button></p>
-  </aside>
-  <section class="totals" aria-label="Last 24 hours">
-    <div><span class="num" id="t-requests">0</span><span class="lbl">requests in the last 24 hours</span></div>
-    <div><span class="num" id="t-served">0</span><span class="lbl">answered</span></div>
-    <div><span class="num" id="t-failover">0</span><span class="lbl">switched to another model</span></div>
-    <div><span class="num" id="t-tokens">0</span><span class="lbl">tokens</span></div>
-  </section>
-
-  <section class="block" aria-labelledby="h-conn">
-    <div class="block-head">
-      <h2 id="h-conn">Connections</h2>
-      <p class="sub" id="conn-sub"></p>
-    </div>
-    <ol class="board" id="board"></ol>
-  </section>
-
-  <section class="block" aria-labelledby="h-free" id="free-block" hidden>
-    <div class="block-head">
-      <h2 id="h-free">Free AI you get each day</h2>
-      <p class="sub" id="free-sub"></p>
-    </div>
-    <div class="table-wrap">
-      <table class="grid" id="free">
-        <thead><tr>
-          <th scope="col">Provider</th><th scope="col" class="r">Keys</th><th scope="col">Free limit</th>
-          <th scope="col" class="r">Big tasks a day</th><th scope="col" class="r">Small tasks a day</th>
-        </tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <p class="sub" id="free-how"></p>
-  </section>
-
-  <section class="block" aria-labelledby="h-mylist">
-    <div class="block-head">
-      <h2 id="h-mylist">My list</h2>
-      <p class="sub" id="mylist-sub">Models tried first, top to bottom. When they are used up, MangoMan switches to the rest.</p>
-    </div>
-    <div class="mylist-wrap">
-      <ol class="mylist" id="mylist"></ol>
-      <p class="empty" id="mylist-empty" hidden></p>
-      <form class="mylist-add" id="mylist-add">
-        <label for="mylist-pick">Add a model</label>
-        <select id="mylist-pick"></select>
-        <button type="submit" class="ghost">Add</button>
-        <button type="button" class="ghost" id="mylist-new">Browse new models</button>
-      </form>
-    </div>
-  </section>
-
-  <section class="block" aria-labelledby="h-brain" id="brain-block" hidden>
-    <div class="block-head">
-      <h2 id="h-brain">Decision brain</h2>
-      <p class="sub">Fast, typed decisions where the rules are unsure: which kind of task a request is, and whether a short reply is a refusal to retry.</p>
-    </div>
-    <div class="brain-wrap">
-      <div class="brain-line">
-        <span class="lamp" id="brain-lamp" aria-hidden="true"></span>
-        <span id="brain-summary"></span>
-        <button type="button" class="ghost" id="brain-toggle"></button>
-      </div>
-      <div class="table-wrap brain-table" id="brain-recent-wrap">
-        <table class="grid" id="brain-recent">
-          <thead><tr><th scope="col">Time</th><th scope="col">Question</th><th scope="col">Decision</th><th scope="col" class="r">Confidence</th><th scope="col" class="r">Time taken</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" aria-labelledby="h-agents">
-    <div class="block-head">
-      <h2 id="h-agents">Advanced agents</h2>
-      <p class="sub">Specialists that do a whole job and beat the free skill pack on its test set. They run on this computer in a sandbox.</p>
-    </div>
-    <div class="table-wrap">
-      <table class="grid" id="agents-installed">
-        <thead><tr><th scope="col">Agent</th><th scope="col">By</th><th scope="col">Can reach</th><th scope="col">Improves on</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <p class="dim" id="agents-empty" hidden>No agents installed yet.</p>
-    <p><button type="button" class="ghost" id="agents-browse">Browse the marketplace</button></p>
-    <div id="market" hidden>
-      <p class="dim" id="market-msg"></p>
       <div class="table-wrap">
-        <table class="grid" id="market-list">
-          <thead><tr><th scope="col">Agent</th><th scope="col">By</th><th scope="col">Price</th><th scope="col" class="r">Score (pack / agent)</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
+        <table class="grid" id="agents-installed">
+          <thead><tr><th scope="col">Agent</th><th scope="col">By</th><th scope="col">Can reach</th><th scope="col">Improves on</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
-    </div>
-  </section>
-
-  <section class="block" aria-labelledby="h-guardian" id="guardian-block" hidden>
-    <div class="block-head">
-      <h2 id="h-guardian">Guardian</h2>
-      <p class="sub">Fixes and changes on their way to production. Each was tested in development; nothing goes live without your approval.</p>
-    </div>
-    <div class="table-wrap">
-      <table class="grid" id="guardian-list">
-        <thead><tr><th scope="col">App</th><th scope="col">What</th><th scope="col">Status</th><th scope="col">Note</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="block" aria-labelledby="h-traffic">
-    <div class="block-head">
-      <h2 id="h-traffic">Requests per hour</h2>
-      <p class="sub">Last 24 hours, by provider tried</p>
-    </div>
-    <div class="legend" id="legend"></div>
-    <div class="chart-wrap" id="chart"></div>
-  </section>
-
-  <section class="block" aria-labelledby="h-models">
-    <div class="block-head">
-      <h2 id="h-models">Models</h2>
-      <div class="seg" role="group" aria-label="Show models">
-        <button type="button" data-filter="used" aria-pressed="true">Used</button>
-        <button type="button" data-filter="connected" aria-pressed="false">Connected</button>
-        <button type="button" data-filter="all" aria-pressed="false">All</button>
+      <p class="dim" id="agents-empty" hidden>No agents installed yet.</p>
+      <p><button type="button" class="ghost" id="agents-browse">Browse the marketplace</button></p>
+      <div id="market" hidden>
+        <p class="dim" id="market-msg"></p>
+        <div class="table-wrap">
+          <table class="grid" id="market-list">
+            <thead><tr><th scope="col">Agent</th><th scope="col">By</th><th scope="col">Price</th><th scope="col" class="r">Score (pack / agent)</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
-    </div>
-    <div class="table-wrap">
-      <table class="grid" id="models">
-        <thead><tr>
-          <th scope="col" class="star-col"><span class="sr">My list</span></th><th scope="col">Model</th><th scope="col">Provider</th><th scope="col">State</th>
-          <th scope="col" class="r">Requests</th><th scope="col" class="r">Success</th>
-          <th scope="col" class="r">Typical speed</th><th scope="col" class="r">Tokens</th>
-          <th scope="col">Free limit</th><th scope="col">Your data</th>
-        </tr></thead>
-        <tbody></tbody>
-      </table>
-      <p class="empty" id="models-empty" hidden></p>
-    </div>
-  </section>
+    </section>
+    <section class="block" aria-labelledby="h-guardian" id="guardian-block" hidden>
+      <div class="block-head">
+        <h2 id="h-guardian">Guardian</h2>
+        <p class="sub">Fixes and changes on their way to production. Each was tested in development; nothing goes live without your approval.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="grid" id="guardian-list">
+          <thead><tr><th scope="col">App</th><th scope="col">What</th><th scope="col">Status</th><th scope="col">Note</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 
-  <section class="block" aria-labelledby="h-recent">
-    <div class="block-head">
-      <h2 id="h-recent">Recent requests</h2>
-      <p class="sub">Outcomes only. Prompts and answers are never stored.</p>
+  <div class="view" id="view-chargesheets" hidden>
+    <div class="view-head">
+      <h2>Chargesheets</h2>
+      <p class="sub">Coming soon.</p>
     </div>
-    <div class="table-wrap">
-      <table class="grid" id="recent">
-        <thead><tr>
-          <th scope="col">Time</th><th scope="col">Task</th><th scope="col">Provider and model</th>
-          <th scope="col">Result</th><th scope="col" class="r">Attempt</th><th scope="col" class="r">Time taken</th>
-        </tr></thead>
-        <tbody></tbody>
-      </table>
-      <p class="empty" id="recent-empty" hidden></p>
+  </div>
+
+  <div class="view" id="view-templates" hidden>
+    <div class="view-head">
+      <h2>Templates</h2>
+      <p class="sub">One job each, done well. Press Start, answer a few questions, and get checked files.</p>
     </div>
-  </section>
-  <footer class="credit">Coding engine: <a href="https://github.com/anomalyco/opencode" target="_blank" rel="noopener noreferrer">OpenCode</a>, open source under the MIT licence (Copyright (c) 2025 opencode). Used by mangoman code and the coding screen.</footer>
+    <ul class="cards small" id="template-cards"></ul>
+  </div>
+
+  <div class="view" id="view-files" hidden>
+    <div class="view-head">
+      <h2>My Files</h2>
+      <p class="sub" id="files-sub">Each task keeps its files in its own folder.</p>
+    </div>
+    <p><button type="button" class="ghost" id="to-files">Open the MangoMan Projects folder</button></p>
+    <ul class="files" id="files"></ul>
+    <p class="empty" id="files-empty" hidden>Nothing here yet. Start an agent or a template, and its files appear here.</p>
+  </div>
+
+  <div class="view" id="view-history" hidden>
+    <div class="view-head">
+      <h2>History</h2>
+      <p class="sub">Coming soon. Your last chat opens with the coding screen.</p>
+    </div>
+  </div>
+
+  <div class="view" id="view-connections" hidden>
+    <section class="block" aria-labelledby="h-conn">
+      <div class="block-head">
+        <h2 id="h-conn">Connections</h2>
+        <p class="sub" id="conn-sub"></p>
+      </div>
+      <ol class="board" id="board"></ol>
+    </section>
+    <section class="block" aria-labelledby="h-mylist">
+      <div class="block-head">
+        <h2 id="h-mylist">My list</h2>
+        <p class="sub" id="mylist-sub">Models tried first, top to bottom. When they are used up, MangoMan switches to the rest.</p>
+      </div>
+      <div class="mylist-wrap">
+        <ol class="mylist" id="mylist"></ol>
+        <p class="empty" id="mylist-empty" hidden></p>
+        <form class="mylist-add" id="mylist-add">
+          <label for="mylist-pick">Add a model</label>
+          <select id="mylist-pick"></select>
+          <button type="submit" class="ghost">Add</button>
+          <button type="button" class="ghost" id="mylist-new">Browse new models</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <div class="view" id="view-usage" hidden>
+    <aside class="now" id="now" aria-labelledby="h-now" aria-live="polite">
+      <h2 id="h-now">Model in use</h2>
+      <p class="now-model" id="now-model">Waiting for the first request</p>
+      <p class="now-next" id="now-next"></p>
+      <div class="now-ask" id="now-ask" hidden>
+        <p id="now-ask-text"></p>
+        <div class="now-btns">
+          <button type="button" class="primary" data-weaker="hour">Use a smaller model for 1 hour</button>
+          <button type="button" class="ghost" data-weaker="always">Always</button>
+        </div>
+      </div>
+      <p class="now-weaker" id="now-weaker" hidden><span id="now-weaker-text"></span> <button type="button" class="ghost" data-weaker="off">Stop</button></p>
+    </aside>
+    <section class="totals" aria-label="Last 24 hours">
+      <div><span class="num" id="t-requests">0</span><span class="lbl">requests in the last 24 hours</span></div>
+      <div><span class="num" id="t-served">0</span><span class="lbl">answered</span></div>
+      <div><span class="num" id="t-failover">0</span><span class="lbl">switched to another model</span></div>
+      <div><span class="num" id="t-tokens">0</span><span class="lbl">tokens</span></div>
+    </section>
+    <section class="block" aria-labelledby="h-free" id="free-block" hidden>
+      <div class="block-head">
+        <h2 id="h-free">Free AI you get each day</h2>
+        <p class="sub" id="free-sub"></p>
+      </div>
+      <div class="table-wrap">
+        <table class="grid" id="free">
+          <thead><tr>
+            <th scope="col">Provider</th><th scope="col" class="r">Keys</th><th scope="col">Free limit</th>
+            <th scope="col" class="r">Big tasks a day</th><th scope="col" class="r">Small tasks a day</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="sub" id="free-how"></p>
+    </section>
+    <section class="block" aria-labelledby="h-traffic">
+      <div class="block-head">
+        <h2 id="h-traffic">Requests per hour</h2>
+        <p class="sub">Last 24 hours, by provider tried</p>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="chart-wrap" id="chart"></div>
+    </section>
+    <section class="block" aria-labelledby="h-models">
+      <div class="block-head">
+        <h2 id="h-models">Models</h2>
+        <div class="seg" role="group" aria-label="Show models">
+          <button type="button" data-filter="used" aria-pressed="true">Used</button>
+          <button type="button" data-filter="connected" aria-pressed="false">Connected</button>
+          <button type="button" data-filter="all" aria-pressed="false">All</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="grid" id="models">
+          <thead><tr>
+            <th scope="col" class="star-col"><span class="sr">My list</span></th><th scope="col">Model</th><th scope="col">Provider</th><th scope="col">State</th>
+            <th scope="col" class="r">Requests</th><th scope="col" class="r">Success</th>
+            <th scope="col" class="r">Typical speed</th><th scope="col" class="r">Tokens</th>
+            <th scope="col">Free limit</th><th scope="col">Your data</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="empty" id="models-empty" hidden></p>
+      </div>
+    </section>
+    <section class="block" aria-labelledby="h-recent">
+      <div class="block-head">
+        <h2 id="h-recent">Recent requests</h2>
+        <p class="sub">Outcomes only. Prompts and answers are never stored.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="grid" id="recent">
+          <thead><tr>
+            <th scope="col">Time</th><th scope="col">Task</th><th scope="col">Provider and model</th>
+            <th scope="col">Result</th><th scope="col" class="r">Attempt</th><th scope="col" class="r">Time taken</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="empty" id="recent-empty" hidden></p>
+      </div>
+    </section>
+    <section class="block" aria-labelledby="h-brain" id="brain-block" hidden>
+      <div class="block-head">
+        <h2 id="h-brain">Decision brain</h2>
+        <p class="sub">Fast, typed decisions where the rules are unsure: which kind of task a request is, and whether a short reply is a refusal to retry.</p>
+      </div>
+      <div class="brain-wrap">
+        <div class="brain-line">
+          <span class="lamp" id="brain-lamp" aria-hidden="true"></span>
+          <span id="brain-summary"></span>
+          <button type="button" class="ghost" id="brain-toggle"></button>
+        </div>
+        <div class="table-wrap brain-table" id="brain-recent-wrap">
+          <table class="grid" id="brain-recent">
+            <thead><tr><th scope="col">Time</th><th scope="col">Question</th><th scope="col">Decision</th><th scope="col" class="r">Confidence</th><th scope="col" class="r">Time taken</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="view" id="view-settings" hidden>
+    <div class="view-head">
+      <h2>Settings</h2>
+    </div>
+    <dl class="facts">
+      <dt>Version</dt><dd id="set-version">…</dd>
+      <dt>Your files</dt><dd id="set-projects">…</dd>
+      <dt>First-time setup</dt><dd><a href="setup.html">Open the setup page</a></dd>
+    </dl>
+    <footer class="credit">Coding engine: <a href="https://github.com/anomalyco/opencode" target="_blank" rel="noopener noreferrer">OpenCode</a>, open source under the MIT licence (Copyright (c) 2025 opencode). Used by mangoman code and the coding screen.</footer>
+  </div>
 </main>
+</div>
 
 <section class="gate" id="gate" hidden>
   <h2>Open the dashboard from your terminal</h2>

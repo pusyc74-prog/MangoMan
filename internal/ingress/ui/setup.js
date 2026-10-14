@@ -136,12 +136,20 @@ $("go").addEventListener("click", async () => {
   }
 });
 
+// The coding screen gets its own tab, opened in the click itself (browsers
+// block tabs opened later); it waits there for the workspace to start.
 $("to-code").addEventListener("click", async () => {
   const msg = $("codemsg");
+  const tab = window.open(`code.html?open=${Date.now()}#token=${encodeURIComponent(token)}`, "mangoman-code");
+  if (!tab) {
+    msg.className = "msg err";
+    msg.textContent = "Your browser blocked the coding screen's tab: allow pop-ups for 127.0.0.1, then try again.";
+    return;
+  }
   try {
     const r = await api("/mangoman/code/open", { method: "POST" });
     msg.className = "msg ok";
-    msg.textContent = `The coding screen is opening in a new tab. Your projects go in ${r.folder}.`;
+    msg.textContent = `The coding screen is open in its own tab. Your projects go in ${r.folder}.`;
   } catch (e) {
     msg.className = "msg err";
     msg.textContent = e.message;

@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -48,6 +49,7 @@ func (s *Server) readyRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /mangoman/ready", s.auth(http.HandlerFunc(s.readyGet)))
 	mux.Handle("POST /mangoman/ready", s.auth(http.HandlerFunc(s.readyStart)))
 	mux.Handle("POST /mangoman/code/open", s.auth(http.HandlerFunc(s.codeOpen)))
+	mux.Handle("GET /mangoman/files", s.auth(http.HandlerFunc(s.filesList)))
 	mux.Handle("POST /mangoman/files/open", s.auth(http.HandlerFunc(s.filesOpen)))
 }
 
@@ -65,18 +67,102 @@ func projects(w http.ResponseWriter) string {
 	return dir
 }
 
-// filesOpen shows the projects folder in Explorer, Finder or the Linux file
-// manager, where the coding screen saves what it makes.
-func (s *Server) filesOpen(w http.ResponseWriter, _ *http.Request) {
+// openable are the files My Files opens in their own app; anything else,
+// say a script the model wrote, is opened from its folder by hand.
+var openable = map[string]bool{".pdf": true, ".png": true, ".jpg": true, ".jpeg": true, ".svg": true, ".html": true,
+	".md": true, ".txt": true, ".csv": true, ".json": true, ".docx": true, ".pptx": true, ".xlsx": true}
+
+// entry is the path of name in dir when name is exactly one of dir's
+// entries and a real folder or an openable file (not a link or a junction),
+// else "".
+func entry(dir, name string) string {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return ""
+	}
+	for _, e := range entries {
+		if e.Name() != name {
+			continue
+		}
+		path := filepath.Join(dir, name)
+		fi, err := os.Lstat(path)
+		if err == nil && (fi.IsDir() || fi.Mode().IsRegular() && openable[strings.ToLower(filepath.Ext(name))]) {
+			return path
+		}
+	}
+	return ""
+}
+
+// sameDir reports whether two paths are the same folder.
+func sameDir(a, b string) bool {
+	x, err := os.Stat(a)
+	if err != nil {
+		return false
+	}
+	y, err := os.Stat(b)
+	return err == nil && os.SameFile(x, y)
+}
+
+// ProjectItem is one entry of the projects folder: a task's folder, or a
+// file saved there before tasks had folders.
+type ProjectItem struct {
+	Name     string    `json:"name"`
+	Dir      bool      `json:"dir"`
+	Modified time.Time `json:"modified"`
+}
+
+// filesList is My Files: what is in the projects folder, newest first.
+func (s *Server) filesList(w http.ResponseWriter, _ *http.Request) {
 	dir := projects(w)
 	if dir == "" {
 		return
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "no_folder", err.Error())
+		return
+	}
+	items := []ProjectItem{}
+	for _, e := range entries {
+		info, err := e.Info()
+		if err != nil || strings.HasPrefix(e.Name(), ".") || e.Name() == "desktop.ini" {
+			continue
+		}
+		items = append(items, ProjectItem{Name: e.Name(), Dir: e.IsDir(), Modified: info.ModTime()})
+	}
+	sort.Slice(items, func(i, j int) bool { return items[i].Modified.After(items[j].Modified) })
+	writeJSON(w, map[string]any{"folder": dir, "items": items})
+}
+
+// filesOpen shows the projects folder, or one entry of it ({"name"}), in
+// Explorer, Finder or the Linux file manager; a document opens in its own
+// app. Only an exact entry of the folder can be named (see entry).
+func (s *Server) filesOpen(w http.ResponseWriter, r *http.Request) {
+	dir := projects(w)
+	if dir == "" {
+		return
+	}
+	var in struct {
+		Name string `json:"name"`
+	}
+	if r.ContentLength != 0 {
+		if err := readJSON(r, &in); err != nil {
+			core.WriteError(w, http.StatusBadRequest, "bad_request", "send nothing, or {\"name\"}")
+			return
+		}
+	}
+	target := dir
+	if in.Name != "" {
+		if target = entry(dir, in.Name); target == "" {
+			core.WriteError(w, http.StatusNotFound, "not_found", "open a folder, or a document such as a PDF or image, from the projects folder")
+			return
+		}
 	}
 	open := setup.OpenURL // Finder (open) or the Linux file manager (xdg-open)
 	if runtime.GOOS == "windows" {
 		open = func(dir string) error { return exec.Command("explorer", dir).Start() }
 	}
-	if err := open(dir); err != nil {
+	if err := open(target); err != nil {
 		core.WriteError(w, http.StatusInternalServerError, "not_opened", err.Error())
 		return
 	}
@@ -161,12 +247,34 @@ func (s *Server) readyStart(w http.ResponseWriter, r *http.Request) {
 	s.readyGet(w, r)
 }
 
-// codeOpen starts the coding screen (mangoman code --ui) in the projects
-// folder, made if missing. It opens in the browser by itself; one that
-// stops within a few seconds failed, and its last words are the answer.
+// codeOpen starts the coding screen's workspace (mangoman code --ui) in the
+// projects folder, made if missing; the page that asked opens the coding
+// screen itself, which waits for the workspace. One that stops within a few
+// seconds failed, and its last words are the answer. A workspace already
+// open there, or still starting, is used as it is: every click starting
+// another left OpenCode servers running unseen (found 15 Oct).
 func (s *Server) codeOpen(w http.ResponseWriter, _ *http.Request) {
 	dir := projects(w)
 	if dir == "" {
+		return
+	}
+	s.code.mu.Lock()
+	var other string // a workspace someone opened in another folder
+	if s.code.b != nil && !sameDir(s.code.b.dir, dir) {
+		other = s.code.b.dir
+	}
+	open := s.code.b != nil && other == ""
+	starting := s.code.b == nil && time.Since(s.code.starting) < 90*time.Second
+	if !open && !starting && other == "" {
+		s.code.starting = time.Now()
+	}
+	s.code.mu.Unlock()
+	if other != "" {
+		core.WriteError(w, http.StatusConflict, "other_workspace", "a coding workspace is open in "+other+" (from mangoman code --ui): close it there, then try again")
+		return
+	}
+	if open || starting {
+		writeJSON(w, map[string]string{"folder": dir})
 		return
 	}
 	self, err := os.Executable()
@@ -175,9 +283,12 @@ func (s *Server) codeOpen(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	var out bytes.Buffer
-	cmd := exec.Command(self, "code", "--ui")
+	cmd := exec.Command(self, "code", "--ui", "--no-browser")
 	cmd.Dir, cmd.Stdout, cmd.Stderr = dir, &out, &out
 	if err := cmd.Start(); err != nil {
+		s.code.mu.Lock()
+		s.code.starting = time.Time{}
+		s.code.mu.Unlock()
 		core.WriteError(w, http.StatusInternalServerError, "not_started", err.Error())
 		return
 	}
@@ -192,8 +303,20 @@ func (s *Server) codeOpen(w http.ResponseWriter, _ *http.Request) {
 		if msg == "" && err != nil {
 			msg = err.Error()
 		}
+		s.code.mu.Lock()
+		s.code.starting = time.Time{}
+		s.code.mu.Unlock()
 		core.WriteError(w, http.StatusInternalServerError, "not_started", "the coding screen did not start: "+msg)
 	case <-time.After(4 * time.Second):
+		// A workspace that stops before attaching frees the next click at once.
+		go func() {
+			<-exited
+			s.code.mu.Lock()
+			if s.code.b == nil {
+				s.code.starting = time.Time{}
+			}
+			s.code.mu.Unlock()
+		}()
 		writeJSON(w, map[string]string{"folder": dir})
 	}
 }

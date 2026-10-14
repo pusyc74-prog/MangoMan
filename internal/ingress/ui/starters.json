@@ -1,0 +1,153 @@
+{
+  "agents": [
+    {
+      "id": "data-analyst",
+      "title": "Data Analyst",
+      "summary": "Give it a spreadsheet. You get a dashboard with checked numbers and a written report of what they mean.",
+      "gets": ["A dashboard that opens in your browser", "A report PDF with the key findings"],
+      "needs": ["Your data: Excel, CSV or JSON"],
+      "packs": ["mangoman-data-dashboard", "mangoman-client-report"],
+      "prompt": "Be my data analyst. Use the mangoman-data-dashboard skill to build a dashboard from my data, then the mangoman-client-report skill for a report of what the numbers mean. First ask me for the data file and what I want to know."
+    },
+    {
+      "id": "social-media",
+      "title": "Social Media Manager",
+      "summary": "Posts for Instagram, LinkedIn, Facebook, X and WhatsApp Status, with images in the right size for each and captions ready to paste.",
+      "gets": ["Post images for each platform", "Captions, hashtags and alt text", "A preview of the whole set"],
+      "needs": ["What the posts are about", "Real facts: prices, dates, offers", "Your logo and colours (optional)"],
+      "packs": ["mangoman-social-posts"],
+      "prompt": "Be my social media manager. Use the mangoman-social-posts skill. First ask me what you need: my business, the offer or news, which platforms, the real facts to use and my brand. Then make the posts."
+    },
+    {
+      "id": "marketing-campaign",
+      "title": "Marketing Campaign",
+      "summary": "One offer, everywhere: Google and Meta ads, an email campaign and social posts that all match.",
+      "gets": ["Google and Meta ad copy", "Branded emails", "Social posts"],
+      "needs": ["The offer and its dates", "Who it is for", "Your logo and colours (optional)"],
+      "packs": ["mangoman-ad-copy", "mangoman-email-campaign", "mangoman-social-posts"],
+      "prompt": "Run a marketing campaign for one offer. Use the mangoman-ad-copy skill for the ads, the mangoman-email-campaign skill for the emails and the mangoman-social-posts skill for the posts, all with the same message and facts. First ask me about the offer, its dates, who it is for and my brand."
+    },
+    {
+      "id": "website-builder",
+      "title": "Website Builder",
+      "summary": "A fast, mobile-first one-page website for your business, or the words for a bigger site.",
+      "gets": ["A one-page website you can open and publish", "Or the copy for every page of a bigger site"],
+      "needs": ["What your business does", "Contact details", "Photos, logo and colours (optional)"],
+      "packs": ["mangoman-landing-page", "mangoman-website-copy"],
+      "prompt": "Build a website for my business. For one page, use the mangoman-landing-page skill. For several pages, first write them with the mangoman-website-copy skill. First ask me what my business does, who it is for, my contact details and my brand."
+    },
+    {
+      "id": "online-seller",
+      "title": "Online Store Seller",
+      "summary": "Product listings for Amazon, Flipkart, Meesho and Shopify that follow each marketplace's rules.",
+      "gets": ["Title, bullets, description and search terms per marketplace", "Files ready to paste or import"],
+      "needs": ["Product details: size, material, price", "Product photos (optional)"],
+      "packs": ["mangoman-ecommerce-listing"],
+      "prompt": "Write my product listings. Use the mangoman-ecommerce-listing skill. First ask me which marketplaces and the real product details."
+    },
+    {
+      "id": "sales-assistant",
+      "title": "Sales Assistant",
+      "summary": "A proposal or quotation for a client, with scope, timeline and GST worked out.",
+      "gets": ["A proposal PDF", "An editable Word file"],
+      "needs": ["The client and the work", "Your prices and timeline"],
+      "packs": ["mangoman-proposal"],
+      "prompt": "Help me win a client. Use the mangoman-proposal skill. First ask me about the client, the work, my prices and my timeline."
+    },
+    {
+      "id": "office-assistant",
+      "title": "Office Assistant",
+      "summary": "GST invoices, quotations and clear meeting minutes with actions and owners.",
+      "gets": ["Invoice or quotation PDFs", "Meeting minutes"],
+      "needs": ["Your GSTIN and the client's details, or your meeting notes"],
+      "packs": ["mangoman-invoice", "mangoman-meeting-minutes"],
+      "prompt": "Be my office assistant. Use the mangoman-invoice skill for invoices and quotations, and the mangoman-meeting-minutes skill for meeting minutes. First ask me which one I need today and the details."
+    },
+    {
+      "id": "job-helper",
+      "title": "Resume and Job Helper",
+      "summary": "A resume tailored to the job you want, and a matching cover letter.",
+      "gets": ["A resume PDF that applicant tracking systems can read", "A cover letter"],
+      "needs": ["Your current resume or work history", "The job description (optional)"],
+      "packs": ["mangoman-resume"],
+      "prompt": "Help me apply for a job. Use the mangoman-resume skill for my resume and a matching cover letter. First ask me for my work history or current resume and the job I want."
+    },
+    {
+      "id": "seo-blogger",
+      "title": "SEO Blogger",
+      "summary": "Blog articles written to be found on Google, with title, description and FAQ.",
+      "gets": ["An article ready to publish", "Meta title, description and FAQ"],
+      "needs": ["The topic or search phrase", "Your business and city"],
+      "packs": ["mangoman-seo-article"],
+      "prompt": "Write a blog article for my website. Use the mangoman-seo-article skill. First ask me the topic, my business and my city."
+    },
+    {
+      "id": "pitch-deck",
+      "title": "Pitch and Board Deck",
+      "summary": "Turns your numbers into a slide deck for investors, a board or a big client.",
+      "gets": ["Slides as PowerPoint, PDF and web"],
+      "needs": ["Your numbers or analysis", "Who will see it"],
+      "packs": ["mangoman-ceo-deck"],
+      "prompt": "Make a slide deck. Use the mangoman-ceo-deck skill. First ask me for my numbers and who the deck is for."
+    },
+    {
+      "id": "brand-starter",
+      "title": "Brand Starter",
+      "summary": "Your colours, fonts and logo rules in one guide, so everything you make looks the same.",
+      "gets": ["A brand guide PDF", "Colour codes and styles for your website and other MangoMan work"],
+      "needs": ["Your logo (optional)", "Colours you like (optional)"],
+      "packs": ["mangoman-brand-kit"],
+      "prompt": "Make my brand guide. Use the mangoman-brand-kit skill. First ask me about my business, my logo and the look I want."
+    },
+    {
+      "id": "app-builder",
+      "title": "App Builder",
+      "summary": "A small app that works on phones: a calculator, tracker, booking or order form.",
+      "gets": ["An app file that opens in any browser", "Tested in a real browser before you get it"],
+      "needs": ["What the app must do", "Any rules or rates it must follow"],
+      "packs": ["mangoman-web-app"],
+      "prompt": "Build me a small app. Use the mangoman-web-app skill. First ask me what it must do, who will use it and any rules or rates it must follow."
+    }
+  ],
+  "later": [
+    {
+      "title": "Customer Support",
+      "summary": "Answers customer messages on WhatsApp, Instagram or email.",
+      "why": "Needs MangoMan to connect to your messaging apps and keep running. Not built yet."
+    },
+    {
+      "title": "Appointment Scheduler",
+      "summary": "Books, moves and reminds appointments.",
+      "why": "Needs a connection to your calendar. Not built yet."
+    },
+    {
+      "title": "Lead Follow-up",
+      "summary": "Replies to new enquiries and follows up until they buy or say no.",
+      "why": "Needs a connection to your forms or CRM and a scheduler. Not built yet."
+    },
+    {
+      "title": "Market Research",
+      "summary": "Researches your market and competitors and writes a report with sources.",
+      "why": "Needs tested web search and a report checker. Not built yet."
+    }
+  ],
+  "templates": [
+    {"pack": "mangoman-ad-copy", "title": "Ad copy", "summary": "Google search ads and Meta ads with keywords.", "prompt": "Use the mangoman-ad-copy skill to write my ads. First ask me what you need."},
+    {"pack": "mangoman-brand-kit", "title": "Brand guide", "summary": "Colours, fonts and logo rules in one PDF.", "prompt": "Use the mangoman-brand-kit skill to make my brand guide. First ask me what you need."},
+    {"pack": "mangoman-ceo-deck", "title": "Slide deck", "summary": "A board or investor deck from your numbers.", "prompt": "Use the mangoman-ceo-deck skill to make a slide deck. First ask me what you need."},
+    {"pack": "mangoman-client-report", "title": "Client report", "summary": "A monthly or weekly performance report PDF.", "prompt": "Use the mangoman-client-report skill to make a report. First ask me what you need."},
+    {"pack": "mangoman-code-review", "title": "Code review", "summary": "Checks a code change for bugs and risky code.", "dev": "For developers: run mangoman code --ui in your project folder, then ask for a code review."},
+    {"pack": "mangoman-data-dashboard", "title": "Data dashboard", "summary": "An interactive dashboard from a spreadsheet.", "prompt": "Use the mangoman-data-dashboard skill to build a dashboard. First ask me what you need."},
+    {"pack": "mangoman-ecommerce-listing", "title": "Product listing", "summary": "Amazon, Flipkart, Meesho and Shopify listings.", "prompt": "Use the mangoman-ecommerce-listing skill to write my listings. First ask me what you need."},
+    {"pack": "mangoman-email-campaign", "title": "Email campaign", "summary": "Branded emails: launch, offer, welcome or newsletter.", "prompt": "Use the mangoman-email-campaign skill to make my emails. First ask me what you need."},
+    {"pack": "mangoman-invoice", "title": "GST invoice", "summary": "Tax invoice, proforma or quotation with GST.", "prompt": "Use the mangoman-invoice skill to make an invoice. First ask me what you need."},
+    {"pack": "mangoman-landing-page", "title": "One-page website", "summary": "A fast, mobile-first page for a business or event.", "prompt": "Use the mangoman-landing-page skill to build my page. First ask me what you need."},
+    {"pack": "mangoman-meeting-minutes", "title": "Meeting minutes", "summary": "Summary, decisions and actions from your notes.", "prompt": "Use the mangoman-meeting-minutes skill to write the minutes. First ask me for my notes."},
+    {"pack": "mangoman-proposal", "title": "Proposal", "summary": "A business proposal or quotation with GST.", "prompt": "Use the mangoman-proposal skill to write my proposal. First ask me what you need."},
+    {"pack": "mangoman-resume", "title": "Resume", "summary": "A resume and cover letter as checked PDFs.", "prompt": "Use the mangoman-resume skill to make my resume. First ask me what you need."},
+    {"pack": "mangoman-seo-article", "title": "Blog article", "summary": "An SEO article with title, description and FAQ.", "prompt": "Use the mangoman-seo-article skill to write an article. First ask me what you need."},
+    {"pack": "mangoman-social-posts", "title": "Social posts", "summary": "Post images and captions for each platform.", "prompt": "Use the mangoman-social-posts skill to make my posts. First ask me what you need."},
+    {"pack": "mangoman-web-app", "title": "Small app", "summary": "A calculator, tracker or form that works on phones.", "prompt": "Use the mangoman-web-app skill to build my app. First ask me what you need."},
+    {"pack": "mangoman-website-copy", "title": "Website copy", "summary": "The words for every page of your website.", "prompt": "Use the mangoman-website-copy skill to write my website copy. First ask me what you need."}
+  ]
+}

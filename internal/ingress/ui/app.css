@@ -325,3 +325,59 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
 .connect .notice { font-size: 13px; color: var(--muted); border-left: 3px solid var(--hair); padding-left: 8px; }
 .connect .agree { display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 14px; color: var(--ink-2); margin: 0; }
 .connect .agree input { width: auto; min-width: 0; flex: none; margin: 0; padding: 0; }
+
+/* The app's left menu (index.html only: body.app). The coding screen and the
+   setup page share this file and keep their own layout. */
+body.app { padding: 0; display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; }
+.app [hidden] { display: none !important; }
+.app .nav {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
+  padding: 20px 14px; border-right: 1px solid var(--hair); background: var(--surface);
+}
+.app .nav .brand { padding: 0 6px; }
+.app .new-task { width: 100%; padding: 9px 12px; font-weight: 600; }
+.app .nav nav { display: flex; flex-direction: column; gap: 2px; }
+.app .nav-bottom { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--hair); }
+.app .nav a { display: block; padding: 7px 10px; border-radius: 6px; color: var(--ink-2); text-decoration: none; }
+.app .nav a:hover { background: var(--leaf-wash); color: var(--ink); }
+.app .nav a[aria-current="page"] { background: var(--leaf-wash); color: var(--ink); font-weight: 600; }
+.app .page { min-width: 0; padding: 0 24px 64px; }
+.app .page .top { max-width: 1120px; }
+.app #codemsg:empty { display: none; }
+.app .gate { padding: 64px 16px; }
+.app #codemsg { padding-top: 12px; }
+.view-head { padding: 24px 0 16px; }
+.view-head h2 { font-size: 22px; margin-bottom: 4px; }
+.cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.card {
+  background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; padding: 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.card h3 { margin: 0; font-size: 16px; }
+.card p { margin: 0; color: var(--ink-2); font-size: 14px; }
+.card ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink-2); }
+.card .label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+.card .start { margin-top: auto; align-self: flex-start; }
+.cards.later .card { background: transparent; }
+.cards.small { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.later-head { font-size: 15px; margin: 28px 0 10px; color: var(--ink-2); }
+.files { list-style: none; margin: 0; padding: 0; border: 1px solid var(--ring); border-radius: 10px; background: var(--surface); }
+.files li { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--hair); }
+.files li:first-child { border-top: 0; }
+.files .name { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
+.files .when { color: var(--ink-2); font-size: 13px; white-space: nowrap; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 0 0 16px; }
+.facts dt { color: var(--ink-2); }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 800px) {
+  body.app { display: block; }
+  .app .nav {
+    position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 12px 16px; border-right: 0; border-bottom: 1px solid var(--hair);
+  }
+  .app .new-task { width: auto; }
+  .app .nav nav { flex-direction: row; flex-wrap: wrap; width: 100%; }
+  .app .nav-bottom { margin-top: 0; padding-top: 0; border-top: 0; }
+  .app .nav a { white-space: nowrap; }
+  .app .page { padding: 0 16px 48px; }
+}

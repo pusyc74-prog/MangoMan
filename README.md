@@ -72,7 +72,16 @@ It also runs daily at 08:00 IST in quick mode, which catches provider changes ea
 
 `mangoman setup` walks through each free provider in turn: it opens the sign-up page, you paste the key, it is checked with the provider and stored in the OS keychain, or in an encrypted file when there is no keychain. Skip any provider; one is enough. It also detects Ollama and offers to download a small local model.
 
-`mangoman dashboard` opens a local page (served by the router, nothing loaded from the internet) that shows:
+`mangoman dashboard` opens a local page (served by the router, nothing loaded from the internet) with a menu on the left:
+
+- **+ New task** opens the coding screen in its own tab, in the MangoMan Projects folder (one workspace, reused by every click)
+- **Super Agents**: ready-made agents (Data Analyst, Social Media Manager, Marketing Campaign, Website Builder and more), each built on the skill packs. Start opens the coding screen with the agent's first message ready to send. Agents that need app connections or a scheduler are listed as coming later.
+- **Templates**: one card per skill pack
+- **My Files**: the task folders in MangoMan Projects, newest first, each with Open
+- **Chargesheets** and **History**: coming soon
+- **Connections** (providers and keys, My list), **Usage** (live model, totals, charts, models, recent requests), **Settings** (version, folders)
+
+Between them, Connections and Usage show:
 
 - Which providers are connected, not connected, turned off or rejecting their key, with Connect, Remove key and Turn off/on in each row
 - How much free AI you get each day: for each connected provider, its free limits across all your keys and about how many big and small skill tasks they allow, with the method
