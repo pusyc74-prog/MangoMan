@@ -1,0 +1,52 @@
+name: dash-test
+
+# Tests the AI parts of a data dashboard (reading a file, planning charts,
+# writing findings) on five made-up files with free NVIDIA and Groq models.
+# About 240 free-tier requests. Run it by hand, never on a schedule.
+# The report goes to the eval-reports branch.
+# A session starts it with POST /repos/<owner>/<repo>/dispatches, event_type dash-test.
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [dash-test]
+
+permissions:
+  contents: write # only to publish the report to the eval-reports branch
+
+concurrency:
+  group: dash-test
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the test
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python3 scripts/dash-test.py
+      - name: Publish the report to the eval-reports branch
+        if: always()
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          [ -s report.md ] || exit 0
+          mkdir out && mv report.md out/ && python3 scripts/mask-keys.py out
+          cat out/report.md >> "$GITHUB_STEP_SUMMARY"
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports
+          git worktree add ../reports origin/eval-reports
+          cd ../reports
+          git switch -C eval-reports
+          mkdir -p reports/dash-test
+          cp "$GITHUB_WORKSPACE/out/report.md" "reports/dash-test/$stamp.md"
+          git add -A
+          git commit -q -m "dash test $stamp (run ${{ github.run_id }})" || exit 0
+          git push origin eval-reports
