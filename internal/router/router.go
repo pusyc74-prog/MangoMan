@@ -253,13 +253,14 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		retries      int
 		unreachable  = map[string]bool{} // providers whose host failed this request
 		asked        = map[string]bool{} // candidates already tried, to pause before asking again
+		modelDown    = map[string]bool{} // models that failed in a way another key cannot fix
 	)
 	for i := 0; i < len(cands); i++ {
 		c := cands[i]
 		if r.Context().Err() != nil {
 			return // client went away
 		}
-		if unreachable[c.Provider.ID] || unreachable["key:"+c.keyName()] {
+		if unreachable[c.Provider.ID] || unreachable["key:"+c.keyName()] || modelDown[c.Target()] {
 			continue
 		}
 		if ok, _ := rt.allow(c, req.EstTokens); !ok {
@@ -348,6 +349,11 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		case "key_rejected":
 			// This key is bad, not the provider: a teammate's key still works.
 			unreachable["key:"+c.keyName()] = true
+		case "timeout", "garbled", "model_gone", "model_not_found", "model_forbidden":
+			// About the model, not the key: a teammate's key gets the same
+			// silent or retired model (seen 15 Oct: DeepSeek tried on three
+			// keys, 30 s each). Go to another model.
+			modelDown[c.Target()] = true
 		}
 		if res.badBody != nil && fallbackBody == nil {
 			fallbackBody, fallbackWhy, fallbackCand = res.badBody, res.badWhy, c
@@ -568,8 +574,11 @@ func (rt *Router) upstreamError(resp *http.Response, c Candidate) attemptResult 
 		// on agentic harnesses", region or tier locks), not the key. Avoid
 		// the model; the provider's other models stay in use.
 		res.outcome = "model_forbidden"
-	case s == http.StatusNotFound || s == http.StatusGone:
-		// Model removed, renamed or retired (NVIDIA answers 410): avoid it.
+	case s == http.StatusGone:
+		// Retired for good (NVIDIA retired Kimi K3 on 15 Oct and answers 410).
+		res.outcome = "model_gone"
+	case s == http.StatusNotFound:
+		// Model removed or renamed: avoid it.
 		res.outcome = "model_not_found"
 	case s == http.StatusRequestTimeout || s == http.StatusConflict || s == http.StatusRequestEntityTooLarge:
 		res.outcome = "retryable_" + strconv.Itoa(s)

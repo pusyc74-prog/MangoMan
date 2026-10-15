@@ -16,7 +16,7 @@
 // reorder models and end within two hours, so the worst forged reports can
 // do is cost speed.
 
-const WORDS = ["ok", "busy", "slow", "garbled", "empty", "failed"];
+const WORDS = ["ok", "busy", "slow", "garbled", "empty", "retired", "failed"];
 const TARGET = /^[a-z0-9-]{1,40}\/[A-Za-z0-9._:\/-]{1,120}$/;
 const INSTALL = /^[0-9a-f]{32}$/;
 const MIN_TRIES = 3; // a MangoMan's view of a model counts from this many tries

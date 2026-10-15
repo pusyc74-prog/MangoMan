@@ -604,6 +604,28 @@ func TestGone410FailsOverWithoutStopping(t *testing.T) {
 	}
 }
 
+// A retired model is not asked again through a teammate's key in the same
+// request, and stays skipped (15 Oct: Kimi K3 retired on NVIDIA, tried on
+// every key; DeepSeek silent on three keys, 30 s each).
+func TestRetiredModelNotRetriedOnOtherKeys(t *testing.T) {
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: status(410, nil)}
+	b := &fake{id: "b", model: "m2", quality: 0.1, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	addTeamKey(t, rt, "a", "ravi")
+	addTeamKey(t, rt, "a", "asha")
+	for range 3 {
+		if w := do(t, rt, hello); w.Code != 200 || w.Header().Get("X-MangoMan-Provider") != "b" {
+			t.Fatalf("got %d %v", w.Code, w.Header())
+		}
+	}
+	if n := a.calls.Load(); n != 1 {
+		t.Fatalf("the retired model was asked %d times; once is enough", n)
+	}
+	if until := rt.Line.SkippedUntil("a/m1"); time.Until(until) < 23*time.Hour {
+		t.Fatalf("a retired model should be skipped for a day, not until %v", until)
+	}
+}
+
 func TestAccountLimitSharedAcrossModels(t *testing.T) {
 	// Provider a allows 2 requests a day in total, across both its models.
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: okJSON("from a"), account: catalogue.Limits{RPD: 2}}

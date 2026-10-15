@@ -32,6 +32,7 @@ const (
 	busyFor    = 2 * time.Minute
 	silentFor  = 10 * time.Minute
 	garbledFor = 30 * time.Minute
+	goneFor    = 24 * time.Hour
 )
 
 // Skip settings: strikes in a row before a skip, the first skip, the longest.
@@ -46,7 +47,8 @@ type rule struct {
 	strikes int           // added to the strikes; clear wipes them
 	clear   bool          // the model answered: strikes and skips are forgotten
 	last    time.Duration // tried behind the others for this long
-	word    string        // why it was given up on: busy, slow, garbled, empty or failed
+	word    string        // why it was given up on: busy, slow, garbled, empty, retired or failed
+	skip    time.Duration // skipped this long at once (a retired model)
 }
 
 // ruleFor is the one place that decides demotion, its reason and its expiry.
@@ -62,6 +64,9 @@ func ruleFor(res attemptResult) rule {
 		return rule{strikes: 1, last: garbledFor, word: "garbled"}
 	case o == "no_answer":
 		return rule{strikes: 1, last: busyFor, word: "empty"}
+	case o == "model_gone":
+		// Retired for good: skip it for a day rather than probing it every few minutes.
+		return rule{skip: goneFor, word: "retired"}
 	case o == "model_forbidden", o == "model_not_found":
 		// About this one model (removed, retired, locked to a tier or region),
 		// not the key or the provider: skip it at once.
@@ -132,7 +137,7 @@ func (l *Line) judge(t string, r rule) {
 	now := l.now()
 	// Only what says something about the model's service is counted: an
 	// answer, or a strike. Rate limits and bad keys are about the account.
-	if r.clear || r.strikes > 0 {
+	if r.clear || r.strikes > 0 || r.skip > 0 {
 		word := "ok"
 		if !r.clear {
 			word = r.word
@@ -149,6 +154,8 @@ func (l *Line) judge(t string, r rule) {
 		p.lastUntil = now.Add(r.last)
 	}
 	switch {
+	case r.skip > 0:
+		p.skipUntil, p.strikes = now.Add(r.skip), 0
 	case r.clear:
 		p.strikes, p.skips, p.skipUntil = 0, 0, time.Time{}
 	case r.strikes > 0:

@@ -98,7 +98,7 @@ function dataText(trains) { return TRAINS[trains] || "Training policy unknown"; 
 const OUTCOMES = {
   ok: "Answered", ok_truncated: "Answered, cut off", no_answer: "Only thinking, no answer", garbled: "Garbled answer", rate_limited: "Rate limited",
   network_error: "Couldn't reach provider", timeout: "Timed out", server_error: "Provider error",
-  key_rejected: "Key rejected", model_not_found: "Model no longer available", model_forbidden: "Model not available to you", client_error: "Request rejected",
+  key_rejected: "Key rejected", model_gone: "Model retired by the provider", model_not_found: "Model no longer available", model_forbidden: "Model not available to you", client_error: "Request rejected",
   stream_error: "Stream failed", stream_broken_after_commit: "Stream broke midway", error_in_200: "Provider error",
   not_a_stream: "Provider error", client_gone: "You cancelled", "quality:empty": "Empty answer",
   "quality:truncated": "Cut-off answer", "quality:invalid_json": "Broken JSON", "quality:bad_tool_call": "Broken tool call",

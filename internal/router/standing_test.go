@@ -21,6 +21,7 @@ func TestRuleFor(t *testing.T) {
 		{attemptResult{outcome: "no_answer"}, rule{strikes: 1, last: busyFor, word: "empty"}},
 		{attemptResult{outcome: "model_forbidden"}, rule{strikes: skipAfter, word: "failed"}},
 		{attemptResult{outcome: "model_not_found"}, rule{strikes: skipAfter, word: "failed"}},
+		{attemptResult{outcome: "model_gone"}, rule{skip: goneFor, word: "retired"}},
 		{attemptResult{outcome: "server_error", status: 500}, rule{strikes: 1, word: "failed"}},
 		{attemptResult{outcome: "stream_error", status: 200}, rule{strikes: 1, word: "failed"}},
 		{attemptResult{outcome: "network_error"}, rule{strikes: 1, word: "failed"}},

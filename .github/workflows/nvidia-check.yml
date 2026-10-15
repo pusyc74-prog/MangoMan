@@ -1,0 +1,48 @@
+name: nvidia-check
+
+# Lists NVIDIA's free models and asks each likely coding model one short
+# question: which are alive and how fast. About 30 free-tier requests. Run by
+# hand (or dispatch event_type nvidia-check). The report goes to eval-reports.
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [nvidia-check]
+
+permissions:
+  contents: write # only to publish the report to the eval-reports branch
+
+concurrency:
+  group: nvidia-check
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the test
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: python3 scripts/nvidia-check.py
+      - name: Publish the report to the eval-reports branch
+        if: always()
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: |
+          [ -s report.md ] || exit 0
+          mkdir out && mv report.md out/ && python3 scripts/mask-keys.py out
+          cat out/report.md >> "$GITHUB_STEP_SUMMARY"
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports
+          git worktree add ../reports origin/eval-reports
+          cd ../reports
+          git switch -C eval-reports
+          mkdir -p reports/nvidia-check
+          cp "$GITHUB_WORKSPACE/out/report.md" "reports/nvidia-check/$stamp.md"
+          git add -A
+          git commit -q -m "search test $stamp (run ${{ github.run_id }})" || exit 0
+          git push origin eval-reports
