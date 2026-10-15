@@ -100,7 +100,7 @@ func (st *Store) describe(p Profile) (Roles, string, []string) {
 		`"date": <the main date column or null>, "dims": [<up to 5 columns worth splitting by>], "entity": <the column naming the main thing: customer, product, campaign; or null>, ` +
 		`"questions": [<5 short questions this user would ask about this data, in plain words>]}` +
 		"\nUse column names exactly as written. Never pick an id, phone or code column as a measure."
-	text, err := st.Model(prompt)
+	text, err := st.Model(prompt, true)
 	if err != nil {
 		return roles, "", nil
 	}
@@ -226,7 +226,7 @@ func modelError(err error) error {
 	switch msg := err.Error(); {
 	case strings.Contains(msg, "no_providers_connected"):
 		return errors.New("no free AI is connected yet: add a key in Connections")
-	case strings.Contains(msg, "not reachable"):
+	case strings.Contains(msg, "connection refused"):
 		return errors.New("MangoMan's router is not running: restart MangoMan")
 	default:
 		return errors.New("the free AI models are busy right now: try again in a minute")
@@ -287,7 +287,7 @@ func (st *Store) Ask(ctx context.Context, id, question string, history []Turn, p
 		if ctx.Err() != nil {
 			return Answer{}, ctx.Err()
 		}
-		text, err := st.Model(askPrompt(prof, question, history, steps, fix, len(steps) >= maxQueries))
+		text, err := st.Model(askPrompt(prof, question, history, steps, fix, len(steps) >= maxQueries), true)
 		if err != nil {
 			return Answer{}, modelError(err)
 		}
@@ -491,7 +491,7 @@ func (st *Store) WriteReadout(ctx context.Context, id string, facts []string, fr
 		"Never invent causes the facts do not show; say \"check\" when a cause is unknown. No other text."
 	var out Readout
 	for try := 0; try < 2; try++ {
-		text, err := st.Model(prompt)
+		text, err := st.Model(prompt, false)
 		if err != nil {
 			return Readout{}, modelError(err)
 		}

@@ -208,6 +208,7 @@
   .cs-g2, .cs-g3, .cs-g21, .cs-add { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
+  .cs-wide { display: none; }
   .cs-tile .val { font-size: 23px; }
   .cs-k { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cs-chart { height: 260px; }

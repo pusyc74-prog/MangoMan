@@ -19,7 +19,7 @@ func TestSheetsAPI(t *testing.T) {
 	if w := call(h, "GET", "/mangoman/sheets", "127.0.0.1:4141", authz, ""); w.Code != 503 {
 		t.Fatalf("without a store: %d", w.Code)
 	}
-	s.Sheets = &sheets.Store{Dir: t.TempDir(), Model: func(p string) (string, error) {
+	s.Sheets = &sheets.Store{Dir: t.TempDir(), Model: func(p string, _ bool) (string, error) {
 		if strings.Contains(p, "data analyst") {
 			if strings.Contains(p, "Step 1") {
 				return `{"answer": "Oil sold 3 units."}`, nil

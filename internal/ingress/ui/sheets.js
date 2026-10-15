@@ -365,29 +365,35 @@ const Sheets = (() => {
 
   async function newSheet() { return api("/mangoman/sheets", { method: "POST", body: JSON.stringify({ title: "" }) }); }
 
+  // A new sheet that got no data is removed again when adding fails.
+  async function forget(id, added) { if (!added) { try { await api(`/mangoman/sheets/${id}`, { method: "DELETE" }); } catch (_) {} } }
   async function addFiles(id, files) {
     const p = progress("Making your Chargesheet", [...files.map((f) => `Copying ${f.name}`), "Reading and cleaning the data", "Linking tables and checking totals", "Getting the dashboard ready"]);
+    let fresh = false, added = 0;
     try {
       p.next();
-      if (!id) id = (await newSheet()).id;
+      if (!id) { id = (await newSheet()).id; fresh = true; }
       for (const f of files) {
         const res = await fetch(`/mangoman/sheets/${id}/files?name=${encodeURIComponent(f.name)}`, { method: "POST", body: f, headers: { Authorization: "Bearer " + state.token } });
         const body = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error((body.error && body.error.message) || `HTTP ${res.status}`);
+        added++;
         p.next();
       }
       await load(id, p);
-    } catch (err) { p.fail(err.message); }
+    } catch (err) { if (fresh) await forget(id, added); p.fail(err.message); }
   }
   async function addGoogle(id, link) {
     const p = progress("Linking your Google Sheet", ["Downloading every tab from Google Sheets", "Reading and cleaning the data", "Linking tables and checking totals", "Getting the dashboard ready"]);
+    let fresh = false, added = 0;
     try {
       p.next();
-      if (!id) id = (await newSheet()).id;
+      if (!id) { id = (await newSheet()).id; fresh = true; }
       await api(`/mangoman/sheets/${id}/google`, { method: "POST", body: JSON.stringify({ url: link }) });
+      added = 1;
       p.next();
       await load(id, p);
-    } catch (err) { p.fail(err.message); }
+    } catch (err) { if (fresh) await forget(id, added); p.fail(err.message); }
   }
   async function load(id, p) {
     const t = setTimeout(() => p.next(), 900);
@@ -533,6 +539,8 @@ const Sheets = (() => {
     const body = el("div", { id: "cs-body" });
     nodes.push(body);
     host().replaceChildren(...nodes);
+    const sel = host().querySelector('.cs-tab[aria-selected="true"]');
+    if (sel) sel.scrollIntoView({ block: "nearest", inline: "center" });
     const idx = rowsNow();
     if (!idx.length) { body.append(el("p", { class: "cs-empty" }, "No rows match these filters.")); return; }
     const draw = { overview, trends, breakdown, drill, spread, quality, table: allRows, readout }[S.tab] || packs().find((p) => p.id === S.tab).draw;
@@ -858,7 +866,7 @@ const Sheets = (() => {
         yAxis: axis({ type: "category", data: kb, inverse: true, splitLine: { show: false }, axisLabel: { width: 120, overflow: "truncate" } }),
         visualMap: heat(max, (v) => fmtVal(m, v, true)),
         tooltip: { trigger: "item", formatter: (p) => `{t|${rt(ka[p.value[0]])} · ${rt(kb[p.value[1]])}}\n${rt(fmtVal(m, p.value[2]))}` },
-        series: [{ type: "heatmap", data: heatData(data, max), label: { show: ka.length * kb.length <= 48, formatter: (p) => (p.value[2] ? fmtVal(m, p.value[2], true) : ""), fontSize: 11 }, itemStyle: { borderColor: css("--surface"), borderWidth: 2, borderRadius: 3 } }],
+        series: [{ type: "heatmap", data: heatData(data, max), label: { show: ka.length * kb.length <= 48 && n.clientWidth >= 600, formatter: (p) => (p.value[2] ? fmtVal(m, p.value[2], true) : ""), fontSize: 11 }, itemStyle: { borderColor: css("--surface"), borderWidth: 2, borderRadius: 3 } }],
       }, (p) => { S.dims[a.name] = new Set([ka[p.value[0]]]); S.dims[b.name] = new Set([kb[p.value[1]]]); render(); }),
       () => ({ head: [`${a.name} \\ ${b.name}`, ...kb], rows: ka.map((x) => [x, ...kb.map((y) => fmtVal(m, cell.get(x + "\u0000" + y) || 0))]), right: kb.map((_, i) => i + 1) }), { size: "tall" })));
     }
@@ -1101,13 +1109,13 @@ const Sheets = (() => {
       el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "Products with nothing to fix"), el("div", { class: "val" }, fmtInt(clean)), el("div", { class: "foot" }, `of ${plural(idx.length, "product")}`)),
       el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "In stock"), el("div", { class: "val" }, fmtInt(live)), el("div", { class: "foot" }, `${fmtInt(idx.length - live)} out of stock cannot show in ads`))));
     const sorted = [...res].sort((a, b) => b.live - a.live || b.rows.length - a.rows.length);
-    const t = el("table", { class: "cs-table" }, el("thead", {}, el("tr", {}, ["Check", "Missing", "In stock", "Filled", ""].map((h, j) => el("th", { class: j && j < 3 ? "r" : null }, h)))),
+    const t = el("table", { class: "cs-table" }, el("thead", {}, el("tr", {}, ["Check", "Missing", "In stock", "Filled", ""].map((h, j) => el("th", { class: j === 3 || j === 4 ? "cs-wide" : j ? "r" : null }, h)))),
       el("tbody", {}, sorted.map((c) => {
         const fill = c.n ? ((c.n - c.rows.length) / c.n) * 100 : 100;
         const tr = el("tr", { class: c.rows.length ? "click" : null }, el("td", {}, el("b", {}, c.label), el("div", { class: "cs-small cs-muted" }, c.rows.length ? c.fix : "All filled.")),
           el("td", { class: "r" }, `${fmtInt(c.rows.length)} / ${fmtInt(c.n)}`), el("td", { class: "r" }, el("b", {}, fmtInt(c.live))),
-          el("td", {}, el("div", { class: "cs-bar-cell" }, el("i", { style: { width: `${Math.max(2, fill)}%`, background: fill >= 95 ? "var(--c1)" : fill >= 70 ? "var(--c5)" : "var(--down)" } }), pct(fill))),
-          el("td", {}, c.rows.length ? el("span", { class: "cs-mini" }, "See products") : ""));
+          el("td", { class: "cs-wide" }, el("div", { class: "cs-bar-cell" }, el("i", { style: { width: `${Math.max(2, fill)}%`, background: fill >= 95 ? "var(--c1)" : fill >= 70 ? "var(--c5)" : "var(--down)" } }), pct(fill))),
+          el("td", { class: "cs-wide" }, c.rows.length ? el("span", { class: "cs-mini" }, "See products") : ""));
         if (c.rows.length) tr.addEventListener("click", () => showRows(`Missing: ${c.label}`, c.rows));
         return tr;
       })));
@@ -1121,11 +1129,11 @@ const Sheets = (() => {
       }));
       body.append(el("div", { class: "cs-mt" }, card("Product type × check", "Share filled. Darker green is better; click a square to see the products missing it.", (n) => chart(n, {
         grid: { left: 8, right: 16, top: 8, bottom: 40, containLabel: true },
-        xAxis: axis({ type: "category", data: res.map((c) => c.label.replace(" (clothing)", "")), splitLine: { show: false }, axisLabel: { interval: 0, rotate: 25, width: 100, overflow: "truncate" } }),
-        yAxis: axis({ type: "category", data: types, inverse: true, splitLine: { show: false }, axisLabel: { width: 150, overflow: "truncate" } }),
+        xAxis: axis({ type: "category", data: res.map((c) => c.label.replace(" (clothing)", "")), splitLine: { show: false }, axisLabel: { interval: 0, rotate: n.clientWidth < 600 ? 60 : 25, width: 100, overflow: "truncate" } }),
+        yAxis: axis({ type: "category", data: types, inverse: true, splitLine: { show: false }, axisLabel: { width: n.clientWidth < 600 ? 80 : 150, overflow: "truncate" } }),
         visualMap: heat(100, "{value}%"),
         tooltip: { trigger: "item", formatter: (p) => `{t|${rt(types[p.value[1]])}}\n${rt(res[p.value[0]].label)}: ${p.value[2] === "-" ? "does not apply" : rt(p.value[2] + "% filled")}` },
-        series: [{ type: "heatmap", data: heatData(data, 100), label: { show: true, formatter: (p) => (p.value[2] === "-" ? "" : p.value[2] + "%"), fontSize: 11 }, itemStyle: { borderColor: css("--surface"), borderWidth: 2, borderRadius: 3 } }],
+        series: [{ type: "heatmap", data: heatData(data, 100), label: { show: n.clientWidth >= 600, formatter: (p) => (p.value[2] === "-" ? "" : p.value[2] + "%"), fontSize: 11 }, itemStyle: { borderColor: css("--surface"), borderWidth: 2, borderRadius: 3 } }],
       }, (p) => { const c = res[p.value[0]]; const ty = types[p.value[1]]; const rows = c.rows.filter((i) => cell(f.type, i) === ty); if (rows.length) showRows(`${ty}: missing ${c.label}`, rows); }),
       () => ({ head: ["Type", ...res.map((c) => c.label)], rows: types.map((ty, y) => [ty, ...res.map((_, x) => { const v = data.find((d) => d[0] === x && d[1] === y)[2]; return v === "-" ? "n/a" : v + "%"; })]) }), { size: "tall" })));
     }
@@ -1466,6 +1474,7 @@ const Sheets = (() => {
     if (S.view && S.view.sheet.id === id && S.data && S.data.id === id && host().querySelector("#cs-body")) { if (tab && tab !== S.tab) { S.tab = tab; render(); } return; }
     open(id, tab);
   }
+  document.addEventListener("keydown", (e) => { const a = $("cs-ask"); if (e.key === "Escape" && a) a.remove(); });
   // the page's dark mode changed: charts read colours at draw time
   if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (S.data && host().querySelector("#cs-body")) render(); });
   return { route, leave: () => { stopLive(); disposeCharts(); } };

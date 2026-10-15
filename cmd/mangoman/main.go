@@ -374,7 +374,8 @@ func serve(port int, opened func(connected int)) error {
 		},
 		Arch: archClient(dir, cat, cfg, rt),
 		Ask:  func(p string) (string, error) { a, _, err := askRouter(p); return a, err }}
-	srv.Sheets = &sheets.Store{Dir: filepath.Join(dir, "chargesheets"), Model: srv.Ask}
+	srv.Sheets = &sheets.Store{Dir: filepath.Join(dir, "chargesheets"),
+		Model: func(p string, asJSON bool) (string, error) { a, _, err := askRouterAs(p, asJSON); return a, err }}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
 		return fmt.Errorf("cannot listen on %s: %w", srv.Addr(), err)
@@ -807,15 +808,23 @@ func cmdTest(args []string) error {
 
 // askRouter sends one question through the running router and returns the
 // answer and the response headers (which model answered).
-func askRouter(prompt string) (string, http.Header, error) {
+func askRouter(prompt string) (string, http.Header, error) { return askRouterAs(prompt, false) }
+
+// askRouterAs asks for a JSON object when asJSON: the router then picks
+// among models ranked for structured answers (class extraction).
+func askRouterAs(prompt string, asJSON bool) (string, http.Header, error) {
 	cfg, err := config.Load()
 	if err != nil {
 		return "", nil, err
 	}
-	body, _ := json.Marshal(map[string]any{
+	in := map[string]any{
 		"model":    "free/auto",
 		"messages": []map[string]string{{"role": "user", "content": prompt}},
-	})
+	}
+	if asJSON {
+		in["response_format"] = map[string]string{"type": "json_object"}
+	}
+	body, _ := json.Marshal(in)
 	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("http://127.0.0.1:%d/v1/chat/completions", cfg.Port), bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+cfg.Token)
 	req.Header.Set("Content-Type", "application/json")

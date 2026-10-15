@@ -41,7 +41,7 @@ func download(ctx context.Context, id string) ([]byte, string, error) {
 	req.Header.Set("User-Agent", "MangoMan Chargesheets")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, "", fmt.Errorf("could not reach Google Sheets: %w", err)
+		return nil, "", errors.New("could not reach Google Sheets: check the internet connection and try again")
 	}
 	defer resp.Body.Close()
 	switch {
@@ -56,7 +56,7 @@ func download(ctx context.Context, id string) ([]byte, string, error) {
 	}
 	b, err := io.ReadAll(io.LimitReader(resp.Body, MaxFile+1))
 	if err != nil {
-		return nil, "", fmt.Errorf("the download from Google Sheets broke off: %w", err)
+		return nil, "", errors.New("the download from Google Sheets broke off: try again")
 	}
 	if len(b) > MaxFile {
 		return nil, "", errors.New("this Google Sheet is over 50 MB")

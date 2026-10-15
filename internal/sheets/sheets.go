@@ -86,7 +86,7 @@ func (s Sheet) Live() bool {
 type Store struct {
 	Dir    string
 	Python string                                                       // default python3
-	Model  func(prompt string) (string, error)                          // a free model; nil = no words from models
+	Model  func(prompt string, asJSON bool) (string, error)             // a free model; nil = no words from models
 	Fetch  func(ctx context.Context, id string) ([]byte, string, error) // a Google Sheet as .xlsx; nil = docs.google.com
 
 	mu    sync.Mutex

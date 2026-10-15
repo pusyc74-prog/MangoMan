@@ -213,7 +213,7 @@ func TestAskLoop(t *testing.T) {
 		`{"answer": "Amazon sold the most: ₹4,37,300.", "chart": {"step": 1, "type": "bar", "x": "Channel", "y": ["total", "nope"]}}`,
 	}
 	var prompts []string
-	st.Model = func(p string) (string, error) {
+	st.Model = func(p string, _ bool) (string, error) {
 		prompts = append(prompts, p)
 		r := replies[0]
 		replies = replies[1:]
@@ -244,7 +244,7 @@ func TestAskLoop(t *testing.T) {
 
 func TestDescribeChecksTheModel(t *testing.T) {
 	needPython(t, true)
-	st := &Store{Dir: t.TempDir(), Model: func(string) (string, error) {
+	st := &Store{Dir: t.TempDir(), Model: func(string, bool) (string, error) {
 		return `{"about": "Orders of a soap brand.", "measures": ["Order ID", "Amount", "Nope"], "date": "City", "dims": ["Channel", "Amount"],
 			"entity": "Customers · Name", "questions": ["Which channel sells most?", ""]}`, nil
 	}}
