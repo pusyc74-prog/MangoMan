@@ -416,8 +416,8 @@ func (g *Guardian) prodQA(ctx context.Context) (string, bool) {
 	var b strings.Builder
 	ok := true
 	for _, k := range g.Cfg.Checks {
-		if k.Log != "" {
-			continue // only new log lines count; the next watch run reads them
+		if k.Log != "" || k.Expiry != "" {
+			continue // only new log lines count, and a date running out is not about the change
 		}
 		if d := g.check(ctx, k, map[string]int64{}); d != "" {
 			ok = false

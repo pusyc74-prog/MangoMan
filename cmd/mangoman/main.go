@@ -360,7 +360,7 @@ func serve(port int, opened func(connected int)) error {
 
 	srv := &ingress.Server{Router: rt, Cfg: cfg, Port: port, Version: version, Started: time.Now(),
 		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl", Radar: rd, Brain: br,
-		// The Self Healing System: each connected app is checked every 5 minutes while MangoMan runs.
+		// Guardian: each app connected on its page is checked every 5 minutes while MangoMan runs.
 		Watch: func(ctx context.Context, path string) error {
 			g, err := loadGuardian(path)
 			if err != nil {
@@ -370,7 +370,8 @@ func serve(port int, opened func(connected int)) error {
 			g.Logf = func(f string, a ...any) { logger.Printf("%s: %s", g.Cfg.App, fmt.Sprintf(f, a...)) }
 			return g.Serve(ctx, 5*time.Minute, func([]guardian.Event) {})
 		},
-		Arch: archClient(dir, cat, cfg, rt)}
+		Arch: archClient(dir, cat, cfg, rt),
+		Ask:  func(p string) (string, error) { a, _, err := askRouter(p); return a, err }}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
 		return fmt.Errorf("cannot listen on %s: %w", srv.Addr(), err)

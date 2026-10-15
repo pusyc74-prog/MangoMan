@@ -282,7 +282,7 @@ func TestPagesHaveAnIcon(t *testing.T) {
 	}
 }
 
-// The Self Healing System page: an app with only an address is watched; a
+// The Guardian page: an app with only an address is watched; a
 // folder must be a Git project; a project's own guardian.json is kept;
 // disconnect stops the watch and takes the app off the page.
 // quote makes a JSON string (Windows paths have backslashes).
@@ -321,7 +321,8 @@ func TestHealingConnect(t *testing.T) {
 		t.Fatalf("watching %s", c)
 	}
 	cfg, err := guardian.Load(got.Config)
-	if err != nil || cfg.Repo != "" || len(cfg.Checks) != 1 || cfg.Checks[0].URL != "https://shop.example/" || len(cfg.Checks[0].Fix) != 0 {
+	if err != nil || cfg.Repo != "" || len(cfg.Checks) != 3 || cfg.Checks[0].URL != "https://shop.example/" || len(cfg.Checks[0].Fix) != 0 ||
+		cfg.Checks[1].Browse == "" || cfg.Checks[1].Every != "24h" || cfg.Checks[2].Expiry == "" {
 		t.Fatalf("%v %+v", err, cfg)
 	}
 
@@ -391,5 +392,64 @@ func TestArchSetting(t *testing.T) {
 	w := call(h, "POST", "/mangoman/arch", "127.0.0.1:4141", authz, `{"share":true}`)
 	if err := json.Unmarshal(w.Body.Bytes(), &v); err != nil || !v.Share || !s.Cfg.SharingLessons() {
 		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+}
+
+// Journeys: the owner's words become steps (here from a stand-in model),
+// tried once, saved, shown in plain words, and can be removed.
+func TestHealingJourney(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("MANGOMAN_HOME", home)
+	h, s := dashServer(t, mem{})
+	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Write([]byte(`<html><body><a href="/">Shop</a><p>Cart</p></body></html>`))
+	}))
+	defer site.Close()
+	w := call(h, "POST", "/mangoman/healing/connect", "127.0.0.1:4141", authz, `{"name":"Shop","url":"`+site.URL+`","builder":"Lovable"}`)
+	var got struct{ Config string }
+	_ = json.Unmarshal(w.Body.Bytes(), &got)
+	body := `{"config":` + quote(got.Config) + `,"text":"open the shop and see the cart"}`
+	if w := call(h, "POST", "/mangoman/healing/journey", "127.0.0.1:4141", authz, body); w.Code != 503 {
+		t.Fatalf("no model: %d %s", w.Code, w.Body)
+	}
+	answer := "Here you go:\n```json\n[{\"click\": \"Shop\"}, {\"see\": \"Cart\"}]\n```"
+	s.Ask = func(string) (string, error) { return answer, nil }
+	if w := call(h, "POST", "/mangoman/healing/journey", "127.0.0.1:4141", authz, `{"config":"/etc/x.json","text":"x"}`); w.Code != 404 {
+		t.Fatalf("only connected apps: %d", w.Code)
+	}
+	w = call(h, "POST", "/mangoman/healing/journey", "127.0.0.1:4141", authz, body)
+	if exec.Command("python3", "-c", "import playwright").Run() != nil {
+		if w.Code != 503 {
+			t.Fatalf("no browser: %d %s", w.Code, w.Body)
+		}
+		return
+	}
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"works": true`) || !strings.Contains(w.Body.String(), `See \"Cart\"`) {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	var list []GuardianProject
+	_ = json.Unmarshal(call(h, "GET", "/mangoman/guardian", "127.0.0.1:4141", authz, "").Body.Bytes(), &list)
+	if len(list) != 1 || list[0].Builder != "Lovable" || len(list[0].Checks) != 4 || list[0].Checks[3].Kind != "journey" || len(list[0].Checks[3].Steps) != 2 {
+		t.Fatalf("%+v", list)
+	}
+	name := list[0].Checks[3].Name
+	if w := call(h, "POST", "/mangoman/healing/remove", "127.0.0.1:4141", authz, `{"config":`+quote(got.Config)+`,"name":"site"}`); w.Code != 404 {
+		t.Fatalf("only journeys can be removed: %d", w.Code)
+	}
+	if w := call(h, "POST", "/mangoman/healing/remove", "127.0.0.1:4141", authz, `{"config":`+quote(got.Config)+`,"name":`+quote(name)+`}`); w.Code != 200 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+}
+
+func TestParseSteps(t *testing.T) {
+	for _, bad := range []string{"no list", `[]`, `[{"click":"a","see":"b"}]`, `[{"tap":"a"}]`, `[{"fill":"Email"}]`,
+		`[{"go":"file:///etc/passwd"}]`, `[{"go":"https://other.example/"}]`, `[{"go":"//other.example/x"}]`, `[{"go":"javascript:alert(1)"}]`,
+		`[{"click":"Add to cart"},{"click":"Place order"}]`, `[{"click":"Pay now"}]`} {
+		if _, err := parseSteps(bad, "https://shop.example/"); err == nil {
+			t.Fatalf("accepted %s", bad)
+		}
+	}
+	if st, err := parseSteps(`[{"go":"/"},{"go":"https://shop.example/cart"},{"click":"Checkout"},{"fill":"Email","with":"a@b.c"},{"see":"Hi"}]`, "https://shop.example/"); err != nil || len(st) != 5 {
+		t.Fatal(st, err)
 	}
 }

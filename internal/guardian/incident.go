@@ -94,9 +94,14 @@ func (g *Guardian) Open(events []Event) []string {
 	if g.Cfg.Repo == "" || g.Agent == nil {
 		return nil
 	}
+	dates := map[string]bool{}
+	for _, k := range g.Cfg.Checks {
+		dates[k.Name] = k.Expiry != ""
+	}
 	var ids []string
 	for _, e := range events {
-		if e.Status == "ok" || e.Check == "dev" { // drift in dev is for the owner, not a code fix
+		// Drift in dev and dates running out are for the owner, not a code fix.
+		if e.Status == "ok" || e.Check == "dev" || dates[e.Check] {
 			continue
 		}
 		if id := g.add(Incident{Kind: "fix", Check: e.Check, Problem: e.Detail, Cause: e.Cause, Opened: e.Time}); id != "" {

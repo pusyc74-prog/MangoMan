@@ -12,6 +12,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/pusyc74-prog/mangoman/internal/qa"
 )
 
 func TestGuardianWatchesFixesAndReports(t *testing.T) {
@@ -58,8 +60,10 @@ func TestGuardianWatchesFixesAndReports(t *testing.T) {
 	if j := by["jobs"]; j.Status != "failing" || !strings.Contains(j.Detail, "3 jobs stuck") {
 		t.Fatalf("jobs: %+v", j)
 	}
-	if len(sent) != 2 || asked.Load() != 2 {
-		t.Fatalf("webhook %d, asked %d", len(sent), asked.Load())
+	// No code: each failure also gets a fix request for the app builder
+	// (a cause and a request each, so 4 model calls).
+	if len(sent) != 2 || asked.Load() != 4 || by["jobs"].Request == "" {
+		t.Fatalf("webhook %d, asked %d, request %q", len(sent), asked.Load(), by["jobs"].Request)
 	}
 
 	f, _ := os.OpenFile(logf, os.O_APPEND|os.O_WRONLY, 0)
@@ -495,5 +499,119 @@ not json
 	}
 	if ProjectName("/x/My Shop") != "my-shop" {
 		t.Fatal(ProjectName("/x/My Shop"))
+	}
+}
+
+func TestOutsideChecks(t *testing.T) {
+	// Load: the new kinds count as one each; a journey needs prod.url and valid steps.
+	dir := t.TempDir()
+	path := filepath.Join(dir, "guardian.json")
+	for bad, why := range map[string]string{
+		`{"app":"a","checks":[{"name":"x","browse":"https://a.example","expiry":"https://a.example"}]}`:       "two kinds",
+		`{"app":"a","checks":[{"name":"x","journey":[{"click":"Buy"}]}]}`:                                     "no prod.url",
+		`{"app":"a","prod":{"url":"https://a.example"},"checks":[{"name":"x","journey":[{"fill":"Email"}]}]}`: "fill without with",
+		`{"app":"a","checks":[{"name":"x","browse":"https://a.example","every":"daily"}]}`:                    "bad every",
+	} {
+		os.WriteFile(path, []byte(bad), 0o644)
+		if _, err := Load(path); err == nil {
+			t.Fatalf("accepted (%s): %s", why, bad)
+		}
+	}
+	os.WriteFile(path, []byte(`{"app":"a","prod":{"url":"https://a.example"},"checks":[{"name":"x","journey":[{"click":"Shop"},{"see":"Cart"}],"every":"1h"}]}`), 0o644)
+	if _, err := Load(path); err != nil {
+		t.Fatal(err)
+	}
+
+	// due: once per period, noted in the state.
+	state := map[string]int64{}
+	k := Check{Name: "pages", Every: "24h"}
+	now := time.Unix(1_000_000, 0)
+	if !due(k, state, now) {
+		t.Fatal("never ran: due")
+	}
+	state["every:pages"] = now.Unix() // Run notes it after the check
+	if due(k, state, now.Add(23*time.Hour)) || !due(k, state, now.Add(25*time.Hour)) || !due(Check{Name: "site"}, state, now) {
+		t.Fatalf("due: %v", state)
+	}
+
+	// findings: a short summary with the first three.
+	f := []qa.Finding{{Kind: "page_error", Page: "/a", Detail: "x is undefined"}, {Kind: "broken_image", Page: "/b"}, {Kind: "http_error", Page: "/c"}, {Kind: "http_error", Page: "/d"}}
+	if got := findings(5, f); !strings.HasPrefix(got, "4 problems on 5 pages checked") || !strings.Contains(got, "x is undefined") || !strings.Contains(got, "and 1 more") {
+		t.Fatal(got)
+	}
+	if findings(5, nil) != "" {
+		t.Fatal("no findings, no problem")
+	}
+
+	// A fix request without a model is plain and has the facts.
+	g := &Guardian{Cfg: &Config{App: "shop", Prod: Env{URL: "https://shop.example/"}}}
+	if r := g.request(Check{Name: "pages"}, "page_error on /a", ""); !strings.Contains(r, "https://shop.example/") || !strings.Contains(r, "page_error on /a") {
+		t.Fatal(r)
+	}
+	// One model call per problem: the same problem with other numbers reuses it.
+	var asked int
+	g.Ask = func(string) (string, error) { asked++; return "Fix the slow page.", nil }
+	g.request(Check{Name: "site"}, "slow: 6100 ms", "")
+	g.request(Check{Name: "pages"}, "x", "")
+	if g.request(Check{Name: "site"}, "slow: 7300 ms", "") != "Fix the slow page." || asked != 2 {
+		t.Fatalf("asked %d times", asked)
+	}
+}
+
+func TestExpiry(t *testing.T) {
+	site := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer site.Close()
+	rdap := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/domain/shop.example":
+			w.Write([]byte(`{"events":[{"eventAction":"registration","eventDate":"2020-01-01T00:00:00Z"},{"eventAction":"expiration","eventDate":"2026-11-01T00:00:00Z"}]}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer rdap.Close()
+	old := rdapBase
+	rdapBase = rdap.URL + "/domain/"
+	defer func() { rdapBase = old }()
+
+	// The test server's certificate is not trusted: reported as a certificate problem.
+	if got := expiry(context.Background(), site.URL, time.Now()); !strings.Contains(got, "security certificate") {
+		t.Fatalf("untrusted certificate: %q", got)
+	}
+	// Domain: found by trying shorter names, a problem 30 days before its end.
+	end, name, ok := domainEnd(context.Background(), "www.shop.example")
+	if !ok || name != "shop.example" || end.Year() != 2026 {
+		t.Fatal(end, name, ok)
+	}
+	if got := expiry(context.Background(), "http://www.shop.example/", time.Date(2026, 10, 15, 0, 0, 0, 0, time.UTC)); !strings.Contains(got, "17 days left") {
+		t.Fatalf("domain soon: %q", got)
+	}
+	if got := expiry(context.Background(), "http://www.shop.example/", time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)); got != "" {
+		t.Fatalf("domain fine: %q", got)
+	}
+	if _, _, ok := domainEnd(context.Background(), "nothing.test"); ok {
+		t.Fatal("no registry answer: no domain date")
+	}
+}
+
+func TestStrip(t *testing.T) {
+	dir := t.TempDir()
+	now := time.Date(2026, 10, 15, 12, 0, 0, 0, time.UTC)
+	g := &Guardian{Cfg: &Config{Checks: []Check{{Name: "site"}, {Name: "dates", Expiry: "https://a.example"}}}, Dir: dir}
+	var b strings.Builder
+	for _, e := range []Event{
+		{Time: now.Add(-25 * time.Hour), Check: "site", Status: "failing"}, // too old
+		{Time: now.Add(-23*time.Hour - 50*time.Minute), Check: "site", Status: "ok"},
+		{Time: now.Add(-10 * time.Minute), Check: "site", Status: "ok"},
+		{Time: now.Add(-5 * time.Minute), Check: "site", Status: "failing"},
+		{Time: now.Add(-40 * time.Minute), Check: "dates", Status: "failing"}, // a date, not the app
+	} {
+		j, _ := json.Marshal(e)
+		b.Write(append(j, '\n'))
+	}
+	os.WriteFile(filepath.Join(dir, "guardian-history.jsonl"), []byte(b.String()), 0o600)
+	s := g.Strip(now)
+	if len(s) != 48 || s[0] != "ok" || s[47] != "bad" || s[46] != "" || s[20] != "" {
+		t.Fatalf("%v", s)
 	}
 }

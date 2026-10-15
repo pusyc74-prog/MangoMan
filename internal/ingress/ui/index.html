@@ -9,31 +9,45 @@
 <script src="app.js" defer></script>
 </head>
 <body class="app">
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-agents" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-guardian" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3 8.3-7 10-4-1.7-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-sheet" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></symbol>
+  <symbol id="i-templates" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-files" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M6.5 8h11v3a5.5 5.5 0 0 1-11 0zM12 16.5V21"/></symbol>
+  <symbol id="i-usage" viewBox="0 0 24 24"><path d="M5 20v-8M11 20V5M17 20v-5M3 20h18"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v5h-5"/></symbol>
+</svg>
+
 <aside class="nav" id="nav" aria-label="MangoMan" hidden>
   <div class="brand">
     <span class="mark" aria-hidden="true"></span>
     <h1>MangoMan</h1>
   </div>
-  <button type="button" class="primary new-task" id="to-code">+ New task</button>
+  <button type="button" class="primary new-task" id="to-code"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>New task</button>
   <nav class="nav-main" aria-label="Sections">
-    <a href="#agents" data-view="agents">Super Agents</a>
-    <a href="#healing" data-view="healing">Self Healing System</a>
-    <a href="#chargesheets" data-view="chargesheets">Chargesheets</a>
-    <a href="#templates" data-view="templates">Templates</a>
-    <a href="#files" data-view="files">My Files</a>
-    <a href="#history" data-view="history">History</a>
+    <a href="#agents" data-view="agents"><svg class="ico" aria-hidden="true"><use href="#i-agents"/></svg>Super Agents</a>
+    <a href="#healing" data-view="healing"><svg class="ico" aria-hidden="true"><use href="#i-guardian"/></svg>Guardian<span class="nav-flag" id="nav-guardian-flag" hidden>Needs you</span></a>
+    <a href="#chargesheets" data-view="chargesheets"><svg class="ico" aria-hidden="true"><use href="#i-sheet"/></svg>Chargesheets</a>
+    <a href="#templates" data-view="templates"><svg class="ico" aria-hidden="true"><use href="#i-templates"/></svg>Templates</a>
+    <a href="#files" data-view="files"><svg class="ico" aria-hidden="true"><use href="#i-files"/></svg>My Files</a>
+    <a href="#history" data-view="history"><svg class="ico" aria-hidden="true"><use href="#i-history"/></svg>History</a>
   </nav>
   <nav class="nav-bottom" aria-label="Setup">
-    <a href="#connections" data-view="connections">Connections</a>
-    <a href="#usage" data-view="usage">Usage</a>
-    <a href="#settings" data-view="settings">Settings</a>
+    <a href="#connections" data-view="connections"><svg class="ico" aria-hidden="true"><use href="#i-plug"/></svg>Connections</a>
+    <a href="#usage" data-view="usage"><svg class="ico" aria-hidden="true"><use href="#i-usage"/></svg>Usage</a>
+    <a href="#settings" data-view="settings"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg>Settings</a>
   </nav>
 </aside>
 
 <div class="page">
 <header class="top">
   <p class="runline" id="runline">Connecting to the router…</p>
-  <button type="button" class="ghost" id="refresh">Refresh</button>
+  <button type="button" class="ghost icon-btn" id="refresh"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg>Refresh</button>
   <button type="button" class="fab" id="fab" hidden aria-controls="drawer" aria-expanded="false">
     <span class="fab-dot" aria-hidden="true"></span><span id="fab-text">New models</span>
   </button>
@@ -76,71 +90,14 @@
   </div>
 
   <div class="view" id="view-healing" hidden>
-    <div class="view-head">
-      <h2>Self Healing System</h2>
-      <p class="sub">MangoMan watches your app, finds what broke and why, and fixes it in a safe copy. Nothing changes on your live app until you say yes.</p>
+    <div class="view-head guardian-head">
+      <h2>Guardian</h2>
+      <p class="sub">Guardian watches your apps the way a visitor would, tells you what broke and why, and helps you fix it. Nothing changes on your live app without your OK.</p>
     </div>
-    <ol class="cards steps4">
-      <li class="card"><h3>1. Watches</h3><p>Every 5 minutes it checks that your app is up, answers normally and answers in under 5 seconds.</p></li>
-      <li class="card"><h3>2. Finds the cause</h3><p>When something fails, it shows what broke and the likely reason, from the error and, when it has your code, your latest changes.</p></li>
-      <li class="card"><h3>3. Fixes it safely</h3><p>It writes the fix in a separate copy of your app, has a test written for it, and tests it there. If the test fails, it tries again.</p></li>
-      <li class="card"><h3>4. Asks you first</h3><p>You approve here. It then goes live and is tested again. If that test fails, MangoMan takes the change out and publishes the last good version again.</p></li>
-    </ol>
-    <section class="block" aria-labelledby="h-heal-why">
-      <div class="block-head"><h2 id="h-heal-why">Why it helps</h2></div>
-      <ul class="plain">
-        <li>Problems are caught within 5 minutes, not when a customer complains.</li>
-        <li>You get the likely cause in plain words, not just "site down".</li>
-        <li>Fixes are tested before they reach your customers, and undone if they fail.</li>
-        <li>Your live app is never changed without your approval.</li>
-        <li>It costs nothing extra: it uses the same free AI as the rest of MangoMan.</li>
-      </ul>
-    </section>
-    <section class="block" aria-labelledby="h-heal-what">
-      <div class="block-head">
-        <h2 id="h-heal-what">Works with apps built anywhere</h2>
-        <p class="sub">Built with MangoMan, Lovable, Bolt, Replit, Bubble, Webflow, Shopify, WordPress or by a developer: what MangoMan can do depends on what it can reach.</p>
-      </div>
-      <div class="table-wrap">
-        <table class="grid">
-          <thead><tr><th scope="col"></th><th scope="col">Live address only</th><th scope="col">Code on this computer, in Git</th></tr></thead>
-          <tbody>
-            <tr><th scope="row">Checks it is up and fast</th><td>Yes</td><td>Yes</td></tr>
-            <tr><th scope="row">Tells you what broke and why</th><td>Yes</td><td>Yes, using your recent changes too</td></tr>
-            <tr><th scope="row">Writes and tests the fix</th><td>No: it cannot see the code</td><td>Yes, in a separate copy</td></tr>
-            <tr><th scope="row">Puts the fix live after your OK</th><td>No</td><td>Yes, if it knows how the app is published</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="dim">MangoMan finds how an app is published on its own for Vercel, Netlify and Docker. Most app builders can send your code to GitHub: copy it to this computer, then connect that folder for fixes too.</p>
-    </section>
-    <section class="block" aria-labelledby="h-heal-connect">
-      <div class="block-head">
-        <h2 id="h-heal-connect">Connect your app</h2>
-        <p class="sub">MangoMan watches while it is open on this computer.</p>
-      </div>
-      <form class="heal-form" id="heal-form">
-        <label for="heal-name">App name</label>
-        <input id="heal-name" maxlength="60" required placeholder="My shop" autocomplete="off">
-        <label for="heal-url">Live address</label>
-        <input id="heal-url" type="url" required placeholder="https://myshop.com" autocomplete="off">
-        <label for="heal-folder">Code folder for fixes (optional)</label>
-        <input id="heal-folder" list="heal-folders" placeholder="Leave empty to watch only" autocomplete="off">
-        <datalist id="heal-folders"></datalist>
-        <p class="dim">With a folder, MangoMan adds a guardian.json file, a line to .gitignore and a "dev" branch for its safe copy, and publishes that copy as a test version when it knows how (Vercel, Netlify). Your live branch only changes when you approve.</p>
-        <p><button type="submit" class="primary" id="heal-connect">Connect and start watching</button></p>
-        <p class="msg" id="heal-msg" role="status"></p>
-      </form>
-    </section>
-    <section class="block" aria-labelledby="h-heal-apps">
-      <div class="block-head"><h2 id="h-heal-apps">Your apps</h2></div>
-      <ul class="cards" id="heal-apps"></ul>
-      <p class="empty" id="heal-empty">No apps connected yet.</p>
-    </section>
     <section class="block" aria-labelledby="h-guardian" id="guardian-block" hidden>
       <div class="block-head">
-        <h2 id="h-guardian">Fixes and changes</h2>
-        <p class="sub">Fixes and changes on their way to production. Each was tested in development; nothing goes live without your approval.</p>
+        <h2 id="h-guardian">Fixes waiting for your OK</h2>
+        <p class="sub">Each was tested in a safe copy first. Nothing goes live until you approve it.</p>
       </div>
       <div class="table-wrap">
         <table class="grid" id="guardian-list">
@@ -149,6 +106,69 @@
         </table>
       </div>
     </section>
+    <section class="block" aria-labelledby="h-heal-apps">
+      <div class="block-head"><h2 id="h-heal-apps">Your apps</h2></div>
+      <ul class="apps" id="heal-apps"></ul>
+      <div class="empty-state" id="heal-empty">
+        <p class="empty-title">No apps yet</p>
+        <p>Connect a website or app below. A live address is enough to start.</p>
+      </div>
+    </section>
+    <section class="block" aria-labelledby="h-heal-connect">
+      <div class="block-head">
+        <h2 id="h-heal-connect">Connect an app</h2>
+        <p class="sub">Guardian watches while MangoMan is open on this computer.</p>
+      </div>
+      <form class="panel heal-form" id="heal-form">
+        <fieldset class="modes-pick">
+          <legend>What can Guardian reach?</legend>
+          <label class="pick"><input type="radio" name="heal-mode" value="watch" checked>
+            <span><b>Only the live address</b><small>Any app, built anywhere. Guardian watches and diagnoses, and writes the fix request for you.</small></span></label>
+          <label class="pick"><input type="radio" name="heal-mode" value="fix">
+            <span><b>The code, on this computer</b><small>A Git project. Guardian also fixes the cause in a safe copy and asks before it goes live.</small></span></label>
+        </fieldset>
+        <div class="fields">
+          <label for="heal-name">App name</label>
+          <input id="heal-name" maxlength="60" required placeholder="My shop" autocomplete="off">
+          <label for="heal-url">Live address</label>
+          <input id="heal-url" type="url" required placeholder="https://myshop.com" autocomplete="off">
+          <label for="heal-builder" data-mode="watch">Built with</label>
+          <select id="heal-builder" data-mode="watch">
+            <option value="">Not sure, or a developer</option>
+            <option>Lovable</option><option>Bolt</option><option>Replit</option><option>v0</option><option>Bubble</option>
+            <option>Webflow</option><option>Wix</option><option>Shopify</option><option>WordPress</option>
+          </select>
+          <label for="heal-folder" data-mode="fix" hidden>Code folder</label>
+          <input id="heal-folder" list="heal-folders" placeholder="A folder in MangoMan Projects, or its full path" autocomplete="off" data-mode="fix" hidden>
+          <datalist id="heal-folders"></datalist>
+          <p class="fine" data-mode="fix" hidden>Guardian adds a guardian.json file, a line to .gitignore and a branch called dev for its safe copy. Your live branch only changes when you approve.</p>
+        </div>
+        <p class="form-end"><button type="submit" class="primary" id="heal-connect">Connect and start watching</button><span class="msg" id="heal-msg" role="status"></span></p>
+      </form>
+    </section>
+    <details class="how" id="heal-how">
+      <summary>How Guardian works</summary>
+      <ol class="flow">
+        <li><b>Watches</b><span>Every 5 minutes: is the app up and quick? Once a day: up to 10 pages in a real browser, the security certificate and the domain dates. Every hour: the journeys you add.</span></li>
+        <li><b>Finds the cause</b><span>When something fails, it shows the error, where it happens and the likely reason, from the error and, when it has your code, your latest changes.</span></li>
+        <li><b>Helps fix it</b><span>Without your code, it writes a fix request to paste into the tool you built with. With your code, it writes the fix in a safe copy, has a test written for it and tests it there.</span></li>
+        <li><b>Asks you first</b><span>A fix goes live only after you approve it, and is tested again there. If that fails, Guardian puts the last good version back.</span></li>
+      </ol>
+      <div class="table-wrap">
+        <table class="grid compare">
+          <thead><tr><th scope="col"><span class="sr">What Guardian does</span></th><th scope="col">Only the live address</th><th scope="col">The code too</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Up and quick, every 5 minutes</th><td>Yes</td><td>Yes</td></tr>
+            <tr><th scope="row">Up to 10 pages in a real browser, daily</th><td>Yes</td><td>Yes</td></tr>
+            <tr><th scope="row">Certificate and domain dates</th><td>Yes</td><td>Yes</td></tr>
+            <tr><th scope="row">Journeys you describe in plain words</th><td>Yes</td><td>Yes</td></tr>
+            <tr><th scope="row">What broke and the likely cause</th><td>Yes</td><td>Yes, with your recent changes</td></tr>
+            <tr><th scope="row">The fix</th><td>A request to paste into your app builder</td><td>Written and tested in a safe copy</td></tr>
+            <tr><th scope="row">Going live</th><td>You publish it in your builder</td><td>After your OK (Vercel, Netlify and Docker found on their own)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
   </div>
 
   <div class="view" id="view-chargesheets" hidden>
@@ -184,9 +204,13 @@
   </div>
 
   <div class="view" id="view-connections" hidden>
-    <section class="block" aria-labelledby="h-conn">
+    <div class="view-head">
+      <h2>Connections</h2>
+      <p class="sub">The free AI services MangoMan uses. Keys stay on this computer.</p>
+    </div>
+    <section aria-labelledby="h-conn">
       <div class="block-head">
-        <h2 id="h-conn">Connections</h2>
+        <h2 id="h-conn">Providers</h2>
         <p class="sub" id="conn-sub"></p>
       </div>
       <ol class="board" id="board"></ol>
@@ -210,6 +234,10 @@
   </div>
 
   <div class="view" id="view-usage" hidden>
+    <div class="view-head">
+      <h2>Usage</h2>
+      <p class="sub">What MangoMan did for you in the last 24 hours. Prompts and answers are never stored.</p>
+    </div>
     <aside class="now" id="now" aria-labelledby="h-now" aria-live="polite">
       <h2 id="h-now">Model in use</h2>
       <p class="now-model" id="now-model">Waiting for the first request</p>

@@ -91,3 +91,47 @@ func TestCrawl(t *testing.T) {
 		}
 	}
 }
+
+// A journey walks a sign-up the way a visitor would, and names the step that
+// broke when the page changes.
+func TestJourney(t *testing.T) {
+	if exec.Command("python3", "-c", "import playwright").Run() != nil {
+		t.Skip("needs Python with Playwright")
+	}
+	broken := false
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+		w.Write([]byte(`<html><body><a href="/join">Join now</a></body></html>`))
+	})
+	mux.HandleFunc("/join", func(w http.ResponseWriter, _ *http.Request) {
+		if broken {
+			w.Write([]byte(`<html><body><p>Something went wrong</p></body></html>`))
+			return
+		}
+		w.Write([]byte(`<html><body><label for="e">Email</label><input id="e">
+<button onclick="document.body.insertAdjacentHTML('beforeend','<p>Thanks for joining</p>')">Sign up</button></body></html>`))
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	steps := []Step{{Click: "Join now"}, {Fill: "Email", With: "test@example.com"}, {Click: "Sign up"}, {See: "Thanks for joining"}}
+	for _, s := range steps {
+		if why := s.Valid(); why != "" {
+			t.Fatal(why)
+		}
+	}
+	if why, err := Journey(context.Background(), srv.URL, steps, filepath.Join(t.TempDir(), "j.png")); err != nil || why != "" {
+		t.Fatalf("journey should pass: %q %v", why, err)
+	}
+	broken = true
+	shot := filepath.Join(t.TempDir(), "j.png")
+	why, err := Journey(context.Background(), srv.URL, steps, shot)
+	if err != nil || !strings.Contains(why, "step 2") || !strings.Contains(why, `Type "test@example.com" into "Email"`) {
+		t.Fatalf("broken page: %q %v", why, err)
+	}
+	if _, err := os.Stat(shot); err != nil {
+		t.Fatal("no screenshot of the failure")
+	}
+	if (Step{Go: "/", Click: "x"}).Valid() == "" || (Step{Fill: "Email"}).Valid() == "" {
+		t.Fatal("bad steps accepted")
+	}
+}

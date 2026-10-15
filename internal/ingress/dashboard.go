@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/fs"
+	"mime"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,6 +23,10 @@ import (
 
 //go:embed ui
 var uiFiles embed.FS
+
+// The heading font is served from the binary; Go's own type table does not
+// know .woff, and Windows may not either.
+func init() { _ = mime.AddExtensionType(".woff", "font/woff") }
 
 // Provider statuses shown on the dashboard.
 const (
@@ -129,7 +134,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
-		h.Set("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-src http://127.0.0.1:* http://localhost:*; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
+		h.Set("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; font-src 'self'; frame-src http://127.0.0.1:* http://localhost:*; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "no-referrer")
 		h.Set("X-Frame-Options", "DENY")

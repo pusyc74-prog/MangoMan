@@ -28,6 +28,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/pusyc74-prog/mangoman/internal/qa"
 )
 
 // Config is guardian.json.
@@ -45,6 +47,9 @@ type Config struct {
 	// Reports are the daily report times (24-hour, local), sent even on a
 	// quiet day. Default 08:00 and 20:00.
 	Reports []string `json:"reports,omitempty"`
+	// Builder is the tool the app was made with (Lovable, Bolt, Replit...),
+	// named in fix requests for apps whose code Guardian does not have.
+	Builder string `json:"builder,omitempty"`
 }
 
 // Env is one environment. Dev's commands run in its own folder (the dev
@@ -59,16 +64,29 @@ type Env struct {
 	Version string `json:"version,omitempty"`
 }
 
-// Check is one thing to watch. Set exactly one of URL, Log or Command.
+// Check is one thing to watch. Set exactly one of URL, Log, Command,
+// Browse, Expiry or Journey.
 type Check struct {
-	Name    string   `json:"name"`
-	URL     string   `json:"url,omitempty"`
-	Expect  int      `json:"expect,omitempty"` // status code, default 200
-	MaxMS   int      `json:"max_ms,omitempty"` // slower than this fails; 0 = no limit
-	Log     string   `json:"log,omitempty"`
-	Pattern string   `json:"pattern,omitempty"` // new log lines matching this fail; default errors and crashes
-	Command string   `json:"command,omitempty"` // exit code 0 passes
-	Fix     []string `json:"fix,omitempty"`     // the only actions Guardian may take, tried in order
+	Name    string `json:"name"`
+	URL     string `json:"url,omitempty"`
+	Expect  int    `json:"expect,omitempty"` // status code, default 200
+	MaxMS   int    `json:"max_ms,omitempty"` // slower than this fails; 0 = no limit
+	Log     string `json:"log,omitempty"`
+	Pattern string `json:"pattern,omitempty"` // new log lines matching this fail; default errors and crashes
+	Command string `json:"command,omitempty"` // exit code 0 passes
+	// Browse clicks through the site at this address in a real browser (up
+	// to 10 pages): script errors, failed requests, broken images, pages
+	// that scroll sideways on a phone.
+	Browse string `json:"browse,omitempty"`
+	// Expiry checks the address's security certificate (fails under 14
+	// days left) and, where the registry publishes it, the domain's end
+	// date (fails under 30 days).
+	Expiry string `json:"expiry,omitempty"`
+	// Journey walks these steps from Prod.URL, as a visitor would (open,
+	// click, type, expect to see).
+	Journey []qa.Step `json:"journey,omitempty"`
+	Every   string    `json:"every,omitempty"` // run at most this often (for example 24h); empty = every run
+	Fix     []string  `json:"fix,omitempty"`   // the only actions Guardian may take, tried in order
 }
 
 const defaultPattern = `(?i)\b(error|panic|fatal|exception|traceback)\b`
@@ -88,13 +106,29 @@ func Load(path string) (*Config, error) {
 	}
 	for _, k := range c.Checks {
 		n := 0
-		for _, v := range []string{k.URL, k.Log, k.Command} {
+		for _, v := range []string{k.URL, k.Log, k.Command, k.Browse, k.Expiry} {
 			if v != "" {
 				n++
 			}
 		}
+		if len(k.Journey) > 0 {
+			n++
+		}
 		if k.Name == "" || n != 1 {
-			return nil, fmt.Errorf("check %q needs a name and exactly one of url, log or command", k.Name)
+			return nil, fmt.Errorf("check %q needs a name and exactly one of url, log, command, browse, expiry or journey", k.Name)
+		}
+		if len(k.Journey) > 0 {
+			if c.Prod.URL == "" {
+				return nil, fmt.Errorf("check %q: a journey starts at prod.url; set it", k.Name)
+			}
+			if err := qa.CheckSteps(c.Prod.URL, k.Journey); err != nil {
+				return nil, fmt.Errorf("check %q: %v", k.Name, err)
+			}
+		}
+		if k.Every != "" {
+			if d, err := time.ParseDuration(k.Every); err != nil || d <= 0 {
+				return nil, fmt.Errorf("check %q: every must be a duration like 1h or 24h", k.Name)
+			}
 		}
 		if k.Pattern != "" {
 			if _, err := regexp.Compile(k.Pattern); err != nil {
@@ -122,6 +156,9 @@ type Event struct {
 	Detail string    `json:"detail,omitempty"`
 	Cause  string    `json:"cause,omitempty"`
 	Done   []string  `json:"done,omitempty"` // fixes run, with their result
+	// Request is a fix request ready to paste into the app builder (Lovable,
+	// Bolt, Replit...), for an app whose code Guardian does not have.
+	Request string `json:"request,omitempty"`
 }
 
 // Guardian runs one config.
@@ -138,9 +175,10 @@ type Guardian struct {
 	TG    *Telegram // nil = no Telegram
 	Logf  func(format string, args ...any)
 
-	mu      sync.Mutex        // guards the incidents file
-	copying sync.Mutex        // one nightly data copy at a time
-	asked   map[string]string // change requests from Telegram waiting for "Yes"; Serve's loop only
+	mu      sync.Mutex           // guards the incidents file
+	copying sync.Mutex           // one nightly data copy at a time
+	asked   map[string]string    // change requests from Telegram waiting for "Yes"; Serve's loop only
+	written map[string][2]string // per check: the problem and the fix request written for it; Run only
 }
 
 // Run checks everything once, tries the listed fixes on failures, records
@@ -153,11 +191,30 @@ func (g *Guardian) Run(ctx context.Context) ([]Event, error) {
 	}
 	var events []Event
 	for _, k := range g.Cfg.Checks {
-		detail := g.check(ctx, k, offsets)
+		if !due(k, offsets, time.Now()) {
+			continue
+		}
+		if (k.Browse != "" || len(k.Journey) > 0) && !HasBrowser() {
+			continue // nothing ran: no result, rather than a "fine" that was never checked
+		}
+		cctx, cancel := context.WithTimeout(ctx, 10*time.Minute) // a hung browser cannot hold up the watch
+		detail := g.check(cctx, k, offsets)
+		cancel()
+		if ctx.Err() != nil {
+			break // stopped mid-check: the result says nothing about the app
+		}
+		if k.Every != "" {
+			offsets["every:"+k.Name] = time.Now().Unix()
+		}
 		ev := Event{Time: time.Now(), Check: k.Name, Status: "ok"}
-		if detail != "" {
+		if detail == "" {
+			delete(g.written, k.Name)
+		} else {
 			ev.Status, ev.Detail = "failing", detail
 			ev.Cause = g.cause(k, detail)
+			if g.Cfg.Repo == "" && k.Expiry == "" { // a domain or certificate is not the builder's to fix
+				ev.Request = g.request(k, detail, ev.Cause)
+			}
 			for _, fix := range k.Fix {
 				res := runFix(ctx, fix)
 				ev.Done = append(ev.Done, fix+": "+res)
@@ -245,8 +302,111 @@ func (g *Guardian) check(ctx context.Context, k Check, offsets map[string]int64)
 		if err != nil {
 			return "failed: " + cut(strings.TrimSpace(out), 300)
 		}
+	case k.Browse != "":
+		if !HasBrowser() {
+			return "" // no browser on this computer (Run skips these; release checks note it)
+		}
+		visited, found, err := qa.Crawl(ctx, k.Browse, 10, filepath.Join(g.Dir, "shots"))
+		if err != nil {
+			return cut(err.Error(), 300)
+		}
+		return findings(len(visited), found)
+	case k.Expiry != "":
+		return expiry(ctx, k.Expiry, time.Now())
+	case len(k.Journey) > 0:
+		if !HasBrowser() {
+			return ""
+		}
+		why, err := qa.Journey(ctx, g.Cfg.Prod.URL, k.Journey, filepath.Join(g.Dir, "shots", "journey-"+slug(k.Name)+".png"))
+		if err != nil {
+			return cut(err.Error(), 300)
+		}
+		return why
 	}
 	return ""
+}
+
+// due reports whether a check with Every should run now. Run notes the
+// time once the check has finished (kept with the log offsets).
+func due(k Check, state map[string]int64, now time.Time) bool {
+	d, err := time.ParseDuration(k.Every)
+	if k.Every == "" || err != nil {
+		return true
+	}
+	last := state["every:"+k.Name]
+	return last == 0 || now.Sub(time.Unix(last, 0)) >= d
+}
+
+// HasBrowser reports whether this computer can run the browser checks
+// (Python with Playwright, which Get ready installs).
+func HasBrowser() bool { return exec.Command("python3", "-c", "import playwright").Run() == nil }
+
+// findingWords names what the browser check found, in plain words.
+var findingWords = map[string]string{
+	"console_error": "Script error", "page_error": "Page crashed", "http_error": "Failed to load",
+	"broken_image": "Broken image", "phone_overflow": "Too wide on a phone", "unreachable": "Did not open",
+}
+
+// findings sums up a browser check in a few lines; "" when nothing was wrong.
+func findings(pages int, found []qa.Finding) string {
+	if len(found) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "%d problems on %d pages checked", len(found), pages)
+	for i, f := range found {
+		if i == 3 {
+			fmt.Fprintf(&b, "\nand %d more", len(found)-3)
+			break
+		}
+		kind := findingWords[f.Kind]
+		if kind == "" {
+			kind = f.Kind
+		}
+		fmt.Fprintf(&b, "\n%s on %s: %s", kind, f.Page, cut(f.Detail, 160))
+	}
+	return b.String()
+}
+
+// request writes a fix request the owner can paste into the tool the app
+// was built with. The model words it when there is one; otherwise a plain
+// one is made from the facts.
+func (g *Guardian) request(k Check, detail, cause string) string {
+	// The same problem keeps its request; numbers (timings, counts) do not
+	// make it a new one.
+	key := digits.ReplaceAllString(detail, "#")
+	if r, ok := g.written[k.Name]; ok && r[0] == key {
+		return r[1]
+	}
+	r := g.writeRequest(k, detail, cause)
+	if g.written == nil {
+		g.written = map[string][2]string{}
+	}
+	g.written[k.Name] = [2]string{key, r}
+	return r
+}
+
+var digits = regexp.MustCompile(`[0-9]+`)
+
+func (g *Guardian) writeRequest(k Check, detail, cause string) string {
+	plain := fmt.Sprintf("My live app %s has a problem.\nCheck %q failed: %s\n", g.Cfg.Prod.URL, k.Name, detail)
+	if cause != "" {
+		plain += "Likely cause: " + cause + "\n"
+	}
+	plain += "Please find the cause, fix it with the smallest change, and tell me what you changed."
+	if g.Ask == nil {
+		return plain
+	}
+	tool := "the AI app builder they used (such as Lovable, Bolt or Replit)"
+	if g.Cfg.Builder != "" {
+		tool = g.Cfg.Builder + ", the tool they built it with,"
+	}
+	ans, err := g.Ask("Write a short request the owner of a web app can paste into " + tool + " to fix this problem. " +
+		"Plain words, at most 8 lines, no greeting. Include the exact error text and where it happens, and ask for the smallest fix. Do not invent details.\n\n" + plain)
+	if err != nil || strings.TrimSpace(ans) == "" {
+		return plain
+	}
+	return strings.TrimSpace(ans)
 }
 
 // newLines returns the lines added to a log since the last run. A log that
@@ -366,26 +526,60 @@ func (g *Guardian) record(events []Event) error {
 // Latest is each check's last result, from the end of the history.
 func (g *Guardian) Latest() []Event {
 	out := []Event{}
-	f, err := os.Open(filepath.Join(g.Dir, "guardian-history.jsonl"))
-	if err != nil {
-		return out
-	}
-	defer f.Close()
-	if st, err := f.Stat(); err == nil && st.Size() > 64<<10 {
-		_, _ = f.Seek(st.Size()-64<<10, io.SeekStart) // the first line read may be cut; it does not parse
-	}
 	at := map[string]int{}
-	sc := bufio.NewScanner(f)
-	sc.Buffer(make([]byte, 64<<10), 1<<20)
-	for sc.Scan() {
-		var e Event
-		if json.Unmarshal(sc.Bytes(), &e) != nil || e.Check == "" {
-			continue
-		}
+	for _, e := range g.tail(1 << 20) {
 		if i, ok := at[e.Check]; ok {
 			out[i] = e
 		} else {
 			at[e.Check] = len(out)
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// Strip is the last 24 hours in half-hour slots, oldest first: "bad" when
+// any check failed in that slot, "ok" when checks ran and passed, "" when
+// none ran. Dev drift and dates running out are left out: the app itself
+// was fine.
+func (g *Guardian) Strip(now time.Time) []string {
+	const slots, width = 48, 30 * time.Minute
+	dates := map[string]bool{"dev": true}
+	for _, k := range g.Cfg.Checks {
+		dates[k.Name] = k.Expiry != ""
+	}
+	out := make([]string, slots)
+	start := now.Add(-slots * width)
+	for _, e := range g.tail(1 << 20) {
+		i := int(e.Time.Sub(start) / width)
+		if i < 0 || i >= slots || dates[e.Check] {
+			continue
+		}
+		if e.Status != "ok" {
+			out[i] = "bad"
+		} else if out[i] == "" {
+			out[i] = "ok"
+		}
+	}
+	return out
+}
+
+// tail reads the events in the last n bytes of the history.
+func (g *Guardian) tail(n int64) []Event {
+	f, err := os.Open(filepath.Join(g.Dir, "guardian-history.jsonl"))
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+	if st, err := f.Stat(); err == nil && st.Size() > n {
+		_, _ = f.Seek(st.Size()-n, io.SeekStart) // the first line read may be cut; it does not parse
+	}
+	var out []Event
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 64<<10), 1<<20)
+	for sc.Scan() {
+		var e Event
+		if json.Unmarshal(sc.Bytes(), &e) == nil && e.Check != "" {
 			out = append(out, e)
 		}
 	}

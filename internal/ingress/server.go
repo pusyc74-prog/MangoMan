@@ -52,9 +52,11 @@ type Server struct {
 	// GetReady installs what MangoMan needs (default: setup.Ready).
 	GetReady func(home string, step pyenv.Step) error
 
-	// Watch runs Guardian on one guardian.json until ctx ends (the Self
-	// Healing System); nil = connected apps are listed, not watched.
+	// Watch runs Guardian on one guardian.json until ctx ends (the Guardian
+	// page); nil = connected apps are listed, not watched.
 	Watch func(ctx context.Context, config string) error
+	// Ask asks a free model one question (Guardian's journeys); nil = no model.
+	Ask func(prompt string) (string, error)
 	// Arch is Mango Arch, the shared learning; nil = not live in this build.
 	Arch *arch.Client
 

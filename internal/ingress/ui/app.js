@@ -118,8 +118,9 @@ function renderHead(ov, act) {
   const run = $("runline");
   run.replaceChildren(
     el("span", { class: "lamp on", "aria-hidden": "true" }),
-    `Running at 127.0.0.1:${ov.port} for ${duration(ov.uptime_s)}. Version ${ov.version}, catalogue ${ov.catalogue}.`
+    `Running for ${duration(ov.uptime_s)}`
   );
+  run.title = `127.0.0.1:${ov.port}, version ${ov.version}, catalogue ${ov.catalogue}`;
   const tokens = (act.rows || []).reduce((a, r) => a + (r.tokens || 0), 0);
   $("t-requests").textContent = NUM.format(act.requests || 0);
   $("t-served").textContent = NUM.format(act.served || 0);
@@ -752,33 +753,135 @@ async function loadGuardian() {
   }
   $("guardian-block").hidden = rows.length === 0;
   $("guardian-list").tBodies[0].replaceChildren(...rows);
+  const waiting = projects.some((p) => p.incidents.some((i) => i.status === "ready" || i.status === "needs_you"));
+  const attention = waiting || projects.some((p) => p.latest.some((e) => e.status === "failing"));
+  $("nav-guardian-flag").hidden = !attention;
   renderHealApps(projects);
 }
 
-// ---------- Self Healing System ----------
+// ---------- Guardian: your apps ----------
 
-const ESTATUS = { ok: "Fine", fixed: "Fixed by first aid", failing: "Failing" };
+// What each kind of check is called on the page.
+const CHECK_NAME = { dev: "Safe copy matches the live app", site: "Up and quick", pages: "Pages in a real browser (up to 10)",
+  dates: "Certificate and domain dates" };
+const EVERY = { "24h": "daily", "1h": "every hour" };
+
+function when(t) {
+  const d = new Date(t), today = new Date().toDateString() === d.toDateString();
+  return today ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : d.toLocaleString([], { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+}
+
+function copyButton(text, what) {
+  return el("button", { type: "button", class: "ghost", "aria-label": `Copy ${what}`, onclick: async (e) => {
+    try { await navigator.clipboard.writeText(text); e.target.textContent = "Copied"; }
+    catch (_) { e.target.textContent = "Select and copy the text"; }
+    setTimeout(() => { e.target.textContent = "Copy"; }, 2500);
+  } }, "Copy");
+}
+
+function checkRow(p, c, ev) {
+  const status = !ev ? "" : ev.status === "failing" ? "bad" : "on";
+  const name = c.kind === "journey" ? c.name.replace(/^journey: /, "Journey: ") : c.name === c.kind && CHECK_NAME[c.kind] || c.name;
+  const often = c.every ? ` (${EVERY[c.every] || "every " + c.every})` : c.kind === "site" ? " (every 5 minutes)" : "";
+  const needsBrowser = (c.kind === "pages" || c.kind === "journey") && !p.browser;
+  const state = needsBrowser ? "Needs Get ready on the setup page" : !ev ? "Not checked yet" : ev.status === "failing" ? `Failing, ${when(ev.time)}` : ev.status === "fixed" ? `Fixed by first aid, ${when(ev.time)}` : `Fine, ${when(ev.time)}`;
+  const kids = [
+    el("span", { class: "lamp " + status, "aria-hidden": "true" }),
+    el("span", { class: "check-name" }, name, el("span", { class: "dim" }, often)),
+    el("span", { class: "check-when" }, state),
+  ];
+  if (c.steps) kids.push(el("ol", { class: "check-steps" }, c.steps.map((t) => el("li", {}, t))));
+  if (ev && ev.status === "failing") {
+    const box = [el("p", { class: "what" }, ev.detail)];
+    if (ev.cause) box.push(el("p", { class: "why" }, el("b", {}, "Likely cause: "), ev.cause));
+    if (ev.request) {
+      box.push(el("div", { class: "request" },
+        el("div", { class: "request-head" }, el("b", {}, p.builder ? `Fix request for ${p.builder}` : "Fix request for your app builder"), copyButton(ev.request, `the fix request for ${name}`)),
+        el("pre", {}, ev.request)));
+    }
+    kids.push(el("div", { class: "check-problem" }, box));
+  }
+  if (c.kind === "journey") {
+    kids.push(el("button", { type: "button", class: "remove", onclick: async (e) => {
+      e.target.disabled = true;
+      try { await api("/mangoman/healing/remove", { method: "POST", body: JSON.stringify({ config: p.config, name: c.name }) }); }
+      catch (err) { alert(err.message); }
+      loadGuardian();
+    } }, "Remove this journey"));
+  }
+  return el("li", { class: "check" }, kids);
+}
+
+// Each app's journey box keeps its draft and its last message across the
+// page's refreshes; nothing is redrawn while a journey is being added.
+const journeys = {};
+
+function journeyForm(p) {
+  const j = journeys[p.config] || (journeys[p.config] = { draft: "", msg: "", cls: "msg", busy: false });
+  const input = el("input", { id: `journey-${p.config}`, maxlength: "600", autocomplete: "off", value: j.draft,
+    placeholder: "For example: open the shop, add a product to the cart, see the cart",
+    oninput: (e) => { j.draft = e.target.value; } });
+  const msg = el("p", { class: j.cls, role: "status" }, j.msg);
+  const btn = el("button", { type: "submit", class: "ghost", disabled: j.busy }, "Add journey");
+  const say = (cls, text) => { j.cls = cls; j.msg = text; msg.className = cls; msg.textContent = text; };
+  return el("form", { class: "journey-add", onsubmit: async (e) => {
+    e.preventDefault();
+    if (!input.value.trim() || j.busy) return;
+    j.busy = btn.disabled = true;
+    say("msg", "Writing the steps and trying them once in a browser. This can take a minute\u2026");
+    try {
+      const r = await api("/mangoman/healing/journey", { method: "POST", body: JSON.stringify({ config: p.config, text: input.value }) });
+      say(r.works ? "msg ok" : "msg err", r.works ? `Added. It worked just now in ${r.steps.length} steps; Guardian walks it every hour.`
+        : `Added, but it fails today: ${r.problem}. Check the steps below.`);
+      j.draft = "";
+    } catch (err) { say("msg err", err.message); }
+    j.busy = false;
+    loadGuardian();
+  } }, el("label", { for: input.id }, "Add a journey: a path a visitor takes, in plain words. Journeys stop before paying or ordering."), input, btn, msg);
+}
+
+let howSet = false;
 
 function renderHealApps(projects) {
+  // A refresh never wipes what someone is typing or waiting for.
+  if (Object.values(journeys).some((j) => j.busy)) return;
+  if ($("heal-apps").contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
   $("heal-empty").hidden = projects.length > 0;
+  if (!howSet) { $("heal-how").open = projects.length === 0; howSet = true; }
   $("heal-apps").replaceChildren(...projects.map((p) => {
-    const what = !p.fixes ? "Watch only: MangoMan does not have the code."
-      : p.live ? "Watch and fix. Fixes go live after your OK."
-      : "Watch and fix in a safe copy. To put fixes live, MangoMan needs to know how this app is published.";
-    const checks = p.latest.map((e) => el("li", {},
-      el("b", {}, `${e.check === "dev" ? "Safe copy" : e.check}: ${ESTATUS[e.status] || e.status}`), ` at ${new Date(e.time).toLocaleTimeString()}`,
-      e.detail ? el("br") : null, e.detail || "", e.cause ? el("br") : null, e.cause ? `Likely cause: ${e.cause}` : ""));
-    const off = el("button", { type: "button", class: "ghost", onclick: async (ev) => {
+    const latest = Object.fromEntries(p.latest.map((e) => [e.check, e]));
+    const failing = p.latest.filter((e) => e.status === "failing").length;
+    const ran = p.latest.length > 0;
+    const pill = !p.watching ? el("span", { class: "pill idle" }, "Not watched here")
+      : failing ? el("span", { class: "pill bad" }, el("span", { class: "lamp bad" }), failing === 1 ? "1 problem" : `${failing} problems`)
+      : ran ? el("span", { class: "pill good" }, el("span", { class: "lamp on" }), "All good")
+      : el("span", { class: "pill idle" }, "First check running");
+    const bad = p.strip.filter((x) => x === "bad").length, seen = p.strip.filter((x) => x).length;
+    const stripLabel = !seen ? "No checks in the last 24 hours" : bad ? `Problems in ${bad} of the last ${seen} half hours checked` : `No problems in the last 24 hours`;
+    const rows = p.checks.map((c) => checkRow(p, c, latest[c.name]));
+    if (latest.dev) rows.push(checkRow(p, { name: "dev", kind: "dev" }, latest.dev));
+    const mode = !p.fixes ? "Watch and diagnose: Guardian has the live address, not the code."
+      : p.live ? "Watch and fix: fixes are made in a safe copy and go live after your OK."
+      : "Watch and fix in a safe copy. To put fixes live, Guardian needs to know how this app is published.";
+    const off = el("button", { type: "button", class: "ghost danger", onclick: async (ev) => {
+      if (!confirm(`Stop watching ${p.app}? Its settings stay on this computer.`)) return;
       ev.target.disabled = true;
       try { await api("/mangoman/healing/disconnect", { method: "POST", body: JSON.stringify({ config: p.config }) }); }
       catch (err) { alert(err.message); }
       loadGuardian();
     } }, "Disconnect");
-    return el("li", { class: "card" }, el("h3", {}, p.app), p.url ? el("p", {}, p.url) : null, el("p", {}, what),
-      el("p", { class: "label" }, p.watching ? "Watching now" : "Not watched by this MangoMan"),
-      p.stopped ? el("p", {}, `Watching stopped: ${p.stopped}. Disconnect and connect again after fixing it.`) : null,
-      checks.length ? el("ul", {}, checks) : el("p", {}, p.watching ? "First check in progress." : "No checks yet."),
-      off);
+    return el("li", { class: "appcard" + (failing ? " is-bad" : "") },
+      el("div", { class: "app-head" },
+        el("div", { class: "app-name" }, el("h3", {}, p.app),
+          p.url ? el("a", { href: p.url, target: "_blank", rel: "noopener noreferrer" }, p.url) : null),
+        pill),
+      el("div", { class: "pulse" },
+        el("div", { class: "strip", role: "img", "aria-label": stripLabel, title: stripLabel }, p.strip.map((x) => el("i", { class: x }))),
+        el("p", { class: "strip-legend" }, el("span", {}, "24 hours ago"), el("span", {}, stripLabel), el("span", {}, "Now"))),
+      p.stopped ? el("p", { class: "msg err", style: { padding: "8px 20px 0" } }, `Watching stopped: ${p.stopped}. Disconnect and connect again after fixing it.`) : null,
+      el("ul", { class: "checks" }, rows),
+      p.url ? journeyForm(p) : null,
+      el("div", { class: "app-foot" }, el("span", {}, mode), off));
   }));
 }
 
@@ -804,6 +907,14 @@ async function loadHealFolders() {
   $("heal-folders").replaceChildren(...r.items.filter((i) => i.dir).map((i) => el("option", { value: i.name })));
 }
 
+function healMode() { return document.querySelector('input[name="heal-mode"]:checked').value; }
+
+// The form shows the fields for the chosen kind of connection.
+function showHealMode() {
+  const m = healMode();
+  for (const n of document.querySelectorAll("#heal-form [data-mode]")) n.hidden = n.dataset.mode !== m;
+}
+
 async function connectApp(e) {
   e.preventDefault();
   const btn = $("heal-connect"), msg = $("heal-msg");
@@ -811,13 +922,17 @@ async function connectApp(e) {
   msg.className = "msg";
   msg.textContent = "Connecting\u2026";
   try {
+    const fix = healMode() === "fix";
+    if (fix && !$("heal-folder").value.trim()) throw new Error("Pick the folder with the app's code.");
     const r = await api("/mangoman/healing/connect", { method: "POST", body: JSON.stringify({
-      name: $("heal-name").value, url: $("heal-url").value, folder: $("heal-folder").value }) });
+      name: $("heal-name").value, url: $("heal-url").value, folder: fix ? $("heal-folder").value : "",
+      builder: fix ? "" : $("heal-builder").value }) });
     msg.className = "msg ok";
     msg.textContent = "Connected. The first check runs now; its result appears below."
       + (r.kept ? " That folder already had a guardian.json, so its own settings are used." : "")
       + (r.branch ? ` The live branch is ${r.branch}.` : "");
     $("heal-form").reset();
+    showHealMode();
     setTimeout(loadGuardian, 3000);
   } catch (err) {
     msg.className = "msg err";
@@ -894,10 +1009,6 @@ function openCoding(prompt) {
 
 // ---------- Super Agents and Templates ----------
 
-function list(label, items) {
-  return [el("p", { class: "label" }, label), el("ul", {}, ...items.map((t) => el("li", {}, t)))];
-}
-
 function startButton(prompt) {
   return el("button", { type: "button", class: "primary start", onclick: () => openCoding(prompt) }, "Start");
 }
@@ -906,11 +1017,14 @@ async function loadStarters() {
   let d;
   try { d = await (await fetch("starters.json")).json(); }
   catch (err) { say(`Could not load the agents: ${err.message}`, "err"); return; }
+  const top = (title) => el("div", { class: "card-top" }, el("span", { class: "tile", "aria-hidden": "true" }, title[0]), el("h3", {}, title));
   $("agent-cards").replaceChildren(...d.agents.map((a) => el("li", { class: "card" },
-    el("h3", {}, a.title), el("p", {}, a.summary), ...list("You get", a.gets), ...list("Have ready", a.needs),
+    top(a.title), el("p", {}, a.summary),
+    el("p", { class: "label" }, "You get"), el("ul", { class: "chips" }, a.gets.map((t) => el("li", {}, t))),
+    el("p", { class: "needs" }, "Have ready: " + a.needs.join("; ")),
     startButton(a.prompt))));
   $("later-cards").replaceChildren(...d.later.map((a) => el("li", { class: "card" },
-    el("h3", {}, a.title), el("p", {}, a.summary), el("p", {}, a.why))));
+    top(a.title), el("p", {}, a.summary), el("p", { class: "needs" }, a.why))));
   $("template-cards").replaceChildren(...d.templates.map((t) => el("li", { class: "card" },
     el("h3", {}, t.title), el("p", {}, t.summary), t.prompt ? startButton(t.prompt) : el("p", {}, t.dev))));
 }
@@ -969,6 +1083,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("to-code").addEventListener("click", () => openCoding(""));
   $("to-files").addEventListener("click", () => openEntry(""));
   $("heal-form").addEventListener("submit", connectApp);
+  for (const r of document.querySelectorAll('input[name="heal-mode"]')) r.addEventListener("change", showHealMode);
   $("arch-share").addEventListener("change", async (e) => {
     try { renderArch(await api("/mangoman/arch", { method: "POST", body: JSON.stringify({ share: e.target.checked }) })); }
     catch (err) { alert(err.message); loadArch(); }
