@@ -215,6 +215,18 @@ func parseJSON(text string, v any) error {
 	return dec.Decode(v)
 }
 
+// modelError says in plain words why no model answered.
+func modelError(err error) error {
+	switch msg := err.Error(); {
+	case strings.Contains(msg, "no_providers_connected"):
+		return errors.New("no free AI is connected yet: add a key in Connections")
+	case strings.Contains(msg, "not reachable"):
+		return errors.New("MangoMan's router is not running: restart MangoMan")
+	default:
+		return errors.New("the free AI models are busy right now: try again in a minute")
+	}
+}
+
 // ---------- Ask ----------
 
 // Turn is one earlier question and answer in the chat.
@@ -271,7 +283,7 @@ func (st *Store) Ask(ctx context.Context, id, question string, history []Turn, p
 		}
 		text, err := st.Model(askPrompt(prof, question, history, steps, fix, len(steps) >= maxQueries))
 		if err != nil {
-			return Answer{}, fmt.Errorf("the free models did not answer: %w", err)
+			return Answer{}, modelError(err)
 		}
 		var r struct {
 			Query  string `json:"query"`
@@ -475,7 +487,7 @@ func (st *Store) WriteReadout(ctx context.Context, id string, facts []string, fr
 	for try := 0; try < 2; try++ {
 		text, err := st.Model(prompt)
 		if err != nil {
-			return Readout{}, fmt.Errorf("the free models did not answer: %w", err)
+			return Readout{}, modelError(err)
 		}
 		text = strings.TrimSpace(fence.ReplaceAllString(text, ""))
 		out = Readout{Text: text, Unchecked: Unchecked(text, vals), Facts: key}
