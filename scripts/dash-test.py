@@ -391,7 +391,7 @@ def numbers(text):
 
 
 def score_insight(f, text, prompt):
-    text = re.sub(r"^.*?</think>", "", text, flags=re.S)
+    text = re.sub(r"[\u00a0\u2009\u202f]", " ", re.sub(r"^.*?</think>", "", text, flags=re.S))  # gpt-oss writes narrow spaces
     if not text.strip():
         return 0.0, ["empty"]
     low, notes = text.lower(), []
