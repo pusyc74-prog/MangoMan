@@ -78,9 +78,9 @@ def ask(model, q, context):
         prompt = (f"Today is {TODAY}. Answer in one short sentence. "
                   f"If you are not sure, reply exactly: I don't know.\n\nQuestion: {q}")
     body = {"model": model, "messages": [{"role": "user", "content": prompt}], "max_tokens": 3000, "temperature": 0}
-    for attempt in range(3):
+    for attempt in range(2):
         try:
-            raw = post(NVIDIA, body, {"authorization": "Bearer " + os.environ["NVIDIA_API_KEY"]}, 120)
+            raw = post(NVIDIA, body, {"authorization": "Bearer " + os.environ["NVIDIA_API_KEY"]}, 90)
             msg = json.loads(raw)["choices"][0]["message"]
             return (msg.get("content") or "").strip(), ""
         except Exception as e:  # noqa: BLE001
@@ -121,43 +121,50 @@ def main():
         times.sort()
         lines.append(f"| {name} | {hits} of {len(qs)} | {fails} | {times[len(times) // 2]:.1f} | {times[-1]:.1f} |")
 
-    # Saved now too, so a run cut short still reports on the search services.
-    open("report.md", "w").write("\n".join(lines + ["", "## 3. Search detail", "", "| Service | Question | Answer in results | Seconds | Error |",
-                                                     "| --- | --- | --- | --- | --- |"] + detail) + "\n")
-
     def run(job):
         model, q, mode = job
         ctx = "" if mode == "memory" else found[(mode, q["q"])]
         if mode != "memory" and not ctx:
-            return (model, mode, q, "", "no search results")
+            return (model, mode, q, "", "no search results", 0.0)
+        start = time.time()
         ans, err = ask(model, q["q"], ctx)
-        return (model, mode, q, ans, err)
+        return (model, mode, q, ans, err, time.time() - start)
 
-    # Every request at once, a few at a time: one model after another took
-    # over an hour with slow reasoning models. NVIDIA allows 40 a minute.
-    jobs = [(m, q, mode) for m in models for q in qs for mode in ("memory", "exa", "parallel")]
-    with cf.ThreadPoolExecutor(8) as pool:
-        results = list(pool.map(run, jobs))
+    # Every request at once, several at a time (one model after another took
+    # over an hour). The report is rewritten after every answer, so a run cut
+    # short by its time limit still has everything answered so far.
+    jobs = [(m, q, mode) for q in qs for mode in ("memory", "exa", "parallel") for m in models]
+    results = []
+    write(lines, detail, models, results, len(jobs))
+    with cf.ThreadPoolExecutor(12) as pool:
+        for f in cf.as_completed([pool.submit(run, j) for j in jobs]):
+            results.append(f.result())
+            write(lines, detail, models, results, len(jobs))
+    print(open("report.md").read()[:3000])
 
-    lines += ["", "## 2. Models: right / don't know / wrong / failed", "",
-              "Recent questions only (the two control questions are counted apart).", "",
-              "| Model | From memory | With Exa | With Parallel | Controls from memory |", "| --- | --- | --- | --- | --- |"]
+
+def write(lines, detail, models, results, total):
+    out = lines + ["", f"## 2. Models: right / don't know / wrong / failed ({len(results)} of {total} answers in)", "",
+                   "Recent questions only (the two control questions are counted apart).", "",
+                   "| Model | From memory | With Exa | With Parallel | Controls from memory | Median seconds |",
+                   "| --- | --- | --- | --- | --- | --- |"]
     for model in models:
         row = [model.split("/")[-1]]
         for mode in ("memory", "exa", "parallel"):
-            g = [grade(a, e, q["a"]) for m, md, q, a, e in results if m == model and md == mode and not q.get("control")]
+            g = [grade(a, e, q["a"]) for m, md, q, a, e, _ in results if m == model and md == mode and not q.get("control")]
             row.append(" / ".join(str(g.count(k)) for k in ("right", "dont_know", "wrong", "failed")))
-        c = [grade(a, e, q["a"]) for m, md, q, a, e in results if m == model and md == "memory" and q.get("control")]
+        c = [grade(a, e, q["a"]) for m, md, q, a, e, _ in results if m == model and md == "memory" and q.get("control")]
         row.append(f"{c.count('right')} of {len(c)}")
-        lines.append("| " + " | ".join(row) + " |")
-    lines += ["", "## 3. Search detail", "", "| Service | Question | Answer in results | Seconds | Error |",
-              "| --- | --- | --- | --- | --- |"] + detail
-    lines += ["", "## 4. Every answer", "", "| Model | Mode | Question | Grade | Answer |", "| --- | --- | --- | --- | --- |"]
-    for m, md, q, a, e in results:
+        secs = sorted(t for m, _, _, a, _, t in results if m == model and a)
+        row.append(f"{secs[len(secs) // 2]:.0f}" if secs else "")
+        out.append("| " + " | ".join(row) + " |")
+    out += ["", "## 3. Search detail", "", "| Service | Question | Answer in results | Seconds | Error |",
+            "| --- | --- | --- | --- | --- |"] + detail
+    out += ["", "## 4. Every answer", "", "| Model | Mode | Question | Grade | Seconds | Answer |", "| --- | --- | --- | --- | --- | --- |"]
+    for m, md, q, a, e, t in results:
         a1 = (a or e).replace("|", "/").replace("\n", " ")[:200]
-        lines.append(f"| {m.split('/')[-1]} | {md} | {q['q']} | {grade(a, e, q['a'])} | {a1} |")
-    open("report.md", "w").write("\n".join(lines) + "\n")
-    print("\n".join(lines[:30]))
+        out.append(f"| {m.split('/')[-1]} | {md} | {q['q']} | {grade(a, e, q['a'])} | {t:.0f} | {a1} |")
+    open("report.md", "w").write("\n".join(out) + "\n")
 
 
 if __name__ == "__main__":
