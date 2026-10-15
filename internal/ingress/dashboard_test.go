@@ -285,6 +285,9 @@ func TestPagesHaveAnIcon(t *testing.T) {
 // The Self Healing System page: an app with only an address is watched; a
 // folder must be a Git project; a project's own guardian.json is kept;
 // disconnect stops the watch and takes the app off the page.
+// quote makes a JSON string (Windows paths have backslashes).
+func quote(v string) string { b, _ := json.Marshal(v); return string(b) }
+
 func TestHealingConnect(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("MANGOMAN_HOME", home)
@@ -300,7 +303,7 @@ func TestHealingConnect(t *testing.T) {
 	s.StartHealing(ctx)
 
 	for _, bad := range []string{`{"name":"","url":"https://a.example"}`, `{"name":"Shop","url":"ftp://a.example"}`,
-		`{"name":"Shop","url":"a.example"}`, `{"name":"Shop","url":"https://a.example","folder":"` + t.TempDir() + `"}`,
+		`{"name":"Shop","url":"a.example"}`, `{"name":"Shop","url":"https://a.example","folder":` + quote(t.TempDir()) + `}`,
 		`{"name":"Shop","url":"https://a.example","folder":"../etc"}`} {
 		if w := call(h, "POST", "/mangoman/healing/connect", "127.0.0.1:4141", authz, bad); w.Code != 400 {
 			t.Fatalf("%s: %d %s", bad, w.Code, w.Body)
@@ -336,7 +339,7 @@ func TestHealingConnect(t *testing.T) {
 	gitIn("checkout", "-q", "-b", "dev")
 	gitIn("commit", "-q", "--allow-empty", "-m", "unreleased")
 	if w := call(h, "POST", "/mangoman/healing/connect", "127.0.0.1:4141", authz,
-		`{"name":"Other","url":"https://x.example/","folder":"`+proj+`"}`); w.Code != 400 || !strings.Contains(w.Body.String(), "dev_branch") {
+		`{"name":"Other","url":"https://x.example/","folder":`+quote(proj)+`}`); w.Code != 400 || !strings.Contains(w.Body.String(), "dev_branch") {
 		t.Fatalf("%d %s", w.Code, w.Body)
 	}
 	gitIn("checkout", "-q", "main")
@@ -345,7 +348,7 @@ func TestHealingConnect(t *testing.T) {
 	os.WriteFile(filepath.Join(proj, "guardian.json"), []byte(own), 0o644)
 	gitIn("checkout", "-q", "-b", "feature")
 	if w := call(h, "POST", "/mangoman/healing/connect", "127.0.0.1:4141", authz,
-		`{"name":"Other","url":"https://x.example/","folder":"`+proj+`"}`); w.Code != 200 || !strings.Contains(w.Body.String(), `"kept": true`) {
+		`{"name":"Other","url":"https://x.example/","folder":`+quote(proj)+`}`); w.Code != 200 || !strings.Contains(w.Body.String(), `"kept": true`) {
 		t.Fatalf("%d %s", w.Code, w.Body)
 	}
 	if b := liveBranch(proj); b != "main" {
@@ -364,7 +367,7 @@ func TestHealingConnect(t *testing.T) {
 	if w := call(h, "POST", "/mangoman/healing/disconnect", "127.0.0.1:4141", authz, `{"config":"/etc/x.json"}`); w.Code != 404 {
 		t.Fatalf("only connected apps: %d", w.Code)
 	}
-	if w := call(h, "POST", "/mangoman/healing/disconnect", "127.0.0.1:4141", authz, `{"config":"`+got.Config+`"}`); w.Code != 200 || s.watching(got.Config) {
+	if w := call(h, "POST", "/mangoman/healing/disconnect", "127.0.0.1:4141", authz, `{"config":`+quote(got.Config)+`}`); w.Code != 200 || s.watching(got.Config) {
 		t.Fatalf("%d %s", w.Code, w.Body)
 	}
 	_ = json.Unmarshal(call(h, "GET", "/mangoman/guardian", "127.0.0.1:4141", authz, "").Body.Bytes(), &list)
