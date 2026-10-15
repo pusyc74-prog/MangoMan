@@ -1,0 +1,25 @@
+{
+  "checked": "2026-10-15",
+  "note": "Answers checked by hand against news sources on the date above. Recent facts on purpose: most come after the free models' training ended. Each answer is a list of patterns; the answer is right when one matches.",
+  "questions": [
+    {"q": "Who won the 2026 Nobel Peace Prize?", "a": ["pillay"]},
+    {"q": "Who won the 2026 Nobel Prize in Literature?", "a": ["carson"]},
+    {"q": "Who won the 2026 Nobel Prize in Physics?", "a": ["halzen"]},
+    {"q": "Who won the 2026 Nobel Prize in Chemistry?", "a": ["kagan", "soai"]},
+    {"q": "Who won the 2026 Nobel Prize in Physiology or Medicine?", "a": ["deisseroth", "hegemann", "nagel"]},
+    {"q": "Who won the 2026 Nobel Memorial Prize in Economic Sciences?", "a": ["woodford", "robert e\\.? hall"]},
+    {"q": "Which country won the 2026 FIFA World Cup?", "a": ["spain"]},
+    {"q": "Who finished first in the first round of Brazil's 2026 presidential election on 4 October?", "a": ["flavio bolsonaro"]},
+    {"q": "What is the RBI repo rate after the October 2026 monetary policy meeting?", "a": ["5\\.50?\\s*(%|per ?cent)"]},
+    {"q": "On what date did Meta launch its Muse assistant in 2026?", "a": ["(8|eighth) sep", "sep\\w*\\.? 8\\b"]},
+    {"q": "On what date does Google's Custom Search JSON API shut down?", "a": ["(1|first) jan\\w* 2027", "jan\\w*\\.? 1,? 2027"]},
+    {"q": "How much did Exa, the AI search company, raise in its Series C in 2026?", "a": ["250\\s*(m\\b|million)"]},
+    {"q": "¿Qué país ganó la Copa Mundial de la FIFA 2026?", "a": ["espana", "spain"]},
+    {"q": "2026 का नोबेल शांति पुरस्कार किसे मिला?", "a": ["pillay", "पिल्लै", "पिल्ले"]},
+    {"q": "Wer hat den Nobelpreis für Literatur 2026 gewonnen?", "a": ["carson"]},
+    {"q": "Quem ficou em primeiro lugar no primeiro turno da eleição presidencial do Brasil em 2026?", "a": ["flavio bolsonaro"]},
+    {"q": "2026年のノーベル化学賞を受賞したのは誰ですか？", "a": ["kagan", "soai", "カガン", "硤合", "ソアイ"]},
+    {"q": "What is the capital of Australia?", "a": ["canberra"], "control": true},
+    {"q": "What is the chemical symbol for gold?", "a": ["\\bau\\b"], "control": true}
+  ]
+}
