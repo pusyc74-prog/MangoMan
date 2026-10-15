@@ -15,7 +15,7 @@
     {"q": "On what date does Google's Custom Search JSON API shut down?", "a": ["(1|first) jan\\w* 2027", "jan\\w*\\.? 1,? 2027"]},
     {"q": "How much did Exa, the AI search company, raise in its Series C in 2026?", "a": ["250\\s*(m\\b|million)"]},
     {"q": "¿Qué país ganó la Copa Mundial de la FIFA 2026?", "a": ["espana", "spain"]},
-    {"q": "2026 का नोबेल शांति पुरस्कार किसे मिला?", "a": ["pillay", "पिल्लै", "पिल्ले"]},
+    {"q": "2026 का नोबेल शांति पुरस्कार किसे मिला?", "a": ["pillay", "पिल्लै", "पिल्ले", "पिल्लई"]},
     {"q": "Wer hat den Nobelpreis für Literatur 2026 gewonnen?", "a": ["carson"]},
     {"q": "Quem ficou em primeiro lugar no primeiro turno da eleição presidencial do Brasil em 2026?", "a": ["flavio bolsonaro"]},
     {"q": "2026年のノーベル化学賞を受賞したのは誰ですか？", "a": ["kagan", "soai", "カガン", "硤合", "ソアイ"]},
