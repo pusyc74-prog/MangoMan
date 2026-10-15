@@ -126,6 +126,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	s.brainRoutes(mux)
 	s.agentRoutes(mux)
 	s.guardianRoutes(mux)
+	s.sheetRoutes(mux)
 }
 
 // securityHeaders lock the dashboard page down: own files only, no

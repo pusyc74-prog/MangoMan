@@ -26,6 +26,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/radar"
 	"github.com/pusyc74-prog/mangoman/internal/router"
 	"github.com/pusyc74-prog/mangoman/internal/setup"
+	"github.com/pusyc74-prog/mangoman/internal/sheets"
 )
 
 const maxRequestBody = 32 << 20
@@ -59,6 +60,8 @@ type Server struct {
 	Ask func(prompt string) (string, error)
 	// Arch is Mango Arch, the shared learning; nil = not live in this build.
 	Arch *arch.Client
+	// Sheets is Chargesheets, the user's spreadsheets as dashboards; nil = off.
+	Sheets *sheets.Store
 
 	code  codeState  // the attached coding workspace, if any
 	ready readyState // the setup page's Get ready step

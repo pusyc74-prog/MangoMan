@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strings"
@@ -34,6 +35,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/radar"
 	"github.com/pusyc74-prog/mangoman/internal/router"
 	"github.com/pusyc74-prog/mangoman/internal/setup"
+	"github.com/pusyc74-prog/mangoman/internal/sheets"
 	"github.com/pusyc74-prog/mangoman/internal/store"
 )
 
@@ -372,6 +374,7 @@ func serve(port int, opened func(connected int)) error {
 		},
 		Arch: archClient(dir, cat, cfg, rt),
 		Ask:  func(p string) (string, error) { a, _, err := askRouter(p); return a, err }}
+	srv.Sheets = &sheets.Store{Dir: filepath.Join(dir, "chargesheets"), Model: srv.Ask}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
 		return fmt.Errorf("cannot listen on %s: %w", srv.Addr(), err)
