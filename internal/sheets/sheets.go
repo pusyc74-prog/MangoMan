@@ -446,7 +446,7 @@ func (st *Store) load(ctx context.Context, id string) (Sheet, error) {
 }
 
 // describeWait is how long a load waits for the model's description.
-var describeWait = 25 * time.Second
+var describeWait = 12 * time.Second
 
 // Profile is what the engine read (profile.json).
 type Profile struct {
