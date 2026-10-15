@@ -8,6 +8,8 @@ the router with OLLAMA_CONTEXT_LENGTH=131072 (else it counts as too small for
 coding requests) and use the model strict/fake. A coding request (one with
 tools) follows a script: write hello.txt, run a command (needs approval on
 the screen), then answer "Done. I made hello.txt and started the app."
+Chargesheets' requests get short scripted answers: a description, one query
+then an answer built from its first row, and a readout made of the facts.
 
 Files in the control dir (default: ./fake-model-control) change what the
 next coding request gets; *_once files are removed when used:
@@ -27,6 +29,7 @@ checks afterwards that every coding request carried those rules (exit 1 if not).
 """
 import json
 import os
+import re
 import sys
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -59,6 +62,32 @@ def once(name):
 def setting(name):
     path = os.path.join(CTL, name)
     return open(path).read().strip() if os.path.exists(path) else ""
+
+
+def sheets(text):
+    """Chargesheets' prompts (internal/sheets/ai.go), or None."""
+    if "data analyst inside Chargesheets" in text:
+        if "Step 1 (" not in text:
+            table = re.search(r"TABLE (\w+) ", text).group(1)
+            cat = re.search(r'^  "([^"]+)" TEXT category', text, re.M)
+            num = re.search(r'^  "([^"]+)" REAL', text, re.M)
+            if cat and num:
+                q = f'SELECT "{cat.group(1)}", ROUND(SUM("{num.group(1)}"), 2) AS total FROM {table} GROUP BY 1 ORDER BY 2 DESC'
+            else:
+                q = f"SELECT COUNT(*) AS n FROM {table}"
+            return json.dumps({"query": q, "why": "totals by group"})
+        m = re.search(r"Step 1 \(.*?\): .*?\n(.*?)\n(.*?)\n", text)
+        cols, first = m.group(1).split(" | "), m.group(2).split(" | ")
+        if len(cols) > 1:
+            return json.dumps({"answer": f"{first[0]} is first, with {first[-1]}.", "chart": {"step": 1, "type": "bar", "x": cols[0], "y": [cols[-1]]}})
+        return json.dumps({"answer": f"There are {first[0]} rows."})
+    if "Write the readout" in text:
+        facts = re.findall(r"^- (.*)$", text, re.M)
+        return ("## In short\n- " + facts[0] + "\n## What is going well\n- " + facts[min(1, len(facts) - 1)] +
+                "\n## What needs attention\n- " + facts[-1] + "\n## What to do next\n- Check the numbers above.")
+    if "added this table to Chargesheets" in text:
+        return json.dumps({"about": "A stand-in description of this data.", "questions": ["Which group is biggest?", "How many rows are there?"]})
+    return None
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -96,8 +125,12 @@ class Handler(BaseHTTPRequestHandler):
                                 **{k: v for k, v in body.items() if k not in ("messages", "tools")}}) + "\n")
         if os.path.exists(os.path.join(CTL, "fail_always")):
             return self.reply(500, {"error": {"message": "internal error"}})
-        if not tools:  # side requests (titles): answer at once
-            return self.stream([chunk({"role": "assistant", "content": "Hello file"}), chunk({}, "stop")])
+        if not tools:  # side requests (titles, Chargesheets): answer at once
+            text = sheets(" ".join(str(m.get("content")) for m in body.get("messages", []))) or "Hello file"
+            if not body.get("stream"):
+                return self.reply(200, {"id": "x", "object": "chat.completion", "model": "fake",
+                                        "choices": [{"index": 0, "message": {"role": "assistant", "content": text}, "finish_reason": "stop"}]})
+            return self.stream([chunk({"role": "assistant", "content": text}), chunk({}, "stop")])
         if once("fail_once"):
             return self.reply(502, {"error": {"message": "no answer", "type": "all_candidates_failed"}})
         if once("overload_once"):

@@ -6,7 +6,10 @@
 <title>MangoMan</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="sheets.css">
 <script src="app.js" defer></script>
+<script src="vendor/echarts.min.js" defer></script>
+<script src="sheets.js" defer></script>
 </head>
 <body class="app">
 <svg class="sprite" aria-hidden="true" focusable="false">
@@ -171,12 +174,7 @@
     </details>
   </div>
 
-  <div class="view" id="view-chargesheets" hidden>
-    <div class="view-head">
-      <h2>Chargesheets</h2>
-      <p class="sub">Coming soon.</p>
-    </div>
-  </div>
+  <div class="view cs" id="view-chargesheets" hidden></div>
 
   <div class="view" id="view-templates" hidden>
     <div class="view-head">

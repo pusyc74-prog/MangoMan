@@ -48,12 +48,12 @@ jobs:
           for i in $(seq 30); do curl -sf http://127.0.0.1:4199/healthz && break; sleep 1; done
       - name: Run the test
         timeout-minutes: 40
-        run: python3 scripts/sheets-test.py
+        run: python3 scripts/sheets-test.py 2>&1 | tee run.log
       - name: Publish the report to the eval-reports branch
         if: always()
         run: |
           [ -s report.md ] || exit 0
-          mkdir out && mv report.md out/ && cp serve.log out/ 2>/dev/null; python3 scripts/mask-keys.py out
+          mkdir out && mv report.md out/ && cp serve.log run.log out/ 2>/dev/null; python3 scripts/mask-keys.py out
           cat out/report.md >> "$GITHUB_STEP_SUMMARY"
           stamp=$(date -u +%Y%m%d-%H%M%S)
           git config user.name "mangoman-eval"

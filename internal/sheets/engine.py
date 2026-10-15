@@ -365,7 +365,8 @@ def detect(name, vals, rows, currency_hint):
         groups.setdefault(k, {}).setdefault(t.strip(), 0)
         groups[k][t.strip()] += 1
     if len(groups) <= max(60, 0.2 * n) and sum(len(t) for t in text) / n <= 60:
-        canon = {k: max(v, key=v.get) for k, v in groups.items()}
+        # The way most rows write it, preferring "Mumbai" over "mumbai" or "MUMBAI".
+        canon = {k: max(v, key=lambda w: (w[:1].isupper() and not w.isupper(), v[w])) for k, v in groups.items()}
         merged = sum(len(v) - 1 for v in groups.values())
         out.update(kind="category", merged=merged,
                    values=[canon[re.sub(r"\s+", " ", str(v).strip()).casefold()] if v is not None else None for v in vals])

@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -50,11 +51,16 @@ func guessRoles(ds Dataset) Roles {
 		switch {
 		case c.Kind == "date" && (r.Date == "" || c.Blanks < blanksOf(ds, r.Date)):
 			r.Date = c.Name
-		case (c.Kind == "category" || c.Kind == "yes_no") && c.Distinct >= 2 && c.Distinct <= 60 && len(r.Dims) < 5:
+		case (c.Kind == "category" || c.Kind == "yes_no") && c.Distinct >= 2 && c.Distinct <= 60:
 			r.Dims = append(r.Dims, c.Name)
 		case r.Entity == "" && (c.Kind == "text" || c.Kind == "category" || c.Kind == "id") && c.Distinct > 5 && entityWords.MatchString(c.Name):
 			r.Entity = c.Name
 		}
+	}
+	// Well-filled columns first: a column blank on most rows splits little.
+	sort.SliceStable(r.Dims, func(i, j int) bool { return blanksOf(ds, r.Dims[i]) < blanksOf(ds, r.Dims[j]) })
+	if len(r.Dims) > 5 {
+		r.Dims = r.Dims[:5]
 	}
 	return r
 }

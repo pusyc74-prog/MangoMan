@@ -239,9 +239,18 @@ func (st *Store) AddFile(id, name string, r io.Reader) (Sheet, error) {
 	return st.update(id, func(sh *Sheet) {
 		sh.Sources = append(sh.Sources, Source{File: file, Label: strings.TrimSuffix(name, filepath.Ext(name))})
 		if len(sh.Sources) == 1 && sh.Title == "New Chargesheet" {
-			sh.Title = strings.TrimSuffix(name, filepath.Ext(name))
+			sh.Title = niceTitle(strings.TrimSuffix(name, filepath.Ext(name)))
 		}
 	})
+}
+
+// niceTitle makes "kesar_sales-2026" read "Kesar sales 2026".
+func niceTitle(s string) string {
+	s = strings.Join(strings.Fields(strings.NewReplacer("_", " ", "-", " ").Replace(s)), " ")
+	if s == "" {
+		return "New Chargesheet"
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
 }
 
 func unique(name string, have []Source) string {

@@ -82,7 +82,7 @@ func TestLoadReadsMessyFiles(t *testing.T) {
 	if sh, err = st.Load(context.Background(), sh.ID); err != nil {
 		t.Fatal(err)
 	}
-	if sh.Title != "sales" || sh.Roles.Table != "sales · Orders" || sh.Rows != 120 {
+	if sh.Title != "Sales" || sh.Roles.Table != "sales · Orders" || sh.Rows != 120 {
 		t.Fatalf("title %q table %q rows %d", sh.Title, sh.Roles.Table, sh.Rows)
 	}
 	p, err := st.Profile(sh.ID)

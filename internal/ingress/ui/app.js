@@ -973,7 +973,8 @@ const VIEWS = ["agents", "healing", "chargesheets", "templates", "files", "histo
 
 function showView() {
   const want = location.hash.slice(1);
-  const v = VIEWS.includes(want) ? want : "agents";
+  const top = want.split("/")[0];
+  const v = VIEWS.includes(top) ? top : "agents";
   for (const id of VIEWS) $("view-" + id).hidden = id !== v;
   for (const a of document.querySelectorAll(".nav a")) {
     if (a.dataset.view === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
@@ -983,6 +984,8 @@ function showView() {
   if (v === "files" || v === "settings") loadFiles();
   if (v === "healing") { loadGuardian(); loadHealFolders(); }
   if (v === "settings") loadArch();
+  // Chargesheets keeps its own place after the slash: #chargesheets/<id>/<tab>.
+  if (v === "chargesheets") Sheets.route(want.slice("chargesheets/".length)); else Sheets.leave();
 }
 
 function say(text, kind) {

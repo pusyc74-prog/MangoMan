@@ -13,6 +13,8 @@ import re
 import sys
 import tempfile
 import time
+import traceback
+import urllib.error
 import urllib.request
 
 import openpyxl
@@ -176,33 +178,44 @@ def main():
             "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     right = total = 0
     history = {}
-    for i, (name, q, follow, words, nums) in enumerate(truths()):
+    def save():
+        head = out[:2] + [f"**{right} of {total} answers right.**", ""] + out[2:]
+        open("report.md", "w").write("\n".join(head) + "\n")
+
+    for name, q, follow, words, nums in truths():
         if name not in sheets:
             continue
         total += 1
-        hist = history.get(name, []) if follow else []
-        start = time.time()
-        job = call("POST", f"/mangoman/sheets/{sheets[name]}/ask", {"question": q, "history": hist})
-        res = {}
-        while time.time() - start < 600:
-            time.sleep(2)
-            res = call("GET", f"/mangoman/sheets/{sheets[name]}/ask/{job.get('job')}")
-            if res.get("done") or "error" in res and not res.get("steps"):
-                break
-        a = res.get("answer") or {}
-        text = a.get("text") or res.get("error") or "(no answer)"
-        miss = grade(text, words, nums) if a else ["no answer"]
-        right += not miss
-        history.setdefault(name, []).append({"q": q, "a": text})
-        sql = " / ".join(s.get("sql", "") for s in a.get("steps", []))[:300].replace("|", "/")
-        cell = text[:400].replace("|", "/").replace("\n", " ")
-        out.append(f"| {name} | {q} | {'yes' if not miss else 'NO'} | {', '.join(miss)} | {', '.join(a.get('unchecked') or [])} | "
-                   f"{len(a.get('steps', []))} | {time.time() - start:.0f} | {cell} <br>`{sql}` |")
+        try:
+            right += ask(sheets[name], name, q, follow, words, nums, history, out)
+        except Exception:  # noqa: BLE001 - one broken question must not end the run
+            out.append(f"| {name} | {q} | NO | error | | | | {traceback.format_exc().splitlines()[-1][:300].replace('|', '/')} |")
         print(out[-1], flush=True)
-    out[2:2] = [f"**{right} of {total} answers right.**", ""]
-    open("report.md", "w").write("\n".join(out) + "\n")
+        save()
+    save()
     print("\n".join(out[:6]))
     return 0
+
+
+def ask(sheet, name, q, follow, words, nums, history, out):
+    hist = history.get(name, []) if follow else []
+    start = time.time()
+    job = call("POST", f"/mangoman/sheets/{sheet}/ask", {"question": q, "history": hist})
+    res = {}
+    while time.time() - start < 600:
+        time.sleep(2)
+        res = call("GET", f"/mangoman/sheets/{sheet}/ask/{job.get('job')}", timeout=60)
+        if res.get("done") or "error" in res and not res.get("steps"):
+            break
+    a = res.get("answer") or {}
+    text = str(a.get("text") or res.get("error") or "(no answer)")
+    miss = grade(text, words, nums) if a else ["no answer"]
+    history.setdefault(name, []).append({"q": q, "a": text})
+    sql = " / ".join(s.get("sql", "") for s in a.get("steps", []))[:300].replace("|", "/")
+    cell = text[:400].replace("|", "/").replace("\n", " ")
+    out.append(f"| {name} | {q} | {'yes' if not miss else 'NO'} | {', '.join(miss)} | {', '.join(a.get('unchecked') or [])} | "
+               f"{len(a.get('steps', []))} | {time.time() - start:.0f} | {cell} <br>`{sql}` |")
+    return not miss
 
 
 if __name__ == "__main__":

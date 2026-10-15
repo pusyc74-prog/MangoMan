@@ -50,7 +50,7 @@ func TestSheetsAPI(t *testing.T) {
 	}
 	w = do("POST", "/mangoman/sheets/"+sh.ID+"/load", "")
 	var v sheetView
-	if json.Unmarshal(w.Body.Bytes(), &v) != nil || v.Profile == nil || v.Sheet.Title != "shop" || v.Sheet.About != "Shop sales." {
+	if json.Unmarshal(w.Body.Bytes(), &v) != nil || v.Profile == nil || v.Sheet.Title != "Shop" || v.Sheet.About != "Shop sales." {
 		t.Fatalf("load %d %s", w.Code, w.Body)
 	}
 	if w := do("GET", "/mangoman/sheets/"+sh.ID+"/data", ""); w.Code != 200 || !strings.Contains(w.Body.String(), `"words":["Soap","Oil"]`) {
