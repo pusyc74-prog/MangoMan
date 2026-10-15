@@ -29,8 +29,9 @@ import urllib.request
 
 PROVIDERS = {"nvidia": ("https://integrate.api.nvidia.com/v1/chat/completions", "NVIDIA_API_KEY"),
              "groq": ("https://api.groq.com/openai/v1/chat/completions", "GROQ_API_KEY")}
+# deepseek-v4.1-flash and glm-5.3-flash are left out: they gave no answer to any
+# request on 15 Oct (this test, search-test and nvidia-check).
 MODELS = ["groq:openai/gpt-oss-120b", "groq:qwen/qwen3.8-27b", "nvidia:openai/gpt-oss-20b",
-          "nvidia:deepseek-ai/deepseek-v4.1-flash", "nvidia:z-ai/glm-5.3-flash",
           "nvidia:nvidia/nemotron-3-ultra-550b-a55b", "nvidia:nvidia/nemotron-3-super-120b-a12b",
           "nvidia:google/gemma-4-31b-it"]
 REPEATS = 2
@@ -367,6 +368,9 @@ def score_plan(f, text):
         return 0.0, ["no views"]
     notes, bad = [], 0
     for v in views:
+        for k in ("column", "column2", "by", "split"):  # code would match "Deal Value" to "Deal Value (INR)"
+            if v.get(k) and v[k] not in names:
+                v[k] = next((n for n in names if re.sub(r"\s*\(.*\)$", "", n).lower() == str(v[k]).strip().lower()), v[k])
         used = [v.get(k) for k in ("column", "column2", "by", "split") if v.get(k)]
         wrong = [u for u in used if u not in names]
         if wrong or v.get("type") not in VIEWS or v.get("metric") not in METRICS:
@@ -393,12 +397,14 @@ def score_insight(f, text, prompt):
     low, notes = text.lower(), []
     allowed = numbers(prompt)
     allowed |= {str(i) for i in range(0, 11)} | {"14", "2026"}
+    nums = [float(a) for a in allowed if len(allowed) < 400]
+    allowed |= {f"{x + y:g}" for x in nums for y in nums} | {f"{abs(x - y):g}" for x in nums for y in nums}  # sums and gaps are fine
     made_up = sorted(n for n in numbers(text) - allowed if not any(n == a.rstrip("0").rstrip(".") for a in allowed))
     if made_up:
         notes.append("numbers not in the facts: " + ", ".join(made_up[:6]))
-    hits = [label for label, rx in f["must"] if re.search(rx, low)]
+    hits = [label for label, rx in f["must"] if re.search(rx, low, re.I)]
     notes += [f"missed: {label}" for label, rx in f["must"] if label not in hits]
-    traps = [label for label, rx in f["traps"] if re.search(rx, low)]
+    traps = [label for label, rx in f["traps"] if re.search(rx, low, re.I)]
     notes += [f"TRAP: {t}" for t in traps]
     s = len(hits) / len(f["must"]) - 0.5 * len(traps) - (0.25 if made_up else 0)
     return max(0.0, round(s, 3)), notes
