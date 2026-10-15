@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -104,6 +105,8 @@ func TestStartersMatchPacks(t *testing.T) {
 	var d struct {
 		Agents []struct {
 			ID, Title, Summary, Prompt string
+			File, Accept               string
+			FilePrompt                 string `json:"file_prompt"`
 			Gets, Needs, Packs         []string
 		}
 		Later     []struct{ Title, Summary, Why string }
@@ -130,6 +133,23 @@ func TestStartersMatchPacks(t *testing.T) {
 		for _, p := range a.Packs {
 			if !have[p] || !strings.Contains(a.Prompt, p) {
 				t.Errorf("agent %q: pack %s missing, or not named in its first message", a.Title, p)
+			}
+		}
+		// An agent given a file: its own first message names the file, the
+		// folder and every pack, and only kinds the upload takes are offered.
+		if a.File != "" {
+			if !strings.Contains(a.FilePrompt, "{file}") || !strings.Contains(a.FilePrompt, "{folder}") {
+				t.Errorf("agent %q: file_prompt must name {file} and {folder}", a.Title)
+			}
+			for _, p := range a.Packs {
+				if !strings.Contains(a.FilePrompt, p) {
+					t.Errorf("agent %q: file_prompt does not name %s", a.Title, p)
+				}
+			}
+			for _, ext := range strings.Split(a.Accept, ",") {
+				if !uploadable[ext] {
+					t.Errorf("agent %q offers %s, which the upload refuses", a.Title, ext)
+				}
 			}
 		}
 	}
@@ -227,6 +247,37 @@ func TestCodeOpenReuses(t *testing.T) {
 		w := call(h, "POST", "/mangoman/code/open", "127.0.0.1:4141", authz, "")
 		if w.Code != c.code || (c.code == 200) != strings.Contains(w.Body.String(), "MangoMan Projects") {
 			t.Errorf("%s: %d %s", name, w.Code, w.Body)
+		}
+	}
+}
+
+// A file picked on an agent's card lands in a task folder named after it,
+// inside MangoMan Projects, whatever the name it was sent with.
+func TestFilesUpload(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	t.Setenv("MANGOMAN_HOME", t.TempDir())
+	h, _ := dashServer(t, mem{})
+	projects := filepath.Join(home, "MangoMan Projects")
+	w := call(h, "POST", "/mangoman/files/upload?name="+url.QueryEscape("Ozonics Updated Feed.xlsx"), "127.0.0.1:4141", authz, "sheet bytes")
+	var got struct{ Path, Folder string }
+	if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil || w.Code != 200 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	want := filepath.Join(projects, "ozonics-updated-feed", "Ozonics Updated Feed.xlsx")
+	if b, err := os.ReadFile(want); err != nil || string(b) != "sheet bytes" || got.Path != want || got.Folder != filepath.Dir(want) {
+		t.Fatalf("saved %+v: %v", got, err)
+	}
+	// A name with folders in it stays inside its task folder.
+	w = call(h, "POST", "/mangoman/files/upload?name="+url.QueryEscape(`..\..\evil.csv`), "127.0.0.1:4141", authz, "x")
+	_ = json.Unmarshal(w.Body.Bytes(), &got)
+	if w.Code != 200 || !strings.HasPrefix(got.Path, projects+string(filepath.Separator)) || filepath.Base(got.Path) != "evil.csv" {
+		t.Fatalf("%d %+v", w.Code, got)
+	}
+	for _, bad := range []string{"run.exe", "script.ps1", ".env", "", "noext"} {
+		if w := call(h, "POST", "/mangoman/files/upload?name="+url.QueryEscape(bad), "127.0.0.1:4141", authz, "x"); w.Code != 400 {
+			t.Fatalf("%q: %d", bad, w.Code)
 		}
 	}
 }

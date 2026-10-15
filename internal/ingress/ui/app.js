@@ -1009,6 +1009,33 @@ function openCoding(prompt) {
 
 // ---------- Super Agents and Templates ----------
 
+// fileStart is the foot of an agent that works on a file: pick the file,
+// it is saved in a task folder in MangoMan Projects, and Start hands the
+// agent its exact place, so the agent never asks for a path.
+function fileStart(a) {
+  let picked = null;
+  const id = `file-${a.id}`;
+  const msg = el("p", { class: "msg", role: "status" });
+  const start = el("button", { type: "button", class: "primary start", onclick: () =>
+    openCoding(picked ? a.file_prompt.replace("{file}", picked.path).replace("{folder}", picked.folder) : a.prompt) }, "Start");
+  const input = el("input", { type: "file", id, accept: a.accept, class: "sr", onchange: async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    picked = null; start.disabled = true; msg.className = "msg"; msg.textContent = `Adding ${f.name}\u2026`;
+    try {
+      const res = await fetch(`/mangoman/files/upload?name=${encodeURIComponent(f.name)}`,
+        { method: "POST", headers: { "Authorization": "Bearer " + state.token }, body: f });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) throw new Error((body && body.error && body.error.message) || `HTTP ${res.status}`);
+      picked = body;
+      msg.className = "msg ok"; msg.textContent = `${f.name} is ready. Press Start.`;
+    } catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+    start.disabled = false;
+  } });
+  return el("div", { class: "file-start" },
+    input, el("label", { for: id, class: "ghost" }, `Choose ${a.file.toLowerCase()}`), start, msg);
+}
+
 function startButton(prompt) {
   return el("button", { type: "button", class: "primary start", onclick: () => openCoding(prompt) }, "Start");
 }
@@ -1022,7 +1049,7 @@ async function loadStarters() {
     top(a.title), el("p", {}, a.summary),
     el("p", { class: "label" }, "You get"), el("ul", { class: "chips" }, a.gets.map((t) => el("li", {}, t))),
     el("p", { class: "needs" }, "Have ready: " + a.needs.join("; ")),
-    startButton(a.prompt))));
+    a.file ? fileStart(a) : startButton(a.prompt))));
   $("later-cards").replaceChildren(...d.later.map((a) => el("li", { class: "card" },
     top(a.title), el("p", {}, a.summary), el("p", { class: "needs" }, a.why))));
   $("template-cards").replaceChildren(...d.templates.map((t) => el("li", { class: "card" },

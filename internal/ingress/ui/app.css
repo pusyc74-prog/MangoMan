@@ -540,3 +540,10 @@ body.app { padding: 0; display: grid; grid-template-columns: 248px minmax(0, 1fr
   .flow { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* An agent that starts from a file: choose it, then Start. */
+.file-start { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.file-start label { cursor: pointer; }
+.file-start input:focus-visible + label { outline: 2px solid var(--leaf); outline-offset: 2px; }
+.file-start .start { margin-top: 0; }
+.file-start .msg { flex-basis: 100%; }

@@ -15,7 +15,7 @@ func TestOpenCodeConfig(t *testing.T) {
 	// OpenCode keeps its own tools (measured on 8 Oct); instructions only with a rules file.
 	for _, mode := range []int{modeTUI, modeRun} {
 		var c map[string]any
-		_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", mode, "")), &c)
+		_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", mode, "", false)), &c)
 		if c["tools"] != nil || c["instructions"] != nil || c["model"] != "mangoman/free/coder" {
 			t.Fatalf("mode %d: %v", mode, c)
 		}
@@ -57,7 +57,7 @@ func TestCodeRules(t *testing.T) {
 		t.Fatalf("rules file %s: %v", path, err)
 	}
 	var c struct{ Instructions []string }
-	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeUI, path)), &c)
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeUI, path, true)), &c)
 	if len(c.Instructions) != 1 || c.Instructions[0] != path {
 		t.Fatalf("instructions: %v", c.Instructions)
 	}
@@ -70,9 +70,16 @@ func TestOpenCodeConfigUIAsksFirst(t *testing.T) {
 		} `json:"permission"`
 		Tools map[string]bool `json:"tools"`
 	}
-	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeUI, "")), &c)
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeUI, "", false)), &c)
 	if c.Permission.Bash["*"] != "ask" || c.Permission.Bash["git status*"] != "allow" {
 		t.Fatalf("the coding screen should ask before commands, except reading ones: %v", c.Permission.Bash)
+	}
+	// In MangoMan Projects only what deletes, moves, downloads, installs or
+	// changes the computer asks.
+	c.Permission.Bash = nil
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeUI, "", true)), &c)
+	if c.Permission.Bash["*"] != "allow" || c.Permission.Bash["Remove-Item*"] != "ask" || c.Permission.Bash["rm*"] != "ask" || c.Permission.Bash["pip *"] != "ask" {
+		t.Fatalf("projects: %v", c.Permission.Bash)
 	}
 	if c.Tools != nil {
 		t.Fatal("the coding screen keeps every tool, including questions")

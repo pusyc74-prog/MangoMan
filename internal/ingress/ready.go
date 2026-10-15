@@ -2,10 +2,12 @@ package ingress
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sort"
 	"strings"
@@ -51,6 +53,7 @@ func (s *Server) readyRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /mangoman/code/open", s.auth(http.HandlerFunc(s.codeOpen)))
 	mux.Handle("GET /mangoman/files", s.auth(http.HandlerFunc(s.filesList)))
 	mux.Handle("POST /mangoman/files/open", s.auth(http.HandlerFunc(s.filesOpen)))
+	mux.Handle("POST /mangoman/files/upload", s.auth(http.HandlerFunc(s.filesUpload)))
 }
 
 // projects returns the projects folder, made if missing, or writes the error.
@@ -167,6 +170,60 @@ func (s *Server) filesOpen(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, map[string]string{"folder": dir})
+}
+
+// uploadable are the kinds of file an agent can be given from the dashboard.
+var uploadable = map[string]bool{".xlsx": true, ".xls": true, ".csv": true, ".tsv": true, ".json": true, ".txt": true,
+	".pdf": true, ".docx": true, ".pptx": true, ".png": true, ".jpg": true, ".jpeg": true, ".md": true}
+
+const maxUpload = 50 << 20
+
+var notWord = regexp.MustCompile(`[^\p{L}\p{N}]+`)
+
+// filesUpload puts a file the user picked on an agent's card into a task
+// folder in MangoMan Projects, named after the file, so the agent starts with
+// it instead of asking for a path (owner, 15 Oct: the data analyst asked
+// three times for the file's path). The file's name comes as ?name=, its
+// bytes as the body.
+func (s *Server) filesUpload(w http.ResponseWriter, r *http.Request) {
+	dir := projects(w)
+	if dir == "" {
+		return
+	}
+	name := filepath.Base(strings.ReplaceAll(r.URL.Query().Get("name"), "\\", "/"))
+	ext := strings.ToLower(filepath.Ext(name))
+	if name == "." || name == "/" || strings.HasPrefix(name, ".") || !uploadable[ext] {
+		core.WriteError(w, http.StatusBadRequest, "bad_file", "Choose a spreadsheet, document, PDF or picture.")
+		return
+	}
+	task := strings.Trim(notWord.ReplaceAllString(strings.ToLower(strings.TrimSuffix(name, filepath.Ext(name))), "-"), "-")
+	if task == "" {
+		task = "upload"
+	}
+	folder := filepath.Join(dir, task)
+	if err := os.MkdirAll(folder, 0o755); err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "internal", err.Error())
+		return
+	}
+	path := filepath.Join(folder, name)
+	f, err := os.CreateTemp(folder, ".upload-*")
+	if err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "internal", err.Error())
+		return
+	}
+	_, err = io.Copy(f, http.MaxBytesReader(w, r.Body, maxUpload))
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Rename(f.Name(), path)
+	}
+	if err != nil {
+		os.Remove(f.Name())
+		core.WriteError(w, http.StatusBadRequest, "not_saved", "The file was not saved (at most 50 MB): "+err.Error())
+		return
+	}
+	writeJSON(w, map[string]string{"path": path, "folder": folder})
 }
 
 // ProjectsDir is where the coding screen opens from the setup page and the

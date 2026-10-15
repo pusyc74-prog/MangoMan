@@ -7,6 +7,9 @@
       "gets": ["A dashboard that opens in your browser", "A report PDF with the key findings"],
       "needs": ["Your data: Excel, CSV or JSON"],
       "packs": ["mangoman-data-dashboard", "mangoman-client-report"],
+      "file": "Your spreadsheet",
+      "accept": ".xlsx,.xls,.csv,.tsv,.json",
+      "file_prompt": "Be my data analyst. My data is the file \"{file}\". Work in its folder, \"{folder}\", and do not ask me for the file. Look at the data first and decide yourself what matters most for this kind of data; ask me at most one short question, only if the data cannot tell you. Use the mangoman-data-dashboard skill to build a dashboard, then the mangoman-client-report skill for a short report of what the numbers mean.",
       "prompt": "Be my data analyst. Use the mangoman-data-dashboard skill to build a dashboard from my data, then the mangoman-client-report skill for a report of what the numbers mean. First ask me for the data file and what I want to know."
     },
     {
@@ -70,6 +73,9 @@
       "gets": ["A resume PDF that applicant tracking systems can read", "A cover letter"],
       "needs": ["Your current resume or work history", "The job description (optional)"],
       "packs": ["mangoman-resume"],
+      "file": "Your current resume",
+      "accept": ".pdf,.docx,.txt,.md",
+      "file_prompt": "Help me apply for a job. My current resume is the file \"{file}\". Work in its folder, \"{folder}\", and do not ask me for it. Use the mangoman-resume skill for my resume and a matching cover letter. First ask me only for the job I want, or its job description.",
       "prompt": "Help me apply for a job. Use the mangoman-resume skill for my resume and a matching cover letter. First ask me for my work history or current resume and the job I want."
     },
     {
@@ -88,6 +94,9 @@
       "gets": ["Slides as PowerPoint, PDF and web"],
       "needs": ["Your numbers or analysis", "Who will see it"],
       "packs": ["mangoman-ceo-deck"],
+      "file": "Your numbers",
+      "accept": ".xlsx,.xls,.csv,.json,.pdf,.docx,.txt,.md",
+      "file_prompt": "Make a slide deck. My numbers are in the file \"{file}\". Work in its folder, \"{folder}\", and do not ask me for the file. Use the mangoman-ceo-deck skill. Ask me first only who the deck is for.",
       "prompt": "Make a slide deck. Use the mangoman-ceo-deck skill. First ask me for my numbers and who the deck is for."
     },
     {

@@ -69,6 +69,23 @@ const (
 // "cat > file" would pass as cat and write without asking.
 var uiAllowed = []string{"ls*", "pwd", "git status*", "git diff*", "git log*", "dir*", "Get-ChildItem*", "Get-Content *"}
 
+// projectsAsk are the only commands the coding screen asks about in the
+// MangoMan Projects folder, where the agents and templates work for people
+// who cannot judge a command (owner, 15 Oct: a data analysis asked about a
+// dozen harmless ones, from mkdir to running the skill's own script).
+// Everything else runs; these delete, move, download, install, publish or
+// change the computer. OpenCode splits a line into its commands and checks
+// each, so "cd x; rm y" still asks about rm.
+var projectsAsk = []string{
+	"rm*", "rmdir*", "del *", "erase *", "rd *", "Remove-Item*", "ri *", "Clear-Content*",
+	"mv *", "move *", "Move-Item*", "mi *", "Rename-Item*", "ren *",
+	"curl*", "wget*", "Invoke-WebRequest*", "iwr*", "Invoke-RestMethod*", "irm*", "Start-BitsTransfer*",
+	"pip *", "pip3 *", "python* -m pip*", "npm *", "npx *", "winget*", "choco*", "brew*", "apt*", "sudo*",
+	"git push*", "git reset*", "git clean*", "git checkout*",
+	"shutdown*", "Restart-Computer*", "Stop-Computer*", "Stop-Process*", "kill*", "taskkill*",
+	"reg *", "Set-ItemProperty*", "Set-ExecutionPolicy*", "chmod*", "chown*", "format*",
+}
+
 // codeRules is what every session is told about this computer: where to work
 // and how commands are written here, never how to do the task (a "use the
 // skill first" rule lowered ad copy scores, 8 Oct). Each rule answers what the
@@ -78,7 +95,9 @@ var uiAllowed = []string{"ls*", "pwd", "git status*", "git diff*", "git log*", "
 // agent". projects is a session in the MangoMan Projects folder; powershell
 // is a session whose commands run in PowerShell (see psShell).
 func codeRules(projects, powershell bool) string {
-	r := []string{"Run a skill's scripts by their full path. Never change into a skill's folder or write files in it: skill folders belong to MangoMan."}
+	r := []string{"Run a skill's scripts by their full path. Never change into a skill's folder or write files in it: skill folders belong to MangoMan.",
+		// Seen 15 Oct on Windows: python, where python, whereis python, dir C:\Python* before trying python3.
+		"Python is python3: MangoMan installs it with every package the skills need. Do not look for another Python or install packages."}
 	if projects {
 		r = append(r,
 			"This is the user's MangoMan Projects folder. For each new task, make a folder named after it in plain words (for example diwali-sale-posts), keep all of that task's files in it, and run that task's commands from inside it. For changes to an earlier task, use its folder.",
@@ -129,7 +148,7 @@ func inProjects(dir string) bool {
 // mode is how OpenCode is shown and rules the file from writeCodeRules ("" for
 // none). Measured on 8 Oct: switching off tools nobody used saved almost no
 // tokens per request, so OpenCode keeps its own tools and prompts.
-func openCodeConfig(cfg *config.Config, model string, mode int, rules string) string {
+func openCodeConfig(cfg *config.Config, model string, mode int, rules string, projects bool) string {
 	models := map[string]any{
 		"free/coder": map[string]any{"name": "Free coder", "limit": map[string]int{"context": 65536, "output": 8192}},
 		"free/auto":  map[string]any{"name": "Free auto", "limit": map[string]int{"context": 65536, "output": 8192}},
@@ -157,10 +176,15 @@ func openCodeConfig(cfg *config.Config, model string, mode int, rules string) st
 		"small_model": "mangoman/free/fast",
 	}
 	bash := map[string]string{"*": "allow"}
-	if mode == modeUI {
-		// The coding screen asks before any command that could change
-		// something (installs, deletes, scripts); the user can allow a kind
-		// of command for the rest of the session.
+	switch {
+	case mode == modeUI && projects:
+		for _, p := range projectsAsk {
+			bash[p] = "ask"
+		}
+	case mode == modeUI:
+		// In a developer's own folder the coding screen asks before any
+		// command that could change something (installs, deletes, scripts);
+		// the user can allow a kind of command for the rest of the session.
 		bash["*"] = "ask"
 		for _, p := range uiAllowed {
 			bash[p] = "allow"
@@ -340,12 +364,13 @@ func cmdCode(args []string) error {
 		mode = modeRun
 	}
 	wd, _ := os.Getwd()
-	rules, err := writeCodeRules(home, inProjects(wd))
+	projects := inProjects(wd)
+	rules, err := writeCodeRules(home, projects)
 	if err != nil {
 		fmt.Println("Working rules not saved:", err)
 		rules = ""
 	}
-	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, mode, rules))
+	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, mode, rules, projects))
 	if !*noWeb {
 		// OpenCode's web search (via Exa) lets it research while it codes.
 		env = append(env, "OPENCODE_ENABLE_EXA=1")
