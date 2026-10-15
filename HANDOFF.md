@@ -54,6 +54,8 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 | Repo | **Public, by the owner's choice (9 Oct: "keep it public for now").** Do not ask again until they raise it. CI is already cut down for private minutes. |
 | CI | Green on 2933a9c, Linux, Mac and Windows (ci run 38074112513, which has the build to try). Issue #2 closed. mac-check passed 19 of 19 pack samples. |
 | App layout (15 Oct) | **Built, owner's request.** The dashboard is one app with a left menu: + New task, Super Agents, Chargesheets (owner's name; empty "coming soon" page until the owner decides its features), Templates, My Files, History (coming soon); Connections, Usage, Settings hold every old dashboard part with the same IDs. Agents and templates live in `internal/ingress/ui/starters.json` (12 ready agents, 4 "coming later" with the reason, 17 templates; `TestStartersMatchPacks` keeps it in step with the packs). Start opens the coding screen in one named tab with the agent's first message in a fresh chat (the user reads and sends it). |
+| Self Healing System (15 Oct) | **Built, owner's request.** Left-menu page (`#healing`) that explains Guardian and has Connect your app: a name, the live address, and optionally the app's Git folder (a Projects folder name or a full path). Live address only: checked every 5 minutes (up, status, under 5 s), likely cause shown. Git folder: Guardian also fixes in the dev copy and asks before going live. Runs inside the main MangoMan process (`Server.Watch`, `StartHealing`) while it is open; list in `<home>/guardian/watch.json`, address-only configs in `<home>/guardian/apps/<name>/`. Approvals table moved to this page. |
+| Mango Arch phase 1 (15 Oct) | **Built, not live.** Shared learning: opt-in hourly counts per free model (Settings), a Cloudflare Worker (`server/arch`) that turns per-network votes into signed "try this model last" lessons, and a client that applies them (reorder only, at most 3 hours). Off in every build until the owner deploys the Worker and sets the `ARCH_URL` and `ARCH_KEY` repository variables (`server/arch/README.md`). |
 | Next build | Owner to try the new layout and the agents. Then: History page, Chargesheets features (owner decides), the scheduler for agents that run on their own (Social Media Manager weekly, waiting on the owner's three answers). |
 
 ---
@@ -145,6 +147,8 @@ owner to try it on their own computer (**Windows**, answered 9 Oct).
 
 | Decision | Why |
 |---|---|
+| "Self Healing System" in the left menu, after Super Agents; "Mango Arch" is the name of the shared learning (owner, 15 Oct) | Owner's names. |
+| Mango Arch: lessons verified automatically, the owner gets a daily report; sharing covered by the privacy policy, accepted once; universal, not India-first; start on a free tier (owner, 14 and 15 Oct) | Phase 1 only learns what can be checked by machine (model health by per-network quorum). Knowledge lessons (facts) need multi-source checking and are designed, not built. The privacy policy text needs a lawyer; until it exists, consent is the Settings checkbox. |
 | Left menu: + New task, Super Agents, Chargesheets, Templates, My Files, History; bottom: Connections, Usage, Settings (owner, 15 Oct) | Owner: "like Claude's sidebar". "Chargesheets" is the owner's name for a data analysis and tracking section like Claude Dashboards; build only the empty section until the owner decides. |
 | The coding screen stays in its own tab, not inside the app page (15 Oct) | The pages refuse to be framed (frame-ancestors 'none', X-Frame-Options DENY) against clickjacking; kept. |
 | **Cerebras stays out** | Its free trial asks for a credit card. Setup order is NVIDIA, Groq, OpenRouter, OpenCode Zen, Cerebras last (`internal/setup` `Order`, `app.js` `ORDER`). |
@@ -412,6 +416,8 @@ Touch files in the control dir to change the next coding request:
 | `OPENCODE_ZEN_API_KEY` secret | So the doctor also checks Zen. |
 | Guardian real run | Needs a Telegram bot from @BotFather and a real app. |
 | Payments, revenue share | Razorpay or Stripe; owner decision. |
+| Self Healing: known limits (15 Oct review) | Checks and first-aid commands run in MangoMan's own folder, not the config's (relative scripts in a hand-written guardian.json break when connected from the page). A Mac app opened from Finder has a short PATH, so npx or docker may not be found. A terminal `guardian run` and the page watching the same app both work on its incidents (no lock between processes). Likely-cause lookups use the configured port, not a `serve --port` override. Netlify dev deploys may need a build step first. |
+| Mango Arch: go live | Owner: Cloudflare account, then the steps in `server/arch/README.md` (about 15 minutes), then the two repository variables. Then: the privacy policy (lawyer) and its one-time acceptance on the setup page; knowledge lessons (phase 2, see the PRD). |
 
 ---
 
@@ -425,6 +431,7 @@ Touch files in the control dir to change the next coding request:
 | Try the easy setup on Windows | Asked 9 Oct. |
 | OPENCODE_ZEN_API_KEY, MARKETPLACE_KEY | Open. |
 | Telegram bot, a real app for Guardian, a Windows tester, first beta users | Open. |
+| Mango Arch server | Open: Cloudflare account and deploy (`server/arch/README.md`). |
 
 **How the owner can try MangoMan today** (told on 8 Oct): GitHub, Actions,
 `ci`, Run workflow; when done, download the `mangoman` artifact (one file per

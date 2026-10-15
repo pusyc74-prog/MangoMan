@@ -77,10 +77,10 @@ def ask(model, q, context):
     else:
         prompt = (f"Today is {TODAY}. Answer in one short sentence. "
                   f"If you are not sure, reply exactly: I don't know.\n\nQuestion: {q}")
-    body = {"model": model, "messages": [{"role": "user", "content": prompt}], "max_tokens": 4000, "temperature": 0}
+    body = {"model": model, "messages": [{"role": "user", "content": prompt}], "max_tokens": 3000, "temperature": 0}
     for attempt in range(3):
         try:
-            raw = post(NVIDIA, body, {"authorization": "Bearer " + os.environ["NVIDIA_API_KEY"]}, 180)
+            raw = post(NVIDIA, body, {"authorization": "Bearer " + os.environ["NVIDIA_API_KEY"]}, 120)
             msg = json.loads(raw)["choices"][0]["message"]
             return (msg.get("content") or "").strip(), ""
         except Exception as e:  # noqa: BLE001
@@ -121,21 +121,23 @@ def main():
         times.sort()
         lines.append(f"| {name} | {hits} of {len(qs)} | {fails} | {times[len(times) // 2]:.1f} | {times[-1]:.1f} |")
 
-    def run(model):
-        out = []
-        for q in qs:
-            for mode in ("memory", "exa", "parallel"):
-                ctx = "" if mode == "memory" else found[(mode, q["q"])]
-                if mode != "memory" and not ctx:
-                    out.append((model, mode, q, "", "no search results"))
-                    continue
-                ans, err = ask(model, q["q"], ctx)
-                out.append((model, mode, q, ans, err))
-                time.sleep(2)
-        return out
+    # Saved now too, so a run cut short still reports on the search services.
+    open("report.md", "w").write("\n".join(lines + ["", "## 3. Search detail", "", "| Service | Question | Answer in results | Seconds | Error |",
+                                                     "| --- | --- | --- | --- | --- |"] + detail) + "\n")
 
-    with cf.ThreadPoolExecutor(len(models)) as pool:
-        results = [r for rs in pool.map(run, models) for r in rs]
+    def run(job):
+        model, q, mode = job
+        ctx = "" if mode == "memory" else found[(mode, q["q"])]
+        if mode != "memory" and not ctx:
+            return (model, mode, q, "", "no search results")
+        ans, err = ask(model, q["q"], ctx)
+        return (model, mode, q, ans, err)
+
+    # Every request at once, a few at a time: one model after another took
+    # over an hour with slow reasoning models. NVIDIA allows 40 a minute.
+    jobs = [(m, q, mode) for m in models for q in qs for mode in ("memory", "exa", "parallel")]
+    with cf.ThreadPoolExecutor(8) as pool:
+        results = list(pool.map(run, jobs))
 
     lines += ["", "## 2. Models: right / don't know / wrong / failed", "",
               "Recent questions only (the two control questions are counted apart).", "",

@@ -76,10 +76,11 @@ It also runs daily at 08:00 IST in quick mode, which catches provider changes ea
 
 - **+ New task** opens the coding screen in its own tab, in the MangoMan Projects folder (one workspace, reused by every click)
 - **Super Agents**: ready-made agents (Data Analyst, Social Media Manager, Marketing Campaign, Website Builder and more), each built on the skill packs. Start opens the coding screen with the agent's first message ready to send. Agents that need app connections or a scheduler are listed as coming later.
+- **Self Healing System**: what Guardian does, and Connect your app. With only a live address (an app built anywhere: Lovable, Bubble, Shopify, WordPress and so on) MangoMan checks every 5 minutes that it is up and fast and shows the likely cause when it is not. With the app's Git folder on this computer it also fixes the cause in a dev copy, tests it, and asks before anything goes live. It watches while MangoMan is open.
 - **Templates**: one card per skill pack
 - **My Files**: the task folders in MangoMan Projects, newest first, each with Open
 - **Chargesheets** and **History**: coming soon
-- **Connections** (providers and keys, My list), **Usage** (live model, totals, charts, models, recent requests), **Settings** (version, folders)
+- **Connections** (providers and keys, My list), **Usage** (live model, totals, charts, models, recent requests), **Settings** (version, folders, Mango Arch: shared learning, opt-in, see `server/arch/README.md`)
 
 Between them, Connections and Usage show:
 
