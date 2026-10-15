@@ -1,0 +1,50 @@
+mangoman 2026/10/15 18:49:04 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-15.1)
+mangoman 2026/10/15 18:49:04 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/15 18:49:07 req=ab11e6b2d006 attempt=1 nvidia/nemotron-3-ultra-550b -> server_error (503) Service temporarily overloaded
+mangoman 2026/10/15 18:49:07 req=ab11e6b2d006 attempt=2 openrouter/nemotron-3-ultra-550b -> error_in_200 (503) Upstream error from Nvidia: Service temporarily overloaded
+mangoman 2026/10/15 18:49:31 req=a7fdf7bbb754 attempt=1 openrouter/nemotron-3-ultra-550b -> error_in_200 (503) Upstream error from Nvidia: Service temporarily overloaded
+mangoman 2026/10/15 18:49:56 req=3cb888c5f776 attempt=1 openrouter/nemotron-3-ultra-550b -> error_in_200 (503) Upstream error from Nvidia: Service temporarily overloaded
+mangoman 2026/10/15 18:50:51 req=ab11e6b2d006 attempt=3 nvidia/deepseek-v4.1-flash -> quality:empty (200) answer failed guard: empty
+mangoman 2026/10/15 18:51:09 req=ab11e6b2d006 attempt=4 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:51:11 req=a7fdf7bbb754 attempt=2 nvidia/deepseek-v4.1-flash -> quality:empty (200) answer failed guard: empty
+mangoman 2026/10/15 18:51:23 req=a7fdf7bbb754 attempt=3 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:51:24 req=a58f4cf4135d attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/15 18:51:24 req=3cb888c5f776 attempt=2 nvidia/deepseek-v4.1-flash -> quality:empty (200) answer failed guard: empty
+mangoman 2026/10/15 18:51:29 req=902a6e2610fa attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/15 18:51:36 req=7232a48fd739 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) 
+mangoman 2026/10/15 18:51:40 req=3cb888c5f776 attempt=3 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:51:49 req=3dab5dee299f attempt=1 nvidia/deepseek-v4.1-flash -> quality:empty (200) answer failed guard: empty
+mangoman 2026/10/15 18:52:04 req=3dab5dee299f attempt=2 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:52:48 req=122a7a8e8d48 attempt=1 nvidia/glm-5.3-flash -> ok (200) 
+mangoman 2026/10/15 18:53:04 req=bb2c37947fa2 attempt=1 nvidia/gemma-4-31b -> ok (200) 
+mangoman 2026/10/15 18:54:24 req=f0ca37bcd64c attempt=1 nvidia/glm-5.3-flash -> ok (200) 
+mangoman 2026/10/15 18:54:25 req=04b62aecf8d2 attempt=1 nvidia/gemma-4-31b -> ok (200) 
+mangoman 2026/10/15 18:54:36 req=41cad8c71c51 attempt=1 nvidia/gpt-oss-20b -> ok (200) 
+mangoman 2026/10/15 18:54:41 req=77092e5b47af attempt=1 nvidia/gpt-oss-20b -> ok (200) 
+mangoman 2026/10/15 18:55:31 req=5943be264128 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:56:36 req=3c38bdc35b05 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:57:00 req=5e16426852af attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:57:22 req=6f62b4d36d11 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:57:23 req=d0adc0394a4a attempt=1 nvidia/gemma-4-31b -> ok (200) 
+mangoman 2026/10/15 18:58:08 req=19ba25814e16 attempt=1 nvidia/gemma-4-31b -> ok (200) 
+mangoman 2026/10/15 18:58:11 req=bf18f3c68eaa attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:58:26 req=0b357ae3a302 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:58:53 req=07bf1314c519 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:59:00 req=c63a68d453df attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:59:09 req=87470b821ab4 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:59:47 req=5bec91c5bbbe attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 18:59:53 req=3ae230b04a27 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:00:09 req=f0348a534311 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:00:28 req=c89550f9ce31 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:00:38 req=bdd9d694a9dc attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:01:00 req=7e140a07ac74 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:01:08 req=3eae1bdaa2ad attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:01:22 req=96c3676ad109 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:01:33 req=9498ac0d1780 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:01:50 req=66aae6f657df attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:01:57 req=4c3ca4f5c669 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:02:17 req=945c11f66e13 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:02:39 req=0174a02e61b4 attempt=1 nvidia/gemma-4-31b -> ok (200) 
+mangoman 2026/10/15 19:02:50 req=ddfe01ef6b70 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:03:08 req=9545749aa895 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
+mangoman 2026/10/15 19:03:18 req=6956ac9e06d8 attempt=1 nvidia/nemotron-3-super-120b -> ok (200) 
