@@ -19,7 +19,7 @@ import (
 
 const listUsage = `Usage:
   mangoman list                      show My list (tried first, in this order)
-  mangoman list add <model>...       add models, e.g. groq/gpt-oss-120b or kimi-k3
+  mangoman list add <model>...       add models, e.g. groq/gpt-oss-120b or nemotron-3-ultra-550b
   mangoman list rm <model>           remove a model
   mangoman list up <model>           move a model one place up
   mangoman list new [--scan]         new free models not in the catalogue yet
@@ -256,7 +256,7 @@ func cmdGroup(args []string) error {
 		return err
 	}
 	if len(res.Groups) == 0 {
-		fmt.Println("No groups yet. Create one with `mangoman group set coding kimi-k3 groq/gpt-oss-120b`.")
+		fmt.Println("No groups yet. Create one with `mangoman group set coding nemotron-3-ultra-550b groq/gpt-oss-120b`.")
 		return nil
 	}
 	tw := tabwriter.NewWriter(os.Stdout, 0, 2, 2, ' ', 0)

@@ -5,7 +5,7 @@
 // failed), never prompts, answers, keys or files, under a random id that
 // says nothing about the person and changes every day. The server adds the
 // counts up. When many independent MangoMans, on different networks, see the same model
-// fail in the same hour, the server signs a lesson ("try nvidia/kimi-k3 last
+// fail in the same hour, the server signs a lesson ("try nvidia/glm-5.3-flash last
 // until 15:00") and every MangoMan picks it up within the hour, or as soon
 // as it is next online.
 //

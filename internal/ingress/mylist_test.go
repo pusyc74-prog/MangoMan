@@ -11,7 +11,7 @@ import (
 
 func TestFavoritesAPI(t *testing.T) {
 	h, s := dashServer(t, mem{"groq": "k"})
-	w := call(h, "PUT", "/mangoman/favorites", "127.0.0.1:4141", authz, `{"models":["groq/gpt-oss-120b","kimi-k3"]}`)
+	w := call(h, "PUT", "/mangoman/favorites", "127.0.0.1:4141", authz, `{"models":["groq/gpt-oss-120b","nemotron-3-ultra-550b"]}`)
 	if w.Code != 200 {
 		t.Fatalf("%d %s", w.Code, w.Body)
 	}
@@ -28,7 +28,7 @@ func TestFavoritesAPI(t *testing.T) {
 	w = call(h, "GET", "/mangoman/overview", "127.0.0.1:4141", authz, "")
 	var ov Overview
 	_ = json.Unmarshal(w.Body.Bytes(), &ov)
-	if len(ov.Favorites) != 2 || ov.Favorites[1] != "kimi-k3" {
+	if len(ov.Favorites) != 2 || ov.Favorites[1] != "nemotron-3-ultra-550b" {
 		t.Fatalf("overview favorites %v", ov.Favorites)
 	}
 	if w := call(h, "PUT", "/mangoman/favorites", "127.0.0.1:4141", nil, `{"models":[]}`); w.Code != 401 {

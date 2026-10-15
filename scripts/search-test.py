@@ -20,7 +20,7 @@ import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 NVIDIA = "https://integrate.api.nvidia.com/v1/chat/completions"
-MODELS = ["moonshotai/kimi-k3", "deepseek-ai/deepseek-v4.1-flash", "nvidia/nemotron-3-ultra-550b-a55b",
+MODELS = ["openai/gpt-oss-20b", "deepseek-ai/deepseek-v4.1-flash", "nvidia/nemotron-3-ultra-550b-a55b",
           "z-ai/glm-5.3-flash", "google/gemma-4-31b-it"]
 SEARCH = {
     "exa": ("https://mcp.exa.ai/mcp", "web_search_exa",

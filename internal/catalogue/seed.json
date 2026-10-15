@@ -1,6 +1,6 @@
 {
-  "version": "seed-2026-10-01.7",
-  "updated": "2026-10-08",
+  "version": "seed-2026-10-15.1",
+  "updated": "2026-10-15",
   "providers": [
     {
       "id": "groq",
@@ -342,30 +342,6 @@
         "extraction": 0.72,
         "fast": 0.75,
         "long-context": 0.5
-      }
-    },
-    {
-      "canonical": "kimi-k3",
-      "provider": "nvidia",
-      "upstream": "moonshotai/kimi-k3",
-      "free": true,
-      "context": 131072,
-      "caps": [
-        "tools",
-        "json",
-        "streaming",
-        "reasoning"
-      ],
-      "limits": {
-        "rpm": 40
-      },
-      "quality": {
-        "code": 0.86,
-        "reasoning": 0.84,
-        "writing": 0.8,
-        "extraction": 0.8,
-        "fast": 0.45,
-        "long-context": 0.8
       }
     },
     {
