@@ -25,7 +25,7 @@ const Sheets = (() => {
 
   // Numbers: Indian grouping and lakh/crore for rupees.
   function money(v, unit, compact) {
-    if (v === null || v === undefined || Number.isNaN(v)) return "—";
+    if (v === null || v === undefined || Number.isNaN(v)) return "-";
     const sym = { INR: "₹", USD: "$", EUR: "€", GBP: "£", JPY: "¥" }[unit] || (unit ? unit + " " : "");
     const neg = v < 0 ? "-" : "";
     const a = Math.abs(v);
@@ -44,7 +44,7 @@ const Sheets = (() => {
   }
   function trim(x) { return (x >= 100 ? x.toFixed(0) : x >= 10 ? x.toFixed(1) : x.toFixed(2)).replace(/\.?0+$/, ""); }
   function fmtVal(m, v, compact) {
-    if (v === null || v === undefined || Number.isNaN(v)) return "—";
+    if (v === null || v === undefined || Number.isNaN(v)) return "-";
     if (!m) return fmtInt(v);
     if (m.kind === "money") return money(v, m.unit, compact);
     if (m.kind === "percent") return `${trim(v)}%`;
@@ -301,7 +301,9 @@ const Sheets = (() => {
   }
 
   // ---------- library ----------
+  function closeAsk() { const a = $("cs-ask"); if (a) a.remove(); }
   async function showLibrary() {
+    closeAsk();
     stopLive();
     disposeCharts();
     setRoute("");
@@ -400,8 +402,8 @@ const Sheets = (() => {
     const v = await api(`/mangoman/sheets/${id}/load`, { method: "POST" });
     clearTimeout(t);
     p.next(); p.next();
-    S.view = v;
-    showCheck(id);
+    S.view = v; S.data = null;
+    if (host().querySelector(".cs-progress")) showCheck(id); // not when the user went elsewhere meanwhile
   }
 
   // ---------- the check screen: what was read ----------
@@ -476,6 +478,8 @@ const Sheets = (() => {
   // ---------- the dashboard ----------
   async function open(id, tab) {
     disposeCharts();
+    const a = $("cs-ask");
+    if (a && a.dataset.sheet !== id) a.remove();
     try {
       if (!S.view || S.view.sheet.id !== id) S.view = await api(`/mangoman/sheets/${id}`);
       if (!S.view.profile) { showCheck(id); return; }
@@ -484,7 +488,7 @@ const Sheets = (() => {
         S.data = await api(`/mangoman/sheets/${id}/data`);
         S.data.id = id;
         S.ds = Math.max(0, S.data.datasets.findIndex((d) => d.name === (S.view.sheet.roles || {}).table));
-        S.dims = {}; S.range = "all"; S.measure = null; S.grain = null; S.page = 0; S.q = "";
+        S.dims = {}; S.range = "all"; S.from = null; S.to = null; S.measure = null; S.grain = null; S.page = 0; S.q = ""; S.sortTable = null; S.tab = "overview";
       }
     } catch (err) { say(err.message, "err"); showLibrary(); return; }
     const cur = S.view.profile.datasets.find((d) => d.name === dataset().name);
@@ -605,6 +609,18 @@ const Sheets = (() => {
   }
 
   // ---------- Overview ----------
+  // first day of a time bucket
+  function startOf(k, grain) {
+    const day = (y, m) => Math.floor(Date.UTC(y, m, 1) / DAY);
+    switch (grain) {
+      case "day": case "week": return k;
+      case "month": return day(Math.floor(k / 12), k % 12);
+      case "quarter": return day(Math.floor(k / 4), (k % 4) * 3);
+      default: return day(k, 0);
+    }
+  }
+  // The latest period against the one before. When the data stops partway
+  // through the latest period, both are counted over the same first days.
   function periodCompare(r, m, idx) {
     if (!r.date) return null;
     const grain = autoGrain(r.date, idx);
@@ -612,9 +628,14 @@ const Sheets = (() => {
     const pts = series(r.date, m, idx, g);
     if (pts.length < 2) return null;
     const a = pts[pts.length - 1], b = pts[pts.length - 2];
-    const [, end] = dateBounds(r.date);
-    const partial = g === "month" && end !== null && dateOf(end).getUTCDate() < 25 ? " so far" : "";
-    return { now: a, before: b, grain: g, label: `${a.label}${partial} vs ${b.label}`, change: b.v ? ((a.v - b.v) / Math.abs(b.v)) * 100 : null };
+    const [, end] = rangeOf(r.date, idx);
+    const covered = end - startOf(a.k, g);
+    const partial = end < startOf(nextKey(a.k, g), g) - 1;
+    const inA = idx.filter((i) => { const d = r.date.values[i]; return d !== null && bucket(d, g) === a.k; });
+    const inB = idx.filter((i) => { const d = r.date.values[i]; return d !== null && bucket(d, g) === b.k && (!partial || d - startOf(b.k, g) <= covered); });
+    const before = { ...b, v: total(m, inB) };
+    const label = partial ? `${a.label} so far vs the same ${covered + 1} days of ${b.label}` : `${a.label} vs ${b.label}`;
+    return { now: a, before, rowsNow: inA, rowsBefore: inB, label, change: before.v ? ((a.v - before.v) / Math.abs(before.v)) * 100 : null };
   }
   function delta(change) {
     if (change === null || !Number.isFinite(change)) return null;
@@ -663,9 +684,9 @@ const Sheets = (() => {
     if (d0) {
       const g = top(groupBy(d0, m, idx), 10, m);
       more.push(card(`${m ? m.name : "Rows"} by ${d0.name}`, "Click a bar to filter everything to it.", (n) => barChart(n, g, m, { onPick: (it) => it.k !== "Other" && filterTo(d0, it.k) }),
-        () => ({ head: [d0.name, m ? m.name : "Rows", "Share"], rows: g.map((x) => [x.k, fmtVal(m, x.v), pct(x.share)]), right: [1, 2] })));
+        () => ({ head: [d0.name, m ? m.name : "Rows", "Share"], rows: g.map((x) => [x.k, fmtVal(m, x.v), x.share === undefined ? "" : pct(x.share)]), right: [1, 2] })));
     }
-    const d1 = r.dims.find((d) => d !== d0 && d.words.length <= 6);
+    const d1 = averaged(m) ? null : r.dims.find((d) => d !== d0 && d.words.length <= 6);
     if (d1) {
       const g = groupBy(d1, m, idx);
       const sum = g.reduce((a, b) => a + Math.max(0, b.v), 0) || 1;
@@ -698,7 +719,7 @@ const Sheets = (() => {
   // top n, the rest folded into "Other"; share in % of the whole
   function top(g, n, m, noOther) {
     const sum = g.reduce((a, b) => a + Math.abs(b.v), 0) || 1;
-    const out = g.slice(0, n).map((x) => ({ ...x, share: (Math.abs(x.v) / sum) * 100 }));
+    const out = g.slice(0, n).map((x) => ({ ...x, share: averaged(m) ? undefined : (Math.abs(x.v) / sum) * 100 }));
     if (!noOther && g.length > n && !averaged(m)) {
       const rest = g.slice(n).reduce((a, b) => a + b.v, 0);
       out.push({ k: "Other", v: rest, n: g.length - n, share: (Math.abs(rest) / sum) * 100 });
@@ -725,9 +746,8 @@ const Sheets = (() => {
       add(up ? "" : "down", `${name} ${up ? "rose" : "fell"} ${pct(Math.abs(cmp.change))}`, `${cmp.now.label}: ${fmtVal(m, cmp.now.v)}; ${cmp.before.label}: ${fmtVal(m, cmp.before.v)}.`, () => { S.tab = "trends"; render(); }, 90 + Math.min(Math.abs(cmp.change), 50));
       // who drove the change
       for (const d of r.dims.slice(0, 3)) {
-        const inP = (k) => idx.filter((i) => r.date.values[i] !== null && bucket(r.date.values[i], cmp.grain) === k);
-        const a = new Map(groupBy(d, m, inP(cmp.now.k)).map((x) => [x.k, x.v]));
-        const b = new Map(groupBy(d, m, inP(cmp.before.k)).map((x) => [x.k, x.v]));
+        const a = new Map(groupBy(d, m, cmp.rowsNow).map((x) => [x.k, x.v]));
+        const b = new Map(groupBy(d, m, cmp.rowsBefore).map((x) => [x.k, x.v]));
         let best = null;
         for (const k of new Set([...a.keys(), ...b.keys()])) {
           const diff = (a.get(k) || 0) - (b.get(k) || 0);
@@ -843,7 +863,7 @@ const Sheets = (() => {
       const g = top(whole, 12, m);
       const all = top(whole, whole.length, m, true);
       grid.push(card(`${m ? m.name : "Rows"} by ${d.name}`, `${fmtInt(d.words.length)} kinds. Click a bar to filter.`, (n) => barChart(n, g, m, { onPick: (it) => it.k !== "Other" && filterTo(d, it.k) }),
-        () => ({ head: [d.name, m ? m.name : "Rows", "Rows", "Share"], rows: all.map((x) => [x.k, fmtVal(m, x.v), fmtInt(x.n), pct(x.share)]), right: [1, 2, 3] })));
+        () => ({ head: [d.name, m ? m.name : "Rows", "Rows", "Share"], rows: all.map((x) => [x.k, fmtVal(m, x.v), fmtInt(x.n), x.share === undefined ? "" : pct(x.share)]), right: [1, 2, 3] })));
     }
     if (grid.length) body.append(el("div", { class: "cs-grid cs-g2" }, grid));
     if (r.dims.length >= 2) {
@@ -1045,8 +1065,13 @@ const Sheets = (() => {
   }
   function downloadCSV(rows) {
     const cols = dataset().columns;
-    const q = (s) => { s = s === null || s === undefined ? "" : String(s); return /[",\n]/.test(s) || /^[=+\-@]/.test(s) ? `"${(/^[=+\-@]/.test(s) ? "'" : "") + s.replace(/"/g, '""')}"` : s; };
-    const text = [cols.map((c) => q(c.name)).join(","), ...rows.map((i) => cols.map((c) => q(cell(c, i))).join(","))].join("\n");
+    // Words that a spreadsheet would run as a formula get a ' in front; numbers stay numbers.
+    const q = (s, words) => {
+      s = s === null || s === undefined ? "" : String(s);
+      if (words && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+      return /[",\r\n]/.test(s) || /^'/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const text = [cols.map((c) => q(c.name, true)).join(","), ...rows.map((i) => cols.map((c) => q(cell(c, i), !!c.codes)).join(","))].join("\n");
     const a = el("a", { href: URL.createObjectURL(new Blob(["﻿" + text], { type: "text/csv" })), download: `${S.view.sheet.title}.csv` });
     document.body.append(a); a.click(); a.remove();
   }
@@ -1226,7 +1251,7 @@ const Sheets = (() => {
     body.append(el("div", { class: "cs-grid cs-k" },
       el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "Spend"), el("div", { class: "val" }, money(tSpend, unit, true)), el("div", { class: "foot" }, a.spend.length > 1 ? `${a.spend.length} spend columns added up` : a.spend[0].name)),
       el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "Conversions"), el("div", { class: "val" }, fmtInt(tConv)), el("div", { class: "foot" }, a.conv.length > 1 ? `${a.conv.length} columns added up` : a.conv[0].name)),
-      el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "Cost per conversion"), el("div", { class: "val" }, tConv ? money(tSpend / tConv, unit) : "—"), el("div", { class: "foot" }, "all campaigns")),
+      el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "Cost per conversion"), el("div", { class: "val" }, tConv ? money(tSpend / tConv, unit) : "-"), el("div", { class: "foot" }, "all campaigns")),
       el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "Spend with no conversions"), el("div", { class: "val" }, money(zero.reduce((s, x) => s + x.spend, 0), unit, true)), el("div", { class: "foot" }, zero.length ? plural(zero.length, a.name.name.toLowerCase().replace(/s$/, "")) : "none"))));
     const rows = list.map((x) => ({ k: x.k, v: x.conv ? x.spend / x.conv : null, spend: x.spend, conv: x.conv, clicks: x.clicks }));
     const cpa = rows.filter((x) => x.v !== null).sort((p, q) => p.v - q.v);
@@ -1253,13 +1278,13 @@ const Sheets = (() => {
     const dates = r.date ? rangeOf(r.date, idx) : [null, null];
     out.push(`The data: ${S.view.sheet.title}${ds.name !== S.view.sheet.title ? `, table ${ds.name}` : ""}, ${fmtInt(idx.length)} rows${dates[0] !== null ? `, dated ${fmtDate(dates[0])} to ${fmtDate(dates[1])}` : ""}.`);
     if (S.range !== "all" || Object.keys(S.dims).length) out.push(`Filters in use: ${[S.range !== "all" ? "a date range" : null, ...Object.entries(S.dims).map(([k, v]) => `${k} = ${[...v].join(" or ")}`)].filter(Boolean).join("; ")}.`);
-    for (const mm of r.measures.slice(0, 3)) out.push(`${averaged(mm) ? "Average" : "Total"} ${mm.name}: ${fmtVal(mm, total(mm, idx))}; average per row ${fmtVal(mm, total(mm, idx) / (idx.length || 1))}.`);
+    for (const mm of r.measures.slice(0, 3)) out.push(averaged(mm) ? `Average ${mm.name}: ${fmtVal(mm, total(mm, idx))}.` : `Total ${mm.name}: ${fmtVal(mm, total(mm, idx))}; average per row ${fmtVal(mm, total(mm, idx) / (idx.length || 1))}.`);
     if (r.date && m) {
       const g = autoGrain(r.date, idx);
       const pts = series(r.date, m, idx, g === "day" && idx.length > 60 ? "week" : g);
       out.push(`${m.name} by ${g}: ` + pts.slice(-12).map((p) => `${p.label} ${fmtVal(m, p.v)}`).join("; ") + ".");
       const cmp = periodCompare(r, m, idx);
-      if (cmp && cmp.change !== null) out.push(`${cmp.label}: ${m.name} ${cmp.change >= 0 ? "up" : "down"} ${pct(cmp.change)} (${fmtVal(m, cmp.now.v)} against ${fmtVal(m, cmp.before.v)}).`);
+      if (cmp && cmp.change !== null) out.push(`${cmp.label}: ${m.name} ${cmp.change >= 0 ? "up" : "down"} ${pct(Math.abs(cmp.change))} (${fmtVal(m, cmp.now.v)} against ${fmtVal(m, cmp.before.v)}).`);
     }
     for (const d of r.dims.slice(0, 3)) {
       const g = groupBy(d, m, idx);
@@ -1337,9 +1362,11 @@ const Sheets = (() => {
     const box = el("textarea", { rows: "1", placeholder: "Ask anything about this data…", "aria-label": "Your question" });
     const send = el("button", { type: "submit", class: "primary" }, "Ask");
     const form = el("form", { class: "cs-askbox" }, box, send);
-    panel = el("aside", { class: "cs-ask", id: "cs-ask", "aria-label": "Ask about this data" },
+    // On the page itself, not in the dashboard: switching tabs keeps the chat open.
+    panel = el("aside", { class: "cs cs-ask", id: "cs-ask", "data-sheet": id, "aria-label": "Ask about this data" },
       el("header", {}, el("h3", { class: "cs-grow" }, "Ask about this data"), el("button", { type: "button", class: "ghost", onclick: () => panel.remove() }, "Close")), thread, form);
-    host().append(panel);
+    document.body.append(panel);
+    let busy = false;
     const intro = el("div", { class: "cs-a" }, el("p", {}, "Ask in your own words. I look up the exact numbers in your data, then explain them; you can see how I worked each answer out."),
       el("div", { class: "cs-suggest" }, (S.view.sheet.questions && S.view.sheet.questions.length ? S.view.sheet.questions : starter()).map((q) => el("button", { type: "button", onclick: () => ask(q) }, q))));
     thread.append(intro);
@@ -1349,6 +1376,8 @@ const Sheets = (() => {
     form.addEventListener("submit", (e) => { e.preventDefault(); if (box.value.trim()) ask(box.value.trim()); });
     box.focus();
     async function ask(q) {
+      if (busy) return;
+      busy = true;
       box.value = ""; send.disabled = true;
       thread.append(el("div", { class: "cs-q" }, q));
       const thinking = el("div", { class: "cs-a" }, el("div", { class: "cs-thinking" }, el("div", { class: "now" }, "Reading the question…")));
@@ -1359,6 +1388,7 @@ const Sheets = (() => {
         const { job } = await api(`/mangoman/sheets/${id}/ask`, { method: "POST", body: JSON.stringify({ question: q, history: chat.slice(-6).map((t) => ({ q: t.q, a: t.answer ? t.answer.text : t.error || "" })) }) });
         for (let i = 0; i < 600; i++) {
           await new Promise((r) => setTimeout(r, 1000));
+          if (!thread.isConnected) return; // closed: stop asking for news
           const st = await api(`/mangoman/sheets/${id}/ask/${job}`);
           const lines = st.steps.map((s) => el("div", {}, `${s.why || "Looked something up"}${s.result ? ` (${plural(s.result.rows.length, "row")})` : s.error ? " (fixing a mistake)" : ""}`));
           if (!st.done) lines.push(el("div", { class: "now" }, st.steps.length ? "Working out the answer…" : "Deciding what to look up…"));
@@ -1370,6 +1400,7 @@ const Sheets = (() => {
       chat.push({ q, answer, error });
       thinking.replaceWith(answerNode(answer, error));
       send.disabled = false;
+      busy = false;
       thread.scrollTop = thread.scrollHeight;
       box.focus();
     }
@@ -1395,7 +1426,7 @@ const Sheets = (() => {
       if (c.type !== "table" && res.rows.length >= 2 && res.rows.length <= 60) {
         const div = el("div", { class: "cs-chart" });
         node.append(div);
-        const fmt = (v) => (typeof v === "number" ? fmtVal(null, v, true).replace(/^—$/, "") || String(v) : String(v));
+        const fmt = (v) => (typeof v === "number" ? fmtVal(null, v, true) : String(v));
         requestAnimationFrame(() => {
           if (!div.isConnected) return;
           const cats = res.rows.map((r) => String(r[xi] ?? ""));
@@ -1442,11 +1473,13 @@ const Sheets = (() => {
       if (!S.view || S.view.sheet.id !== id) return;
       S.view.sheet = r.sheet;
       if (r.changed) {
-        S.view = await api(`/mangoman/sheets/${id}`);
-        S.data = await api(`/mangoman/sheets/${id}/data`);
-        S.data.id = id;
+        const view = await api(`/mangoman/sheets/${id}`);
+        const data = await api(`/mangoman/sheets/${id}/data`);
+        if (!S.view || S.view.sheet.id !== id) return;
+        data.id = id;
+        S.view = view; S.data = data;
         S.ds = Math.min(S.ds, S.data.datasets.length - 1);
-        if (!$("cs-ask")) render();
+        if (location.hash.startsWith("#chargesheets/" + id) && host().querySelector("#cs-body")) render();
         say(r.sheet.changed || "The Google Sheet changed; the dashboard is up to date.", "ok");
       } else {
         const t = $("cs-live");
@@ -1474,8 +1507,8 @@ const Sheets = (() => {
     if (S.view && S.view.sheet.id === id && S.data && S.data.id === id && host().querySelector("#cs-body")) { if (tab && tab !== S.tab) { S.tab = tab; render(); } return; }
     open(id, tab);
   }
-  document.addEventListener("keydown", (e) => { const a = $("cs-ask"); if (e.key === "Escape" && a) a.remove(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAsk(); });
   // the page's dark mode changed: charts read colours at draw time
   if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (S.data && host().querySelector("#cs-body")) render(); });
-  return { route, leave: () => { stopLive(); disposeCharts(); } };
+  return { route, leave: () => { closeAsk(); stopLive(); disposeCharts(); } };
 })();

@@ -212,6 +212,9 @@ func (st *Store) AddFile(id, name string, r io.Reader) (Sheet, error) {
 	if err != nil {
 		return Sheet{}, err
 	}
+	l := st.lock(id) // two uploads of one name must not share a file
+	l.Lock()
+	defer l.Unlock()
 	name = filepath.Base(strings.ReplaceAll(name, "\\", "/"))
 	ext := strings.ToLower(filepath.Ext(name))
 	if ext == ".xls" {
@@ -275,6 +278,9 @@ func (st *Store) RemoveSource(id, file string) (Sheet, error) {
 	if err != nil {
 		return Sheet{}, err
 	}
+	l := st.lock(id)
+	l.Lock()
+	defer l.Unlock()
 	sh, err := st.update(id, func(sh *Sheet) {
 		keep := sh.Sources[:0]
 		for _, s := range sh.Sources {
@@ -294,7 +300,20 @@ func (st *Store) RemoveSource(id, file string) (Sheet, error) {
 func (st *Store) python(ctx context.Context, d string, stdin []byte, args ...string) ([]byte, error) {
 	script := filepath.Join(st.Dir, "engine.py")
 	if old, err := os.ReadFile(script); err != nil || !bytes.Equal(old, engine) {
-		if err := os.WriteFile(script, engine, 0o600); err != nil {
+		// Written whole then renamed: another sheet may be starting it now.
+		tmp, err := os.CreateTemp(st.Dir, ".engine-*.py")
+		if err != nil {
+			return nil, err
+		}
+		_, err = tmp.Write(engine)
+		if cerr := tmp.Close(); err == nil {
+			err = cerr
+		}
+		if err == nil {
+			err = os.Rename(tmp.Name(), script)
+		}
+		if err != nil {
+			os.Remove(tmp.Name())
 			return nil, err
 		}
 	}
@@ -413,12 +432,11 @@ func (st *Store) load(ctx context.Context, id string) (Sheet, error) {
 		now = desc{roles: guessRoles(ds)}
 		go func() {
 			late := <-got
-			st.mu.Lock()
-			current, err := st.Get(id)
-			st.mu.Unlock()
-			if err == nil && current.Built.Equal(built) {
-				_, _ = st.update(id, apply(late))
-			}
+			_, _ = st.update(id, func(sh *Sheet) {
+				if sh.Built.Equal(built) { // not read again since
+					apply(late)(sh)
+				}
+			})
 		}()
 	}
 	return st.update(id, func(sh *Sheet) {
@@ -527,6 +545,11 @@ func (st *Store) SetChoices(ctx context.Context, id string, c Choices) (Sheet, e
 	for k, v := range c.Kinds {
 		if !Kinds[v] || !strings.Contains(k, "/") {
 			return Sheet{}, fmt.Errorf("unknown kind %q", v)
+		}
+	}
+	for origin, row := range c.Header {
+		if row < 1 {
+			return Sheet{}, fmt.Errorf("%s: the row of column names starts at 1", origin)
 		}
 	}
 	b, _ := json.Marshal(c)

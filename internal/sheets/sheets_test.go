@@ -11,7 +11,7 @@ import (
 )
 
 func TestUnchecked(t *testing.T) {
-	vals := []any{437300.0, 177200.0, 57000.0, "2026-09-01", "Amazon"}
+	vals := [][]any{{"Amazon", 177200.0, 57000.0}, {437300.0}, {"2026-09-01"}}
 	cases := []struct {
 		text string
 		bad  []string
@@ -22,11 +22,25 @@ func TestUnchecked(t *testing.T) {
 		{"Sales were 4,12,000 in September 2026.", []string{"4,12,000"}},
 		{"1. Top 3 channels\n2. Next", nil}, // list numbers and small counts
 		{"It grew 250% to 9,99,999.", []string{"250", "9,99,999"}},
+		{"About ₹4.37 L in all.", nil},                 // the page's own lakh suffix
+		{"Amazon is 41% of 4,37,300.", []string{"41"}}, // 177200/437300: different groups, no ratio
 	}
 	for _, c := range cases {
 		if got := Unchecked(c.text, vals); strings.Join(got, "|") != strings.Join(c.bad, "|") {
 			t.Errorf("%q: unchecked %v, want %v", c.text, got, c.bad)
 		}
+	}
+}
+
+// With many values in a column, a made-up percentage must not pass as the
+// ratio of two of them (found in review: 40 values let 13% to 99% through).
+func TestUncheckedMadeUpShare(t *testing.T) {
+	col := []any{}
+	for i := 0; i < 40; i++ {
+		col = append(col, float64(1000+i*137))
+	}
+	if bad := Unchecked("Sales rose 57%.", [][]any{col}); len(bad) != 1 {
+		t.Errorf("made-up 57%% passed: %v", bad)
 	}
 }
 
@@ -145,6 +159,52 @@ func TestLoadReadsMessyFiles(t *testing.T) {
 				t.Error("link stayed on after turning it off")
 			}
 		}
+	}
+}
+
+// Files found in review to break reading.
+func TestOddFiles(t *testing.T) {
+	needPython(t, true)
+	st := &Store{Dir: t.TempDir()}
+	sh, _ := st.New("")
+	for name, body := range map[string]string{
+		"odd.csv": "Size (5\"),Sales,Sales,Sales 2\nS,1,2,3\nM,4,5,6\n",
+		"m1.csv":  "Source,Units\nweb,1\nshop,2\n",
+		"m2.csv":  "Source,Units\nweb,3\n",
+	} {
+		if _, err := st.AddFile(sh.ID, name, strings.NewReader(body)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	add(t, st, sh.ID, "years.xlsx")
+	if _, err := st.Load(context.Background(), sh.ID); err != nil {
+		t.Fatal(err)
+	}
+	p, _ := st.Profile(sh.ID)
+	got := map[string][]string{}
+	for _, ds := range p.Datasets {
+		for _, c := range ds.Columns {
+			got[ds.Name] = append(got[ds.Name], c.Name+":"+c.Kind)
+		}
+	}
+	want := map[string]string{
+		"Odd":     `Size (5"):category Sales:money Sales 2:money Sales 2 2:money`,
+		"M1 + m2": "Source:category Units:number Source file:category",
+		"Years":   "Product:category 2024:number 2025:number Ship date:date",
+	}
+	for name, w := range want {
+		found := ""
+		for k, v := range got {
+			if strings.EqualFold(k, name) {
+				found = strings.Join(v, " ")
+			}
+		}
+		if found != w {
+			t.Errorf("%s: %q, want %q (all: %v)", name, found, w, got)
+		}
+	}
+	if _, err := st.SetChoices(context.Background(), sh.ID, Choices{Header: map[string]int{"odd": 99}}); err == nil || !strings.Contains(err.Error(), "has no row 99") {
+		t.Errorf("header past the end: %v", err)
 	}
 }
 

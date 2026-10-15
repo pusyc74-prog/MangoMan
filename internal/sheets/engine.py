@@ -17,6 +17,7 @@ import datetime as dt
 import io
 import json
 import os
+import pathlib
 import re
 import sqlite3
 import sys
@@ -59,12 +60,12 @@ def cell(v):
 
 
 def decode(raw):
-    for enc in ("utf-8-sig", "cp1252", "latin-1"):
+    for enc in ("utf-8-sig", "cp1252"):
         try:
             return raw.decode(enc)
         except UnicodeDecodeError:
             continue
-    return raw.decode("utf-8", "replace")
+    return raw.decode("latin-1")  # never fails
 
 
 def grids(path, label):
@@ -89,6 +90,7 @@ def grids(path, label):
             yield (f"{label} · {ws.title}" if len(sheets) > 1 else label), rows
         wb.close()
     elif ext in (".csv", ".tsv", ".txt"):
+        csv.field_size_limit(10_000_000)  # long notes in a cell
         text = decode(open(path, "rb").read())
         head = text[:65536]
         delim = "\t" if ext == ".tsv" else max([",", ";", "\t", "|"], key=lambda d: head.count(d))
@@ -112,6 +114,15 @@ def looks_number(v):
     return isinstance(v, (int, float)) and not isinstance(v, bool) or (isinstance(v, str) and num(v) is not None)
 
 
+def year(c):
+    """A year written as a column name: 2025, "2025" (Excel keeps it a number)."""
+    if isinstance(c, bool):
+        return False
+    if isinstance(c, (int, float)):
+        return float(c).is_integer() and 1900 <= c <= 2100
+    return isinstance(c, str) and bool(re.fullmatch(r"(19|20)\d\d", c.strip()))
+
+
 def norm(s):
     return re.sub(r"[^0-9a-z]+", "", str(s).casefold())
 
@@ -124,7 +135,7 @@ def find_header(rows, notes):
         f = [c for c in r if c is not None]
         if width == 0 or len(f) < max(2, 0.6 * width):
             continue
-        words = [c for c in f if isinstance(c, str) and (not looks_number(c) or re.fullmatch(r"(19|20)\d\d", c.strip()))]
+        words = [c for c in f if year(c) or isinstance(c, str) and not looks_number(c)]
         if len(words) >= 0.8 * len(f):
             if i:
                 notes.append(f"Skipped {i} title row{'s' if i > 1 else ''} above the column names.")
@@ -144,14 +155,16 @@ def table(origin, rows, header=None):
     if header is None:
         h = find_header(rows, notes)
     else:
-        h = max(0, header - 1)
+        if not 1 <= header <= len(rows):
+            raise Bad(f"{origin} has no row {header}: choose a row between 1 and {len(rows)}.")
+        h = header - 1
         notes.append(f"Column names taken from row {header}, as you chose.")
     width = max(len(r) for r in rows)
     rows = [list(r) + [None] * (width - len(r)) for r in rows]
     if h is None:
         names, body = [f"Column {i + 1}" for i in range(width)], rows
     else:
-        names, body = [str(c) if c is not None else "" for c in rows[h]], rows[h + 1:]
+        names, body = [(str(int(c)) if year(c) and not isinstance(c, str) else str(c)) if c is not None else "" for c in rows[h]], rows[h + 1:]
         above = rows[h - 1] if h > 0 else None
         # Two header rows ("Jul" over "Spend, Clicks, Conv"): join them.
         if above and len({norm(n) for n in names if n}) < len([n for n in names if n]) and filled(above) >= 2:
@@ -189,10 +202,11 @@ def table(origin, rows, header=None):
             if n and not n.lower().startswith("unnamed"):
                 notes.append(f"Column {n} is empty and was left out.")
             continue
-        n = n or f"Column {i + 1}"
-        k = norm(n)
-        seen[k] = seen.get(k, 0) + 1
-        final.append(n if seen[k] == 1 else f"{n} {seen[k]}")
+        name, j = n or f"Column {i + 1}", 2
+        while norm(name) in seen:
+            name, j = f"{n or f'Column {i + 1}'} {j}", j + 1
+        seen[norm(name)] = True
+        final.append(name)
         keep.append(i)
     return {"origin": origin, "names": final, "rows": [[r[i] for i in keep] for r in data], "notes": notes}
 
@@ -307,7 +321,9 @@ def detect(name, vals, rows, currency_hint):
     # Dates
     real_dates = sum(isinstance(v, (dt.date, dt.datetime)) for v in present)
     sample = present[:: max(1, n // 300)]
-    if real_dates or (strs and DATE_WORDS.search(name)) or (len(strs) == n and sum(
+    serial_named = DATE_WORDS.search(name) and not strs and all(
+        isinstance(v, (int, float)) and not isinstance(v, bool) and 20000 <= v <= 80000 for v in sample)
+    if real_dates or serial_named or (strs and DATE_WORDS.search(name)) or (len(strs) == n and sum(
             to_date(v, True) is not None or to_date(v, False) is not None for v in sample) >= 0.8 * len(sample)):
         first = dayfirst_for(strs[:2000], currency_hint)
         parsed = [to_date(v, first) for v in vals]
@@ -480,9 +496,10 @@ def build(d):
             src = []
             for t in ts:
                 src += [t["origin"]] * len(t["rows"])
-            cols.append({"name": "Source", "kind": "category", "unit": None, "values": src, "unreadable": 0, "merged": 0})
+            src_name = "Source" if "source" not in {norm(c["name"]) for c in cols} else "Source file"
+            cols.append({"name": src_name, "kind": "category", "unit": None, "values": src, "unreadable": 0, "merged": 0})
             raws.append(src)
-            notes = [f"Stacked {len(ts)} tables with the same columns ({', '.join(t['origin'] for t in ts)}); the Source column says where each row came from."]
+            notes = [f"Stacked {len(ts)} tables with the same columns ({', '.join(t['origin'] for t in ts)}); the {src_name} column says where each row came from."]
             for t in ts:
                 notes += [f"{t['origin']}: {x}" for x in t["notes"]]
             files = {t["origin"].split(" · ")[0] for t in ts}
@@ -609,6 +626,10 @@ def stats(c):
     return s
 
 
+def quote(name):
+    return name.replace('"', '""')
+
+
 def sql_name(name, used):
     base = re.sub(r"[^0-9a-z]+", "_", name.casefold()).strip("_")[:40] or "data"
     if base[0].isdigit():
@@ -632,7 +653,7 @@ def write(d, datasets, links):
         tname = sql_name(ds["name"], used)
         cols = ds["cols"]
         types = {"number": "REAL", "money": "REAL", "percent": "REAL"}
-        con.execute(f'CREATE TABLE "{tname}" (' + ", ".join(f'"{c["name"]}" {types.get(c["kind"], "TEXT")}' for c in cols) + ")")
+        con.execute(f'CREATE TABLE "{tname}" (' + ", ".join(f'"{quote(c["name"])}" {types.get(c["kind"], "TEXT")}' for c in cols) + ")")
         conv = []
         for c in cols:
             if c["kind"] == "date":
@@ -710,7 +731,9 @@ def query(d, text, limit=500):
     text = text.strip().rstrip(";")
     if not re.match(r"(?is)^\s*(with|select)\b", text):
         return {"error": "Only SELECT queries can run."}
-    con = sqlite3.connect(f"file:{os.path.join(d, 'data.sqlite')}?mode=ro", uri=True)
+    con = sqlite3.connect(pathlib.Path(d, "data.sqlite").resolve().as_uri() + "?mode=ro", uri=True)
+    if hasattr(con, "setlimit"):  # Python 3.11+: no string or blob over 10 MB
+        con.setlimit(sqlite3.SQLITE_LIMIT_LENGTH, 10_000_000)
     con.create_aggregate("median", 1, Median)
     con.set_authorizer(lambda action, *_: sqlite3.SQLITE_OK if action in ALLOWED else sqlite3.SQLITE_DENY)
     start = time.time()
@@ -741,6 +764,10 @@ def main():
             print(json.dumps(query(d, json.load(sys.stdin).get("sql", "")), ensure_ascii=False, default=str))
     except Bad as e:
         print(json.dumps({"error": str(e)}))
+        sys.exit(1)
+    except Exception as e:  # noqa: BLE001 - the user gets plain words, the details stay in the log
+        print(f"{type(e).__name__}: {e}", file=sys.stderr)
+        print(json.dumps({"error": "The data could not be read: the file may be damaged or very unusual. Try saving it again as .xlsx or .csv."}))
         sys.exit(1)
 
 

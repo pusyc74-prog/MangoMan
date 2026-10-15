@@ -281,7 +281,7 @@ func (st *Store) Ask(ctx context.Context, id, question string, history []Turn, p
 	if err != nil {
 		return Answer{}, err
 	}
-	var steps []Step
+	steps := []Step{}
 	fix, retried := "", false
 	for calls := 0; calls < maxQueries+3; calls++ {
 		if ctx.Err() != nil {
@@ -324,7 +324,8 @@ func (st *Store) Ask(ctx context.Context, id, question string, history []Turn, p
 			continue
 		}
 		a := Answer{Text: strings.TrimSpace(r.Answer), Steps: steps, Chart: validChart(r.Chart, steps)}
-		a.Unchecked = Unchecked(a.Text, append(resultValues(steps), any(question)))
+		// The column summary the model saw is code's counting too.
+		a.Unchecked = Unchecked(a.Text, append(resultGroups(steps), []any{question}, []any{schema(prof)}))
 		if len(a.Unchecked) > 0 && !retried {
 			retried = true
 			fix = "These numbers in your answer are not in the query results: " + strings.Join(a.Unchecked, ", ") +
@@ -336,17 +337,28 @@ func (st *Store) Ask(ctx context.Context, id, question string, history []Turn, p
 	return Answer{Steps: steps}, errors.New("no answer after several tries; ask in other words")
 }
 
-func resultValues(steps []Step) []any {
-	var vals []any
+// resultGroups are the values that belong together in the results: each
+// column, and each row.
+func resultGroups(steps []Step) [][]any {
+	var groups [][]any
 	for _, s := range steps {
 		if s.Result == nil {
 			continue
 		}
+		for j := range s.Result.Columns {
+			col := make([]any, 0, len(s.Result.Rows))
+			for _, row := range s.Result.Rows {
+				if j < len(row) {
+					col = append(col, row[j])
+				}
+			}
+			groups = append(groups, col)
+		}
 		for _, row := range s.Result.Rows {
-			vals = append(vals, row...)
+			groups = append(groups, row)
 		}
 	}
-	return vals
+	return groups
 }
 
 func validChart(c *Chart, steps []Step) *Chart {
@@ -451,6 +463,16 @@ func clip(s string, n int) string {
 
 // ---------- readout ----------
 
+// factValues are the numbers of one fact line, as numbers, so a total or
+// change of them can be checked like a column of results.
+func factValues(f string) []any {
+	vals := []any{f}
+	for _, w := range numbersIn(f) {
+		vals = append(vals, w.value)
+	}
+	return vals
+}
+
 // Readout is the written summary of a dashboard.
 type Readout struct {
 	Text      string   `json:"text"`
@@ -479,9 +501,9 @@ func (st *Store) WriteReadout(ctx context.Context, id string, facts []string, fr
 		return Readout{}, errors.New("no free model is connected: add a key in Connections")
 	}
 	sh, _ := st.Get(id)
-	vals := make([]any, len(facts))
+	groups := make([][]any, len(facts))
 	for i, f := range facts {
-		vals[i] = clip(f, 400)
+		groups[i] = factValues(clip(f, 400))
 	}
 	prompt := "Write the readout of a dashboard for a busy, non-technical business owner. Our code computed these facts from their data (" +
 		sh.Title + "):\n- " + strings.Join(facts, "\n- ") +
@@ -496,7 +518,7 @@ func (st *Store) WriteReadout(ctx context.Context, id string, facts []string, fr
 			return Readout{}, modelError(err)
 		}
 		text = strings.TrimSpace(fence.ReplaceAllString(text, ""))
-		out = Readout{Text: text, Unchecked: Unchecked(text, vals), Facts: key}
+		out = Readout{Text: text, Unchecked: Unchecked(text, groups), Facts: key}
 		if len(out.Unchecked) == 0 {
 			break
 		}

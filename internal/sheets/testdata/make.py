@@ -67,3 +67,12 @@ ws.append([None, "Spend", "Clicks", "Conv", "Spend", "Clicks", "Conv"])
 for c in ["Brand Search", "Display", "Video"]:
     ws.append([c, R.randint(1000, 9000), R.randint(100, 900), R.randint(0, 40), R.randint(1000, 9000), R.randint(100, 900), R.randint(0, 40)])
 wb.save(os.path.join(HERE, "ads.xlsx"))
+
+# Years as column names (Excel keeps them numbers) and dates as Excel day
+# serials in a column named like a date.
+wb = openpyxl.Workbook()
+ws = wb.active
+ws.append(["Product", 2024, 2025, "Ship date"])
+for i, p in enumerate(["Soap", "Oil", "Balm"]):
+    ws.append([p, 100 + i, 120 + i, 46000 + i])
+wb.save(os.path.join(HERE, "years.xlsx"))

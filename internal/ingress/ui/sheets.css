@@ -27,7 +27,6 @@
 .cs-grow { flex: 1; }
 .cs-muted { color: var(--muted); }
 .cs-small { font-size: 12.5px; }
-.cs-num { font-variant-numeric: tabular-nums; }
 
 /* ---------- library ---------- */
 .cs-add { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 4px 0 28px; }
@@ -50,7 +49,6 @@
 .cs-card h4 { margin: 0; font: 650 15.5px/1.3 var(--display); }
 .cs-card p { margin: 0; color: var(--ink-2); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .cs-card .cs-meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
-.cs-spark-wrap { height: 34px; }
 .cs-live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--good); }
 .cs-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--mango); box-shadow: 0 0 0 3px var(--mango-wash); }
 .cs-empty { text-align: center; color: var(--muted); padding: 30px 10px; border: 1px dashed var(--hair); border-radius: var(--r-lg); }
@@ -105,13 +103,11 @@
 .cs-tab { border: 0; background: none; font: inherit; font-size: 14px; font-weight: 550; color: var(--muted); padding: 10px 14px 11px; border-bottom: 2.5px solid transparent; cursor: pointer; white-space: nowrap; margin-bottom: -1px; }
 .cs-tab:hover { color: var(--ink); }
 .cs-tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--mango); }
-.cs-tab .cs-pill { margin-left: 6px; font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--mango-wash); color: var(--warning); font-weight: 700; }
 
 /* ---------- tiles and cards ---------- */
 .cs-grid { display: grid; gap: 16px; }
 .cs-k { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
 .cs-g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.cs-g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .cs-g21 { grid-template-columns: 2fr 1fr; }
 .cs-mt { margin-top: 16px; }
 .cs-tile { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: 16px 16px 12px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
@@ -162,10 +158,6 @@
 .cs-ins b { display: block; font-size: 14px; margin-bottom: 2px; }
 .cs-ins span { font-size: 13px; color: var(--ink-2); }
 
-/* health ring and checks */
-.cs-ring { display: grid; place-items: center; }
-.cs-heat td.cell { text-align: center; font-weight: 600; cursor: pointer; border: 2px solid var(--surface); border-radius: 6px; }
-.cs-heat td.na { text-align: center; color: var(--muted); font-weight: 400; }
 
 /* readout */
 .cs-readout { max-width: 760px; }
@@ -205,7 +197,7 @@
 }
 
 @media (max-width: 900px) {
-  .cs-g2, .cs-g3, .cs-g21, .cs-add { grid-template-columns: minmax(0, 1fr); }
+  .cs-g2, .cs-g21, .cs-add { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
   .cs-wide { display: none; }

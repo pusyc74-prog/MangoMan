@@ -8,17 +8,20 @@ import (
 )
 
 // Every number a model writes must come from numbers code computed: the
-// query results or the dashboard's facts, as written or rounded, or a sum,
-// difference, share or change of two of them.
+// query results or the dashboard's facts, as written or rounded, or worked
+// out from values that belong together (one result column, one row, one
+// fact): their total, a sum or gap of two, and, in small groups only, a
+// share or change of two. Ratios of any two values would let almost any
+// percentage pass.
 
 var (
-	numRe   = regexp.MustCompile(`(?i)(\d[\d,]*(?:\.\d+)?)(?:\s*(lakhs?|lacs?|crores?|cr|k|thousand|million|mn|m|bn|billion)\b)?`)
+	numRe   = regexp.MustCompile(`(?i)(\d[\d,]*(?:\.\d+)?)(?:\s*(lakhs?|lacs?|crores?|cr|l|k|thousand|million|mn|m|bn|b|billion)\b)?`)
 	listRe  = regexp.MustCompile(`(?m)^\s*\d{1,2}[.)]\s`)
 	grouped = regexp.MustCompile(`^\d{1,3}(,\d{3})+(\.\d+)?$|^\d{1,2}(,\d{2})*,\d{3}(\.\d+)?$|^\d+(\.\d+)?$`)
 )
 
-var scales = map[string]float64{"lakh": 1e5, "lakhs": 1e5, "lac": 1e5, "lacs": 1e5, "crore": 1e7, "crores": 1e7, "cr": 1e7,
-	"k": 1e3, "thousand": 1e3, "million": 1e6, "mn": 1e6, "m": 1e6, "bn": 1e9, "billion": 1e9}
+var scales = map[string]float64{"lakh": 1e5, "lakhs": 1e5, "lac": 1e5, "lacs": 1e5, "l": 1e5, "crore": 1e7, "crores": 1e7, "cr": 1e7,
+	"k": 1e3, "thousand": 1e3, "million": 1e6, "mn": 1e6, "m": 1e6, "bn": 1e9, "b": 1e9, "billion": 1e9}
 
 type written struct {
 	text  string
@@ -79,22 +82,30 @@ func known(values []any) []float64 {
 	return out
 }
 
-// Unchecked returns the numbers in text that do not trace to the known
-// values. Small whole numbers (up to 12: "top 3", "6 months") always pass.
-func Unchecked(text string, values []any) []string {
-	base := known(values)
-	derived := base
-	if len(base) <= 250 {
-		derived = append([]float64{}, base...)
-		for i, a := range base {
-			for _, b := range base[i:] {
+// Unchecked returns the numbers in text that do not trace to the groups of
+// known values. Small whole numbers (up to 12: "top 3", "6 months") always pass.
+func Unchecked(text string, groups [][]any) []string {
+	var derived []float64
+	for _, g := range groups {
+		vals := known(g)
+		derived = append(derived, vals...)
+		if len(vals) > 60 {
+			continue
+		}
+		sum := 0.0
+		for _, v := range g {
+			if f, ok := v.(float64); ok {
+				sum += f
+			}
+		}
+		derived = append(derived, sum)
+		for i, a := range vals {
+			for _, b := range vals[i+1:] {
 				derived = append(derived, a+b, math.Abs(a-b))
-				if b != 0 {
-					derived = append(derived, a/b*100, math.Abs(a-b)/math.Abs(b)*100)
+				if len(vals) > 12 || a == 0 || b == 0 {
+					continue
 				}
-				if a != 0 {
-					derived = append(derived, b/a*100, math.Abs(a-b)/math.Abs(a)*100)
-				}
+				derived = append(derived, a/b*100, b/a*100, math.Abs(a-b)/math.Abs(b)*100, math.Abs(a-b)/math.Abs(a)*100)
 			}
 		}
 	}

@@ -90,6 +90,9 @@ func (st *Store) AddGoogle(ctx context.Context, id, link string) (Sheet, error) 
 	if gid == "" {
 		return Sheet{}, errors.New("paste the link of a Google Sheet (it starts with https://docs.google.com/spreadsheets/d/)")
 	}
+	l := st.lock(id)
+	l.Lock()
+	defer l.Unlock()
 	sh, err := st.Get(id)
 	if err != nil {
 		return sh, err
@@ -180,6 +183,16 @@ func (st *Store) Refresh(ctx context.Context, id string) (Sheet, bool, error) {
 	}
 	sh, err = st.load(ctx, id)
 	if err != nil {
+		// Forget the new copies' hashes, so the next refresh reads them again.
+		_, _ = st.update(id, func(sh *Sheet) {
+			for i := range sh.Sources {
+				for _, f := range fresh {
+					if sh.Sources[i].File == f.file {
+						sh.Sources[i].Hash = ""
+					}
+				}
+			}
+		})
 		return sh, true, err
 	}
 	change := "The sheet changed."

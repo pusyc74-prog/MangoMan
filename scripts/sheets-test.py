@@ -211,10 +211,11 @@ def ask(sheet, name, q, follow, words, nums, history, out):
     text = str(a.get("text") or res.get("error") or "(no answer)")
     miss = grade(text, words, nums) if a else ["no answer"]
     history.setdefault(name, []).append({"q": q, "a": text})
-    sql = " / ".join(s.get("sql", "") for s in a.get("steps", []))[:300].replace("|", "/")
+    steps = a.get("steps") or []
+    sql = " / ".join(s.get("sql", "") for s in steps)[:300].replace("|", "/")
     cell = text[:400].replace("|", "/").replace("\n", " ")
     out.append(f"| {name} | {q} | {'yes' if not miss else 'NO'} | {', '.join(miss)} | {', '.join(a.get('unchecked') or [])} | "
-               f"{len(a.get('steps', []))} | {time.time() - start:.0f} | {cell} <br>`{sql}` |")
+               f"{len(steps)} | {time.time() - start:.0f} | {cell} <br>`{sql}` |")
     return not miss
 
 
