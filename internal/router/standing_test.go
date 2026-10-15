@@ -109,3 +109,34 @@ func TestTriedLastExpires(t *testing.T) {
 		t.Fatalf("tried last after it ended: %v", got[0].Target())
 	}
 }
+
+// Mango Arch reads the counts and can only reorder: a demoted model is
+// still asked, behind the others, and an earlier end never shortens a demotion.
+func TestTallyAndDemote(t *testing.T) {
+	now := time.Unix(0, 0)
+	l := NewLine()
+	l.SetClock(func() time.Time { return now })
+	l.judge("a/m", rule{clear: true})
+	l.judge("a/m", rule{strikes: 1, last: silentFor, word: "slow"})
+	l.judge("a/m", rule{clear: true, word: "failed"}) // a failed answer check: the service answered
+	l.judge("a/m", rule{word: "busy"})                // a rate limit: about the account, not counted
+	if got := l.Tally(); got["a/m"]["ok"] != 2 || got["a/m"]["slow"] != 1 || len(got["a/m"]) != 2 {
+		t.Fatalf("%v", got)
+	}
+	if got := l.Tally(); got != nil {
+		t.Fatalf("not reset: %v", got)
+	}
+	a := Candidate{}
+	a.Provider.ID, a.Model.Provider, a.Model.Canonical = "a", "a", "m1"
+	b := a
+	b.Provider.ID, b.Model.Provider = "b", "b"
+	l.Demote(a.Target(), now.Add(time.Hour))
+	l.Demote(a.Target(), now.Add(time.Minute))
+	if got := l.order([]Candidate{a, b}); len(got) != 2 || got[0].Target() != b.Target() || !l.allow(a.Target()) {
+		t.Fatalf("%v", got)
+	}
+	now = now.Add(59 * time.Minute)
+	if got := l.order([]Candidate{a, b}); got[0].Target() != b.Target() {
+		t.Fatal("a later demotion was shortened")
+	}
+}

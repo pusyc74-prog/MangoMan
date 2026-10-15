@@ -85,6 +85,7 @@ func ruleFor(res attemptResult) rule {
 type Line struct {
 	mu        sync.Mutex
 	m         map[string]*place
+	tally     map[string]map[string]int // outcomes since the last Tally, for Mango Arch
 	skipAfter int
 	now       func() time.Time
 	jitter    func(time.Duration) time.Duration
@@ -129,6 +130,21 @@ func (l *Line) judge(t string, r rule) {
 	defer l.mu.Unlock()
 	p := l.get(t)
 	now := l.now()
+	// Only what says something about the model's service is counted: an
+	// answer, or a strike. Rate limits and bad keys are about the account.
+	if r.clear || r.strikes > 0 {
+		word := "ok"
+		if !r.clear {
+			word = r.word
+		}
+		if l.tally == nil {
+			l.tally = map[string]map[string]int{}
+		}
+		if l.tally[t] == nil {
+			l.tally[t] = map[string]int{}
+		}
+		l.tally[t][word]++
+	}
 	if r.last > 0 {
 		p.lastUntil = now.Add(r.last)
 	}
@@ -148,6 +164,27 @@ func (l *Line) judge(t string, r rule) {
 		}
 	}
 	p.probing = false
+}
+
+// Tally returns each model's outcomes since the last call (ok, busy, slow,
+// garbled, empty, failed) and starts counting again.
+func (l *Line) Tally() map[string]map[string]int {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	t := l.tally
+	l.tally = nil
+	return t
+}
+
+// Demote tries a model behind the others until the given time, as when it
+// was slow here. Lessons from other MangoMans use it: they can change the
+// order, never take a model away.
+func (l *Line) Demote(t string, until time.Time) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if p := l.get(t); until.After(p.lastUntil) {
+		p.lastUntil = until
+	}
 }
 
 // allow reports whether a request may go to the model. When its skip has

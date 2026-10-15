@@ -750,8 +750,81 @@ async function loadGuardian() {
         el("td", {}, i.status === "ready" ? [act("approve", "Approve", "primary"), " ", act("reject", "Reject", "ghost")] : "")));
     }
   }
-  $("guardian-block").hidden = projects.length === 0;
+  $("guardian-block").hidden = rows.length === 0;
   $("guardian-list").tBodies[0].replaceChildren(...rows);
+  renderHealApps(projects);
+}
+
+// ---------- Self Healing System ----------
+
+const ESTATUS = { ok: "Fine", fixed: "Fixed by first aid", failing: "Failing" };
+
+function renderHealApps(projects) {
+  $("heal-empty").hidden = projects.length > 0;
+  $("heal-apps").replaceChildren(...projects.map((p) => {
+    const what = !p.fixes ? "Watch only: MangoMan does not have the code."
+      : p.live ? "Watch and fix. Fixes go live after your OK."
+      : "Watch and fix in a safe copy. To put fixes live, MangoMan needs to know how this app is published.";
+    const checks = p.latest.map((e) => el("li", {},
+      el("b", {}, `${e.check === "dev" ? "Safe copy" : e.check}: ${ESTATUS[e.status] || e.status}`), ` at ${new Date(e.time).toLocaleTimeString()}`,
+      e.detail ? el("br") : null, e.detail || "", e.cause ? el("br") : null, e.cause ? `Likely cause: ${e.cause}` : ""));
+    const off = el("button", { type: "button", class: "ghost", onclick: async (ev) => {
+      ev.target.disabled = true;
+      try { await api("/mangoman/healing/disconnect", { method: "POST", body: JSON.stringify({ config: p.config }) }); }
+      catch (err) { alert(err.message); }
+      loadGuardian();
+    } }, "Disconnect");
+    return el("li", { class: "card" }, el("h3", {}, p.app), p.url ? el("p", {}, p.url) : null, el("p", {}, what),
+      el("p", { class: "label" }, p.watching ? "Watching now" : "Not watched by this MangoMan"),
+      p.stopped ? el("p", {}, `Watching stopped: ${p.stopped}. Disconnect and connect again after fixing it.`) : null,
+      checks.length ? el("ul", {}, checks) : el("p", {}, p.watching ? "First check in progress." : "No checks yet."),
+      off);
+  }));
+}
+
+// ---------- Mango Arch ----------
+
+function renderArch(v) {
+  $("arch-share-line").hidden = !v.live;
+  $("arch-share").checked = v.share;
+  $("arch-status").textContent = !v.live ? "Not live yet. Nothing is sent or received."
+    : v.synced ? `Last update ${new Date(v.synced).toLocaleString()}. ${v.lessons.length} lesson${v.lessons.length === 1 ? "" : "s"} in use.`
+    : "Waiting for the first update.";
+  $("arch-lessons").replaceChildren(...v.lessons.map((l) => el("li", {},
+    `${l.target}: tried last until ${new Date(l.until).toLocaleTimeString()} (${l.reason} on ${l.installs} networks)`)));
+}
+
+async function loadArch() {
+  try { renderArch(await api("/mangoman/arch")); } catch (err) { $("arch-status").textContent = err.message; }
+}
+
+async function loadHealFolders() {
+  let r;
+  try { r = await api("/mangoman/files"); } catch (_) { return; }
+  $("heal-folders").replaceChildren(...r.items.filter((i) => i.dir).map((i) => el("option", { value: i.name })));
+}
+
+async function connectApp(e) {
+  e.preventDefault();
+  const btn = $("heal-connect"), msg = $("heal-msg");
+  btn.disabled = true;
+  msg.className = "msg";
+  msg.textContent = "Connecting\u2026";
+  try {
+    const r = await api("/mangoman/healing/connect", { method: "POST", body: JSON.stringify({
+      name: $("heal-name").value, url: $("heal-url").value, folder: $("heal-folder").value }) });
+    msg.className = "msg ok";
+    msg.textContent = "Connected. The first check runs now; its result appears below."
+      + (r.kept ? " That folder already had a guardian.json, so its own settings are used." : "")
+      + (r.branch ? ` The live branch is ${r.branch}.` : "");
+    $("heal-form").reset();
+    setTimeout(loadGuardian, 3000);
+  } catch (err) {
+    msg.className = "msg err";
+    msg.textContent = err.message;
+  }
+  btn.disabled = false;
+  loadGuardian();
 }
 
 // ---------- live model panel ----------
@@ -781,7 +854,7 @@ async function setWeaker(mode) {
 
 // ---------- the menu ----------
 
-const VIEWS = ["agents", "chargesheets", "templates", "files", "history", "connections", "usage", "settings"];
+const VIEWS = ["agents", "healing", "chargesheets", "templates", "files", "history", "connections", "usage", "settings"];
 
 function showView() {
   const want = location.hash.slice(1);
@@ -793,6 +866,8 @@ function showView() {
   // The chart takes its width from the page, which a hidden section has none of.
   if (v === "usage" && state.overview) renderChart(state.activity, state.overview);
   if (v === "files" || v === "settings") loadFiles();
+  if (v === "healing") { loadGuardian(); loadHealFolders(); }
+  if (v === "settings") loadArch();
 }
 
 function say(text, kind) {
@@ -893,6 +968,11 @@ document.addEventListener("DOMContentLoaded", () => {
   $("refresh").addEventListener("click", load);
   $("to-code").addEventListener("click", () => openCoding(""));
   $("to-files").addEventListener("click", () => openEntry(""));
+  $("heal-form").addEventListener("submit", connectApp);
+  $("arch-share").addEventListener("change", async (e) => {
+    try { renderArch(await api("/mangoman/arch", { method: "POST", body: JSON.stringify({ share: e.target.checked }) })); }
+    catch (err) { alert(err.message); loadArch(); }
+  });
   window.addEventListener("hashchange", showView);
   showView();
   loadStarters();

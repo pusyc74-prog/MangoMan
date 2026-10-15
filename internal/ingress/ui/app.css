@@ -381,3 +381,12 @@ body.app { padding: 0; display: grid; grid-template-columns: 220px minmax(0, 1fr
   .app .nav a { white-space: nowrap; }
   .app .page { padding: 0 16px 48px; }
 }
+.steps4 { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.plain { margin: 0; padding-left: 20px; color: var(--ink-2); }
+.plain li { margin: 4px 0; }
+.heal-form { display: grid; gap: 6px; max-width: 520px; }
+.heal-form label { font-weight: 600; font-size: 14px; margin-top: 6px; }
+.heal-form input { font: inherit; padding: 7px 10px; border: 1px solid var(--axis); border-radius: 6px; background: var(--page); color: var(--ink); }
+.grid th[scope="row"] { text-align: left; font-weight: 600; }
+.agree-line { display: flex; gap: 8px; align-items: flex-start; max-width: 640px; font-size: 14px; color: var(--ink-2); }
+.agree-line input { margin-top: 3px; }

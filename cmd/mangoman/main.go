@@ -23,8 +23,10 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/pusyc74-prog/mangoman/internal/arch"
 	"github.com/pusyc74-prog/mangoman/internal/catalogue"
 	"github.com/pusyc74-prog/mangoman/internal/config"
+	"github.com/pusyc74-prog/mangoman/internal/guardian"
 	"github.com/pusyc74-prog/mangoman/internal/ingress"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/providers"
@@ -357,7 +359,18 @@ func serve(port int, opened func(connected int)) error {
 	rt.Brain = br
 
 	srv := &ingress.Server{Router: rt, Cfg: cfg, Port: port, Version: version, Started: time.Now(),
-		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl", Radar: rd, Brain: br}
+		UsagePath: dir + string(os.PathSeparator) + "usage.jsonl", Radar: rd, Brain: br,
+		// The Self Healing System: each connected app is checked every 5 minutes while MangoMan runs.
+		Watch: func(ctx context.Context, path string) error {
+			g, err := loadGuardian(path)
+			if err != nil {
+				logger.Printf("self healing: %v", err)
+				return err
+			}
+			g.Logf = func(f string, a ...any) { logger.Printf("%s: %s", g.Cfg.App, fmt.Sprintf(f, a...)) }
+			return g.Serve(ctx, 5*time.Minute, func([]guardian.Event) {})
+		},
+		Arch: archClient(dir, cat, cfg, rt)}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
 		return fmt.Errorf("cannot listen on %s: %w", srv.Addr(), err)
@@ -390,6 +403,10 @@ func serve(port int, opened func(connected int)) error {
 	}
 	errc := make(chan error, 1)
 	go func() { errc <- hs.Serve(ln) }()
+	srv.StartHealing(ctx)
+	if a := srv.Arch; a != nil {
+		go a.Run(ctx, time.Hour, logger.Printf)
+	}
 	if opened != nil {
 		opened(connected)
 	}
@@ -876,4 +893,29 @@ func teamOf(cat *catalogue.Catalogue, cfg *config.Config) func(string) []string 
 		}
 		return cfg.GetTeamKeys(id)
 	}
+}
+
+// archClient connects the router to Mango Arch when this build has a
+// server: it shares counts for catalogue cloud models only, and only when
+// the owner agreed.
+func archClient(dir string, cat *catalogue.Catalogue, cfg *config.Config, rt *router.Router) *arch.Client {
+	a := arch.New(dir)
+	if a == nil {
+		return nil
+	}
+	a.Known = func(target string) bool {
+		provider, upstream, ok := strings.Cut(target, "/")
+		p, found := cat.Provider(provider)
+		if !ok || !found || p.Local {
+			return false
+		}
+		for _, m := range cat.AllModels() {
+			if m.Provider == provider && m.Canonical == upstream {
+				return true
+			}
+		}
+		return false
+	}
+	a.Demote, a.Tally, a.Share = rt.Line.Demote, rt.Line.Tally, cfg.SharingLessons
+	return a
 }

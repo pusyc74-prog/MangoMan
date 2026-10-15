@@ -18,11 +18,21 @@ type GuardianProject struct {
 	App       string              `json:"app"`
 	Config    string              `json:"config"`
 	Incidents []guardian.Incident `json:"incidents"`
+	URL       string              `json:"url,omitempty"`     // the live address
+	Fixes     bool                `json:"fixes"`             // code in Git: Guardian can fix, not only watch
+	Live      bool                `json:"live"`              // a production deploy is set: approved fixes can go live
+	Watching  bool                `json:"watching"`          // this MangoMan is watching it now
+	Stopped   string              `json:"stopped,omitempty"` // why watching ended on its own
+	Latest    []guardian.Event    `json:"latest"`            // each check's last result
 }
 
 func (s *Server) guardianRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /mangoman/guardian", s.auth(http.HandlerFunc(s.guardianList)))
 	mux.Handle("POST /mangoman/guardian/{action}", s.auth(http.HandlerFunc(s.guardianAct)))
+	mux.Handle("POST /mangoman/healing/connect", s.auth(http.HandlerFunc(s.healConnect)))
+	mux.Handle("POST /mangoman/healing/disconnect", s.auth(http.HandlerFunc(s.healDisconnect)))
+	mux.Handle("GET /mangoman/arch", s.auth(http.HandlerFunc(s.archGet)))
+	mux.Handle("POST /mangoman/arch", s.auth(http.HandlerFunc(s.archSet)))
 }
 
 func projectsList() string {
@@ -38,7 +48,8 @@ func (s *Server) guardianList(w http.ResponseWriter, _ *http.Request) {
 		if err != nil {
 			continue
 		}
-		gp := GuardianProject{App: g.Cfg.App, Config: p, Incidents: []guardian.Incident{}}
+		gp := GuardianProject{App: g.Cfg.App, Config: p, Incidents: []guardian.Incident{}, URL: g.Cfg.Prod.URL,
+			Fixes: g.Cfg.Repo != "", Live: g.Cfg.Prod.Deploy != "", Watching: s.watching(p), Stopped: s.stopped(p), Latest: g.Latest()}
 		for _, i := range g.Incidents() {
 			if i.Status == "queued" || i.Status == "working" || i.Status == "ready" || i.Status == "deploying" ||
 				i.Status == "needs_you" || time.Since(i.Opened) < 24*time.Hour {

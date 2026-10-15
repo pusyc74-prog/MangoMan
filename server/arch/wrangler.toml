@@ -1,0 +1,14 @@
+name = "mango-arch"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+[triggers]
+crons = ["5 * * * *"] # every hour, five minutes past
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mango-arch"
+database_id = "PASTE_THE_ID_FROM_wrangler_d1_create"
+
+[vars]
+QUORUM = "5"

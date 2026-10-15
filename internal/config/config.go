@@ -55,6 +55,9 @@ type Config struct {
 	// so usage can be shown per person: name -> token. Like Token, they only
 	// guard the local endpoint.
 	People map[string]string `json:"people,omitempty"`
+	// ShareLessons sends anonymous counts of how each free model behaved
+	// to Mango Arch once an hour. Off until the owner agrees.
+	ShareLessons bool `json:"share_lessons,omitempty"`
 }
 
 // Person returns the name whose local token this is ("" for none).
@@ -138,6 +141,20 @@ func (c *Config) SetAllowWeaker(on bool) {
 	mu.Lock()
 	defer mu.Unlock()
 	c.AllowWeaker = on
+}
+
+// SharingLessons reports whether the owner agreed to share with Mango Arch.
+func (c *Config) SharingLessons() bool {
+	mu.Lock()
+	defer mu.Unlock()
+	return c.ShareLessons
+}
+
+// SetShareLessons changes the ShareLessons setting.
+func (c *Config) SetShareLessons(on bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	c.ShareLessons = on
 }
 
 // BrainConfig is the decision brain's setting.

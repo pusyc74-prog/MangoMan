@@ -5,6 +5,7 @@
 package ingress
 
 import (
+	"context"
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
@@ -16,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pusyc74-prog/mangoman/internal/arch"
 	"github.com/pusyc74-prog/mangoman/internal/brain"
 	"github.com/pusyc74-prog/mangoman/internal/classify"
 	"github.com/pusyc74-prog/mangoman/internal/config"
@@ -50,8 +52,15 @@ type Server struct {
 	// GetReady installs what MangoMan needs (default: setup.Ready).
 	GetReady func(home string, step pyenv.Step) error
 
+	// Watch runs Guardian on one guardian.json until ctx ends (the Self
+	// Healing System); nil = connected apps are listed, not watched.
+	Watch func(ctx context.Context, config string) error
+	// Arch is Mango Arch, the shared learning; nil = not live in this build.
+	Arch *arch.Client
+
 	code  codeState  // the attached coding workspace, if any
 	ready readyState // the setup page's Get ready step
+	heal  healState  // the apps being watched
 }
 
 // Handler returns the HTTP handler with all checks applied.

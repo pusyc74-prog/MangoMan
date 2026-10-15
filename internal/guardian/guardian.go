@@ -363,6 +363,35 @@ func (g *Guardian) record(events []Event) error {
 	return nil
 }
 
+// Latest is each check's last result, from the end of the history.
+func (g *Guardian) Latest() []Event {
+	out := []Event{}
+	f, err := os.Open(filepath.Join(g.Dir, "guardian-history.jsonl"))
+	if err != nil {
+		return out
+	}
+	defer f.Close()
+	if st, err := f.Stat(); err == nil && st.Size() > 64<<10 {
+		_, _ = f.Seek(st.Size()-64<<10, io.SeekStart) // the first line read may be cut; it does not parse
+	}
+	at := map[string]int{}
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 64<<10), 1<<20)
+	for sc.Scan() {
+		var e Event
+		if json.Unmarshal(sc.Bytes(), &e) != nil || e.Check == "" {
+			continue
+		}
+		if i, ok := at[e.Check]; ok {
+			out[i] = e
+		} else {
+			at[e.Check] = len(out)
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
 // Report summarises the last day: what broke, why, what Guardian did and
 // what still needs a person. If send is set it also goes to the webhook.
 func (g *Guardian) Report(send bool) (string, error) {

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -278,5 +279,114 @@ func TestPagesHaveAnIcon(t *testing.T) {
 	w := call(h, "GET", "/ui/icon.svg", "127.0.0.1:4141", nil, "")
 	if w.Code != 200 || w.Header().Get("Content-Type") != "image/svg+xml" {
 		t.Fatalf("icon: %d %s", w.Code, w.Header().Get("Content-Type"))
+	}
+}
+
+// The Self Healing System page: an app with only an address is watched; a
+// folder must be a Git project; a project's own guardian.json is kept;
+// disconnect stops the watch and takes the app off the page.
+func TestHealingConnect(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("MANGOMAN_HOME", home)
+	h, s := dashServer(t, mem{})
+	started := make(chan string, 4)
+	s.Watch = func(ctx context.Context, config string) error {
+		started <- config
+		<-ctx.Done()
+		return nil
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	s.StartHealing(ctx)
+
+	for _, bad := range []string{`{"name":"","url":"https://a.example"}`, `{"name":"Shop","url":"ftp://a.example"}`,
+		`{"name":"Shop","url":"a.example"}`, `{"name":"Shop","url":"https://a.example","folder":"` + t.TempDir() + `"}`,
+		`{"name":"Shop","url":"https://a.example","folder":"../etc"}`} {
+		if w := call(h, "POST", "/mangoman/healing/connect", "127.0.0.1:4141", authz, bad); w.Code != 400 {
+			t.Fatalf("%s: %d %s", bad, w.Code, w.Body)
+		}
+	}
+	w := call(h, "POST", "/mangoman/healing/connect", "127.0.0.1:4141", authz, `{"name":"My Shop","url":"https://shop.example/"}`)
+	var got struct {
+		Config   string `json:"config"`
+		Watching bool   `json:"watching"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil || w.Code != 200 || !got.Watching {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	if c := <-started; c != got.Config || !strings.HasPrefix(c, filepath.Join(home, "guardian", "apps", "my-shop")) {
+		t.Fatalf("watching %s", c)
+	}
+	cfg, err := guardian.Load(got.Config)
+	if err != nil || cfg.Repo != "" || len(cfg.Checks) != 1 || cfg.Checks[0].URL != "https://shop.example/" || len(cfg.Checks[0].Fix) != 0 {
+		t.Fatalf("%v %+v", err, cfg)
+	}
+
+	// A Git project with its own guardian.json: kept as written.
+	proj := t.TempDir()
+	gitIn := func(args ...string) {
+		t.Helper()
+		if out, err := exec.Command("git", append([]string{"-C", proj, "-c", "user.name=t", "-c", "user.email=t@t"}, args...)...).CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %s", args, out)
+		}
+	}
+	gitIn("init", "-q", "-b", "main")
+	gitIn("commit", "-q", "--allow-empty", "-m", "start")
+	// A dev branch with work that is not live: refused, it would go live with the first fix.
+	gitIn("checkout", "-q", "-b", "dev")
+	gitIn("commit", "-q", "--allow-empty", "-m", "unreleased")
+	if w := call(h, "POST", "/mangoman/healing/connect", "127.0.0.1:4141", authz,
+		`{"name":"Other","url":"https://x.example/","folder":"`+proj+`"}`); w.Code != 400 || !strings.Contains(w.Body.String(), "dev_branch") {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	gitIn("checkout", "-q", "main")
+	gitIn("branch", "-q", "-D", "dev")
+	own := `{"app":"own","checks":[{"name":"up","url":"https://own.example/"}]}`
+	os.WriteFile(filepath.Join(proj, "guardian.json"), []byte(own), 0o644)
+	gitIn("checkout", "-q", "-b", "feature")
+	if w := call(h, "POST", "/mangoman/healing/connect", "127.0.0.1:4141", authz,
+		`{"name":"Other","url":"https://x.example/","folder":"`+proj+`"}`); w.Code != 200 || !strings.Contains(w.Body.String(), `"kept": true`) {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	if b := liveBranch(proj); b != "main" {
+		t.Fatalf("live branch is main, not the branch the folder is on: %q", b)
+	}
+	<-started
+	if b, _ := os.ReadFile(filepath.Join(proj, "guardian.json")); string(b) != own {
+		t.Fatalf("own guardian.json changed: %s", b)
+	}
+
+	var list []GuardianProject
+	_ = json.Unmarshal(call(h, "GET", "/mangoman/guardian", "127.0.0.1:4141", authz, "").Body.Bytes(), &list)
+	if len(list) != 2 || !list[0].Watching || list[0].Fixes || list[0].URL != "https://shop.example/" || list[0].Latest == nil {
+		t.Fatalf("%+v", list)
+	}
+	if w := call(h, "POST", "/mangoman/healing/disconnect", "127.0.0.1:4141", authz, `{"config":"/etc/x.json"}`); w.Code != 404 {
+		t.Fatalf("only connected apps: %d", w.Code)
+	}
+	if w := call(h, "POST", "/mangoman/healing/disconnect", "127.0.0.1:4141", authz, `{"config":"`+got.Config+`"}`); w.Code != 200 || s.watching(got.Config) {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	_ = json.Unmarshal(call(h, "GET", "/mangoman/guardian", "127.0.0.1:4141", authz, "").Body.Bytes(), &list)
+	if len(list) != 1 || list[0].App != "own" {
+		t.Fatalf("%+v", list)
+	}
+}
+
+// Mango Arch on the Settings page: not live in a build without a server;
+// sharing is off until the owner turns it on, and the choice is saved.
+func TestArchSetting(t *testing.T) {
+	h, s := dashServer(t, mem{})
+	var v ArchView
+	_ = json.Unmarshal(call(h, "GET", "/mangoman/arch", "127.0.0.1:4141", authz, "").Body.Bytes(), &v)
+	if v.Live || v.Share || v.Lessons == nil {
+		t.Fatalf("%+v", v)
+	}
+	if w := call(h, "POST", "/mangoman/arch", "127.0.0.1:4141", authz, `{"share":"yes"}`); w.Code != 400 {
+		t.Fatalf("%d", w.Code)
+	}
+	w := call(h, "POST", "/mangoman/arch", "127.0.0.1:4141", authz, `{"share":true}`)
+	if err := json.Unmarshal(w.Body.Bytes(), &v); err != nil || !v.Share || !s.Cfg.SharingLessons() {
+		t.Fatalf("%d %s", w.Code, w.Body)
 	}
 }

@@ -16,12 +16,16 @@ import (
 // to dev nightly, and sends the daily reports. show prints each run's events.
 func (g *Guardian) Serve(ctx context.Context, every time.Duration, show func([]Event)) error {
 	jobs := make(chan func(), 16)
+	drained := make(chan struct{})
 	go func() {
 		for job := range jobs {
 			job()
 		}
+		close(drained)
 	}()
-	defer close(jobs)
+	// On the way out, the job under way finishes first (a deploy is never
+	// left half done); jobs still waiting run with the stopped ctx and end at once.
+	defer func() { close(jobs); <-drained }()
 	queue := func(job func()) {
 		select {
 		case jobs <- job:

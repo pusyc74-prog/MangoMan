@@ -7,6 +7,8 @@ set -eu
 site="${1:-https://getmangoman.netlify.app}"
 site="${site%/}"
 ver="${VERSION:-$(git rev-parse --short HEAD)}"
+# Mango Arch (shared learning): its address and public key. Empty = off.
+arch=github.com/pusyc74-prog/mangoman/internal/arch
 out=dist/site
 rm -rf "$out"
 mkdir -p "$out"
@@ -15,7 +17,7 @@ for t in darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64; do
 	[ "$goos" = windows ] && ext=.exe
 	# GOFLAGS emptied: a development override (say a stand-in key store
 	# through -modfile) must never reach a release. Shipped once, 13 Oct.
-	GOFLAGS= CGO_ENABLED=0 GOOS=$goos GOARCH=$goarch go build -trimpath -ldflags "-s -w -X main.version=$ver" \
+	GOFLAGS= CGO_ENABLED=0 GOOS=$goos GOARCH=$goarch go build -trimpath -ldflags "-s -w -X main.version=$ver -X $arch.URL=${ARCH_URL:-} -X $arch.Key=${ARCH_KEY:-}" \
 		-o "$out/mangoman-$goos-$goarch$ext" ./cmd/mangoman
 done
 (cd "$out" && { sha256sum mangoman-* 2>/dev/null || shasum -a 256 mangoman-*; } >SHA256SUMS.txt)

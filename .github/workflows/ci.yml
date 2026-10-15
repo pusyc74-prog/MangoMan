@@ -56,6 +56,11 @@ jobs:
         with:
           version: v2.5.0
           args: --no-config --default=none -E unused,ineffassign ./...
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Mango Arch server (the Worker on a real SQLite database)
+        run: node server/arch/test.mjs
 
   other-systems:
     if: github.event_name != 'push' && github.event_name != 'pull_request'
@@ -92,6 +97,9 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Build the download site (every system, the page and the install scripts)
+        env: # Mango Arch's address and public key (repository variables); empty = off
+          ARCH_URL: ${{ vars.ARCH_URL }}
+          ARCH_KEY: ${{ vars.ARCH_KEY }}
         run: scripts/make-site.sh
       - uses: actions/upload-artifact@v4
         with:

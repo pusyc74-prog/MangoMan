@@ -1,0 +1,7 @@
+{
+  "public_key": "q2olN77e2UQLtgJYasPPVcLluhYM6Nkcrg+gayj6vgc=",
+  "signed": {
+    "data": "eyJpc3N1ZWQiOiIyMDI2LTEwLTE1VDA1OjE4OjM0LjY1OFoiLCJsZXNzb25zIjpbeyJpZCI6Im52aWRpYS9raW1pLWszQDIwMjYtMTAtMTVUMDQiLCJraW5kIjoiZGVtb3RlIiwidGFyZ2V0IjoibnZpZGlhL2tpbWktazMiLCJ1bnRpbCI6IjIwMjYtMTAtMTVUMDc6MTg6MzQuNjU4WiIsInJlYXNvbiI6InNsb3ciLCJpbnN0YWxscyI6M31dfQ==",
+    "sig": "evaObDelllwg/FMemsTOskHT3mq69yilhILkvmbf5M8k7wQkaUUtXoF2oBmjpDpy3VLKdO4iLhF5q+p+5pX2Bw=="
+  }
+}

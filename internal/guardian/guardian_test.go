@@ -236,6 +236,21 @@ func TestDevGivesUpAndProductionRollsBack(t *testing.T) {
 	if err := g2.Work(ctx, id); err != nil || g2.Incidents()[0].Status != "ready" || fixes.Load() != 2 {
 		t.Fatalf("second try: %v %+v", err, g2.Incidents()[0])
 	}
+
+	// No rollback command (Netlify, Docker): the reverted code is deployed
+	// again, so production does not keep the failed version.
+	repo3 := gitRepo(t)
+	log := filepath.Join(t.TempDir(), "deploys")
+	cfg3 := &Config{App: "shop", Repo: repo3, Checks: []Check{{Name: "page", Command: "false"}},
+		Prod: Env{Deploy: "cat app.txt >> " + log}}
+	g3 := &Guardian{Cfg: cfg3, Dir: t.TempDir(), Root: t.TempDir(), Agent: fakeAgent(&fixes, true)}
+	ev, _ = g3.Run(ctx)
+	id = g3.Open(ev)[0]
+	g3.Work(ctx, id)
+	g3.Approve(ctx, id)
+	if got := read(t, log); got != "fixed\nbroken\n" {
+		t.Fatalf("deploys: %q", got)
+	}
 }
 
 func TestMask(t *testing.T) {
@@ -433,5 +448,52 @@ func TestLeakedSecretNeverReachesDev(t *testing.T) {
 	}
 	if strings.Contains(read(t, filepath.Join(g.devDir(), "app.txt")), "rzp_live") {
 		t.Fatal("the secret reached dev")
+	}
+}
+
+func TestLatestSaveHosting(t *testing.T) {
+	dir := t.TempDir()
+	g := &Guardian{Dir: dir}
+	if l := g.Latest(); l == nil || len(l) != 0 {
+		t.Fatalf("no history: %v", l)
+	}
+	hist := `{"time":"2026-10-15T08:00:00Z","check":"site","status":"failing","detail":"down"}
+{"time":"2026-10-15T08:00:00Z","check":"errors","status":"ok"}
+not json
+{"time":"2026-10-15T08:05:00Z","check":"site","status":"ok"}
+`
+	os.WriteFile(filepath.Join(dir, "guardian-history.jsonl"), []byte(hist), 0o600)
+	if l := g.Latest(); len(l) != 2 || l[0].Check != "site" || l[0].Status != "ok" || l[1].Check != "errors" {
+		t.Fatalf("%+v", l)
+	}
+
+	path := filepath.Join(dir, "guardian.json")
+	if err := Save(path, &Config{App: "a&b", Checks: []Check{{Name: "up", URL: "https://x.example/?a=1&b=2"}}}); err != nil {
+		t.Fatal(err)
+	}
+	Save(path, &Config{App: "a&b", Checks: []Check{{Name: "up", URL: "https://x.example/?a=1&b=2"}}})
+	if b, _ := os.ReadFile(filepath.Join(dir, ".gitignore")); string(b) != ".guardian/\n" {
+		t.Fatalf("gitignore: %q", b)
+	}
+	if c, err := Load(path); err != nil || c.App != "a&b" || c.Checks[0].URL != "https://x.example/?a=1&b=2" {
+		t.Fatalf("%v %+v", err, c)
+	}
+
+	list := filepath.Join(dir, "list.json")
+	Register(list, path)
+	Unregister(list, path)
+	if p := Projects(list); len(p) != 0 {
+		t.Fatalf("%v", p)
+	}
+
+	if _, prod := Hosting(dir); prod.Deploy != "" {
+		t.Fatalf("nothing to find: %+v", prod)
+	}
+	os.WriteFile(filepath.Join(dir, "netlify.toml"), nil, 0o644)
+	if dev, prod := Hosting(dir); prod.Deploy != "npx netlify deploy --prod" || dev.Deploy == "" || prod.Rollback != "" {
+		t.Fatalf("%+v %+v", dev, prod)
+	}
+	if ProjectName("/x/My Shop") != "my-shop" {
+		t.Fatal(ProjectName("/x/My Shop"))
 	}
 }

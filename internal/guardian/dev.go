@@ -45,6 +45,14 @@ func (g *Guardian) Setup(ctx context.Context) error {
 	if _, err := git(g.Cfg.Repo, "worktree", "add", g.devDir(), devBranch); err != nil {
 		return err
 	}
+	// The host's link to the project is not in git; dev deploys need it.
+	for _, link := range []string{".vercel", ".netlify"} {
+		if st, err := os.Stat(filepath.Join(g.Cfg.Repo, link)); err == nil && st.IsDir() {
+			if err := os.CopyFS(filepath.Join(g.devDir(), link), os.DirFS(filepath.Join(g.Cfg.Repo, link))); err != nil {
+				return err
+			}
+		}
+	}
 	_, err := g.deployDev(ctx)
 	return err
 }
@@ -325,6 +333,9 @@ func (g *Guardian) askApproval(inc Incident) {
 // test production. If production QA fails it rolls back, takes the change
 // out of dev and queues it to be done again.
 func (g *Guardian) Approve(ctx context.Context, id string) error {
+	// A deploy, once started, runs to the end and is checked or put back,
+	// even if Guardian is told to stop meanwhile.
+	ctx = context.WithoutCancel(ctx)
 	var was string
 	inc, err := g.update(id, func(i *Incident) {
 		was = i.Status
@@ -367,10 +378,14 @@ func (g *Guardian) Approve(ctx context.Context, id string) error {
 		g.notify(fmt.Sprintf("%s: %s is live and passed QA in production.", g.Cfg.App, id))
 		return nil
 	}
-	if g.Cfg.Prod.Rollback != "" {
-		_, _ = shell(ctx, g.Cfg.Repo, g.Cfg.Prod.Rollback)
-	}
 	_, _ = git(g.Cfg.Repo, "revert", "-m", "1", "--no-edit", "HEAD")
+	// Put the last good version back: the host's own rollback, or else a
+	// deploy of the reverted code (Netlify and Docker have no rollback here).
+	undo := g.Cfg.Prod.Rollback
+	if undo == "" {
+		undo = g.Cfg.Prod.Deploy
+	}
+	_, _ = shell(ctx, g.Cfg.Repo, undo)
 	// Dev goes back to production's code. The work moves to a new branch as
 	// fresh copies of its commits: a branch that was merged and reverted
 	// would not merge again.

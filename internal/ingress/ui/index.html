@@ -17,6 +17,7 @@
   <button type="button" class="primary new-task" id="to-code">+ New task</button>
   <nav class="nav-main" aria-label="Sections">
     <a href="#agents" data-view="agents">Super Agents</a>
+    <a href="#healing" data-view="healing">Self Healing System</a>
     <a href="#chargesheets" data-view="chargesheets">Chargesheets</a>
     <a href="#templates" data-view="templates">Templates</a>
     <a href="#files" data-view="files">My Files</a>
@@ -72,9 +73,73 @@
         </div>
       </div>
     </section>
+  </div>
+
+  <div class="view" id="view-healing" hidden>
+    <div class="view-head">
+      <h2>Self Healing System</h2>
+      <p class="sub">MangoMan watches your app, finds what broke and why, and fixes it in a safe copy. Nothing changes on your live app until you say yes.</p>
+    </div>
+    <ol class="cards steps4">
+      <li class="card"><h3>1. Watches</h3><p>Every 5 minutes it checks that your app is up, answers normally and answers in under 5 seconds.</p></li>
+      <li class="card"><h3>2. Finds the cause</h3><p>When something fails, it shows what broke and the likely reason, from the error and, when it has your code, your latest changes.</p></li>
+      <li class="card"><h3>3. Fixes it safely</h3><p>It writes the fix in a separate copy of your app, has a test written for it, and tests it there. If the test fails, it tries again.</p></li>
+      <li class="card"><h3>4. Asks you first</h3><p>You approve here. It then goes live and is tested again. If that test fails, MangoMan takes the change out and publishes the last good version again.</p></li>
+    </ol>
+    <section class="block" aria-labelledby="h-heal-why">
+      <div class="block-head"><h2 id="h-heal-why">Why it helps</h2></div>
+      <ul class="plain">
+        <li>Problems are caught within 5 minutes, not when a customer complains.</li>
+        <li>You get the likely cause in plain words, not just "site down".</li>
+        <li>Fixes are tested before they reach your customers, and undone if they fail.</li>
+        <li>Your live app is never changed without your approval.</li>
+        <li>It costs nothing extra: it uses the same free AI as the rest of MangoMan.</li>
+      </ul>
+    </section>
+    <section class="block" aria-labelledby="h-heal-what">
+      <div class="block-head">
+        <h2 id="h-heal-what">Works with apps built anywhere</h2>
+        <p class="sub">Built with MangoMan, Lovable, Bolt, Replit, Bubble, Webflow, Shopify, WordPress or by a developer: what MangoMan can do depends on what it can reach.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="grid">
+          <thead><tr><th scope="col"></th><th scope="col">Live address only</th><th scope="col">Code on this computer, in Git</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Checks it is up and fast</th><td>Yes</td><td>Yes</td></tr>
+            <tr><th scope="row">Tells you what broke and why</th><td>Yes</td><td>Yes, using your recent changes too</td></tr>
+            <tr><th scope="row">Writes and tests the fix</th><td>No: it cannot see the code</td><td>Yes, in a separate copy</td></tr>
+            <tr><th scope="row">Puts the fix live after your OK</th><td>No</td><td>Yes, if it knows how the app is published</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="dim">MangoMan finds how an app is published on its own for Vercel, Netlify and Docker. Most app builders can send your code to GitHub: copy it to this computer, then connect that folder for fixes too.</p>
+    </section>
+    <section class="block" aria-labelledby="h-heal-connect">
+      <div class="block-head">
+        <h2 id="h-heal-connect">Connect your app</h2>
+        <p class="sub">MangoMan watches while it is open on this computer.</p>
+      </div>
+      <form class="heal-form" id="heal-form">
+        <label for="heal-name">App name</label>
+        <input id="heal-name" maxlength="60" required placeholder="My shop" autocomplete="off">
+        <label for="heal-url">Live address</label>
+        <input id="heal-url" type="url" required placeholder="https://myshop.com" autocomplete="off">
+        <label for="heal-folder">Code folder for fixes (optional)</label>
+        <input id="heal-folder" list="heal-folders" placeholder="Leave empty to watch only" autocomplete="off">
+        <datalist id="heal-folders"></datalist>
+        <p class="dim">With a folder, MangoMan adds a guardian.json file, a line to .gitignore and a "dev" branch for its safe copy, and publishes that copy as a test version when it knows how (Vercel, Netlify). Your live branch only changes when you approve.</p>
+        <p><button type="submit" class="primary" id="heal-connect">Connect and start watching</button></p>
+        <p class="msg" id="heal-msg" role="status"></p>
+      </form>
+    </section>
+    <section class="block" aria-labelledby="h-heal-apps">
+      <div class="block-head"><h2 id="h-heal-apps">Your apps</h2></div>
+      <ul class="cards" id="heal-apps"></ul>
+      <p class="empty" id="heal-empty">No apps connected yet.</p>
+    </section>
     <section class="block" aria-labelledby="h-guardian" id="guardian-block" hidden>
       <div class="block-head">
-        <h2 id="h-guardian">Guardian</h2>
+        <h2 id="h-guardian">Fixes and changes</h2>
         <p class="sub">Fixes and changes on their way to production. Each was tested in development; nothing goes live without your approval.</p>
       </div>
       <div class="table-wrap">
@@ -256,6 +321,15 @@
       <dt>Your files</dt><dd id="set-projects">…</dd>
       <dt>First-time setup</dt><dd><a href="setup.html">Open the setup page</a></dd>
     </dl>
+    <section class="block" aria-labelledby="h-arch">
+      <div class="block-head">
+        <h2 id="h-arch">Mango Arch</h2>
+        <p class="sub">Shared learning. When a free model is slow or failing for many MangoMans at once, every MangoMan learns it within the hour and tries that model last for a while.</p>
+      </div>
+      <p id="arch-status">…</p>
+      <label class="agree-line" id="arch-share-line" hidden><input type="checkbox" id="arch-share"> Share how free models behave for me. Only counts per model (answered, busy, slow, failed), once an hour, under a random number. Never my prompts, answers, files or keys.</label>
+      <ul class="plain" id="arch-lessons"></ul>
+    </section>
     <footer class="credit">Coding engine: <a href="https://github.com/anomalyco/opencode" target="_blank" rel="noopener noreferrer">OpenCode</a>, open source under the MIT licence (Copyright (c) 2025 opencode). Used by mangoman code and the coding screen.</footer>
   </div>
 </main>

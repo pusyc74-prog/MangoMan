@@ -92,10 +92,10 @@ def ask(model, q, context):
 def grade(answer, err, answers):
     if err or not answer:
         return "failed"
+    if "don't know" in answer.lower() or "do not know" in answer.lower():
+        return "dont_know"  # a guess after "I don't know" is not counted as right
     if right(answer, answers):
         return "right"
-    if "don't know" in answer.lower() or "do not know" in answer.lower():
-        return "dont_know"
     return "wrong"
 
 
@@ -116,7 +116,7 @@ def main():
             hits += hit
             fails += bool(err)
             times.append(secs)
-            detail.append(f"| {name} | {q['q']} | {'yes' if hit else 'no'} | {secs:.1f} | {err} |")
+            detail.append(f"| {name} | {q['q']} | {'yes' if hit else 'no'} | {secs:.1f} | {err.replace('|', '/')} |")
             time.sleep(1)
         times.sort()
         lines.append(f"| {name} | {hits} of {len(qs)} | {fails} | {times[len(times) // 2]:.1f} | {times[-1]:.1f} |")

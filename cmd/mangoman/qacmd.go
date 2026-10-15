@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"hash/crc32"
 	"io"
 	"os"
 	"os/exec"
@@ -86,7 +87,6 @@ func cmdQA(args []string) error {
 // guardianStart writes a starting guardian.json for the project in dir,
 // with development and production set up from what the project uses.
 func guardianStart(dir string) *guardian.Config {
-	has := func(n string) bool { _, err := os.Stat(filepath.Join(dir, n)); return err == nil }
 	c := &guardian.Config{App: filepath.Base(dir), Repo: ".", Checks: []guardian.Check{
 		{Name: "site", URL: "https://example.com/", MaxMS: 3000, Fix: []string{"systemctl restart my-app"}},
 		{Name: "errors", Log: "/var/log/my-app.log"},
@@ -99,16 +99,8 @@ func guardianStart(dir string) *guardian.Config {
 	if b, err := exec.Command("git", "-C", dir, "rev-parse", "--abbrev-ref", "HEAD").Output(); err == nil {
 		c.ProdBranch = strings.TrimSpace(string(b))
 	}
-	switch {
-	case has("vercel.json") || has(".vercel"):
-		c.Dev = guardian.Env{Deploy: "npx vercel deploy --yes"} // prints the dev address
-		c.Prod = guardian.Env{Deploy: "npx vercel deploy --prod --yes", Rollback: "npx vercel rollback --yes", URL: "https://example.com/"}
-	case has("netlify.toml"):
-		c.Dev = guardian.Env{Deploy: "npx netlify deploy --alias dev"} // prints the dev address
-		c.Prod = guardian.Env{Deploy: "npx netlify deploy --prod", URL: "https://example.com/"}
-	case has("docker-compose.yml") || has("compose.yaml"):
-		c.Dev = guardian.Env{Deploy: "docker compose -p " + slugName(dir) + "-dev up -d --build", URL: "http://127.0.0.1:8081/"}
-		c.Prod.Deploy = "docker compose -p " + slugName(dir) + " up -d --build"
+	if dev, prod := guardian.Hosting(dir); prod.Deploy != "" {
+		c.Dev, c.Prod.Deploy, c.Prod.Rollback = dev, prod.Deploy, prod.Rollback
 	}
 	c.Dev.Env = map[string]string{"DATABASE_URL": "dev's own database, never the live one"}
 	return c
@@ -134,7 +126,7 @@ func loadGuardian(path string) (*guardian.Guardian, error) {
 	self, _ := os.Executable()
 	guardian.Register(filepath.Join(cdir, "guardian", "projects.json"), must(filepath.Abs(path)))
 	return &guardian.Guardian{Cfg: cfg, Dir: state, Wait: 10 * time.Second, TG: guardian.LoadTelegram(state),
-		Root: filepath.Join(cdir, "guardian", slugName(cfg.App)),
+		Root: guardianRoot(cdir, cfg.App, must(filepath.Abs(path))),
 		Ask:  func(p string) (string, error) { a, _, err := askRouter(p); return a, err },
 		Agent: func(ctx context.Context, dir, prompt string) error {
 			cmd := exec.CommandContext(ctx, self, "code", "--no-web", "run", "--auto", "--dir", dir, prompt)
@@ -142,15 +134,6 @@ func loadGuardian(path string) (*guardian.Guardian, error) {
 			return cmd.Run()
 		},
 		Logf: func(f string, a ...any) { fmt.Printf(time.Now().Format("15:04:05")+"  "+f+"\n", a...) }}, nil
-}
-
-func slugName(dir string) string {
-	return strings.ToLower(strings.Map(func(r rune) rune {
-		if r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' {
-			return r
-		}
-		return '-'
-	}, filepath.Base(dir)))
 }
 
 func cmdGuardian(args []string) error {
@@ -169,22 +152,8 @@ func cmdGuardian(args []string) error {
 		if _, err := os.Stat(*path); err == nil {
 			return fmt.Errorf("%s already exists", *path)
 		}
-		var b strings.Builder
-		enc := json.NewEncoder(&b)
-		enc.SetEscapeHTML(false)
-		enc.SetIndent("", "  ")
-		_ = enc.Encode(guardianStart(filepath.Dir(must(filepath.Abs(*path)))))
-		if err := os.WriteFile(*path, []byte(b.String()), 0o644); err != nil {
+		if err := guardian.Save(*path, guardianStart(filepath.Dir(must(filepath.Abs(*path))))); err != nil {
 			return err
-		}
-		// Guardian's state (incidents, the Telegram token) stays out of git.
-		ignore := filepath.Join(filepath.Dir(*path), ".gitignore")
-		if old, _ := os.ReadFile(ignore); !strings.Contains(string(old), ".guardian/") {
-			f, err := os.OpenFile(ignore, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
-			if err == nil {
-				fmt.Fprintln(f, ".guardian/")
-				f.Close()
-			}
 		}
 		fmt.Printf("Wrote %s. Set your checks, the fixes that are safe any time, and how to deploy dev and production.\n"+
 			"Then: mangoman guardian setup (makes the dev environment), mangoman guardian telegram BOT_TOKEN,\n"+
@@ -301,6 +270,17 @@ func setupTelegram(ctx context.Context, state, token string) error {
 		}
 	}
 	return errors.New("no message arrived; run the command again")
+}
+
+// guardianRoot is where an app's dev copy and work copies live. The name
+// carries a hash of the config's path, so two apps with alike names never
+// share one; a dev copy made before that keeps being used.
+func guardianRoot(cdir, app, config string) string {
+	old := filepath.Join(cdir, "guardian", guardian.ProjectName(app))
+	if _, err := os.Stat(filepath.Join(old, "dev")); err == nil {
+		return old
+	}
+	return fmt.Sprintf("%s-%08x", old, crc32.ChecksumIEEE([]byte(config)))
 }
 
 func must[T any](v T, _ error) T { return v }
