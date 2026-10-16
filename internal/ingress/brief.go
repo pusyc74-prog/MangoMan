@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/pusyc74-prog/mangoman/internal/core"
 )
@@ -26,7 +27,7 @@ var businessFields = map[string]bool{"name": true, "website": true, "sells": tru
 
 var logoTypes = map[string]bool{".png": true, ".jpg": true, ".jpeg": true}
 
-const maxField = 4000
+const maxField = 4000 // characters, as the form counts them
 
 func (s *Server) briefRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /mangoman/business", s.auth(http.HandlerFunc(s.businessGet)))
@@ -62,8 +63,8 @@ func readBusiness(dir string) business {
 	if b.Fields == nil {
 		b.Fields = map[string]string{}
 	}
-	if b.Logo != "" {
-		if _, err := os.Stat(filepath.Join(dir, b.Logo)); err != nil {
+	if b.Logo != "" { // only a name the upload gives, never a path from the file
+		if _, err := os.Stat(filepath.Join(dir, b.Logo)); err != nil || b.Logo != "logo"+filepath.Ext(b.Logo) || !logoTypes[filepath.Ext(b.Logo)] {
 			b.Logo = ""
 		}
 	}
@@ -95,7 +96,7 @@ func (s *Server) businessPut(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Fields map[string]string `json:"fields"`
 	}
-	if err := readJSON(r, &in); err != nil {
+	if err := readJSONUpTo(r, &in, 1<<20); err != nil {
 		core.WriteError(w, http.StatusBadRequest, "bad_request", "could not read the request")
 		return
 	}
@@ -103,7 +104,7 @@ func (s *Server) businessPut(w http.ResponseWriter, r *http.Request) {
 	b.Fields = map[string]string{}
 	for k, v := range in.Fields {
 		v = strings.TrimSpace(v)
-		if !businessFields[k] || len(v) > maxField {
+		if !businessFields[k] || utf8.RuneCountInString(v) > maxField {
 			core.WriteError(w, http.StatusBadRequest, "bad_field", fmt.Sprintf("%s: unknown, or longer than %d characters", k, maxField))
 			return
 		}
@@ -162,14 +163,14 @@ func (s *Server) agentBrief(w http.ResponseWriter, r *http.Request) {
 		Title string         `json:"title"`
 		Job   map[string]any `json:"job"`
 	}
-	if err := readJSON(r, &in); err != nil || !slug.MatchString(in.Agent) || len(in.Agent) > 64 || len(in.Title) > 80 {
+	if err := readJSONUpTo(r, &in, 1<<20); err != nil || !slug.MatchString(in.Agent) || len(in.Agent) > 64 || len(in.Title) > 80 {
 		core.WriteError(w, http.StatusBadRequest, "bad_request", "could not read the brief")
 		return
 	}
 	for k, v := range in.Job {
 		switch x := v.(type) {
 		case string:
-			if len(x) <= maxField {
+			if utf8.RuneCountInString(x) <= maxField {
 				continue
 			}
 		case []any:

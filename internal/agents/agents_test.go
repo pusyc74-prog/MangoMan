@@ -405,3 +405,35 @@ func TestRegistryInstallByName(t *testing.T) {
 		t.Fatalf("risky package listed: %v", err)
 	}
 }
+
+// Expose replaces only folders it made: a user's own skill with an agent's
+// name stays, and the agent is not offered in its place.
+func TestExposeKeepsTheUsersSkill(t *testing.T) {
+	root := t.TempDir()
+	pkg, _ := packDemo(t, root, nil)
+	dir, skillsDir := filepath.Join(root, "agents"), filepath.Join(root, "skills")
+	if _, err := Install(pkg, dir); err != nil {
+		t.Fatal(err)
+	}
+	// Made before the marker existed: the same SKILL.md, so it is ours.
+	old := filepath.Join(skillsDir, "demo-agent")
+	os.MkdirAll(old, 0o755)
+	raw, _ := os.ReadFile(filepath.Join(dir, "demo-agent", "SKILL.md"))
+	os.WriteFile(filepath.Join(old, "SKILL.md"), raw, 0o644)
+	if err := Expose(dir, skillsDir); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(old, ExposedMarker)); err != nil {
+		t.Fatal("not exposed over its own older copy")
+	}
+	// The user's own skill of that name.
+	os.RemoveAll(old)
+	os.MkdirAll(old, 0o755)
+	os.WriteFile(filepath.Join(old, "SKILL.md"), []byte("mine"), 0o644)
+	if err := Expose(dir, skillsDir); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(filepath.Join(old, "SKILL.md")); string(b) != "mine" {
+		t.Fatal("the user's skill was replaced")
+	}
+}

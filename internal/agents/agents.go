@@ -441,8 +441,14 @@ func Remove(agentsDir, name string) error {
 	return os.RemoveAll(dest)
 }
 
+// ExposedMarker marks a folder in the skills folder that Expose made, so it
+// never replaces the user's own skill of the same name.
+const ExposedMarker = ".mangoman-agent"
+
 // Expose copies each installed agent's instructions (not its scripts, which
 // only run through the sandbox) into skillsDir, where OpenCode finds them.
+// A folder there that it did not make is the user's own skill and is left
+// alone; the agent is then not offered to OpenCode.
 func Expose(agentsDir, skillsDir string) error {
 	list, err := List(agentsDir)
 	if err != nil {
@@ -450,6 +456,9 @@ func Expose(agentsDir, skillsDir string) error {
 	}
 	for _, m := range list {
 		src, dest := filepath.Join(agentsDir, m.Name), filepath.Join(skillsDir, m.Name)
+		if !Exposed(src, dest) {
+			continue
+		}
 		if err := os.RemoveAll(dest); err != nil {
 			return err
 		}
@@ -473,9 +482,26 @@ func Expose(agentsDir, skillsDir string) error {
 			}
 			return os.WriteFile(filepath.Join(dest, rel), data, 0o644)
 		})
+		if err == nil {
+			err = os.WriteFile(filepath.Join(dest, ExposedMarker), nil, 0o644)
+		}
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// Exposed is true when dest is missing or Expose made it: it has the
+// marker, or (made before the marker existed) the agent's own SKILL.md.
+func Exposed(src, dest string) bool {
+	if _, err := os.Stat(dest); os.IsNotExist(err) {
+		return true
+	}
+	if _, err := os.Stat(filepath.Join(dest, ExposedMarker)); err == nil {
+		return true
+	}
+	a, err1 := os.ReadFile(filepath.Join(src, "SKILL.md"))
+	b, err2 := os.ReadFile(filepath.Join(dest, "SKILL.md"))
+	return err1 == nil && err2 == nil && bytes.Equal(a, b)
 }

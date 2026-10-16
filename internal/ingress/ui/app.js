@@ -998,11 +998,16 @@ function say(text, kind) {
 // The tab is opened in the click itself (browsers block tabs opened later)
 // and waits there until the workspace is ready. prompt is put in the message
 // box of a fresh chat, for the user to read and send.
-function openCoding(prompt) {
+// openCoding opens the coding screen with a first message. A caller that
+// waits for the server first opens the tab at the click and passes it in, as
+// browsers block a tab opened later.
+function openCoding(prompt, opened) {
   const frag = new URLSearchParams({ token: state.token });
   if (prompt) frag.set("prompt", prompt);
   // The query makes it a new page load, also when that tab is already open.
-  const tab = window.open(`code.html?open=${Date.now()}#${frag}`, "mangoman-code");
+  const url = `code.html?open=${Date.now()}#${frag}`;
+  const tab = opened || window.open(url, "mangoman-code");
+  if (opened) opened.location.href = url;
   if (!tab) { say("Your browser blocked the coding screen's tab: allow pop-ups for 127.0.0.1, then try again.", "err"); return; }
   say("Opening the coding screen in its own tab\u2026");
   api("/mangoman/code/open", { method: "POST" })
@@ -1138,6 +1143,7 @@ async function openBrief(a) {
       return;
     }
     go.disabled = true; msg.className = "msg"; msg.textContent = "Saving your brief\u2026";
+    const tab = window.open("", "mangoman-code");
     try {
       const fields = Object.fromEntries(bizFields.map((q) => [q.id, q.value()]));
       const job = Object.fromEntries(jobFields.map((q) => [q.id, q.value()]).filter(([, v]) => !empty(v)));
@@ -1145,8 +1151,8 @@ async function openBrief(a) {
       await api("/mangoman/business", { method: "PUT", body: JSON.stringify({ fields }) });
       const r = await api("/mangoman/agents/brief", { method: "POST", body: JSON.stringify({ agent: a.id, title: a.title, job }) });
       dlg.close();
-      openCoding(a.prompt.replaceAll("{folder}", r.folder));
-    } catch (err) { msg.className = "msg err"; msg.textContent = err.message; go.disabled = false; }
+      openCoding(a.prompt.replaceAll("{folder}", r.folder), tab);
+    } catch (err) { if (tab && tab.location.href === "about:blank") tab.close(); msg.className = "msg err"; msg.textContent = err.message; go.disabled = false; }
   },
     el("p", { class: "sub" }, "Answer once here. The agent reads these answers and does not ask again in the chat."),
     a.stages ? el("ol", { class: "stages" }, a.stages.map((s) => el("li", {}, s))) : null,
@@ -1258,7 +1264,7 @@ function improveSkill(name) {
 
 // skillFile writes a SKILL.md from a form's answers.
 function skillFile(name, kind, title, what, body) {
-  const desc = `${title}: ${what}`.replace(/\s+/g, " ").slice(0, 1000);
+  const desc = `${title}: ${what}`.replace(/\s+/g, " ").slice(0, 900); // the limit is 1,024 characters, quotes escaped
   return `---\nname: ${name}\ndescription: ${JSON.stringify(desc)}\nlicense: Your own ${kind === "agent" ? "agent" : "skill"}, for use inside MangoMan.\n` +
     `metadata:\n  pack: mine\n  kind: ${kind}\n  version: "1.0"\n---\n\n# ${title}\n\n${body.trim()}\n`;
 }

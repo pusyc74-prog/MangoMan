@@ -30,6 +30,8 @@ def texts(o, key=""):
     """(key, text) for every string the reader sees, with the key it sits under."""
     if isinstance(o, str):
         yield key, o
+    elif isinstance(o, (int, float)) and not isinstance(o, bool):
+        yield key, str(o)
     elif isinstance(o, dict):
         for k, v in o.items():
             if k not in ("facts", "brand", "sources", "url", "id", "type", "kind", "logo", "language", "total", "currency"):
@@ -84,7 +86,8 @@ def main():
     # pillars and calendar
     pillars = [p for s in secs.values() for b in s.get("blocks", []) if b.get("type") == "pillars" for p in b.get("items", [])]
     if pillars:
-        total = sum(float(p.get("share", 0) or 0) for p in pillars)
+        R.check([str(p.get("name", "?")) for p in pillars if B.num(p.get("share")) is None], "pillar shares are numbers", "pillar shares must be plain numbers such as 30")
+        total = sum(B.num(p.get("share")) or 0 for p in pillars)
         R.check([] if 3 <= len(pillars) <= 6 else ["%d pillars" % len(pillars)], "3 to 6 content pillars", "use 3 to 6 content pillars")
         R.check([] if abs(total - 100) <= 1 else ["they add to %g%%" % total], "pillar shares add up to 100%", "pillar shares must add up to 100%")
         R.check([p.get("name", "?") for p in pillars if len(p.get("ideas", [])) < 2], "every pillar has post ideas", "pillars with fewer than 2 ideas")
@@ -101,9 +104,12 @@ def main():
             R.check(sorted(names - {p.get("pillar") for p in cal}), "every pillar is in the calendar", "pillars with no post", level="WARN")
         R.check([str(p.get("date")) for p in cal if not p.get("idea") or not p.get("platform")], "every post says where and what", "posts without a platform or an idea")
     for b in (b for s in secs.values() for b in s.get("blocks", []) if b.get("type") == "budget"):
-        total = sum(float(x.get("share", 0) or 0) for x in b.get("items", []))
+        R.check([str(x.get("channel", "?")) for x in b.get("items", []) if B.num(x.get("share")) is None], "budget shares are numbers", "budget shares must be plain numbers such as 30")
+        total = sum(B.num(x.get("share")) or 0 for x in b.get("items", []))
         R.check([] if abs(total - 100) <= 1 else ["they add to %g%%" % total], "budget shares add up to 100%", "budget shares must add up to 100%")
-        R.check(C.untraced(str(b.get("total", "")), pool), "the budget total is the one you gave", "the budget total must be a fact the user gave (put it in facts)")
+        amount = B.num(b.get("total"))
+        R.check(["no total"] if not amount or amount <= 0 else C.untraced(str(b["total"]), pool),
+                "the budget total is the one you gave", "the budget total must be a positive number the user gave (put it in facts)")
     kpis = [k for s in secs.values() for b in s.get("blocks", []) if b.get("type") == "kpis" for k in b.get("items", [])]
     R.check([k.get("metric", "?") for k in kpis if not k.get("target") or not k.get("how")], "every target says how it is measured", "targets without a target or a way to measure")
 

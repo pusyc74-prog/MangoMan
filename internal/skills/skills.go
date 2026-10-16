@@ -18,6 +18,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode/utf8"
 )
 
 //go:embed packs
@@ -87,7 +88,12 @@ func ParseSkill(data []byte) (Pack, error) {
 		if !ok {
 			continue
 		}
-		v = strings.Trim(strings.TrimSpace(v), `"`)
+		v = strings.TrimSpace(v)
+		// Tools read this as YAML, where a plain value cannot hold ": " or " #".
+		if !strings.HasPrefix(v, `"`) && (strings.Contains(v, ": ") || strings.Contains(v, " #")) {
+			return p, fmt.Errorf("%s: put the text in double quotes, as it holds \": \" or \" #\"", strings.TrimSpace(k))
+		}
+		v = strings.Trim(v, `"`)
 		switch strings.TrimRight(k, " ") {
 		case "name":
 			p.Name = v
@@ -108,7 +114,7 @@ func ParseSkill(data []byte) (Pack, error) {
 	if !nameRe.MatchString(p.Name) || len(p.Name) > 64 {
 		return p, fmt.Errorf("invalid skill name %q", p.Name)
 	}
-	if n := len(p.Description); n == 0 || n > 1024 {
+	if n := utf8.RuneCountInString(p.Description); n == 0 || n > 1024 {
 		return p, fmt.Errorf("description must be 1 to 1024 characters, has %d", n)
 	}
 	return p, nil

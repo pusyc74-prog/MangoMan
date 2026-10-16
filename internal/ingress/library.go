@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pusyc74-prog/mangoman/internal/agents"
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
 	"github.com/pusyc74-prog/mangoman/internal/skills"
@@ -38,15 +39,17 @@ func ownDir() (string, error) {
 	return filepath.Join(d, "opencode", "skills"), err
 }
 
-// advanced is true for a folder MangoMan copies in from an installed
+// fromAgent is true for a folder MangoMan copies in from an installed
 // advanced agent, replaced each time the coding screen starts.
-func advanced(name string) bool {
+func fromAgent(skillsDir, name string) bool {
 	dir, err := config.Path("agents")
 	if err != nil {
 		return false
 	}
-	_, err = os.Stat(filepath.Join(dir, name))
-	return err == nil
+	if _, err := os.Stat(filepath.Join(dir, name)); err != nil {
+		return false
+	}
+	return agents.Exposed(filepath.Join(dir, name), filepath.Join(skillsDir, name))
 }
 
 // ownPath is the folder of the user's skill name: an error when the name
@@ -60,7 +63,7 @@ func ownPath(name string) (string, error) {
 		return "", err
 	}
 	p := filepath.Join(dir, name)
-	if _, err := os.Stat(filepath.Join(p, skills.Marker)); err == nil || advanced(name) {
+	if _, err := os.Stat(filepath.Join(p, skills.Marker)); err == nil || fromAgent(dir, name) {
 		return "", errors.New(name + " is one of MangoMan's skills or agents.")
 	}
 	return p, nil
@@ -82,7 +85,7 @@ func (s *Server) skillsList(w http.ResponseWriter, _ *http.Request) {
 		if !e.IsDir() || strings.HasPrefix(e.Name(), "mangoman-") {
 			continue
 		}
-		if _, err := os.Stat(filepath.Join(dir, e.Name(), skills.Marker)); err == nil || advanced(e.Name()) {
+		if _, err := os.Stat(filepath.Join(dir, e.Name(), skills.Marker)); err == nil || fromAgent(dir, e.Name()) {
 			continue
 		}
 		raw, err := os.ReadFile(filepath.Join(dir, e.Name(), "SKILL.md"))
@@ -127,7 +130,7 @@ func (s *Server) skillPut(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Text string `json:"text"`
 	}
-	if err := readJSON(r, &in); err != nil || len(in.Text) > maxSkill {
+	if err := readJSONUpTo(r, &in, 1<<20); err != nil || len(in.Text) > maxSkill {
 		core.WriteError(w, http.StatusBadRequest, "bad_request", "could not read the skill (at most 64 KB)")
 		return
 	}

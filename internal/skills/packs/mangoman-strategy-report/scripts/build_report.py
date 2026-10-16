@@ -40,6 +40,16 @@ def load(path):
         return json.load(f)
 
 
+def num(v):
+    """A share or amount as a number, or None when it is not one (the checker says so)."""
+    if isinstance(v, bool):
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def day(s):
     try:
         return datetime.date.fromisoformat(str(s))
@@ -79,7 +89,7 @@ def block_html(b, sources, order=None):
     if t == "pillars":
         items = b.get("items", [])
         bar = '<div class="mix">%s</div>' % "".join('<i class="p%d" style="width:%s%%" title="%s %s%%"></i>' % (
-            i % 6 + 1, float(p.get("share", 0)), e(p.get("name")), e(p.get("share"))) for i, p in enumerate(items))
+            i % 6 + 1, (num(p.get("share")) or 0), e(p.get("name")), e(p.get("share"))) for i, p in enumerate(items))
         cards = "".join('<div class="card"><div class="ct"><span class="dot p%d"></span>%s <span class="share">%s%%</span></div><p>%s</p>%s</div>' % (
             i % 6 + 1, e(p.get("name")), e(p.get("share")), I(p.get("why", "")),
             '<ul class="pts">%s</ul>' % "".join("<li>%s</li>" % I(x) for x in p.get("ideas", []))) for i, p in enumerate(items))
@@ -112,11 +122,11 @@ def block_html(b, sources, order=None):
             e(str(x.get("priority", "")).capitalize()), I(x.get("note", ""))) for x in b.get("items", []))
         return '<div class="tw"><table><thead><tr><th>Search phrase</th><th>Looking to</th><th>Page</th><th>Priority</th><th>Why</th></tr></thead><tbody>%s</tbody></table></div>' % rows
     if t == "budget":
-        total, cur = float(b.get("total", 0) or 0), b.get("currency")
+        total, cur = (num(b.get("total")) or 0), b.get("currency")
         items = b.get("items", [])
-        bar = '<div class="mix">%s</div>' % "".join('<i class="p%d" style="width:%s%%"></i>' % (i % 6 + 1, float(x.get("share", 0))) for i, x in enumerate(items))
+        bar = '<div class="mix">%s</div>' % "".join('<i class="p%d" style="width:%s%%"></i>' % (i % 6 + 1, (num(x.get("share")) or 0)) for i, x in enumerate(items))
         rows = "".join('<tr><td><span class="dot p%d"></span> %s</td><td>%s%%</td><td>%s</td><td>%s</td></tr>' % (
-            i % 6 + 1, e(x.get("channel")), e(x.get("share")), e(V.fmt(total * float(x.get("share", 0)) / 100, "currency", cur, compact=False)), I(x.get("why", "")))
+            i % 6 + 1, e(x.get("channel")), e(x.get("share")), e(V.fmt(total * (num(x.get("share")) or 0) / 100, "currency", cur, compact=False)), I(x.get("why", "")))
             for i, x in enumerate(items))
         return bar + '<div class="tw"><table><thead><tr><th>Where</th><th>Share</th><th>Amount</th><th>Why</th></tr></thead><tbody>%s</tbody></table></div><p class="mut">Of a total of %s, as you gave it.</p>' % (
             rows, e(V.fmt(total, "currency", cur, compact=False)))
@@ -272,8 +282,8 @@ def block_md(b):
     if t == "keywords":
         return ["- %s (%s, %s): %s" % (x.get("keyword"), x.get("intent", ""), x.get("priority", ""), x.get("note", "")) for x in b.get("items", [])]
     if t == "budget":
-        tot = float(b.get("total", 0) or 0)
-        return ["- %s: %s%% (%s) %s" % (x.get("channel"), x.get("share"), V.fmt(tot * float(x.get("share", 0)) / 100, "currency", b.get("currency"), compact=False), x.get("why", "")) for x in b.get("items", [])]
+        tot = (num(b.get("total")) or 0)
+        return ["- %s: %s%% (%s) %s" % (x.get("channel"), x.get("share"), V.fmt(tot * (num(x.get("share")) or 0) / 100, "currency", b.get("currency"), compact=False), x.get("why", "")) for x in b.get("items", [])]
     if t == "calendar":
         return ["- %s %s [%s] %s: %s" % (p.get("date"), p.get("platform"), p.get("format", ""), p.get("pillar", ""), p.get("idea")) for p in b.get("posts", [])]
     return []

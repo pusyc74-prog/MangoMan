@@ -7,7 +7,7 @@
       "summary": "Does the whole job of an experienced social media manager: researches you, your competitors and your audience, sets the strategy and your voice, plans the calendar, then makes the posts.",
       "gets": ["Research of you, 3 to 5 competitors and your audience, with sources", "Strategy: goals, positioning, brand and content voice, content pillars", "A dated content calendar and a posting routine", "The first weeks of posts: images, captions, hashtags", "A designed strategy report (web page and PDF)"],
       "needs": ["Your business, once (kept for every agent)", "Your goal, platforms and time per week", "Real facts: prices, offers, dates, follower counts"],
-      "stages": ["Research", "Strategy and voice", "Content plan", "Report", "Posts", "Check"],
+      "stages": ["Research", "Strategy and voice", "Content plan", "Report", "Posts", "Check and deliver"],
       "brief": [
         {"id": "goal", "label": "What should social media do for you in this period?", "kind": "multi", "options": ["More people know us", "More visits to the shop or site", "More enquiries or leads", "More sales", "Bring customers back", "Build a community"], "required": true},
         {"id": "platforms", "label": "Which platforms?", "kind": "multi", "options": ["Instagram", "Facebook", "LinkedIn", "X", "TikTok", "YouTube", "Pinterest", "Threads", "WhatsApp", "Telegram"], "required": true},
@@ -26,7 +26,7 @@
       "summary": "A senior strategist for your business: researches the market and competitors, sets positioning, the channel mix and a 90-day plan, then makes the first campaign's ads, emails and posts.",
       "gets": ["Market, competitor and customer research, with sources", "Positioning, messages with proof, SWOT", "Channel mix and budget split, a 90-day plan with targets", "The first campaign: ads, emails and posts", "A designed strategy report (web page and PDF)"],
       "needs": ["Your business, once (kept for every agent)", "Your goal and budget, if any", "Real facts: prices, offers, results"],
-      "stages": ["Market research", "Positioning", "Situation", "Channels and budget", "90-day plan", "Report", "First campaign", "Check"],
+      "stages": ["Market research", "Positioning", "Situation", "Channels and budget", "90-day plan", "Report", "First campaign", "Check and deliver"],
       "brief": [
         {"id": "goal", "label": "What do you most want in the next 90 days?", "kind": "long", "hint": "For example: 200 new customers for our home cleaning service in Pune; launch our app in two cities", "required": true},
         {"id": "budget", "label": "Marketing budget, if any (with currency, per month or in total)", "kind": "text", "hint": "Leave empty if there is none yet"},
@@ -44,7 +44,7 @@
       "summary": "A search specialist for your website: audits it page by page, finds what your customers search for and who ranks, checks local and AI search, plans the fixes and content, then writes the first articles.",
       "gets": ["A page-by-page audit with fixes in priority order", "What customers search for and who ranks today, with sources", "Local search and AI answer checks", "A content plan, and the first articles written", "A designed search report (web page and PDF)"],
       "needs": ["Your website address", "Your business, once (kept for every agent)", "What you most want to be found for"],
-      "stages": ["Audit", "Demand", "Who ranks", "Plan", "Report", "First articles", "Check"],
+      "stages": ["Audit", "Demand", "Who ranks", "Plan", "Report", "First articles", "Check and deliver"],
       "brief": [
         {"id": "website", "label": "Website address", "kind": "text", "hint": "https://...", "required": true},
         {"id": "found_for", "label": "What do you most want to be found for?", "kind": "long", "hint": "Products, services, places: in your customers' words", "required": true},

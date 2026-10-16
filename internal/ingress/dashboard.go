@@ -314,8 +314,12 @@ func (s *Server) setWeaker(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, s.Router.Outlook())
 }
 
-func readJSON(r *http.Request, v any) error {
-	dec := json.NewDecoder(http.MaxBytesReader(nil, r.Body, 64<<10))
+func readJSON(r *http.Request, v any) error { return readJSONUpTo(r, v, 64<<10) }
+
+// readJSONUpTo reads a request of at most limit bytes, for forms of long
+// answers in any script.
+func readJSONUpTo(r *http.Request, v any, limit int64) error {
+	dec := json.NewDecoder(http.MaxBytesReader(nil, r.Body, limit))
 	dec.DisallowUnknownFields()
 	return dec.Decode(v)
 }
