@@ -123,6 +123,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /mangoman/weaker", s.auth(http.HandlerFunc(s.setWeaker)))
 	s.myListRoutes(mux)
 	s.readyRoutes(mux)
+	s.briefRoutes(mux)
 	s.brainRoutes(mux)
 	s.agentRoutes(mux)
 	s.guardianRoutes(mux)

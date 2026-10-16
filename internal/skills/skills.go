@@ -27,12 +27,18 @@ var packsFS embed.FS
 // touch MangoMan's own folders.
 const Marker = ".mangoman-pack"
 
-// Pack describes one skill pack.
+// Pack describes one skill pack. Kind is what it is for: "pack" builds and
+// checks files (the default), "method" is expert know-how an agent follows,
+// "agent" is a super agent's whole playbook.
 type Pack struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Version     string `json:"version"`
+	Kind        string `json:"kind"`
 }
+
+// Kinds a pack can be.
+var Kinds = map[string]bool{"pack": true, "method": true, "agent": true}
 
 var nameRe = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 
@@ -89,7 +95,15 @@ func ParseSkill(data []byte) (Pack, error) {
 			p.Description = v
 		case "  version":
 			p.Version = v
+		case "  kind":
+			p.Kind = v
 		}
+	}
+	if p.Kind == "" {
+		p.Kind = "pack"
+	}
+	if !Kinds[p.Kind] {
+		return p, fmt.Errorf("unknown kind %q", p.Kind)
 	}
 	if !nameRe.MatchString(p.Name) || len(p.Name) > 64 {
 		return p, fmt.Errorf("invalid skill name %q", p.Name)

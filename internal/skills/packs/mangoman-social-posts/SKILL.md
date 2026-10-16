@@ -24,7 +24,7 @@ question tool if you have one):
 3. **How many posts** (default 5) and over what period.
 4. **Facts to use:** prices, dates, numbers, results, real customer quotes. You will use only these.
 5. **Brand:** "Attach your logo (PNG or JPG) and share brand colours and your handle, or say skip and I'll choose a look."
-6. **Language and tone:** English, Hindi or Hinglish; friendly, premium, playful or formal.
+6. **Language and tone:** the language or languages the customers use (mixing is fine when they do); friendly, premium, playful or formal.
 
 If the user says "just do it", pick sensible answers, state them in one line,
 and continue (facts are never among them: use only the ones the user gave). Never hold the work back waiting for a logo.
@@ -60,7 +60,7 @@ Rules (these are what make posts perform and keep the user safe):
 - **Captions per platform:** Instagram and Facebook warm and short with a clear action; LinkedIn plain, professional, a little longer; X under 280 characters; WhatsApp very short.
 - **Links:** Instagram captions do not make links clickable; say "link in bio".
 - **Hashtags:** 3 to 8 relevant ones (1 on Threads, 1 or 2 on X); one word each; no banned or unrelated trending tags.
-- **No risky claims** ("guaranteed", "cures", "best in India", "100% safe") unless the user can prove them; the checker warns.
+- **No risky claims** ("guaranteed", "cures", "best in the world", "100% safe") unless the user can prove them; the checker warns.
 - If the cover says "five tips", have five.
 - **Alt text** for every post: what the image shows and says, in one or two sentences.
 
@@ -87,7 +87,7 @@ Write `posts.json`:
 ```
 
 For a content calendar, give each post a `date` (YYYY-MM-DD) and `time`
-(HH:MM, 24-hour; set `timezone`, default Asia/Kolkata): the build writes
+(HH:MM, 24-hour; set `timezone` to the user's, for example Europe/London): the build writes
 `calendar.csv` (one row per post and platform with the image files and the
 caption, ready for a scheduler or a sheet) and `calendar.md`. Spread posts
 over the period, at most one a day per platform, and plan around the user's

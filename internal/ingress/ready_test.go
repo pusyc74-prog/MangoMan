@@ -108,6 +108,12 @@ func TestStartersMatchPacks(t *testing.T) {
 			File, Accept               string
 			FilePrompt                 string `json:"file_prompt"`
 			Gets, Needs, Packs         []string
+			Super                      bool
+			Stages                     []string
+			Brief                      []struct {
+				ID, Label, Kind string
+				Options         []string
+			}
 		}
 		Later     []struct{ Title, Summary, Why string }
 		Templates []struct{ Pack, Title, Summary, Prompt, Dev string }
@@ -122,9 +128,10 @@ func TestStartersMatchPacks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	have := map[string]bool{}
+	have, tools := map[string]bool{}, map[string]bool{}
 	for _, p := range packs {
 		have[p.Name] = true
+		tools[p.Name] = p.Kind == "pack"
 	}
 	for _, a := range d.Agents {
 		if a.ID == "" || a.Title == "" || a.Summary == "" || len(a.Gets) == 0 || len(a.Needs) == 0 || len(a.Packs) == 0 {
@@ -133,6 +140,22 @@ func TestStartersMatchPacks(t *testing.T) {
 		for _, p := range a.Packs {
 			if !have[p] || !strings.Contains(a.Prompt, p) {
 				t.Errorf("agent %q: pack %s missing, or not named in its first message", a.Title, p)
+			}
+		}
+		// A super agent starts from its brief: the form's questions are
+		// well formed and its first message names the brief's folder.
+		if a.Super {
+			ids := map[string]bool{}
+			for _, q := range a.Brief {
+				choice := q.Kind == "choice" || q.Kind == "multi"
+				if !agentID.MatchString(strings.ReplaceAll(q.ID, "_", "-")) || q.Label == "" || ids[q.ID] || choice != (len(q.Options) > 0) ||
+					(!choice && q.Kind != "text" && q.Kind != "long") {
+					t.Errorf("agent %q: brief question %q is wrong", a.Title, q.ID)
+				}
+				ids[q.ID] = true
+			}
+			if !agentID.MatchString(a.ID) || len(a.Stages) == 0 || len(a.Brief) == 0 || !strings.Contains(a.Prompt, "{folder}/brief.json") {
+				t.Errorf("super agent %q needs an id, stages, a brief and {folder}/brief.json in its first message", a.Title)
 			}
 		}
 		// An agent given a file: its own first message names the file, the
@@ -166,7 +189,7 @@ func TestStartersMatchPacks(t *testing.T) {
 		seen[tp.Pack] = true
 	}
 	for p := range have {
-		if !seen[p] {
+		if tools[p] && !seen[p] {
 			t.Errorf("pack %s has no template", p)
 		}
 	}

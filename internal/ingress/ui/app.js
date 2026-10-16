@@ -1039,6 +1039,120 @@ function fileStart(a) {
     input, el("label", { for: id, class: "ghost" }, `Choose ${a.file.toLowerCase()}`), start, msg);
 }
 
+// The business part of every brief, kept in MangoMan Projects/Brand.
+const BUSINESS = [
+  ["name", "Business name", "text", true],
+  ["website", "Website", "text", false, "Leave empty if you have none"],
+  ["sells", "What you sell, with prices", "long", true, "For example: handmade soaps, 250 to 600 each; gift boxes from 1,500"],
+  ["customers", "Who buys from you", "long", true, "Who they are, where they find you, why they choose you"],
+  ["where", "Where you sell", "text", true, "City, country, online, or all three"],
+  ["language", "Your customers' language or languages", "text", true, "For example: English and Hindi"],
+  ["currency", "Currency", "text", true, "For example: INR, USD, EUR"],
+  ["timezone", "Time zone", "text", false],
+  ["social", "Your social pages", "long", false, "One link per line"],
+  ["competitors", "Competitors", "long", false, "Names or links, one per line"],
+  ["facts", "Real facts to use", "long", false, "Ratings, follower counts, awards, years in business, offers"],
+  ["tone", "How you talk to customers", "text", false, "For example: warm and simple, never pushy"],
+  ["colours", "Brand colours", "text", false, "For example: #1E3A2F and #F2A516"],
+  ["avoid", "Things to never say or show", "long", false],
+];
+
+// field draws one question of the brief. A choice or multi gets option
+// buttons plus a box for an answer of your own; value() reads it back.
+function field(id, label, kind, required, hint, options, now) {
+  const fid = `brief-${id}`;
+  const head = el("label", { for: fid }, label, required ? el("span", { class: "req" }, " (needed)") : null);
+  if (kind === "text" || kind === "long") {
+    const box = el(kind === "long" ? "textarea" : "input", kind === "long"
+      ? { id: fid, rows: 3, maxlength: 4000, placeholder: hint } : { id: fid, type: "text", maxlength: 4000, placeholder: hint });
+    box.value = now || "";
+    return { id, label, required, node: el("div", { class: "bf" }, head, box), value: () => box.value.trim() };
+  }
+  const multi = kind === "multi";
+  const picks = options.map((o) => el("button", { type: "button", class: "opt", "aria-pressed": "false", onclick: (e) => {
+    const b = e.currentTarget, on = b.getAttribute("aria-pressed") !== "true";
+    if (!multi) for (const x of picks) x.setAttribute("aria-pressed", "false");
+    b.setAttribute("aria-pressed", String(on));
+  } }, o));
+  const other = el("input", { id: fid, type: "text", maxlength: 400, placeholder: multi ? "Others, comma separated" : "Or your own answer" });
+  return { id, label, required, node: el("div", { class: "bf", role: "group", "aria-labelledby": fid + "-h" },
+    el("p", { class: "bf-h", id: fid + "-h" }, label, required ? el("span", { class: "req" }, " (needed)") : null),
+    el("div", { class: "opts" }, picks), el("label", { for: fid, class: "sr" }, label + ": your own answer"), other),
+  value: () => {
+    const typed = other.value.trim();
+    const on = picks.filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.textContent);
+    if (!multi) return typed || on[0] || "";
+    return [...on, ...typed.split(",").map((t) => t.trim()).filter(Boolean)];
+  } };
+}
+
+const empty = (v) => Array.isArray(v) ? v.length === 0 : !v;
+
+// openBrief asks a super agent's questions once, in a form: the business
+// (kept for every agent) and this job. MangoMan writes the answers to the
+// task folder, and the agent starts with them, so it never asks in chat.
+async function openBrief(a) {
+  const dlg = $("brief");
+  const msg = el("p", { class: "msg", role: "status" });
+  let biz = { fields: {} };
+  try { biz = await api("/mangoman/business"); } catch (err) { say(err.message, "err"); return; }
+  const f = biz.fields || {};
+  if (!f.timezone) f.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  const bizFields = BUSINESS.map(([id, label, kind, req, hint]) => field(id, label, kind, req, hint, null, f[id]));
+  // Job ids get their own prefix: a job may ask again for a business field (the
+  // SEO agent's website), prefilled from it.
+  const jobFields = a.brief.map((q) => ({ ...field("job-" + q.id, q.label, q.kind, q.required, q.hint, q.options, f[q.id]), id: q.id }));
+  const logoMsg = el("span", { class: "fine" }, biz.logo ? `Logo saved (${biz.logo}).` : "No logo yet.");
+  const logo = el("input", { type: "file", id: "brief-logo", accept: "image/png,image/jpeg", class: "sr", onchange: async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    logoMsg.textContent = "Saving the logo…";
+    try {
+      const r = await api(`/mangoman/business/logo?name=${encodeURIComponent(file.name)}`,
+        { method: "POST", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+      logoMsg.textContent = `Logo saved (${r.logo}).`;
+    } catch (err) { logoMsg.textContent = err.message; }
+  } });
+  const needed = bizFields.filter((q) => q.required && !f[q.id]).length;
+  const go = el("button", { type: "submit", class: "primary" }, "Start the agent");
+  const form = el("form", { method: "dialog", class: "brief-form", onsubmit: async (e) => {
+    e.preventDefault();
+    const missing = [...bizFields, ...jobFields].filter((q) => q.required && empty(q.value()));
+    if (missing.length) {
+      msg.className = "msg err";
+      msg.textContent = `${missing.length} needed ${missing.length > 1 ? "answers are" : "answer is"} missing, starting with: ${missing[0].label}`;
+      const d = missing[0].node.closest("details");
+      if (d) d.open = true;
+      missing[0].node.querySelector("input, textarea, button").focus();
+      return;
+    }
+    go.disabled = true; msg.className = "msg"; msg.textContent = "Saving your brief…";
+    try {
+      const fields = Object.fromEntries(bizFields.map((q) => [q.id, q.value()]));
+      const job = Object.fromEntries(jobFields.map((q) => [q.id, q.value()]).filter(([, v]) => !empty(v)));
+      if (!fields.website && typeof job.website === "string") fields.website = job.website;
+      await api("/mangoman/business", { method: "PUT", body: JSON.stringify({ fields }) });
+      const r = await api("/mangoman/agents/brief", { method: "POST", body: JSON.stringify({ agent: a.id, title: a.title, job }) });
+      dlg.close();
+      openCoding(a.prompt.replaceAll("{folder}", r.folder));
+    } catch (err) { msg.className = "msg err"; msg.textContent = err.message; go.disabled = false; }
+  } },
+    el("div", { class: "drawer-head" }, el("h2", {}, a.title),
+      el("button", { type: "button", class: "ghost icon", "aria-label": "Close", onclick: () => dlg.close() }, "×")),
+    el("p", { class: "sub" }, "Answer once here. The agent reads these answers and does not ask again in the chat."),
+    el("ol", { class: "stages" }, a.stages.map((s) => el("li", {}, s))),
+    el("details", { class: "bf-biz", open: needed > 0 },
+      el("summary", {}, "Your business", el("span", { class: "fine" }, needed ? ` (${needed} answers needed)` : " (saved; kept for every agent)")),
+      bizFields.map((q) => q.node),
+      el("div", { class: "bf" }, el("p", { class: "bf-h" }, "Logo"),
+        el("div", { class: "opts" }, logo, el("label", { for: "brief-logo", class: "ghost" }, "Choose a PNG or JPG"), logoMsg))),
+    el("h3", {}, "This job"),
+    jobFields.map((q) => q.node),
+    el("div", { class: "brief-foot" }, go, msg));
+  dlg.replaceChildren(form);
+  dlg.showModal();
+}
+
 function startButton(prompt) {
   return el("button", { type: "button", class: "primary start", onclick: () => openCoding(prompt) }, "Start");
 }
@@ -1051,8 +1165,11 @@ async function loadStarters() {
   $("agent-cards").replaceChildren(...d.agents.map((a) => el("li", { class: "card" },
     top(a.title), el("p", {}, a.summary),
     el("p", { class: "label" }, "You get"), el("ul", { class: "chips" }, a.gets.map((t) => el("li", {}, t))),
+    a.stages ? el("p", { class: "label" }, "How it works") : null,
+    a.stages ? el("ol", { class: "stages" }, a.stages.map((t) => el("li", {}, t))) : null,
     el("p", { class: "needs" }, "Have ready: " + a.needs.join("; ")),
-    a.file ? fileStart(a) : startButton(a.prompt))));
+    a.super ? el("button", { type: "button", class: "primary start", onclick: () => openBrief(a) }, "Start")
+      : a.file ? fileStart(a) : startButton(a.prompt))));
   $("later-cards").replaceChildren(...d.later.map((a) => el("li", { class: "card" },
     top(a.title), el("p", {}, a.summary), el("p", { class: "needs" }, a.why))));
   $("template-cards").replaceChildren(...d.templates.map((t) => el("li", { class: "card" },

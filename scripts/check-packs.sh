@@ -37,6 +37,7 @@ run minutes   "python3 $P/mangoman-meeting-minutes/scripts/build_minutes.py minu
 run brand     "python3 $P/mangoman-brand-kit/scripts/build_brand.py brand.json --out brand"      "python3 $P/mangoman-brand-kit/scripts/check_brand.py brand.json brand"
 run review    "bash setup.sh && python3 $P/mangoman-code-review/scripts/collect.py repo --out facts.json" "python3 $P/mangoman-code-review/scripts/check_review.py review.json facts.json --out review.md"
 run copy      "python3 $P/mangoman-website-copy/scripts/brief_gate.py facts.md --pages 3 && ! python3 $P/mangoman-website-copy/scripts/brief_gate.py thin.md --pages 3 && python3 $P/mangoman-website-copy/scripts/build_copy.py site.json --out site && ! python3 $P/mangoman-website-copy/scripts/build_copy.py broken-quote.json --out x 2> bq.txt && grep -q 'column 26 is inside the text' bq.txt && ! python3 $P/mangoman-website-copy/scripts/build_copy.py broken-bracket.json --out x 2> bb.txt && grep -q 'delete this extra }, line' bb.txt" "python3 $P/mangoman-website-copy/scripts/check_copy.py site.json site"
+run strategy  "python3 $P/mangoman-strategy-report/scripts/build_report.py report.json --out report" "python3 $P/mangoman-strategy-report/scripts/check_report.py report.json report"
 run webapp    "python3 $P/mangoman-web-app/scripts/scaffold.py app.json --out starter"         "python3 $P/mangoman-web-app/scripts/check_app.py app/index.html tests.json"
 # Advanced agents: sign, install and run through the sandbox, then score on the free pack's test set.
 L="$P/mangoman-ecommerce-listing"

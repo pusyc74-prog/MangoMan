@@ -437,7 +437,7 @@ def calendar(spec, out):
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader()
         w.writerows(rows)
-    md = ["# Posting calendar (%s)" % spec.get("timezone", "Asia/Kolkata"), "", "| Date | Time | Platform | Post | Images |", "| --- | --- | --- | --- | --- |"]
+    md = ["# Posting calendar (%s)" % spec.get("timezone", "local time"), "", "| Date | Time | Platform | Post | Images |", "| --- | --- | --- | --- | --- |"]
     md += ["| %s | %s | %s | %s | %s |" % (r["Date"], r["Time"], r["Platform"], r["Post"].replace("|", "/"), r["Images"]) for r in rows]
     with open(os.path.join(out, "calendar.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(md) + "\n")

@@ -1,0 +1,85 @@
+{
+  "kind": "social",
+  "title": "Social media strategy",
+  "for": "Kulhad Cafe",
+  "date": "2026-10-16",
+  "period": "November 2026 to January 2027",
+  "brand": {"name": "Kulhad Cafe", "logo": "logo.png"},
+  "facts": {
+    "followers": "Instagram 2,140 followers on 14 Oct 2026",
+    "price": "Masala chai at 60, kulhad coffee at 90",
+    "hours": "Open 8 am to 11 pm",
+    "reviews": "4.6 stars from 312 Google reviews"
+  },
+  "sources": [
+    {"id": "s1", "title": "Chai Point on Instagram", "url": "https://example.com/chaipoint", "found": "Mostly Reels of making chai; posts about 5 times a week; a weekly giveaway post"},
+    {"id": "s2", "title": "Third Wave Coffee on Instagram", "url": "https://example.com/thirdwave", "found": "Polished product photos; seasonal drinks; few faces of staff"},
+    {"id": "s3", "title": "Google reviews of Kulhad Cafe", "url": "https://example.com/reviews", "found": "Reviewers mention the clay cups, the evening crowd and slow service at weekends; 4.6 stars"},
+    {"id": "s4", "title": "Local food group thread", "url": "https://example.com/thread", "found": "People ask for quiet places to work in the mornings and for parking near the cafe"}
+  ],
+  "summary": [
+    "Lead with what only you have: chai in clay cups, made in front of people, and a busy evening crowd [s3].",
+    "Post 4 times a week on Instagram, mostly Reels, and keep WhatsApp Status for daily specials.",
+    "Fill the quiet mornings: show the cafe as a calm place to work, which locals are asking for [s4].",
+    "Measure what brings people in: saves, shares, direction taps and the code on the menu board."
+  ],
+  "sections": [
+    {"id": "research", "title": "Where you are now", "blocks": [
+      {"type": "points", "items": ["Instagram 2,140 followers on 14 Oct 2026; posts are photos of drinks with no faces.", "Google rating 4.6 from 312 reviews; people love the clay cups and the evening buzz [s3].", "Weekend reviews mention slow service: answer them and show the team at work [s3]."]}
+    ]},
+    {"id": "competitors", "title": "What others nearby do", "blocks": [
+      {"type": "cards", "items": [
+        {"title": "Chai Point", "tag": "Most active", "text": "Reels of chai being made, about 5 posts a week, a weekly giveaway [s1].", "points": ["Borrow: the making-of Reels", "Skip: giveaways that bring followers who never visit"]},
+        {"title": "Third Wave Coffee", "tag": "Most polished", "text": "Clean product photos and seasonal drinks, few people [s2].", "points": ["Borrow: a clear look for every post", "Do better: show your people and your guests"]}
+      ]}
+    ]},
+    {"id": "audience", "title": "Who you are talking to", "blocks": [
+      {"type": "cards", "items": [
+        {"title": "Evening friends", "text": "Groups after college or work who come for the buzz and the clay cups [s3].", "points": ["Want: a place to hang out", "Find you on: Instagram Reels"]},
+        {"title": "Morning workers", "text": "Freelancers and students who want a quiet table and good chai [s4].", "points": ["Want: calm, wifi, a plug point", "Find you on: local groups, Google Maps"]}
+      ]}
+    ]},
+    {"id": "strategy", "title": "The plan in one line", "blocks": [
+      {"type": "text", "text": "Make Kulhad Cafe the neighbourhood's favourite chai stop: lively in the evening, calm in the morning, and always made in front of you.\n\nInstagram builds the wish to come; WhatsApp Status turns regulars into repeat visits; Google Maps is where people decide."}
+    ]},
+    {"id": "voice", "title": "How you sound", "blocks": [
+      {"type": "voice", "traits": [
+        {"trait": "Warm", "means": "Talk like the person at the counter.", "do": "Use names and say thank you.", "dont": "Corporate words like valued customer."},
+        {"trait": "Local", "means": "Speak about the street, the weather, the evening.", "do": "Mention the neighbourhood.", "dont": "Generic trending captions."},
+        {"trait": "Simple", "means": "One idea per post.", "do": "Short lines a person would say.", "dont": "Stacks of emoji and hashtags."}
+      ], "samples": ["Rain outside, kulhad chai inside. We are open till 11.", "Your table by the window is free this morning. Chai is on."]}
+    ]},
+    {"id": "pillars", "title": "What you post about", "blocks": [
+      {"type": "pillars", "items": [
+        {"name": "Made in front of you", "share": 35, "why": "The clay cups and fresh chai are what people remember [s3].", "ideas": ["Reel: pouring chai into a kulhad", "Reel: the morning chai being made"]},
+        {"name": "People of the cafe", "share": 25, "why": "Faces build trust; nearby cafes show few [s2].", "ideas": ["Meet the team", "A regular's favourite order"]},
+        {"name": "Quiet mornings", "share": 20, "why": "Locals ask for calm places to work [s4].", "ideas": ["Morning table tour", "Plug points and wifi, shown"]},
+        {"name": "Menu and offers", "share": 20, "why": "Tell people what to order and why now.", "ideas": ["Masala chai at 60", "Kulhad coffee at 90"]}
+      ]}
+    ]},
+    {"id": "platforms", "title": "Where and how often", "blocks": [
+      {"type": "table", "columns": ["Platform", "Role", "How often", "Formats"], "rows": [
+        ["Instagram", "Make people want to come", "4 a week", "Reels, carousels, stories"],
+        ["WhatsApp Status", "Remind regulars", "Daily", "Specials, the day's photo"],
+        ["Google Maps", "Help people decide", "Weekly", "Photos, review replies, posts"]
+      ]}
+    ]},
+    {"id": "calendar", "title": "The first weeks", "blocks": [
+      {"type": "calendar", "posts": [
+        {"date": "2026-11-02", "platform": "Instagram", "format": "Reel", "pillar": "Made in front of you", "idea": "Chai poured into a kulhad, slow motion"},
+        {"date": "2026-11-04", "platform": "Instagram", "format": "Carousel", "pillar": "Quiet mornings", "idea": "Five things that make a good work morning here"},
+        {"date": "2026-11-06", "platform": "Instagram", "format": "Reel", "pillar": "People of the cafe", "idea": "Meet the team who open at 8"},
+        {"date": "2026-11-08", "platform": "Instagram", "format": "Post", "pillar": "Menu and offers", "idea": "Masala chai at 60: the evening order"},
+        {"date": "2026-11-09", "platform": "WhatsApp Status", "format": "Photo", "pillar": "Menu and offers", "idea": "Today's special"},
+        {"date": "2026-11-10", "platform": "Instagram", "format": "Reel", "pillar": "Made in front of you", "idea": "Morning chai being made"}
+      ]}
+    ]},
+    {"id": "measure", "title": "How you will know it works", "blocks": [
+      {"type": "kpis", "items": [
+        {"metric": "Instagram followers", "target": "3,000 by 31 Jan", "how": "Instagram insights, first Monday of each month", "when": "Monthly"},
+        {"metric": "Saves and shares", "target": "Up every month", "how": "Instagram insights per post", "when": "Monthly"},
+        {"metric": "Morning visits", "target": "More tables used before 11 am", "how": "Count tables at 10 am each day", "when": "Weekly"}
+      ]}
+    ]}
+  ]
+}

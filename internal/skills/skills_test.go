@@ -51,6 +51,14 @@ func TestInstallUpdateRemove(t *testing.T) {
 			t.Fatalf("missing %s", f)
 		}
 	}
+	// An adapted method skill keeps its licence with it.
+	for _, p := range all {
+		if p.Kind == "method" {
+			if _, err := os.Stat(filepath.Join(dir, p.Name, "LICENSE.txt")); err != nil {
+				t.Fatalf("%s installed without LICENSE.txt", p.Name)
+			}
+		}
+	}
 	// Test cases and the scorer stay out of reach of the model.
 	if _, err := os.Stat(filepath.Join(deck, "tests")); err == nil {
 		t.Fatal("tests installed with the pack")
