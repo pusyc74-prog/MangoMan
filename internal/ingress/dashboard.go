@@ -124,6 +124,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	s.myListRoutes(mux)
 	s.readyRoutes(mux)
 	s.briefRoutes(mux)
+	s.libraryRoutes(mux)
 	s.brainRoutes(mux)
 	s.agentRoutes(mux)
 	s.guardianRoutes(mux)

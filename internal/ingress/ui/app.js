@@ -1088,11 +1088,23 @@ function field(id, label, kind, required, hint, options, now) {
 
 const empty = (v) => Array.isArray(v) ? v.length === 0 : !v;
 
+// modal shows a form in the page's one dialog: a title with a close button,
+// then the content.
+function modal(title, onsubmit, ...content) {
+  const dlg = $("modal");
+  dlg.setAttribute("aria-label", title);
+  dlg.replaceChildren(el("form", { class: "brief-form", onsubmit: (e) => { e.preventDefault(); onsubmit(); } },
+    el("div", { class: "drawer-head" }, el("h2", {}, title),
+      el("button", { type: "button", class: "ghost icon", "aria-label": "Close", onclick: () => dlg.close() }, "\u00d7")),
+    ...content));
+  if (!dlg.open) dlg.showModal();
+  return dlg;
+}
+
 // openBrief asks a super agent's questions once, in a form: the business
 // (kept for every agent) and this job. MangoMan writes the answers to the
 // task folder, and the agent starts with them, so it never asks in chat.
 async function openBrief(a) {
-  const dlg = $("brief");
   const msg = el("p", { class: "msg", role: "status" });
   let biz = { fields: {} };
   try { biz = await api("/mangoman/business"); } catch (err) { say(err.message, "err"); return; }
@@ -1106,7 +1118,7 @@ async function openBrief(a) {
   const logo = el("input", { type: "file", id: "brief-logo", accept: "image/png,image/jpeg", class: "sr", onchange: async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    logoMsg.textContent = "Saving the logo…";
+    logoMsg.textContent = "Saving the logo\u2026";
     try {
       const r = await api(`/mangoman/business/logo?name=${encodeURIComponent(file.name)}`,
         { method: "POST", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
@@ -1115,8 +1127,7 @@ async function openBrief(a) {
   } });
   const needed = bizFields.filter((q) => q.required && !f[q.id]).length;
   const go = el("button", { type: "submit", class: "primary" }, "Start the agent");
-  const form = el("form", { method: "dialog", class: "brief-form", onsubmit: async (e) => {
-    e.preventDefault();
+  const dlg = modal(a.title, async () => {
     const missing = [...bizFields, ...jobFields].filter((q) => q.required && empty(q.value()));
     if (missing.length) {
       msg.className = "msg err";
@@ -1126,7 +1137,7 @@ async function openBrief(a) {
       missing[0].node.querySelector("input, textarea, button").focus();
       return;
     }
-    go.disabled = true; msg.className = "msg"; msg.textContent = "Saving your brief…";
+    go.disabled = true; msg.className = "msg"; msg.textContent = "Saving your brief\u2026";
     try {
       const fields = Object.fromEntries(bizFields.map((q) => [q.id, q.value()]));
       const job = Object.fromEntries(jobFields.map((q) => [q.id, q.value()]).filter(([, v]) => !empty(v)));
@@ -1136,11 +1147,9 @@ async function openBrief(a) {
       dlg.close();
       openCoding(a.prompt.replaceAll("{folder}", r.folder));
     } catch (err) { msg.className = "msg err"; msg.textContent = err.message; go.disabled = false; }
-  } },
-    el("div", { class: "drawer-head" }, el("h2", {}, a.title),
-      el("button", { type: "button", class: "ghost icon", "aria-label": "Close", onclick: () => dlg.close() }, "×")),
+  },
     el("p", { class: "sub" }, "Answer once here. The agent reads these answers and does not ask again in the chat."),
-    el("ol", { class: "stages" }, a.stages.map((s) => el("li", {}, s))),
+    a.stages ? el("ol", { class: "stages" }, a.stages.map((s) => el("li", {}, s))) : null,
     el("details", { class: "bf-biz", open: needed > 0 },
       el("summary", {}, "Your business", el("span", { class: "fine" }, needed ? ` (${needed} answers needed)` : " (saved; kept for every agent)")),
       bizFields.map((q) => q.node),
@@ -1149,8 +1158,183 @@ async function openBrief(a) {
     el("h3", {}, "This job"),
     jobFields.map((q) => q.node),
     el("div", { class: "brief-foot" }, go, msg));
-  dlg.replaceChildren(form);
-  dlg.showModal();
+}
+
+// ---------- Skills library ----------
+
+const KINDS = { agent: "Agent", method: "Know-how", pack: "Builds files" };
+const lib = { dir: "", skills: [], show: "all" };
+const pretty = (name) => name.replace(/^mangoman-/, "").replaceAll("-", " ").replace(/^./, (c) => c.toUpperCase())
+  .replace(/\b(seo|ceo|ai)\b/gi, (w) => w.toUpperCase());
+
+// A user's own agent starts from the same brief as ours, with one open job.
+const OWN_BRIEF = [
+  { id: "job", label: "What should the agent do this time?", kind: "long", required: true },
+  { id: "notes", label: "Anything else it should know", kind: "long" },
+];
+
+async function loadLibrary() {
+  try { Object.assign(lib, await api("/mangoman/skills")); }
+  catch (err) { say(`Could not list the skills: ${err.message}`, "err"); return; }
+  renderLibrary();
+}
+
+function renderLibrary() {
+  const mine = lib.skills.filter((k) => k.own && k.kind === "agent" && !k.error);
+  $("own-agents-wrap").hidden = mine.length === 0;
+  $("own-agents").replaceChildren(...mine.map((k) => {
+    const a = { id: k.name, title: pretty(k.name), brief: OWN_BRIEF,
+      prompt: `Be my ${pretty(k.name)}. Read your playbook in ${lib.dir}/${k.name}/SKILL.md and follow it, with the skills it names at their stages. My brief is in {folder}/brief.json: work in that folder and save every file there.` };
+    return el("li", { class: "card" },
+      el("div", { class: "card-top" }, el("span", { class: "tile", "aria-hidden": "true" }, a.title[0]), el("h3", {}, a.title)),
+      el("p", {}, k.description),
+      el("button", { type: "button", class: "primary start", onclick: () => openBrief(a) }, "Start"));
+  }));
+  const counts = { all: lib.skills.length, own: lib.skills.filter((k) => k.own).length };
+  for (const k of Object.keys(KINDS)) counts[k] = lib.skills.filter((x) => x.kind === k).length;
+  const labels = { all: "All", agent: "Agents", method: "Know-how", pack: "Builds files", own: "Yours" };
+  $("lib-kinds").replaceChildren(...Object.entries(labels).map(([k, t]) => el("button", { type: "button",
+    "aria-pressed": String(lib.show === k), onclick: () => { lib.show = k; renderLibrary(); } }, `${t} ${counts[k]}`)));
+  const shown = lib.skills.filter((k) => lib.show === "all" || (lib.show === "own" ? k.own : k.kind === lib.show))
+    .sort((a, b) => b.own - a.own); // the user's own first
+  $("lib-cards").replaceChildren(...shown.map((k) => el("li", { class: "card lib-card" },
+    el("h3", {}, pretty(k.name)),
+    el("span", { class: "kind" + (k.own ? " own" : "") }, (k.own ? "Yours \u00b7 " : "") + (KINDS[k.kind] || "Not valid")),
+    k.error ? el("p", { class: "err" }, k.error) : el("p", { class: "desc" }, k.description),
+    el("div", { class: "acts" },
+      el("button", { type: "button", class: "ghost", onclick: () => openSkill(k.name) }, k.own ? "Edit" : "Read"),
+      k.own ? el("button", { type: "button", class: "ghost", onclick: () => improveSkill(k.name) }, "Improve with AI") : null))));
+}
+
+// openSkill shows a skill's SKILL.md: MangoMan's to read and copy, the
+// user's own to change, save or remove.
+async function openSkill(name) {
+  let k;
+  try { k = await api(`/mangoman/skills/${name}`); } catch (err) { say(err.message, "err"); return; }
+  const msg = el("p", { class: "msg", role: "status" });
+  const text = el("textarea", { class: "skill-text", id: "skill-text", spellcheck: "false", readonly: !k.own });
+  text.value = k.text;
+  if (!k.own) {
+    const as = el("input", { type: "text", id: "copy-as", maxlength: 64 });
+    as.value = "my-" + name.replace(/^mangoman-/, "");
+    modal(pretty(name), async () => {
+      try {
+        const r = await api(`/mangoman/skills/${name}/copy`, { method: "POST", body: JSON.stringify({ as: as.value.trim() }) });
+        await loadLibrary();
+        openSkill(r.name);
+      } catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+    },
+      el("p", { class: "sub" }, "One of MangoMan's skills. Copy it to make your own version: the copy is yours to change, and updates leave it alone."),
+      el("label", { for: "skill-text", class: "sr" }, "The skill"), text,
+      el("div", { class: "brief-foot" }, el("label", { for: "copy-as" }, "Name for your copy"), as,
+        el("button", { type: "submit", class: "primary" }, "Copy and improve"), msg));
+    return;
+  }
+  modal(pretty(name), () => saveSkill(name, text.value, msg),
+    el("p", { class: "sub" }, `Your skill, kept in ${k.path}. Keep the name line as ${name}.`),
+    el("label", { for: "skill-text", class: "sr" }, "The skill"), text,
+    el("div", { class: "brief-foot" }, el("button", { type: "submit", class: "primary" }, "Save"),
+      el("button", { type: "button", class: "ghost", onclick: () => { $("modal").close(); improveSkill(name); } }, "Improve with AI"),
+      el("button", { type: "button", class: "ghost danger", onclick: async () => {
+        if (!confirm(`Remove your skill ${name}?`)) return;
+        try { await api(`/mangoman/skills/${name}`, { method: "DELETE" }); $("modal").close(); loadLibrary(); }
+        catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+      } }, "Remove"), msg));
+}
+
+async function saveSkill(name, text, msg) {
+  try {
+    await api(`/mangoman/skills/${name}`, { method: "PUT", body: JSON.stringify({ text }) });
+    msg.className = "msg ok"; msg.textContent = "Saved. Agents can use it from the next task.";
+    loadLibrary();
+    return true;
+  } catch (err) { msg.className = "msg err"; msg.textContent = err.message; return false; }
+}
+
+function improveSkill(name) {
+  openCoding(`Help me improve my skill ${name}. Its files are in ${lib.dir}/${name}: read SKILL.md first, then ask me what should change. ` +
+    `Make the change there, keep it a valid Agent Skill (the name line stays ${name}), and tell me in a few lines what you changed.`);
+}
+
+// skillFile writes a SKILL.md from a form's answers.
+function skillFile(name, kind, title, what, body) {
+  const desc = `${title}: ${what}`.replace(/\s+/g, " ").slice(0, 1000);
+  return `---\nname: ${name}\ndescription: ${JSON.stringify(desc)}\nlicense: Your own ${kind === "agent" ? "agent" : "skill"}, for use inside MangoMan.\n` +
+    `metadata:\n  pack: mine\n  kind: ${kind}\n  version: "1.0"\n---\n\n# ${title}\n\n${body.trim()}\n`;
+}
+
+// slugOf makes a skill's folder name from its title; a title in another
+// script gets a numbered name.
+function slugOf(t) {
+  return t.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || `my-skill-${Date.now() % 100000}`;
+}
+
+// taken says why a new skill's name cannot be used, or "" when it can.
+const taken = (name) => lib.skills.some((k) => k.name === name) ? `You already have a skill named ${name}: open it from the library, or pick another name.` : "";
+
+// newSkill writes a know-how skill: the expert steps an agent follows.
+function newSkill() {
+  const msg = el("p", { class: "msg", role: "status" });
+  const q = [field("sk-title", "Skill name", "text", true, "For example: Restaurant menu writing"),
+    field("sk-what", "When should an agent use it?", "long", true, "For example: when writing or improving a menu, dish names or descriptions"),
+    field("sk-body", "What an expert does, step by step", "long", true, "The steps, the rules, and what good looks like. Plain sentences.")];
+  q[2].node.querySelector("textarea").rows = 10;
+  modal("New skill", async () => {
+    const [title, what, body] = q.map((x) => x.value());
+    if (!title || !what || !body) { msg.className = "msg err"; msg.textContent = "Please fill in all three."; return; }
+    const name = slugOf(title);
+    if (taken(name)) { msg.className = "msg err"; msg.textContent = taken(name); return; }
+    if (await saveSkill(name, skillFile(name, "method", title, what, body), msg)) openSkill(name);
+  },
+    el("p", { class: "sub" }, "Write down how an expert does one job, so every agent can do it that way. Or let the AI write it with you."),
+    q.map((x) => x.node),
+    el("div", { class: "brief-foot" }, el("button", { type: "submit", class: "primary" }, "Save the skill"),
+      el("button", { type: "button", class: "ghost", onclick: () => {
+        const title = q[0].value();
+        if (!title) { msg.className = "msg err"; msg.textContent = "Give the skill a name first."; return; }
+        $("modal").close();
+        openCoding(`Write a new skill with me: "${title}". ${q[1].value()} Save it as ${lib.dir}/${slugOf(title)}/SKILL.md in the Agent Skills format, ` +
+          `like the mangoman skills there (frontmatter name ${slugOf(title)}, a description that says when to use it, metadata kind method). ` +
+          "Ask me how I do this job first, then write clear steps and rules, and show me the result.");
+      } }, "Write it with AI"), msg));
+}
+
+// newAgent builds a super agent from skills in the library: its stages,
+// the skills it uses, and the standards it keeps.
+function newAgent() {
+  const msg = el("p", { class: "msg", role: "status" });
+  const usable = lib.skills.filter((k) => !k.error && k.kind !== "agent").map((k) => k.name);
+  const q = [field("ag-title", "Agent name", "text", true, "For example: Restaurant Growth Manager"),
+    field("ag-what", "What job does it do?", "long", true, "For example: plans and runs a restaurant's marketing: menu, reviews, local search and social"),
+    field("ag-skills", "Skills it uses", "multi", true, null, usable),
+    field("ag-stages", "Its stages, one per line", "long", true, "Research: the restaurant, its reviews and 3 nearby rivals\nPlan: ...\nMake: ...\nCheck: ..."),
+    field("ag-rules", "Rules it always keeps (optional)", "long", false, "For example: never promise delivery times")];
+  for (const b of q[2].node.querySelectorAll(".opt")) b.textContent = b.textContent.replace(/^mangoman-/, "");
+  q[3].node.querySelector("textarea").rows = 6;
+  modal("Build an agent", async () => {
+    const [title, what, used, stages, rules] = q.map((x) => x.value());
+    if (!title || !what || !used.length || !stages) { msg.className = "msg err"; msg.textContent = "Please fill in the name, the job, the skills and the stages."; return; }
+    const names = used.map((u) => usable.includes(u) ? u : usable.includes("mangoman-" + u) ? "mangoman-" + u : u);
+    const steps = stages.split("\n").map((t) => t.trim()).filter(Boolean)
+      .map((t, i) => { const [h, ...rest] = t.split(":"); return `**${i + 1}. ${h.trim()}.** ${rest.join(":").trim()}`; });
+    const body = `You are the ${title} for this business. Your job: ${what}\n\nWork in stages and show your work. Use these skills at their stage: ` +
+      names.map((n) => "`" + n + "`").join(", ") + ".\n\n## Start\n\n" +
+      "1. Read `brief.json` in the task folder named in the first message and work in that folder. Use the logo if one is named.\n" +
+      "2. Put the stages in your plan (the todo tool) and tick them off.\n" +
+      "3. Ask only what you cannot work without, once, in one message.\n" +
+      "4. After each stage, tell the owner in a line or two what you found or made, then continue.\n\n" +
+      "## Stages\n\n" + steps.join("\n\n") + "\n\n## Standards\n\n" +
+      "- Specific to this business; every claim about the market cites a source you opened.\n" +
+      "- Every number is the owner's fact or something a source showed; plans and targets are labelled as such.\n" +
+      "- When a skill has a checker, run it and fix every FAIL before you deliver.\n" +
+      rules.split("\n").map((t) => t.trim()).filter(Boolean).map((t) => `- ${t}\n`).join("");
+    const name = slugOf(title);
+    if (taken(name)) { msg.className = "msg err"; msg.textContent = taken(name); return; }
+    if (await saveSkill(name, skillFile(name, "agent", title, what, body), msg)) openSkill(name);
+  },
+    el("p", { class: "sub" }, "Pick the skills it works with and say what it does at each stage. It starts from the same brief as the built-in agents."),
+    q.map((x) => x.node),
+    el("div", { class: "brief-foot" }, el("button", { type: "submit", class: "primary" }, "Save the agent"), msg));
 }
 
 function startButton(prompt) {
@@ -1238,6 +1422,9 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("hashchange", showView);
   showView();
   loadStarters();
+  loadLibrary();
+  $("lib-new").addEventListener("click", newSkill);
+  $("lib-agent").addEventListener("click", newAgent);
   $("mylist-add").addEventListener("submit", (e) => {
     e.preventDefault();
     const v = $("mylist-pick").value;

@@ -236,9 +236,9 @@ main, .gate { max-width: 1120px; margin: 0 auto; }
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
 .state { display: inline-flex; align-items: center; gap: 6px; }
 .more { margin: 0; padding: 10px 16px; border-top: 1px solid var(--hair); }
-.seg { display: inline-flex; background: var(--sunk); border-radius: var(--r-sm); padding: 3px; margin-left: auto; gap: 2px; }
-.seg button { background: transparent; border: 0; padding: 4px 12px; color: var(--ink-2); border-radius: 5px; font-size: 14px; }
-.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px var(--ring); }
+.seg, .kinds { display: inline-flex; background: var(--sunk); border-radius: var(--r-sm); padding: 3px; margin-left: auto; gap: 2px; }
+.seg button, .kinds button { background: transparent; border: 0; padding: 4px 12px; color: var(--ink-2); border-radius: 5px; font-size: 14px; }
+.seg button[aria-pressed="true"], .kinds button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px var(--ring); }
 
 .gate { padding: 64px 0; }
 .gate pre { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-md); padding: 12px 16px; display: inline-block; }
@@ -395,9 +395,9 @@ body.app { padding: 0; display: grid; grid-template-columns: 248px minmax(0, 1fr
 .stages li { counter-increment: st; border: 1px solid var(--hair); border-radius: 999px; padding: 2px 10px 2px 4px; color: var(--ink-2); }
 .stages li::before { content: counter(st); display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 6px;
   border-radius: 50%; background: var(--leaf); color: var(--leaf-ink); font-size: 11px; font-weight: 700; }
-.brief { width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--hair);
+.modal { width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--hair);
   border-radius: var(--r-lg); background: var(--surface); color: var(--ink); }
-.brief::backdrop { background: rgba(21, 36, 28, 0.4); }
+.modal::backdrop { background: rgba(21, 36, 28, 0.4); }
 .brief-form { display: flex; flex-direction: column; gap: 14px; padding: 20px; }
 .brief-form .sub { margin: 0; color: var(--ink-2); }
 .brief-form h3 { font-size: 17px; margin: 6px 0 0; }
@@ -416,6 +416,17 @@ body.app { padding: 0; display: grid; grid-template-columns: 248px minmax(0, 1fr
 .opt[aria-pressed="true"] { background: var(--leaf); border-color: var(--leaf); color: var(--leaf-ink); }
 .brief-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; position: sticky; bottom: 0;
   background: var(--surface); padding-top: 10px; border-top: 1px solid var(--hair); }
+.lib-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.lib-tools .kinds { flex-wrap: wrap; }
+.kinds button { white-space: nowrap; }
+.lib-card .kind { align-self: flex-start; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--sunk); color: var(--ink-2); }
+.lib-card .kind.own { background: var(--mango-wash); color: var(--ink); }
+.lib-card p.desc { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.lib-card .err { color: var(--critical); font-size: 13px; }
+.lib-card .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+.lib-card .acts button { font-size: 14px; padding: 5px 12px; }
+.skill-text { width: 100%; box-sizing: border-box; min-height: 340px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  padding: 10px; border: 1px solid var(--axis); border-radius: var(--r-sm); background: var(--sunk); white-space: pre; overflow: auto; }
 .later-head { font-size: 17px; margin: 36px 0 12px; color: var(--ink); }
 
 /* My Files and Settings */

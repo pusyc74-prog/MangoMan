@@ -65,6 +65,22 @@
       <p class="sub">Pick an agent and press Start. Answer its brief once, then it works through each stage and makes your files. Everything is saved in My Files.</p>
     </div>
     <ul class="cards" id="agent-cards"></ul>
+    <div id="own-agents-wrap" hidden>
+      <h3 class="later-head">Your agents</h3>
+      <ul class="cards" id="own-agents"></ul>
+    </div>
+    <section class="block" aria-labelledby="h-library">
+      <div class="block-head">
+        <h2 id="h-library">Skills library</h2>
+        <p class="sub">The skills behind every agent, ready to use. Read one, copy it and make it yours, write a new one, or build a fresh agent from them.</p>
+      </div>
+      <div class="lib-tools">
+        <button type="button" class="primary" id="lib-agent">Build an agent</button>
+        <button type="button" class="ghost" id="lib-new">New skill</button>
+        <div class="kinds" role="group" aria-label="Show skills" id="lib-kinds"></div>
+      </div>
+      <ul class="cards small" id="lib-cards"></ul>
+    </section>
     <h3 class="later-head">Coming later</h3>
     <ul class="cards later" id="later-cards"></ul>
     <section class="block" aria-labelledby="h-agents">
@@ -367,7 +383,7 @@
   <pre><code>mangoman dashboard</code></pre>
 </section>
 
-<dialog class="brief" id="brief" aria-label="Agent brief"></dialog>
+<dialog class="modal" id="modal" aria-label="Agent brief"></dialog>
 <aside class="drawer" id="drawer" role="dialog" aria-labelledby="h-drawer" hidden>
   <div class="drawer-head">
     <h2 id="h-drawer">New free models</h2>

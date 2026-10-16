@@ -184,6 +184,48 @@ func copyTree(root, dest, skip string) error {
 	})
 }
 
+// Text returns an embedded pack's SKILL.md.
+func Text(name string) ([]byte, error) {
+	if !nameRe.MatchString(name) || name == "shared" {
+		return nil, fmt.Errorf("no skill pack named %q", name)
+	}
+	data, err := fs.ReadFile(packsFS, path.Join("packs", name, "SKILL.md"))
+	if err != nil {
+		return nil, fmt.Errorf("no skill pack named %q", name)
+	}
+	return data, nil
+}
+
+// Copy writes a pack into dest as the user's own skill named as: without
+// its tests or the marker, so updates leave it alone, with the shared
+// helpers when it has scripts, and with its name changed.
+func Copy(name, as, dest string) error {
+	data, err := Text(name)
+	if err != nil {
+		return err
+	}
+	if err := copyTree(path.Join("packs", name), dest, "tests"); err != nil {
+		return err
+	}
+	if _, err := fs.Stat(packsFS, path.Join("packs", name, "scripts")); err == nil {
+		if err := CopyShared(filepath.Join(dest, "scripts")); err != nil {
+			return err
+		}
+	}
+	lines := strings.Split(string(data), "\n")
+	for i, l := range lines {
+		if i > 0 && l == "---" { // the end of the frontmatter
+			break
+		}
+		if strings.HasPrefix(l, "name:") {
+			lines[i] = "name: " + as
+		} else if strings.HasPrefix(l, "license: Proprietary") {
+			lines[i] = "license: Your own copy of " + name + ", for use inside MangoMan (see the MangoMan LICENSE)."
+		}
+	}
+	return os.WriteFile(filepath.Join(dest, "SKILL.md"), []byte(strings.Join(lines, "\n")), 0o644)
+}
+
 // CopyShared writes the shared Python helpers (render, vizlib, brandkit,
 // checks, tracenum) into dir, so packs and agents can import them.
 func CopyShared(dir string) error {

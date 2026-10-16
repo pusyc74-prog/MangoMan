@@ -148,13 +148,13 @@ func TestStartersMatchPacks(t *testing.T) {
 			ids := map[string]bool{}
 			for _, q := range a.Brief {
 				choice := q.Kind == "choice" || q.Kind == "multi"
-				if !agentID.MatchString(strings.ReplaceAll(q.ID, "_", "-")) || q.Label == "" || ids[q.ID] || choice != (len(q.Options) > 0) ||
+				if !slug.MatchString(strings.ReplaceAll(q.ID, "_", "-")) || q.Label == "" || ids[q.ID] || choice != (len(q.Options) > 0) ||
 					(!choice && q.Kind != "text" && q.Kind != "long") {
 					t.Errorf("agent %q: brief question %q is wrong", a.Title, q.ID)
 				}
 				ids[q.ID] = true
 			}
-			if !agentID.MatchString(a.ID) || len(a.Stages) == 0 || len(a.Brief) == 0 || !strings.Contains(a.Prompt, "{folder}/brief.json") {
+			if !slug.MatchString(a.ID) || len(a.Stages) == 0 || len(a.Brief) == 0 || !strings.Contains(a.Prompt, "{folder}/brief.json") {
 				t.Errorf("super agent %q needs an id, stages, a brief and {folder}/brief.json in its first message", a.Title)
 			}
 		}

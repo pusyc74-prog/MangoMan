@@ -151,7 +151,8 @@ func (s *Server) businessLogo(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, b)
 }
 
-var agentID = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+// slug is a name of small letters, digits and dashes.
+var slug = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 
 // agentBrief makes the task folder for one run of a super agent: brief.json
 // with the business and this job's answers, and a copy of the logo.
@@ -161,7 +162,7 @@ func (s *Server) agentBrief(w http.ResponseWriter, r *http.Request) {
 		Title string         `json:"title"`
 		Job   map[string]any `json:"job"`
 	}
-	if err := readJSON(r, &in); err != nil || !agentID.MatchString(in.Agent) || len(in.Agent) > 60 || len(in.Title) > 80 {
+	if err := readJSON(r, &in); err != nil || !slug.MatchString(in.Agent) || len(in.Agent) > 64 || len(in.Title) > 80 {
 		core.WriteError(w, http.StatusBadRequest, "bad_request", "could not read the brief")
 		return
 	}
