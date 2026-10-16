@@ -65,7 +65,8 @@ const Sheets = (() => {
   const averaged = (m) => !!m && (m.kind === "percent" || /price|mrp|rate|per unit|unit cost|cost per|average|avg/i.test(m.name));
   const numeric = (c) => c && ["number", "money", "percent"].includes(c.kind);
   // Numbers that name things (a category number, a code, a year) are never added up.
-  const codeLike = (c) => /categor|(^|[^a-z])(code|id|zip|pin|pincode|phone|year)s?([^a-z]|$)/i.test(c.name);
+  // Only when that is the whole name or its last word: "Customer ID", "Pin code", "OrderID", "Year", not "Sales this year".
+  const codeLike = (c) => /^(.*[^a-z])?(categor(y|ies)( ?(no|number|id|code))?|code|id|zip|pin ?code|pin|phone)s?$|^years?$/i.test(c.name) || /[a-z](ID|Id)$/.test(c.name);
   const isDim = (c) => c && ["category", "yes_no"].includes(c.kind);
   function word(c, i) { const k = c.codes[i]; return k < 0 ? null : c.words[k]; }
   function roles() { return rolesOf(dataset()); }
@@ -843,7 +844,7 @@ function main() {
     const fc = feedCols();
     if (fc) {
       const st = feedStats(fc, idx);
-      const worst = st.res.filter((c) => c.rows.length).sort((a, b) => b.live - a.live)[0];
+      const worst = st.res.filter((c) => c.live > 0).sort((a, b) => b.live - a.live || b.rows.length - a.rows.length)[0];
       out.push(para("Feed health is ", [pct(st.health)], ": ", [plural(st.clean, "product")], " pass every check, and ", [fmtInt(st.live)], ` of ${fmtInt(idx.length)} are in stock.`));
       if (worst) out.push(para("The biggest gap: ", [worst.label], ", missing on ", [plural(worst.live, "in-stock product")], "."));
     }
@@ -892,7 +893,7 @@ function main() {
       const dm = averaged(m) ? null : m; // averages do not add up to a whole: count rows instead
       const whole = groupBy(small, dm, idx);
       const g = whole.length > 6 ? [...whole.slice(0, 5), { k: "Other", v: whole.slice(5).reduce((a, b) => a + b.v, 0) }] : whole;
-      row.push(card(`${dm ? dm.name : "Rows"} by ${small.name}`, "Click a slice to filter to it.", (n) => donut(n, g, dm, [fmtVal(dm, total(dm, idx), true), dm ? "in all" : "rows"], (k) => filterTo(small, k)),
+      row.push(card(`${dm ? dm.name : "Rows"} by ${small.name}`, "Click a slice to filter to it.", (n) => donut(n, g, dm, [fmtVal(dm, g.reduce((a, b) => a + Math.max(0, b.v), 0), true), dm ? "in all" : "rows"], (k) => filterTo(small, k)),
         () => ({ head: [small.name, dm ? dm.name : "Rows"], rows: g.map((x) => [x.k, fmtVal(dm, x.v)]), right: [1] }), { after: donutLegend(g, dm), size: "short" }));
     }
     const rank = d0 && d0 !== small ? d0 : r.dims.find((d) => d !== small) || (r.entity && r.entity.codes && r.entity !== small ? r.entity : null);
@@ -1484,7 +1485,7 @@ function main() {
     const cpa = rows.filter((x) => x.v !== null).sort((p, q) => p.v - q.v);
     const avg = tConv ? tSpend / tConv : null;
     body.append(el("div", { class: "cs-grid cs-g2 cs-mt" },
-      card("Cost per conversion", avg ? `Lower is better. Green: below the average of ${money(avg, unit)}.` : null, (n) => barChart(n, cpa, m, { colorOf: (it) => (avg && it.v <= avg ? "var(--up)" : "var(--c4)") }),
+      card("Cost per conversion", avg ? `Lower is better. Green: below the average of ${money(avg, unit)}.` : null, (n) => barChart(n, cpa, m, { colorOf: (it) => (avg && it.v <= avg ? css("--up") : slot(3)) }),
         () => ({ head: [a.name.name, "Cost per conversion"], rows: cpa.map((x) => [x.k, money(x.v, unit)]), right: [1] }), { after: avg ? legend([[css("--up"), "Below average"], [slot(3), "Above average"]]) : null }),
       card("Share of spend and of conversions", "When the spend bar is much longer than the conversions bar, money buys little there.", (n) => chart(n, {
         grid: { left: 8, right: 30, top: 8, bottom: 8, containLabel: true },
@@ -1892,7 +1893,10 @@ function main() {
       if (rest) g.push({ k: "Other", v: rest });
       const body = el("div", { class: "cs-chart" });
       node.append(body, donutLegend(g, first.fmt));
-      requestAnimationFrame(() => { if (body.isConnected) donut(body, g, first.fmt, [fmtVal(first.fmt, g.reduce((a, b) => a + b.v, 0), true), "in all"]); });
+      // Averages, highs, percents and ratios do not add up to a whole: no total in the middle then.
+      const m = first.ref.metric && metricById(first.ref.metric);
+      const adds = m ? !(m.per && m.per.length) && m.kind !== "percent" : ["sum", "count", "distinct"].includes(first.ref.agg) && !(first.fmt && first.fmt.kind === "percent");
+      requestAnimationFrame(() => { if (body.isConnected) donut(body, g, first.fmt, adds ? [fmtVal(first.fmt, g.reduce((a, b) => a + b.v, 0), true), "in all"] : ["", ""]); });
       return node;
     }
     // One scale a chart: values in other units get a chart of their own, so no chart needs two axes.
@@ -1900,7 +1904,7 @@ function main() {
     d.series.forEach((sr, j) => { const u = sr.fmt ? `${sr.fmt.kind}|${sr.fmt.unit}` : "count"; units.set(u, [...(units.get(u) || []), j]); });
     for (const js of units.values()) {
       const body = el("div", { class: "cs-chart" + (size === "l" ? " tall" : "") });
-      if (units.size > 1) node.append(el("p", { class: "cs-small cs-muted cs-unit" }, js.map((j) => d.series[j].name).join(", ")));
+      if (units.size > 1) node.append(el("p", { class: "cs-small cs-muted" }, js.map((j) => d.series[j].name).join(", ")));
       node.append(body);
       if (js.length > 1) node.append(legend(js.map((j) => [slot(j), d.series[j].name])));
       requestAnimationFrame(() => { if (body.isConnected) drawTile(body, t, d, keys, js); });

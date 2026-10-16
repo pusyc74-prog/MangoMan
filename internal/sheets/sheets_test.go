@@ -320,3 +320,12 @@ func TestDescribeChecksTheModel(t *testing.T) {
 		t.Errorf("roles %+v about %q questions %v", r, sh.About, sh.Questions)
 	}
 }
+
+func TestCodeLikeNames(t *testing.T) {
+	for name, want := range map[string]bool{"google product category": true, "Customer ID": true, "OrderID": true, "Pin code": true, "Year": true,
+		"Category Sales": false, "Sales this year": false, "Discount code value": false, "Shipping (INR)": false} {
+		if got := codeLike.MatchString(name); got != want {
+			t.Errorf("%q: %v, want %v", name, got, want)
+		}
+	}
+}

@@ -18,8 +18,9 @@ import (
 
 var (
 	entityWords = regexp.MustCompile(`(?i)customer|client|buyer|product|item|title|campaign|name|sku|store|seller|lead|account|brand`)
-	// Numbers that name things (a category number, a code, a year) are never added up.
-	codeLike    = regexp.MustCompile(`(?i)categor|(^|[^a-z])(code|id|zip|pin|pincode|phone|year)s?([^a-z]|$)`)
+	// Numbers that name things (a category number, a code, a year) are never
+	// added up: only when that is the whole name or its last word.
+	codeLike    = regexp.MustCompile(`(?i:^(.*[^a-z])?(categor(y|ies)( ?(no|number|id|code))?|code|id|zip|pin ?code|pin|phone)s?$|^years?$)|[a-z](ID|Id)$`)
 	numericKind = map[string]bool{"number": true, "money": true, "percent": true}
 )
 

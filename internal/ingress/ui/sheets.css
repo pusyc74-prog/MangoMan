@@ -257,8 +257,6 @@ button.cs-tile.hit:hover, .cs-card:hover { border-color: var(--leaf); }
 .cs-s { grid-column: span 2; }
 .cs-m { grid-column: span 3; }
 .cs-l { grid-column: 1 / -1; }
-.cs-kpi .val { font: 700 28px/1.15 var(--body); letter-spacing: -0.01em; margin: 2px 0; }
-.cs-kpi svg.cs-spark { width: 100%; height: 34px; margin-top: auto; padding-top: 6px; display: block; }
 .cs-board > section[draggable="true"] { cursor: grab; }
 .cs-board > section.drag { opacity: .5; }
 .cs-board > section.over { outline: 2px dashed var(--leaf); outline-offset: 2px; }
