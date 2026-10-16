@@ -41,6 +41,7 @@ jobs:
       - name: Lint pack scripts
         run: |
           for d in internal/skills/packs/mangoman-*; do
+            [ -d "$d/scripts" ] || continue # know-how and agent playbooks have no scripts
             t=$(mktemp -d); cp internal/skills/packs/shared/*.py "$d"/scripts/*.py "$t"; python -m pyflakes "$t"/*.py || exit 1
           done
           for d in agents/*; do
