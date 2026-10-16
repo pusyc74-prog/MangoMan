@@ -18,6 +18,8 @@ import (
 
 var (
 	entityWords = regexp.MustCompile(`(?i)customer|client|buyer|product|item|title|campaign|name|sku|store|seller|lead|account|brand`)
+	// Numbers that name things (a category number, a code, a year) are never added up.
+	codeLike    = regexp.MustCompile(`(?i)categor|(^|[^a-z])(code|id|zip|pin|pincode|phone|year)s?([^a-z]|$)`)
 	numericKind = map[string]bool{"number": true, "money": true, "percent": true}
 )
 
@@ -42,7 +44,7 @@ func guessRoles(ds Dataset) Roles {
 	r := Roles{Table: ds.Name}
 	for _, kind := range []string{"money", "number"} {
 		for _, c := range ds.Columns {
-			if c.Kind == kind && len(r.Measures) < 4 {
+			if c.Kind == kind && len(r.Measures) < 4 && !codeLike.MatchString(c.Name) {
 				r.Measures = append(r.Measures, c.Name)
 			}
 		}
@@ -117,7 +119,7 @@ func (st *Store) describe(p Profile) (Roles, string, []string) {
 	}
 	var ms []string
 	for _, m := range a.Measures {
-		if c, ok := column(ds, m); ok && numericKind[c.Kind] && len(ms) < 4 && !contains(ms, m) {
+		if c, ok := column(ds, m); ok && numericKind[c.Kind] && !codeLike.MatchString(c.Name) && len(ms) < 4 && !contains(ms, m) {
 			ms = append(ms, m)
 		}
 	}

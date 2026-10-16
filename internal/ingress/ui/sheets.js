@@ -64,6 +64,8 @@ const Sheets = (() => {
   // Prices and rates are averaged: adding up the prices of a catalogue means nothing.
   const averaged = (m) => !!m && (m.kind === "percent" || /price|mrp|rate|per unit|unit cost|cost per|average|avg/i.test(m.name));
   const numeric = (c) => c && ["number", "money", "percent"].includes(c.kind);
+  // Numbers that name things (a category number, a code, a year) are never added up.
+  const codeLike = (c) => /categor|(^|[^a-z])(code|id|zip|pin|pincode|phone|year)s?([^a-z]|$)/i.test(c.name);
   const isDim = (c) => c && ["category", "yes_no"].includes(c.kind);
   function word(c, i) { const k = c.codes[i]; return k < 0 ? null : c.words[k]; }
   function roles() { return rolesOf(dataset()); }
@@ -73,7 +75,7 @@ const Sheets = (() => {
     const r = S.view.sheet.roles || {};
     const own = ds && r.table === ds.name;
     const measures = ((own && r.measures) || []).map(col).filter(numeric);
-    for (const c of ds.columns) if (measures.length < 4 && numeric(c) && !measures.includes(c) && (c.kind === "money" || !measures.some((m) => m.kind === "money"))) measures.push(c);
+    for (const c of ds.columns) if (measures.length < 4 && numeric(c) && !codeLike(c) && !measures.includes(c) && (c.kind === "money" || !measures.some((m) => m.kind === "money"))) measures.push(c);
     let date = own && r.date ? col(r.date) : null;
     if (!date || date.kind !== "date") date = ds.columns.find((c) => c.kind === "date") || null;
     let dims = ((own && r.dims) || []).map(col).filter(isDim);
@@ -265,7 +267,22 @@ const Sheets = (() => {
   }
   function legend(items) { return el("div", { class: "cs-legend" }, items.map(([c, l]) => el("span", {}, el("i", { style: { background: c } }), l))); }
 
+  // A short ranked list reads best as labelled meter bars: name, bar, value.
+  function meters(node, items, m, { onPick, colorOf } = {}) {
+    node.className = "cs-meters";
+    const max = Math.max(...items.map((it) => Math.abs(it.v)), 0) || 1;
+    node.replaceChildren(...items.map((it) => {
+      const tip = `${it.k}: ${fmtVal(m, it.v)}${it.share !== undefined ? ` · ${pct(it.share)} of the total` : ""}`;
+      const row = el(onPick ? "button" : "div", { type: onPick ? "button" : null, class: "cs-mrow" + (onPick ? " hit" : ""), title: tip },
+        el("span", { class: "l" }, String(it.k).split(" > ").pop()),
+        el("span", { class: "track" }, el("i", { style: { width: `${Math.max(1.5, (Math.abs(it.v) / max) * 100)}%`, background: it.v < 0 ? "var(--down)" : colorOf ? colorOf(it) : slot(0) } })),
+        el("span", { class: "v" }, fmtVal(m, it.v, true)));
+      if (onPick) row.addEventListener("click", () => onPick(it));
+      return row;
+    }));
+  }
   function barChart(node, items, m, { onPick, horizontal = true, colorOf } = {}) {
+    if (horizontal && items.length <= 15) return meters(node, items, m, { onPick, colorOf });
     const c1 = slot(0);
     const data = items.map((it) => ({ value: it.v, name: String(it.k), itemStyle: { color: colorOf ? colorOf(it) : c1 } }));
     const valAxis = axis({ type: "value", axisLabel: { formatter: (v) => fmtVal(m, v, true) } });
@@ -293,12 +310,12 @@ const Sheets = (() => {
 
   function lineChart(node, pts, m, { onPick } = {}) {
     const x = pts.map((p) => p.label);
-    const s = [{ name: m ? m.name : "Count", type: "line", smooth: 0.2, symbol: "circle", symbolSize: 8, showSymbol: pts.length <= 24,
+    const s = [{ name: m ? m.name : "Count", type: "line", smooth: 0.3, smoothMonotone: "x", symbol: "circle", symbolSize: 8, showSymbol: pts.length <= 24,
       lineStyle: { width: 2, color: slot(0) }, itemStyle: { color: slot(0), borderColor: css("--surface"), borderWidth: 2 },
       areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: slot(0) + "33" }, { offset: 1, color: slot(0) + "00" }]) },
       data: pts.map((p) => p.v) }];
     return chart(node, {
-      grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
+      grid: { left: 8, right: 28, top: 16, bottom: 8, containLabel: true },
       xAxis: axis({ type: "category", data: x, boundaryGap: false, splitLine: { show: false } }),
       yAxis: axis({ type: "value", axisLabel: { formatter: (v) => fmtVal(m, v, true) } }),
       tooltip: { trigger: "axis", axisPointer: { type: "line", lineStyle: { color: css("--axis") } },
@@ -608,10 +625,15 @@ function main() {
     if (r.dims.length >= 1 && (r.dims.length >= 2 || r.entity)) t.push(["drill", "Drill-down"]);
     if (r.measures.length) t.push(["spread", "Spread"]);
     for (const p of packs()) t.push([p.id, p.name]);
-    t.push(["quality", "Data quality"], ["table", "All rows"], ["readout", "Readout"]);
+    t.push(["quality", "Data quality", blanks()], ["table", "All rows"], ["readout", "Readout"]);
     return t;
   }
 
+  // How many key columns of the table have blanks: the Data quality tab's badge.
+  function blanks() {
+    const r = roles();
+    return [...r.measures, r.date, ...r.dims].filter(Boolean).filter((c) => (c.values ? c.values.includes(null) : c.codes.includes(-1))).length || null;
+  }
   function render() {
     disposeCharts();
     const v = S.view, sh = v.sheet, ds = dataset(), r = roles();
@@ -632,13 +654,15 @@ function main() {
       el("button", { type: "button", class: "ghost", onclick: () => remove(sh) }, "Delete"),
       el("button", { type: "button", class: "primary", onclick: () => openAsk() }, "Ask a question"));
     const head = el("div", { class: "cs-head" },
-      el("div", { class: "cs-grow" }, el("button", { type: "button", class: "cs-back", onclick: showLibrary }, "← All Chargesheets"), title,
-        el("p", { class: "cs-about" }, sh.about || `${plural(ds.rows, "row")} from ${sh.sources.map((s) => s.label).join(", ")}.`)), actions);
+      el("div", { class: "cs-grow" }, el("button", { type: "button", class: "cs-back", onclick: showLibrary }, "← All Chargesheets"),
+        el("div", { class: "cs-titlerow" }, el("span", { class: "cs-logo" }, icon("M4 5h16v14H4zM4 10h16M10 10v9")),
+          el("div", { class: "cs-grow" }, title, el("p", { class: "cs-src" }, `${sh.sources.map((s) => s.label).join(", ")} · ${plural(ds.rows, "row")} · ${plural(ds.columns.length, "column")}`))),
+        sh.about ? el("p", { class: "cs-about" }, sh.about) : null), actions);
     const nodes = [head];
     if (sh.changed) nodes.push(el("p", { class: "msg ok" }, sh.changed));
     nodes.push(toolbar(r));
-    nodes.push(el("div", { class: "cs-tabs", role: "tablist" }, t.map(([k, l]) => {
-      const b = el("button", { type: "button", class: "cs-tab", role: "tab", "aria-selected": String(k === S.tab) }, l);
+    nodes.push(el("div", { class: "cs-tabs", role: "tablist" }, t.map(([k, l, n]) => {
+      const b = el("button", { type: "button", class: "cs-tab", role: "tab", "aria-selected": String(k === S.tab) }, l, n ? el("span", { class: "cs-pill", title: `${n} key columns have blanks` }, String(n)) : null);
       b.addEventListener("click", () => { S.tab = k; render(); });
       return b;
     })));
@@ -756,6 +780,84 @@ function main() {
     s.append(svg("path", { class: "a", d: `${line}L${w},${h}L0,${h}Z` }), svg("path", { class: "l", d: line }));
     return s;
   }
+  // A ring for a share (0 to 100), coloured by how good it is.
+  function ring(share) {
+    const r = 18, c = 2 * Math.PI * r, level = share >= 95 ? "good" : share >= 70 ? "warn" : "bad";
+    const s = svg("svg", { class: "cs-ring", viewBox: "0 0 46 46", "aria-hidden": "true" });
+    s.append(svg("circle", { cx: 23, cy: 23, r, class: "bg" }), svg("circle", { cx: 23, cy: 23, r, class: "fg " + level, "stroke-dasharray": `${(c * Math.max(0, Math.min(100, share))) / 100} ${c}`, transform: "rotate(-90 23 23)" }));
+    return s;
+  }
+  // A donut with the total in its middle; its legend carries the numbers.
+  function donutLegend(g, m) {
+    const sum = g.reduce((a, b) => a + Math.max(0, b.v), 0) || 1;
+    return legend(g.map((x, i) => [x.k === "Other" ? slot(SLOTS) : slot(i), `${x.k}: ${fmtVal(m, x.v, true)} (${pct((Math.max(0, x.v) / sum) * 100)})`]));
+  }
+  function donut(node, g, m, centre, onPick) {
+    chart(node, {
+      tooltip: { trigger: "item", formatter: (p) => `{t|${rt(p.name)}}\n${rt(fmtVal(m, p.value))} · ${rt(pct(p.percent))}` },
+      title: { text: centre[0], subtext: centre[1], left: "50%", top: "50%", textAlign: "center", textVerticalAlign: "middle", itemGap: 4,
+        textStyle: { fontSize: 22, fontWeight: 700, color: css("--ink"), fontFamily: css("--display") || "system-ui" }, subtextStyle: { fontSize: 12, color: css("--muted") } },
+      series: [{ type: "pie", radius: ["62%", "86%"], padAngle: 1.5, itemStyle: { borderRadius: 4, borderColor: css("--surface"), borderWidth: 2 }, label: { show: false },
+        data: g.map((x, i) => ({ name: x.k, value: Math.max(0, x.v), itemStyle: { color: x.k === "Other" ? slot(SLOTS) : slot(i) } })) }],
+    }, onPick ? (p) => p.name !== "Other" && onPick(p.name) : null);
+  }
+  // The expert packs' headline numbers, for the Overview.
+  function expertTiles(idx) {
+    const out = [];
+    const f = feedCols();
+    if (f) {
+      const st = feedStats(f, idx), gone = idx.length - st.live;
+      out.push(el("button", { type: "button", class: "cs-tile hit", onclick: () => { S.tab = "feed"; render(); } }, ring(st.health), el("div", { class: "lab" }, "Feed health"), el("div", { class: "val" }, pct(st.health)), el("div", { class: "foot" }, `${fmtInt(st.pass)} of ${fmtInt(st.all)} checks pass`)),
+        el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "In stock"), el("div", { class: "val" }, fmtInt(st.live), el("small", {}, ` / ${fmtInt(idx.length)}`)),
+          el("div", { class: "foot" }, gone ? el("span", { class: "cs-tag warn" }, `${fmtInt(gone)} out of stock`) : el("span", { class: "cs-tag good" }, "All in stock"))));
+    }
+    return out;
+  }
+  // The share of cells filled in the columns that matter, and how many blanks.
+  function filled(r, idx) {
+    const cols = [...r.measures, r.date, ...r.dims].filter(Boolean);
+    let blank = 0;
+    for (const c of cols) for (const i of idx) if (c.values ? c.values[i] === null : c.codes[i] < 0) blank++;
+    const cells = cols.length * idx.length;
+    return { share: cells ? ((cells - blank) / cells) * 100 : 100, blank, cols: cols.length };
+  }
+  // "In brief": three sentences code writes from what it counted; numbers in bold.
+  function brief(r, m, idx) {
+    const para = (...parts) => el("p", {}, parts.map((x) => (Array.isArray(x) ? el("b", {}, x[0]) : x)));
+    const out = [];
+    const [lo, hi] = r.date ? rangeOf(r.date, idx) : [null, null];
+    const name = m ? m.name : "rows";
+    const first = [[plural(idx.length, "row")], lo !== null ? ` from ${fmtDate(lo)} to ${fmtDate(hi)}` : "", ". "];
+    if (m) {
+      const cmp = periodCompare(r, m, idx);
+      first.push(`${averaged(m) ? "Average" : "Total"} ${m.name} is `, [fmtVal(m, total(m, idx))]);
+      if (cmp && cmp.change !== null && Number.isFinite(cmp.change)) first.push(`, ${cmp.change >= 0 ? "up" : "down"} `, [pct(Math.abs(cmp.change))], ` in ${cmp.label}`);
+      first.push(".");
+    }
+    out.push(para(...first));
+    const d0 = r.dims[0];
+    if (d0 && !averaged(m)) {
+      const g = groupBy(d0, m, idx), sum = g.reduce((a, b) => a + Math.max(0, b.v), 0);
+      if (g.length >= 2 && sum > 0) out.push(para(`${g[0].k} leads ${d0.name} with `, [pct((g[0].v / sum) * 100)], ` of ${name.toLowerCase()}, ahead of ${g[1].k} at `, [pct((g[1].v / sum) * 100)], "."));
+    }
+    const fc = feedCols();
+    if (fc) {
+      const st = feedStats(fc, idx);
+      const worst = st.res.filter((c) => c.rows.length).sort((a, b) => b.live - a.live)[0];
+      out.push(para("Feed health is ", [pct(st.health)], ": ", [plural(st.clean, "product")], " pass every check, and ", [fmtInt(st.live)], ` of ${fmtInt(idx.length)} are in stock.`));
+      if (worst) out.push(para("The biggest gap: ", [worst.label], ", missing on ", [plural(worst.live, "in-stock product")], "."));
+    }
+    const gap = [...r.measures, r.date].filter(Boolean).map((c) => [c, idx.filter((i) => c.values[i] === null).length]).find(([, n]) => n > 0);
+    if (gap) out.push(para(`${gap[0].name} is blank on `, [plural(gap[1], "row")], ": those count as nothing in the totals."));
+    else if (repeats(r.entity) && m && !averaged(m)) {
+      const g = groupBy(r.entity, m, idx).filter((x) => x.v > 0), sum = g.reduce((a, b) => a + b.v, 0);
+      if (g.length >= 10 && sum > 0) {
+        const n = Math.max(1, Math.round(g.length * 0.2));
+        out.push(para(`The top ${fmtInt(n)} of ${fmtInt(g.length)} ${r.entity.name} values bring `, [pct((g.slice(0, n).reduce((a, b) => a + b.v, 0) / sum) * 100)], ` of ${name.toLowerCase()}.`));
+      }
+    }
+    return out;
+  }
   function overview(body, idx, r) {
     const m = measure(r);
     const tiles = [];
@@ -763,51 +865,69 @@ function main() {
       const v = total(mm, idx);
       const cmp = periodCompare(r, mm, idx);
       const pts = r.date ? series(r.date, mm, idx, autoGrain(r.date, idx)) : [];
-      return el("div", { class: "cs-tile", title: mm ? `${mm.name}: ${fmtVal(mm, v)}` : "" },
-        el("div", { class: "lab" }, mm ? (averaged(mm) ? `Average ${mm.name}` : `Total ${mm.name}`) : "Rows"),
+      return el("div", { class: "cs-tile", title: `${mm.name}: ${fmtVal(mm, v)}` },
+        el("div", { class: "lab" }, averaged(mm) ? `Average ${mm.name}` : `Total ${mm.name}`),
         el("div", { class: "val" }, fmtVal(mm, v, true)),
-        el("div", { class: "foot" }, cmp ? [delta(cmp.change), cmp.label] : mm ? `${plural(idx.length, "row")}` : r.date ? (() => { const [lo, hi] = rangeOf(r.date, idx); return lo !== null ? `${fmtDate(lo)} to ${fmtDate(hi)}` : ""; })() : ""),
+        el("div", { class: "foot" }, cmp ? [delta(cmp.change), cmp.label] : `median ${fmtVal(mm, median(mm, idx), true)} a row`),
         spark(pts));
     };
+    const [lo, hi] = r.date ? rangeOf(r.date, idx) : [null, null];
+    tiles.push(el("div", { class: "cs-tile" }, el("div", { class: "lab" }, feedCols() ? "Products" : "Rows"), el("div", { class: "val" }, fmtInt(idx.length), idx.length < dataset().rows ? el("small", {}, ` / ${fmtInt(dataset().rows)}`) : null),
+      el("div", { class: "foot" }, lo !== null ? `${fmtDate(lo)} to ${fmtDate(hi)}` : plural(dataset().columns.length, "column"))));
+    tiles.push(...expertTiles(idx));
     for (const mm of r.measures.slice(0, 3)) tiles.push(tileFor(mm));
-    tiles.push(tileFor(null));
-    const avgTile = r.measures[0] && !averaged(r.measures[0]) && idx.length ? el("div", { class: "cs-tile" }, el("div", { class: "lab" }, `Average ${r.measures[0].name} per row`), el("div", { class: "val" }, fmtVal(r.measures[0], total(r.measures[0], idx) / idx.length, true)), el("div", { class: "foot" }, `median ${fmtVal(r.measures[0], median(r.measures[0], idx), true)}`)) : null;
-    if (avgTile && tiles.length < 5) tiles.push(avgTile);
-    body.append(el("div", { class: "cs-grid cs-k" }, tiles));
+    const f = filled(r, idx);
+    tiles.push(el("button", { type: "button", class: "cs-tile hit", onclick: () => { S.tab = "quality"; render(); } }, ring(f.share), el("div", { class: "lab" }, "Data filled in"), el("div", { class: "val" }, pct(f.share)),
+      el("div", { class: "foot" }, f.blank ? el("span", { class: "cs-tag " + (f.share >= 95 ? "warn" : "bad") }, `${fmtInt(f.blank)} blank`) : el("span", { class: "cs-tag good" }, "Nothing blank"), `in ${plural(f.cols, "key column")}`)));
+    body.append(el("div", { class: "cs-grid cs-k" }, tiles.length > 5 ? [...tiles.slice(0, 4), tiles[tiles.length - 1]] : tiles));
 
+    // second row: the split as a donut, the ranking as meters, what stands out
     const row = [];
-    if (r.date) {
-      const grain = S.grain || autoGrain(r.date, idx);
-      const pts = series(r.date, m, idx, grain);
-      row.push(card(`${m ? m.name : "Rows"} over time`, `By ${grain}. Click a point to see that ${grain}.`, (n) => lineChart(n, pts, m, { onPick: (p) => zoomTo(p.k, grain) }),
-        () => ({ head: [grain[0].toUpperCase() + grain.slice(1), m ? m.name : "Rows"], rows: pts.map((p) => [p.label, fmtVal(m, p.v)]), right: [1] }), { size: "tall" }));
-    }
-    row.push(el("section", { class: "cs-card2" }, el("header", {}, el("div", {}, el("h3", {}, "What stands out"), el("p", { class: "sub" }, "Worked out by code from your data. Click one to look closer."))), el("div", { class: "cs-insights" }, insights(r, m, idx).slice(0, 5))));
+    const name = m ? m.name : "Rows";
     const d0 = r.dims[0] || (r.entity && r.entity.codes ? r.entity : null);
+    // A donut for a split of a few groups where no single one is nearly everything.
+    const balanced = (d) => { const g = groupBy(d, null, idx); const n = g.reduce((a, b) => a + b.v, 0); return g.length >= 2 && n && g[0].v / n <= 0.85; };
+    const small = r.dims.find((d) => d.words.length <= 6 && balanced(d)) || r.dims.find((d) => d.words.length <= 12 && balanced(d)) || null;
+    if (small) {
+      const dm = averaged(m) ? null : m; // averages do not add up to a whole: count rows instead
+      const whole = groupBy(small, dm, idx);
+      const g = whole.length > 6 ? [...whole.slice(0, 5), { k: "Other", v: whole.slice(5).reduce((a, b) => a + b.v, 0) }] : whole;
+      row.push(card(`${dm ? dm.name : "Rows"} by ${small.name}`, "Click a slice to filter to it.", (n) => donut(n, g, dm, [fmtVal(dm, total(dm, idx), true), dm ? "in all" : "rows"], (k) => filterTo(small, k)),
+        () => ({ head: [small.name, dm ? dm.name : "Rows"], rows: g.map((x) => [x.k, fmtVal(dm, x.v)]), right: [1] }), { after: donutLegend(g, dm), size: "short" }));
+    }
+    const rank = d0 && d0 !== small ? d0 : r.dims.find((d) => d !== small) || (r.entity && r.entity.codes && r.entity !== small ? r.entity : null);
+    if (rank) {
+      const g = top(groupBy(rank, m, idx), 8, m, rank === r.entity);
+      row.push(card(`${name} by ${rank.name}`, rank === r.entity ? "The top 8." : "Click a bar to filter to it.", (n) => meters(n, g, m, { onPick: rank === r.entity ? null : (it) => it.k !== "Other" && filterTo(rank, it.k) }),
+        () => ({ head: [rank.name, name, "Share"], rows: g.map((x) => [x.k, fmtVal(m, x.v), x.share === undefined ? "" : pct(x.share)]), right: [1, 2] })));
+    }
+    const fc = feedCols();
+    if (fc) {
+      const fixes = feedStats(fc, idx).res.filter((c) => c.rows.length).sort((a, b) => b.live - a.live || b.rows.length - a.rows.length).slice(0, 3);
+      row.push(el("section", { class: "cs-card2" }, el("header", {}, el("div", {}, el("h3", {}, "Fix these first"), el("p", { class: "sub" }, "Ranked by in-stock products affected."))),
+        fixes.length ? el("div", { class: "cs-fixes" }, fixes.map((c, i) => el("div", { class: "cs-fix" }, el("span", { class: "n" }, String(i + 1)),
+          el("div", { class: "cs-grow" }, el("b", {}, c.label), el("span", {}, `Missing on ${plural(c.live, "in-stock product")} (${fmtInt(c.rows.length)} in all)`)),
+          el("button", { type: "button", class: "ghost cs-mini2", onclick: () => showRows(`Missing: ${c.label}`, c.rows) }, "View"))))
+          : el("p", { class: "cs-muted" }, "Every check passes."),
+        el("div", { class: "cs-mt" }, el("button", { type: "button", class: "ghost cs-mini2", onclick: () => { S.tab = "feed"; render(); } }, "All checks →"))));
+    } else {
+      row.push(el("section", { class: "cs-card2" }, el("header", {}, el("div", {}, el("h3", {}, "What stands out"), el("p", { class: "sub" }, "Worked out by code from your data. Click one to look closer."))), el("div", { class: "cs-insights" }, insights(r, m, idx).slice(0, 4))));
+    }
+    body.append(el("div", { class: `cs-grid ${row.length === 3 ? "cs-g3" : "cs-g2"} cs-mt` }, row));
+
+    // third row: the trend and the brief
     const more = [];
-    if (!r.date) more.push(row.pop());
-    if (d0) {
-      const g = top(groupBy(d0, m, idx), 10, m);
-      more.push(card(`${m ? m.name : "Rows"} by ${d0.name}`, "Click a bar to filter everything to it.", (n) => barChart(n, g, m, { onPick: (it) => it.k !== "Other" && filterTo(d0, it.k) }),
-        () => ({ head: [d0.name, m ? m.name : "Rows", "Share"], rows: g.map((x) => [x.k, fmtVal(m, x.v), x.share === undefined ? "" : pct(x.share)]), right: [1, 2] })));
+    if (r.date) {
+      let grain = S.grain || autoGrain(r.date, idx);
+      let pts = series(r.date, m, idx, grain);
+      const up = { day: "week", week: "month", month: "quarter" };
+      while (!S.grain && up[grain] && pts.filter((p) => !p.v).length > 0.3 * pts.length) { grain = up[grain]; pts = series(r.date, m, idx, grain); }
+      more.push(card(`${name} over time`, `By ${grain}. Click a point to see that ${grain}.`, (n) => lineChart(n, pts, m, { onPick: (p) => zoomTo(p.k, grain) }),
+        () => ({ head: [grain[0].toUpperCase() + grain.slice(1), name], rows: pts.map((p) => [p.label, fmtVal(m, p.v)]), right: [1] })));
     }
-    const d1 = averaged(m) ? null : r.dims.find((d) => d !== d0 && d.words.length <= 6);
-    if (d1) {
-      const g = groupBy(d1, m, idx);
-      const sum = g.reduce((a, b) => a + Math.max(0, b.v), 0) || 1;
-      more.push(card(`Share by ${d1.name}`, null, (n) => chart(n, {
-        tooltip: { trigger: "item", formatter: (p) => `{t|${rt(p.name)}}\n${rt(fmtVal(m, p.value))} · ${rt(pct(p.percent))}` },
-        series: [{ type: "pie", radius: ["55%", "80%"], center: ["50%", "50%"], padAngle: 1.5, itemStyle: { borderRadius: 4, borderColor: css("--surface"), borderWidth: 2 },
-          label: { show: n.clientWidth > 480, formatter: (p) => `${p.name}\n${pct(p.percent)}`, color: css("--ink-2"), fontSize: 11.5 }, labelLine: { length: 8, length2: 6 },
-          data: g.map((x, i) => ({ name: x.k, value: Math.max(0, x.v), itemStyle: { color: slot(i) } })) }],
-      }, (p) => filterTo(d1, p.name)), () => ({ head: [d1.name, m ? m.name : "Rows", "Share"], rows: g.map((x) => [x.k, fmtVal(m, x.v), pct((Math.max(0, x.v) / sum) * 100)]), right: [1, 2] }),
-      { after: legend(g.map((x, i) => [slot(i), `${x.k} ${pct((Math.max(0, x.v) / sum) * 100)}`])) }));
-    } else if (r.entity && r.entity !== d0 && r.entity.codes) {
-      const g = top(groupBy(r.entity, m, idx), 10, m, true);
-      more.push(card(`Top 10 ${r.entity.name}`, null, (n) => barChart(n, g, m), () => ({ head: [r.entity.name, m ? m.name : "Rows"], rows: g.map((x) => [x.k, fmtVal(m, x.v)]), right: [1] })));
-    }
-    if (row.length) body.append(el("div", { class: "cs-grid cs-g21 cs-mt" }, row));
-    if (more.length) body.append(el("div", { class: "cs-grid cs-g2 cs-mt" }, more));
+    more.push(el("section", { class: "cs-card2 cs-brief" }, el("header", {}, el("h3", {}, "In brief")), ...brief(r, m, idx),
+      el("div", {}, el("button", { type: "button", class: "ghost cs-mini2", onclick: () => { S.tab = "readout"; render(); } }, "Full readout →"))));
+    body.append(el("div", { class: `cs-grid ${more.length === 2 ? "cs-g21" : ""} cs-mt` }, more));
   }
   // a column whose names come back on many rows (customers who buy again, products sold often)
   function repeats(c) { return !!(c && c.codes && c.words.length <= 0.8 * dataset().rows); }
@@ -1115,7 +1235,7 @@ function main() {
       el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "Unreadable values"), el("div", { class: "val" }, fmtInt(rows.reduce((a, b) => a + ((b.p && b.p.unreadable) || 0), 0))), el("div", { class: "foot" }, "count as blank"))));
     const t = el("table", { class: "cs-table" }, el("thead", {}, el("tr", {}, ["Column", "Reads as", "Filled", "", "Blank", "Notes"].map((h, j) => el("th", { class: j === 2 || j === 4 ? "r" : null }, h)))),
       el("tbody", {}, rows.map(({ c, p, blank, fill }) => el("tr", {}, el("td", {}, el("b", {}, c.name)), el("td", {}, KIND[c.kind] || c.kind), el("td", { class: "r" }, pct(fill)),
-        el("td", {}, el("div", { class: "cs-bar-cell" }, el("i", { style: { width: `${Math.max(2, fill)}%`, background: fill >= 95 ? "var(--c1)" : fill >= 70 ? "var(--c5)" : "var(--down)" } }))),
+        el("td", {}, el("div", { class: "cs-bar-cell" }, el("i", { style: { width: `${Math.max(2, fill)}%`, background: fill >= 95 ? "var(--up)" : fill >= 70 ? "var(--warning)" : "var(--down)" } }))),
         el("td", { class: "r" }, fmtInt(blank)),
         el("td", { class: "cs-small cs-muted" }, [p && p.unreadable ? `${fmtInt(p.unreadable)} unreadable` : null, p && p.merged ? `${p.merged} spellings merged` : null].filter(Boolean).join(" · "))))));
     body.append(el("section", { class: "cs-card2 cs-mt" }, el("header", {}, el("div", {}, el("h3", {}, "Column by column"), el("p", { class: "sub" }, "For the rows in view. Green is well filled; red needs attention."))), el("div", { class: "cs-tw" }, t)));
@@ -1218,11 +1338,11 @@ function main() {
     }
     return out;
   }
-  function feed(body, idx, f) {
-    const checks = feedChecks(f);
+  // Every feed check on every product in view.
+  function feedStats(f, idx) {
     const inStock = (i) => /^in.?stock$/i.test(cell(f.avail, i) || "");
     let pass = 0, all = 0, clean = 0;
-    const res = checks.map((c) => ({ ...c, rows: [], live: 0, n: 0 }));
+    const res = feedChecks(f).map((c) => ({ ...c, rows: [], live: 0, n: 0 }));
     for (const i of idx) {
       let ok = true;
       for (const c of res) {
@@ -1232,10 +1352,12 @@ function main() {
       }
       if (ok) clean++;
     }
-    const health = all ? (pass / all) * 100 : 100;
-    const live = idx.filter(inStock).length;
+    return { res, pass, all, clean, health: all ? (pass / all) * 100 : 100, live: idx.filter(inStock).length };
+  }
+  function feed(body, idx, f) {
+    const { res, pass, all, clean, health, live } = feedStats(f, idx);
     body.append(el("div", { class: "cs-grid cs-k" },
-      el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "Feed health"), el("div", { class: "val" }, pct(health)), el("div", { class: "foot" }, `${fmtInt(pass)} of ${fmtInt(all)} checks pass`)),
+      el("div", { class: "cs-tile" }, ring(health), el("div", { class: "lab" }, "Feed health"), el("div", { class: "val" }, pct(health)), el("div", { class: "foot" }, `${fmtInt(pass)} of ${fmtInt(all)} checks pass`)),
       el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "Products with nothing to fix"), el("div", { class: "val" }, fmtInt(clean)), el("div", { class: "foot" }, `of ${plural(idx.length, "product")}`)),
       el("div", { class: "cs-tile" }, el("div", { class: "lab" }, "In stock"), el("div", { class: "val" }, fmtInt(live)), el("div", { class: "foot" }, `${fmtInt(idx.length - live)} out of stock cannot show in ads`))));
     const sorted = [...res].sort((a, b) => b.live - a.live || b.rows.length - a.rows.length);
@@ -1244,7 +1366,7 @@ function main() {
         const fill = c.n ? ((c.n - c.rows.length) / c.n) * 100 : 100;
         const tr = el("tr", { class: c.rows.length ? "click" : null }, el("td", {}, el("b", {}, c.label), el("div", { class: "cs-small cs-muted" }, c.rows.length ? c.fix : "All filled.")),
           el("td", { class: "r" }, `${fmtInt(c.rows.length)} / ${fmtInt(c.n)}`), el("td", { class: "r" }, el("b", {}, fmtInt(c.live))),
-          el("td", { class: "cs-wide" }, el("div", { class: "cs-bar-cell" }, el("i", { style: { width: `${Math.max(2, fill)}%`, background: fill >= 95 ? "var(--c1)" : fill >= 70 ? "var(--c5)" : "var(--down)" } }), pct(fill))),
+          el("td", { class: "cs-wide" }, el("div", { class: "cs-bar-cell" }, el("i", { style: { width: `${Math.max(2, fill)}%`, background: fill >= 95 ? "var(--up)" : fill >= 70 ? "var(--warning)" : "var(--down)" } }), pct(fill))),
           el("td", { class: "cs-wide" }, c.rows.length ? el("span", { class: "cs-mini" }, "See products") : ""));
         if (c.rows.length) tr.addEventListener("click", () => showRows(`Missing: ${c.label}`, c.rows));
         return tr;
@@ -1362,8 +1484,8 @@ function main() {
     const cpa = rows.filter((x) => x.v !== null).sort((p, q) => p.v - q.v);
     const avg = tConv ? tSpend / tConv : null;
     body.append(el("div", { class: "cs-grid cs-g2 cs-mt" },
-      card("Cost per conversion", avg ? `Lower is better. Green: below the average of ${money(avg, unit)}.` : null, (n) => barChart(n, cpa, m, { colorOf: (it) => (avg && it.v <= avg ? slot(0) : slot(2)) }),
-        () => ({ head: [a.name.name, "Cost per conversion"], rows: cpa.map((x) => [x.k, money(x.v, unit)]), right: [1] }), { after: avg ? legend([[slot(0), "Below average"], [slot(2), "Above average"]]) : null }),
+      card("Cost per conversion", avg ? `Lower is better. Green: below the average of ${money(avg, unit)}.` : null, (n) => barChart(n, cpa, m, { colorOf: (it) => (avg && it.v <= avg ? "var(--up)" : "var(--c4)") }),
+        () => ({ head: [a.name.name, "Cost per conversion"], rows: cpa.map((x) => [x.k, money(x.v, unit)]), right: [1] }), { after: avg ? legend([[css("--up"), "Below average"], [slot(3), "Above average"]]) : null }),
       card("Share of spend and of conversions", "When the spend bar is much longer than the conversions bar, money buys little there.", (n) => chart(n, {
         grid: { left: 8, right: 30, top: 8, bottom: 8, containLabel: true },
         yAxis: axis({ type: "category", data: list.slice(0, 12).map((x) => x.k), inverse: true, splitLine: { show: false }, axisLabel: { width: 130, overflow: "truncate" } }),
@@ -1734,11 +1856,12 @@ function main() {
     if (error) { node.append(el("p", { class: "cs-unverified" }, `This chart cannot be drawn: ${error}.`)); return node; }
     if (!d.keys.length) { node.append(el("p", { class: "cs-muted cs-small" }, "Nothing in view for this chart.")); return node; }
     const fmt = (s, v) => fmtVal(s.fmt, v);
-    if (t.type === "kpi") {
+    if (t.type === "kpi") { // laid out like the Overview's number tiles: name, number, what it covers
       const [first, ...rest] = d.series;
-      node.classList.add("cs-kpi");
-      node.append(el("div", { class: "val" }, fmtVal(first.fmt, first.vals.get(""), true)));
-      if (rest.length) node.append(el("div", { class: "cs-small cs-muted" }, rest.map((s) => `${s.name}: ${fmt(s, s.vals.get(""))}`).join(" · ")));
+      node.className = `cs-tile cs-${size}`;
+      node.replaceChildren(el("div", { class: "cs-row" }, el("div", { class: "lab cs-grow" }, t.title), tools ? el("div", { class: "cs-row cs-noprint" }, tools) : null),
+        el("div", { class: "val" }, fmtVal(first.fmt, first.vals.get(""), true)),
+        el("div", { class: "foot" }, [rest.map((s) => `${s.name}: ${fmt(s, s.vals.get(""))}`).join(" · "), tileSub(t, d)].filter(Boolean).join(" ")));
       try { // a sparkline when every value has dates
         const [lo, hi] = allBounds();
         if (lo !== null && hi > lo) {
@@ -1755,37 +1878,49 @@ function main() {
         rows: keys.map((k) => [d.name(k), ...d.series.map((s) => (s.vals.has(k) ? fmt(s, s.vals.get(k)) : "-"))]), right: d.series.map((_, i) => i + 1) })));
       return node;
     }
-    const body = el("div", { class: "cs-chart" + (size === "l" ? " tall" : "") });
-    node.append(body);
-    if (d.series.length > 1) node.append(legend(d.series.map((s, i) => [slot(i), s.name])));
-    requestAnimationFrame(() => { if (body.isConnected) drawTile(body, t, d); });
+    const keys = d.time ? d.keys : d.keys.slice(0, t.top || 10);
+    const first = d.series[0];
+    if (t.type === "bar" && d.series.length === 1 && keys.length <= 15) {
+      const box = el("div");
+      meters(box, keys.map((k) => ({ k: d.name(k), v: first.vals.get(k) ?? 0 })), first.fmt);
+      node.append(box);
+      return node;
+    }
+    if (t.type === "pie") {
+      const g = keys.map((k) => ({ k: d.name(k), v: Math.max(0, first.vals.get(k) || 0) }));
+      const rest = d.keys.slice(keys.length).reduce((a, k) => a + Math.max(0, first.vals.get(k) || 0), 0);
+      if (rest) g.push({ k: "Other", v: rest });
+      const body = el("div", { class: "cs-chart" });
+      node.append(body, donutLegend(g, first.fmt));
+      requestAnimationFrame(() => { if (body.isConnected) donut(body, g, first.fmt, [fmtVal(first.fmt, g.reduce((a, b) => a + b.v, 0), true), "in all"]); });
+      return node;
+    }
+    // One scale a chart: values in other units get a chart of their own, so no chart needs two axes.
+    const units = new Map();
+    d.series.forEach((sr, j) => { const u = sr.fmt ? `${sr.fmt.kind}|${sr.fmt.unit}` : "count"; units.set(u, [...(units.get(u) || []), j]); });
+    for (const js of units.values()) {
+      const body = el("div", { class: "cs-chart" + (size === "l" ? " tall" : "") });
+      if (units.size > 1) node.append(el("p", { class: "cs-small cs-muted cs-unit" }, js.map((j) => d.series[j].name).join(", ")));
+      node.append(body);
+      if (js.length > 1) node.append(legend(js.map((j) => [slot(j), d.series[j].name])));
+      requestAnimationFrame(() => { if (body.isConnected) drawTile(body, t, d, keys, js); });
+    }
     return node;
   }
-  function drawTile(node, t, d) {
-    const keys = d.time ? d.keys : d.keys.slice(0, t.top || 10);
-    if (t.type === "pie") {
-      const s = d.series[0];
-      const rest = d.keys.slice(keys.length).reduce((a, k) => a + Math.max(0, s.vals.get(k) || 0), 0);
-      const data = keys.map((k, i) => ({ name: d.name(k), value: Math.max(0, s.vals.get(k) || 0), itemStyle: { color: slot(i) } }));
-      if (rest) data.push({ name: "Other", value: rest, itemStyle: { color: slot(SLOTS) } });
-      chart(node, { tooltip: { trigger: "item", formatter: (p) => `{t|${rt(p.name)}}\n${rt(fmtVal(s.fmt, p.value))} · ${rt(pct(p.percent))}` },
-        series: [{ type: "pie", radius: ["52%", "80%"], padAngle: 1.5, itemStyle: { borderRadius: 4, borderColor: css("--surface"), borderWidth: 2 },
-          label: { show: node.clientWidth > 420, formatter: (p) => `${p.name}\n${pct(p.percent)}`, color: css("--ink-2"), fontSize: 11.5 }, data }] });
-      return;
-    }
-    // Up to two scales: values in other units get their own axis on the right.
-    const scales = [];
-    const axisOf = d.series.map((s) => { const u = s.fmt ? `${s.fmt.kind}|${s.fmt.unit}` : "count"; let i = scales.findIndex((x) => x.u === u); if (i < 0 && scales.length < 2) { scales.push({ u, fmt: s.fmt }); i = scales.length - 1; } return Math.max(0, i); });
+  // The chosen series (by index, which also picks their colour) on one scale.
+  function drawTile(node, t, d, keys, js) {
     const horizontal = t.type === "bar";
+    const fmt = d.series[js[0]].fmt;
     const cats = axis({ type: "category", data: keys.map(d.name), inverse: horizontal, boundaryGap: t.type !== "line", splitLine: { show: false }, axisLabel: { width: horizontal ? 130 : 90, overflow: "truncate" } });
-    const vals = scales.map((x, i) => axis({ type: "value", position: horizontal ? (i ? "top" : "bottom") : i ? "right" : "left", splitLine: { show: i === 0 }, minInterval: x.fmt ? 0 : 1, axisLabel: { formatter: (v) => fmtVal(x.fmt, v, true) } }));
+    const val = axis({ type: "value", minInterval: fmt ? 0 : 1, axisLabel: { formatter: (v) => fmtVal(fmt, v, true) } });
     chart(node, {
-      grid: { left: 8, right: t.type === "line" || scales.length > 1 ? 30 : 16, top: 16, bottom: 8, containLabel: true },
-      xAxis: horizontal ? vals : cats, yAxis: horizontal ? cats : vals,
-      tooltip: { trigger: "axis", axisPointer: { type: t.type === "line" ? "line" : "shadow" }, formatter: (ps) => `{t|${rt(ps[0].axisValue)}}\n` + ps.map((p) => tipRow("k" + (Math.min(p.seriesIndex, SLOTS) + 1), p.seriesName, p.value === null || p.value === undefined ? "-" : fmtVal(d.series[p.seriesIndex].fmt, p.value))).join("\n") },
-      series: d.series.map((s, j) => ({ name: s.name, type: t.type === "line" ? "line" : "bar", [horizontal ? "xAxisIndex" : "yAxisIndex"]: axisOf[j],
-        data: keys.map((k) => (s.vals.has(k) ? s.vals.get(k) : t.type === "line" ? null : 0)), connectNulls: false, smooth: 0.2, symbolSize: 7, showSymbol: keys.length <= 24, barMaxWidth: 26,
-        lineStyle: { width: 2, color: slot(j) }, itemStyle: { color: slot(j), borderRadius: t.type === "line" ? 0 : horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0] } })),
+      grid: { left: 8, right: t.type === "line" ? 30 : 16, top: 16, bottom: 8, containLabel: true },
+      xAxis: horizontal ? val : cats, yAxis: horizontal ? cats : val,
+      tooltip: { trigger: "axis", axisPointer: { type: t.type === "line" ? "line" : "shadow" }, formatter: (ps) => `{t|${rt(ps[0].axisValue)}}\n` + ps.map((p) => tipRow("k" + (Math.min(js[p.seriesIndex], SLOTS) + 1), p.seriesName, p.value === null || p.value === undefined ? "-" : fmtVal(fmt, p.value))).join("\n") },
+      series: js.map((j) => { const sr = d.series[j]; return { name: sr.name, type: t.type === "line" ? "line" : "bar",
+        data: keys.map((k) => (sr.vals.has(k) ? sr.vals.get(k) : t.type === "line" ? null : 0)), connectNulls: false, smooth: 0.3, smoothMonotone: "x", symbolSize: 7, showSymbol: keys.length <= 24, barMaxWidth: 26,
+        label: { show: t.type !== "line" && keys.length <= 12 && js.length === 1, position: horizontal ? "right" : "top", color: css("--ink-2"), fontSize: 11.5, formatter: (p) => fmtVal(fmt, p.value, true) },
+        lineStyle: { width: 2, color: slot(j) }, itemStyle: { color: slot(j), borderRadius: t.type === "line" ? 0 : horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0] } }; }),
     });
   }
 
@@ -1860,6 +1995,13 @@ function main() {
     // Sales and spend in different currencies are never divided.
     const unitOf = (r) => colIn(dsNamed(r.ds), r.col).unit;
     if (sales) spend.splice(0, spend.length, ...spend.filter((r) => unitOf(r) === unitOf(sales)));
+    // Ratios need days both sides cover.
+    const both = sales && spend.length ? overlap([sales, ...spend]) : null;
+    let note = "";
+    if (both && both[0] > both[1]) {
+      note = "Sales and ad spend cover different dates, with no day in common, so return on ad spend cannot be worked out yet.";
+      spend.length = 0;
+    }
     if (sales && spend.length) {
       const roas = { id: "m" + newId(), name: "Return on ad spend", kind: "number", add: [sales], per: spend, times: 1 };
       const share = { id: "m" + newId(), name: "Ad spend as % of sales", kind: "percent", add: spend, per: [sales], times: 100 };
@@ -1875,7 +2017,7 @@ function main() {
     } else {
       tiles.push(tile(`Each source by ${GRAIN[g]}`, "column", mains.slice(0, 4).map(ref), g, { size: "l" }));
     }
-    return { overview: true, name: "Business overview", why: "Every source added up by date and set side by side" + (metrics.length ? ": sales against ad spend." : "."), board: { name: "Business overview", tiles }, metrics };
+    return { note, name: "Business overview", why: "Every source added up by date and set side by side" + (metrics.length ? ": sales against ad spend." : "."), board: { name: "Business overview", tiles }, metrics };
   }
 
   // ---------- the dashboards tabs ----------
@@ -1914,7 +2056,8 @@ function main() {
     const keep = el("button", { type: "button", class: "ghost" }, "Change this dashboard");
     keep.addEventListener("click", async () => { try { await loadBoards(); } catch (err) { say(err.message, "err"); return; } S.open = { board: sug.board, metrics: sug.metrics }; S.tab = "boards"; render(); });
     body.append(el("div", { class: "cs-row" }, el("p", { class: "cs-muted cs-small cs-grow" }, "Every source added up by date, then set side by side. Dates line up exactly; which ad brought which order is not in these numbers (that needs tracking tags on orders)."), keep),
-      el("p", { class: "cs-small cs-muted" }, "What each source covers: " + cover.join("; ") + "."));
+      el("p", { class: "cs-small cs-muted" }, "What each source covers: " + cover.join("; ") + "."),
+      ...(sug.note ? [el("p", { class: "cs-unverified" }, sug.note)] : []));
     const was = S.open; // its metrics are found through S.open while the tiles are counted
     S.open = { board: sug.board, metrics: sug.metrics };
     body.append(el("div", { class: "cs-board cs-mt" }, sug.board.tiles.map((t) => tileNode(t))));
