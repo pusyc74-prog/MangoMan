@@ -289,37 +289,49 @@ function askPermission(p) {
   placeNear(card, p.tool && p.tool.callID);
 }
 
+// A question card: pick an option or type your own answer, then send.
+// Options are suggestions; a typed answer always wins (models often offer
+// placeholders like "Business name" that only make sense typed).
 function askQuestion(q) {
   if (q.sessionID !== st.session.id || st.asked.has(q.id)) return;
   st.asked.add(q.id);
   st.waiting.add(q.id);
   const card = el("li", { class: "ask" });
-  const answers = (q.questions || []).map(() => []);
-  const sendAll = async () => {
-    card.querySelectorAll("button").forEach((b) => { b.disabled = true; });
+  const items = q.questions || [];
+  const picked = items.map(() => []);
+  const typed = [];
+  const send = el("button", { type: "button", class: "primary" }, "Send answers");
+  const ready = () => { send.disabled = !items.every((_, i) => picked[i].length || typed[i].value.trim()); };
+  send.addEventListener("click", async () => {
+    card.querySelectorAll("button, textarea").forEach((b) => { b.disabled = true; });
+    const answers = items.map((_, i) => (typed[i].value.trim() ? [typed[i].value.trim()] : picked[i]));
     try {
       await api(`${OC}/question/${q.id}/reply`, { method: "POST", body: JSON.stringify({ answers }) });
       st.waiting.delete(q.id);
       card.classList.add("done");
-    } catch (err) { card.append(el("p", { class: "note err" }, `Not sent: ${err.message}`)); }
-  };
-  (q.questions || []).forEach((item, i) => {
-    card.append(el("p", {}, item.question));
-    card.append(el("div", { class: "row" }, (item.options || []).map((o) => el("button", {
-      type: "button", class: "ghost", title: o.description || "",
-      onclick: (e) => {
-        if (item.multiple) {
-          const k = answers[i].indexOf(o.label);
-          if (k >= 0) answers[i].splice(k, 1); else answers[i].push(o.label);
-          e.target.setAttribute("aria-pressed", String(k < 0));
-        } else {
-          answers[i] = [o.label];
-          if (answers.every((a) => a.length)) sendAll();
-        }
-      },
-    }, o.label))));
+    } catch (err) {
+      card.append(el("p", { class: "note err" }, `Not sent: ${err.message}`));
+      card.querySelectorAll("button, textarea").forEach((b) => { b.disabled = false; });
+    }
   });
-  if ((q.questions || []).some((x) => x.multiple)) card.append(el("button", { type: "button", class: "primary", onclick: sendAll }, "Send answers"));
+  items.forEach((item, i) => {
+    const buttons = (item.options || []).map((o) => {
+      const b = el("button", { type: "button", class: "ghost", title: o.description || "", "aria-pressed": "false" }, o.label);
+      b.addEventListener("click", () => {
+        const k = picked[i].indexOf(o.label);
+        if (item.multiple) { if (k >= 0) picked[i].splice(k, 1); else picked[i].push(o.label); }
+        else picked[i] = k >= 0 ? [] : [o.label];
+        for (const x of buttons) x.setAttribute("aria-pressed", String(picked[i].includes(x.textContent)));
+        ready();
+      });
+      return b;
+    });
+    typed[i] = el("textarea", { rows: "2", placeholder: buttons.length ? "Or type your own answer" : "Type your answer", "aria-label": item.question });
+    typed[i].addEventListener("input", ready);
+    card.append(el("div", {}, el("p", {}, item.question), buttons.length ? el("div", { class: "row" }, buttons) : null, typed[i]));
+  });
+  card.append(el("div", { class: "row" }, send));
+  ready();
   placeNear(card, q.tool && q.tool.callID);
 }
 

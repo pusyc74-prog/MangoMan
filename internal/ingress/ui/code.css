@@ -37,6 +37,8 @@ body.code { padding: 0 16px 16px; }
 .ask p { margin: 0 0 8px; }
 .ask code { font-size: 13px; background: var(--page); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
 .ask .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.ask textarea { display: block; width: 100%; box-sizing: border-box; margin: 8px 0 14px; font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--axis); background: var(--page); color: var(--ink); resize: vertical; }
+.ask button[aria-pressed="true"] { border-color: var(--leaf); background: var(--leaf-wash); color: var(--leaf); }
 .ask.done { border-color: var(--hair); opacity: 0.75; }
 .note { font-size: 14px; color: var(--muted); }
 .note.err { color: var(--critical); }
