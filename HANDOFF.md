@@ -45,7 +45,7 @@ point. **Two goals:** (1) 10,000 people using free AI through MangoMan;
 
 | Area | State |
 |---|---|
-| Phase 1 (M1 to M4) | Built: router, dashboard, 17 skill packs, agent kit and marketplace (closed), Guardian, QA agent, team keys, people tokens. |
+| Phase 1 (M1 to M4) | Built: router, dashboard, 18 skill packs, 3 super agents and the skills library, agent kit and marketplace (closed), Guardian, QA agent, team keys, people tokens. |
 | M5 (app for everyone) | **Parked** by the owner (7 Oct): teachers and first-time users cannot bring their own keys. Do not start it. |
 | M6 (coding screen, `mangoman code --ui`) | **Complete** (8 Oct). Passed a real-model check: 7 of 7 in 133 s. |
 | Real-model quality | free/coder, one case per pack, installed the user's way since 9 Oct: 20261009-165742 passed **6 of 7** (website copy 0: answers cut at the old 180 s stall limit), 20261009-174404 (stall limit 300 s) passed **7 of 7**, average 90.6 (ad copy 90.7, listing 85, email 95, resume 86.7, SEO 96.5, social 86.4, website copy 94). Website copy alone: 2 failures in 6 runs from invalid site.json; the JSON error helper (3ef2091) is being measured with 3 runs. |
@@ -374,7 +374,14 @@ Touch files in the control dir to change the next coding request:
 - **Dashboard** (`mangoman dashboard`): connections, team keys, "Free AI you
   get each day" (`freeai.go`), My list, models table, recent requests, radar
   of new models, Guardian approvals, decision brain stats, OpenCode credit.
-- **17 skill packs** with builders and checkers (scripts render and check;
+- **Super agents (16 Oct):** Social Media Manager, Marketing Strategist and
+  SEO Strategist start from a brief form (`internal/ingress/brief.go`,
+  `openBrief` in `ui/app.js`); the strategy report pack; 5 know-how skills
+  (MIT, adapted from coreyhaines31/marketingskills) and 3 agent playbooks
+  (`kind: method` and `kind: agent` in SKILL.md metadata); the Skills
+  library and agent builder (`internal/ingress/library.go`), with the
+  user's own skills in `<config>/opencode/skills` (no marker file).
+- **18 skill packs** with builders and checkers (scripts render and check;
   the model writes content); test sets for 7 (ad copy, listing, email,
   resume, SEO, social posts, website copy); ad copy pack 1.2.
 - **Agents and marketplace:** 2 advanced agents (amazon-listing-pro,
@@ -400,6 +407,8 @@ Touch files in the control dir to change the next coding request:
 
 | Item | Notes |
 |---|---|
+| Super agents: not yet run on a real model | The three flagship agents and the strategy report were tested with sample files and browser checks only. Next: `scripts/pack-run.sh` by hand on one brief each (spends free requests), then fix what the free models get wrong. Web research quality on free models is not measured. |
+| Your own key for a better brain | Owner, 16 Oct: users may add a paid key for a stronger model; free keys stay the default; it is the user's choice, no promotion unless a provider has an affiliate programme. Not built: the catalogue and router hold free models only, so paid providers need entries, prices shown before use, and a rule that paid keys are used only when the user picks them. |
 | Chargesheets: what is not done | Private Google Sheets (needs Google sign-in and Google's app review: owner said later). Shopify and Meta connections not yet run against a real store or ad account (stand-in servers only); Google Ads API direct (needs Google's approval; the Sheet route works now). Old .xls files (the user is told to save as .xlsx). Over 300,000 rows a table. Ask speed depends on the free models: 10 to 50 s usually, once 224 s in the test. The readout and Ask quality depend on the model the router picks; their numbers are always checked, the words are not. More expert tabs (finance, leads, stock) one at a time. The owner's own Ozonics file was never used in a test: it is client data and the repo is public. |
 | Owner tries the download site | Drop `dist/site` on Netlify, then install with the line on the page (Windows and Mac). |
 | Real-model run on Windows | Only the stand-in model ran on Windows so far; a pack run on a Windows runner would check real models' commands in PowerShell (quoting, `&&`). |
@@ -483,7 +492,7 @@ Mac (macOS 15 and later): `chmod +x mangoman` once (the artifact zip drops the p
 A free, local-first AI router in Go. It pools every free model the user can
 reach (NVIDIA, Groq, OpenRouter, OpenCode Zen, Ollama; Cerebras optional),
 switches automatically when one runs out or fails, and never sees prompts or
-keys. On top: 17 skill packs, advanced agents with a signed creator
+keys. On top: 18 skill packs, advanced agents with a signed creator
 marketplace, OpenCode as the coding engine (`mangoman code`, and the
 `--ui` coding screen), a QA agent, and **Guardian**, the self-healing system
 (every app gets a dev environment next to production; production only gets
