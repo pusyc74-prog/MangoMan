@@ -27,6 +27,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/pusyc74-prog/mangoman/internal/keys"
 )
 
 //go:embed engine.py
@@ -40,10 +42,12 @@ var Readable = map[string]bool{".xlsx": true, ".xlsm": true, ".csv": true, ".tsv
 
 // Source is one file or Google Sheet behind a sheet.
 type Source struct {
-	File    string    `json:"file"`           // in the sheet's files folder
-	Label   string    `json:"label"`          // shown to the user
-	URL     string    `json:"url,omitempty"`  // a linked Google Sheet
-	Hash    string    `json:"hash,omitempty"` // of the last download, to see changes
+	File    string    `json:"file"`              // in the sheet's files folder
+	Label   string    `json:"label"`             // shown to the user
+	URL     string    `json:"url,omitempty"`     // a linked Google Sheet
+	Kind    string    `json:"kind,omitempty"`    // a connection: shopify or meta
+	Account string    `json:"account,omitempty"` // the store or ad account
+	Hash    string    `json:"hash,omitempty"`    // of the last download, to see changes
 	Fetched time.Time `json:"fetched,omitempty"`
 }
 
@@ -72,10 +76,10 @@ type Sheet struct {
 	Changed   string    `json:"changed,omitempty"` // what the last refresh changed
 }
 
-// Live reports whether the sheet has a linked Google Sheet.
+// Live reports whether the sheet has a linked Google Sheet or a connection.
 func (s Sheet) Live() bool {
 	for _, src := range s.Sources {
-		if src.URL != "" {
+		if src.URL != "" || src.Kind != "" {
 			return true
 		}
 	}
@@ -88,9 +92,11 @@ type Store struct {
 	Python string                                                       // default python3
 	Model  func(prompt string, asJSON bool) (string, error)             // a free model; nil = no words from models
 	Fetch  func(ctx context.Context, id string) ([]byte, string, error) // a Google Sheet as .xlsx; nil = docs.google.com
+	Keys   keys.Store                                                   // where connections' secrets live; nil = no connections
 
-	mu    sync.Mutex
-	locks map[string]*sync.Mutex
+	mu     sync.Mutex
+	locks  map[string]*sync.Mutex
+	tokens map[string]shopToken
 }
 
 var idRe = regexp.MustCompile(`^[a-f0-9]{12}$`)
@@ -181,6 +187,9 @@ func (st *Store) Delete(id string) error {
 	l := st.lock(id)
 	l.Lock()
 	defer l.Unlock()
+	if sh, err := st.Get(id); err == nil {
+		st.forgetSecrets(id, sh.Sources, nil)
+	}
 	return os.RemoveAll(d)
 }
 
@@ -281,8 +290,10 @@ func (st *Store) RemoveSource(id, file string) (Sheet, error) {
 	l := st.lock(id)
 	l.Lock()
 	defer l.Unlock()
+	var before []Source
 	sh, err := st.update(id, func(sh *Sheet) {
-		keep := sh.Sources[:0]
+		before = sh.Sources
+		keep := []Source{}
 		for _, s := range sh.Sources {
 			if s.File != file {
 				keep = append(keep, s)
@@ -290,6 +301,9 @@ func (st *Store) RemoveSource(id, file string) (Sheet, error) {
 		}
 		sh.Sources = keep
 	})
+	if err == nil {
+		st.forgetSecrets(id, before, sh.Sources)
+	}
 	if err == nil && filepath.Base(file) == file {
 		os.Remove(filepath.Join(d, "files", file))
 	}

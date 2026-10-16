@@ -26,6 +26,9 @@ func TestSheetsAPI(t *testing.T) {
 			}
 			return `{"query": "SELECT SUM(\"Units\") AS units FROM shop WHERE \"Product\" = 'Oil'", "why": "units of oil"}`, nil
 		}
+		if strings.Contains(p, "plan a custom dashboard") {
+			return `{"reply": "Units in all, and by product.", "board": {"name": "Units", "tiles": [{"title": "Units", "type": "kpi", "values": [{"ds": "shop", "col": "Units", "agg": "sum"}]}]}}`, nil
+		}
 		return `{"about": "Shop sales.", "questions": ["Which product sells most?"]}`, nil
 	}}
 	do := func(method, path, body string) *httptest.ResponseRecorder {
@@ -71,6 +74,24 @@ func TestSheetsAPI(t *testing.T) {
 	}
 	if got.Answer == nil || got.Answer.Text != "Oil sold 3 units." || len(got.Steps) != 1 {
 		t.Fatalf("ask: %+v", got)
+	}
+	w = do("POST", "/mangoman/sheets/"+sh.ID+"/plan", `{"chat": [{"role": "user", "text": "units please"}]}`)
+	var plan sheets.Plan
+	if json.Unmarshal(w.Body.Bytes(), &plan) != nil || plan.Board == nil || len(plan.Board.Tiles) != 1 {
+		t.Fatalf("plan %d %s", w.Code, w.Body)
+	}
+	saved, _ := json.Marshal(sheets.Boards{Boards: []sheets.Board{*plan.Board}, Metrics: []sheets.Metric{}})
+	if w := do("PUT", "/mangoman/sheets/"+sh.ID+"/boards", string(saved)); w.Code != 200 || !strings.Contains(w.Body.String(), plan.Board.ID) {
+		t.Fatalf("save boards %d %s", w.Code, w.Body)
+	}
+	if w := do("PUT", "/mangoman/sheets/"+sh.ID+"/boards", `{"boards": [{"id": "x", "name": "Bad", "tiles": [{"id": "t", "title": "T", "type": "radar", "values": []}]}]}`); w.Code != 400 {
+		t.Fatalf("bad board saved: %d", w.Code)
+	}
+	if w := do("GET", "/mangoman/sheets/"+sh.ID+"/boards", ""); !strings.Contains(w.Body.String(), plan.Board.ID) {
+		t.Fatalf("boards %s", w.Body)
+	}
+	if w := do("POST", "/mangoman/sheets/"+sh.ID+"/connect", `{"kind": "shopify", "account": "kesar", "secret": "a\nb"}`); w.Code != 400 || !strings.Contains(w.Body.String(), "key store") {
+		t.Fatalf("connect without a key store: %d %s", w.Code, w.Body)
 	}
 	if w := do("PATCH", "/mangoman/sheets/"+sh.ID, `{"title": "My shop"}`); !strings.Contains(w.Body.String(), "My shop") {
 		t.Fatalf("rename %s", w.Body)

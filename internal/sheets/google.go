@@ -122,9 +122,10 @@ func (st *Store) AddGoogle(ctx context.Context, id, link string) (Sheet, error) 
 	})
 }
 
-// Refresh downloads linked Google Sheets again and reads everything again
-// when one changed. It says what changed in Sheet.Changed.
-func (st *Store) Refresh(ctx context.Context, id string) (Sheet, bool, error) {
+// Refresh downloads linked Google Sheets and connections again and reads
+// everything again when one changed. Connections are read at most every 30
+// minutes unless force. It says what changed in Sheet.Changed.
+func (st *Store) Refresh(ctx context.Context, id string, force bool) (Sheet, bool, error) {
 	l := st.lock(id)
 	l.Lock()
 	defer l.Unlock()
@@ -141,23 +142,35 @@ func (st *Store) Refresh(ctx context.Context, id string) (Sheet, bool, error) {
 		b          []byte
 	}
 	var fresh []got
+	checked, read := map[string]bool{}, map[string]bool{}
 	for _, s := range sh.Sources {
-		if s.URL == "" {
+		if s.URL == "" && s.Kind == "" {
 			continue
 		}
-		b, _, err := st.fetch(ctx, GoogleID(s.URL))
+		if s.Kind != "" { // one read per connection, for all its tables
+			if read[s.Kind+" "+s.Account] || !force && time.Since(s.Fetched) < connectorWait {
+				continue
+			}
+			read[s.Kind+" "+s.Account] = true
+		}
+		tables, err := st.pull(ctx, id, s)
 		if err != nil {
 			return sh, false, err
 		}
-		if h := digest(b); h != s.Hash {
-			fresh = append(fresh, got{s.File, h, b})
+		for _, t := range tables {
+			checked[t.file] = true
+			for _, have := range sh.Sources {
+				if h := digest(t.b); have.File == t.file && h != have.Hash {
+					fresh = append(fresh, got{t.file, h, t.b})
+				}
+			}
 		}
 	}
 	now := time.Now().UTC()
 	if len(fresh) == 0 {
 		sh, err = st.update(id, func(sh *Sheet) {
 			for i := range sh.Sources {
-				if sh.Sources[i].URL != "" {
+				if checked[sh.Sources[i].File] {
 					sh.Sources[i].Fetched = now
 				}
 			}
@@ -172,9 +185,12 @@ func (st *Store) Refresh(ctx context.Context, id string) (Sheet, bool, error) {
 	}
 	if _, err := st.update(id, func(sh *Sheet) {
 		for i := range sh.Sources {
+			if checked[sh.Sources[i].File] {
+				sh.Sources[i].Fetched = now
+			}
 			for _, f := range fresh {
 				if sh.Sources[i].File == f.file {
-					sh.Sources[i].Hash, sh.Sources[i].Fetched = f.hash, now
+					sh.Sources[i].Hash = f.hash
 				}
 			}
 		}

@@ -189,15 +189,49 @@
 .cs-askbox { border-top: 1px solid var(--hair); padding: 12px 14px; display: flex; gap: 8px; }
 .cs-askbox textarea { flex: 1; resize: none; font: inherit; font-size: 14px; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--hair); background: var(--page); color: var(--ink); min-height: 42px; max-height: 120px; }
 
+/* ---------- connections ---------- */
+.cs-span { grid-column: 1 / -1; }
+.cs-connect { display: grid; gap: 10px; }
+.cs-option > .cs-seg { align-self: flex-start; }
+.cs-connect:empty { display: none; }
+.cs-cform { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 10px; align-items: end; }
+.cs-field { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); font-weight: 550; align-content: start; }
+.cs-field input:not([type=checkbox]), .cs-field select, .cs-refs select { font: inherit; font-size: 14px; padding: 7px 10px; border-radius: 9px; border: 1px solid var(--axis); background: var(--page); color: var(--ink); min-width: 0; }
+.cs-field input[type=checkbox] { justify-self: start; }
+.cs-howto { margin: 6px 0; padding-left: 20px; font-size: 13px; color: var(--ink-2); display: grid; gap: 4px; }
+.cs-option details summary { cursor: pointer; color: var(--leaf); font-weight: 600; font-size: 13px; }
+.cs-code { white-space: pre; overflow: auto; font-size: 11.5px; background: var(--sunk); color: var(--ink-2); padding: 10px; border-radius: 8px; max-height: 260px; margin: 8px 0 0; }
+
+/* ---------- custom dashboards ---------- */
+.cs-board { display: grid; gap: 16px; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.cs-s { grid-column: span 2; }
+.cs-m { grid-column: span 3; }
+.cs-l { grid-column: 1 / -1; }
+.cs-kpi .val { font: 700 28px/1.15 var(--body); letter-spacing: -0.01em; margin: 2px 0; }
+.cs-kpi svg.cs-spark { width: 100%; height: 34px; margin-top: auto; padding-top: 6px; display: block; }
+.cs-board > section[draggable="true"] { cursor: grab; }
+.cs-board > section.drag { opacity: .5; }
+.cs-board > section.over { outline: 2px dashed var(--leaf); outline-offset: 2px; }
+.cs-editor { border-color: var(--leaf); margin-bottom: 16px; scroll-margin-top: 72px; }
+.cs-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.cs-refs { display: grid; gap: 6px; }
+.cs-refs .cs-row { flex-wrap: nowrap; }
+.cs-refs select { flex: 1; }
+.cs-refs > .cs-mini { justify-self: start; }
+.cs-fvals { max-height: 140px; margin-top: 6px; display: grid; gap: 2px; font-weight: 400; color: var(--ink-2); }
+
 /* print: the readout only */
 @media print {
   body.app > .nav, header.top, .cs-toolbar, .cs-tabs, .cs-actions, .cs-ask, .cs-back, .cs-noprint { display: none !important; }
   .page, main { margin: 0 !important; padding: 0 !important; }
   .cs-card2 { border: 0; padding: 0; }
+  .cs-board > section { break-inside: avoid; }
 }
 
 @media (max-width: 900px) {
-  .cs-g2, .cs-g21, .cs-add { grid-template-columns: minmax(0, 1fr); }
+  .cs-g2, .cs-g21, .cs-add, .cs-fields, .cs-cform { grid-template-columns: minmax(0, 1fr); }
+  .cs-s { grid-column: span 3; }
+  .cs-m { grid-column: 1 / -1; }
 }
 @media (max-width: 560px) {
   .cs-wide { display: none; }

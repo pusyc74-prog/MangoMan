@@ -374,7 +374,7 @@ func serve(port int, opened func(connected int)) error {
 		},
 		Arch: archClient(dir, cat, cfg, rt),
 		Ask:  func(p string) (string, error) { a, _, err := askRouter(p); return a, err }}
-	srv.Sheets = &sheets.Store{Dir: filepath.Join(dir, "chargesheets"),
+	srv.Sheets = &sheets.Store{Dir: filepath.Join(dir, "chargesheets"), Keys: st,
 		Model: func(p string, asJSON bool) (string, error) { a, _, err := askRouterAs(p, asJSON); return a, err }}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {

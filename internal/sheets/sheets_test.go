@@ -248,12 +248,12 @@ func TestGoogleSheetAndRefresh(t *testing.T) {
 	if _, err := st.Load(context.Background(), sh.ID); err != nil {
 		t.Fatal(err)
 	}
-	if _, changed, err := st.Refresh(context.Background(), sh.ID); err != nil || changed {
+	if _, changed, err := st.Refresh(context.Background(), sh.ID, false); err != nil || changed {
 		t.Fatalf("unchanged sheet: changed %v err %v", changed, err)
 	}
 	other, _ := os.ReadFile(filepath.Join("testdata", "ads.xlsx"))
 	served = other
-	sh, changed, err := st.Refresh(context.Background(), sh.ID)
+	sh, changed, err := st.Refresh(context.Background(), sh.ID, false)
 	if err != nil || !changed || sh.Changed == "" || sh.Roles.Table != "Kesar sales" {
 		t.Fatalf("changed sheet: %v %q %q %v", changed, sh.Changed, sh.Roles.Table, err)
 	}

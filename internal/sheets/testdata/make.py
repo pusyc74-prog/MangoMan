@@ -76,3 +76,11 @@ ws.append(["Product", 2024, 2025, "Ship date"])
 for i, p in enumerate(["Soap", "Oil", "Balm"]):
     ws.append([p, 100 + i, 120 + i, 46000 + i])
 wb.save(os.path.join(HERE, "years.xlsx"))
+
+# Ad spend by day in the same two months: a second source to blend by date.
+with open(os.path.join(HERE, "spend.csv"), "w", newline="", encoding="utf-8") as f:
+    w = csv.writer(f)
+    w.writerow(["Date", "Campaign", "Spend (INR)", "Clicks"])
+    for month in (1, 2):
+        for i in range(10):
+            w.writerow([f"2026-{month:02d}-{i + 1:02d}", ["Brand", "Retarget"][i % 2], 400 + i * 25, 30 + i])

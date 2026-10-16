@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"sync"
 	"time"
@@ -31,6 +32,10 @@ func (s *Server) sheetRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /mangoman/sheets/{id}/ask", h(s.sheetAsk))
 	mux.Handle("GET /mangoman/sheets/{id}/ask/{job}", h(s.sheetAskJob))
 	mux.Handle("POST /mangoman/sheets/{id}/readout", h(s.sheetReadout))
+	mux.Handle("POST /mangoman/sheets/{id}/connect", h(s.sheetConnect))
+	mux.Handle("GET /mangoman/sheets/{id}/boards", h(s.sheetBoards))
+	mux.Handle("PUT /mangoman/sheets/{id}/boards", h(s.sheetSaveBoards))
+	mux.Handle("POST /mangoman/sheets/{id}/plan", h(s.sheetPlan))
 }
 
 func (s *Server) needSheets(next http.HandlerFunc) http.HandlerFunc {
@@ -191,7 +196,7 @@ func (s *Server) sheetChoices(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) sheetRefresh(w http.ResponseWriter, r *http.Request) {
-	sh, changed, err := s.Sheets.Refresh(r.Context(), r.PathValue("id"))
+	sh, changed, err := s.Sheets.Refresh(r.Context(), r.PathValue("id"), r.URL.Query().Get("force") == "1")
 	if err != nil {
 		sheetErr(w, err)
 		return
@@ -300,4 +305,62 @@ func (s *Server) sheetReadout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, out)
+}
+
+// sheetConnect adds a Shopify store or a Meta ad account. The secret goes
+// to the key store and is never sent back.
+func (s *Server) sheetConnect(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Kind    string `json:"kind"`
+		Account string `json:"account"`
+		Secret  string `json:"secret"`
+	}
+	if !sheetBody(w, r, &in) {
+		return
+	}
+	sh, err := s.Sheets.Connect(r.Context(), r.PathValue("id"), in.Kind, in.Account, in.Secret)
+	if err != nil {
+		sheetErr(w, err)
+		return
+	}
+	writeJSON(w, sh)
+}
+
+func (s *Server) sheetBoards(w http.ResponseWriter, r *http.Request) {
+	b, err := s.Sheets.GetBoards(r.PathValue("id"))
+	if err != nil {
+		sheetErr(w, err)
+		return
+	}
+	writeJSON(w, b)
+}
+
+func (s *Server) sheetSaveBoards(w http.ResponseWriter, r *http.Request) {
+	var in sheets.Boards // bigger than other requests: up to 20 dashboards
+	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, 600<<10))
+	dec.DisallowUnknownFields()
+	if dec.Decode(&in) != nil {
+		core.WriteError(w, http.StatusBadRequest, "bad_request", "could not read the request")
+		return
+	}
+	if err := s.Sheets.SaveBoards(r.PathValue("id"), in); err != nil {
+		sheetErr(w, err)
+		return
+	}
+	s.sheetBoards(w, r)
+}
+
+func (s *Server) sheetPlan(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Chat []sheets.PlanTurn `json:"chat"`
+	}
+	if !sheetBody(w, r, &in) {
+		return
+	}
+	p, err := s.Sheets.PlanBoard(r.Context(), r.PathValue("id"), in.Chat)
+	if err != nil {
+		sheetErr(w, err)
+		return
+	}
+	writeJSON(w, p)
 }

@@ -85,6 +85,20 @@ def sheets(text):
         facts = re.findall(r"^- (.*)$", text, re.M)
         return ("## In short\n- " + facts[0] + "\n## What is going well\n- " + facts[min(1, len(facts) - 1)] +
                 "\n## What needs attention\n- " + facts[-1] + "\n## What to do next\n- Check the numbers above.")
+    if "plan a custom dashboard in Chargesheets" in text:
+        # A board from the first table: its first measure, by month and by its first category.
+        ds = re.search(r'^TABLE \w+ \(\d+ rows\) named "(.*)" for the user$', text, re.M).group(1)
+        part = text.split(f'named "{ds}" for the user', 1)[1].split("\nTABLE ", 1)[0]
+        num = re.search(r'^  "([^"]+)" REAL', part, re.M)
+        cat = re.search(r'^  "([^"]+)" TEXT category', part, re.M)
+        date = re.search(r'^  "([^"]+)" TEXT date', part, re.M)
+        v = {"ds": ds, "col": num.group(1), "agg": "sum"} if num else {"ds": ds, "agg": "count"}
+        tiles = [{"title": "Total", "type": "kpi", "values": [v]}]
+        if date:
+            tiles.append({"title": "By month", "type": "column", "by": "@month", "values": [v]})
+        if cat:
+            tiles.append({"title": "By " + cat.group(1), "type": "bar", "by": cat.group(1), "values": [v], "top": 5})
+        return json.dumps({"reply": "Here is a first dashboard: the total, the trend and the split.", "board": {"name": "Stand-in plan", "tiles": tiles}, "metrics": []})
     if "added this table to Chargesheets" in text:
         return json.dumps({"about": "A stand-in description of this data.", "questions": ["Which group is biggest?", "How many rows are there?"]})
     return None

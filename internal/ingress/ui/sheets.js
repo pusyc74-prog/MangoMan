@@ -9,7 +9,8 @@
 
 const Sheets = (() => {
   const S = { list: [], view: null, data: null, ds: 0, tab: "overview", charts: [], measure: null, grain: null,
-    range: "all", from: null, to: null, dims: {}, compare: true, chat: {}, liveTimer: null, sortTable: null, page: 0, q: "" };
+    range: "all", from: null, to: null, dims: {}, compare: true, chat: {}, liveTimer: null, sortTable: null, page: 0, q: "",
+    boards: null, open: null, plans: {}, span: [null, null], rowCache: new Map() };
   const KIND = { number: "Number", money: "Money", percent: "Percent", date: "Date", category: "Category", text: "Text", id: "ID", email: "Email", url: "Link", yes_no: "Yes / No" };
   const DAY = 86400000;
   const SLOTS = 6;
@@ -65,8 +66,10 @@ const Sheets = (() => {
   const numeric = (c) => c && ["number", "money", "percent"].includes(c.kind);
   const isDim = (c) => c && ["category", "yes_no"].includes(c.kind);
   function word(c, i) { const k = c.codes[i]; return k < 0 ? null : c.words[k]; }
-  function roles() {
-    const ds = dataset();
+  function roles() { return rolesOf(dataset()); }
+  function colIn(ds, name) { return ds && ds.columns.find((c) => c.name === name); }
+  function rolesOf(ds) {
+    const col = (name) => colIn(ds, name);
     const r = S.view.sheet.roles || {};
     const own = ds && r.table === ds.name;
     const measures = ((own && r.measures) || []).map(col).filter(numeric);
@@ -103,7 +106,9 @@ const Sheets = (() => {
   // The range is counted back from the data's last day, not from today: a file is a snapshot.
   function rangeDays(c) {
     if (!c || S.range === "all") return [null, null];
-    const [, end] = dateBounds(c);
+    return spanEnding(dateBounds(c)[1]);
+  }
+  function spanEnding(end) {
     if (end === null) return [null, null];
     const e = dateOf(end);
     const y = e.getUTCFullYear(), m = e.getUTCMonth();
@@ -162,7 +167,9 @@ const Sheets = (() => {
   function autoGrain(c, idx) {
     let lo = Infinity, hi = -Infinity;
     for (const i of idx) { const d = c.values[i]; if (d !== null) { lo = Math.min(lo, d); hi = Math.max(hi, d); } }
-    const span = hi - lo;
+    return grainFor(hi - lo);
+  }
+  function grainFor(span) {
     return span <= 45 ? "day" : span <= 200 ? "week" : span <= 1100 ? "month" : span <= 2500 ? "quarter" : "year";
   }
   function series(c, m, idx, grain, split) {
@@ -301,7 +308,7 @@ const Sheets = (() => {
   }
 
   // ---------- library ----------
-  function closeAsk() { const a = $("cs-ask"); if (a) a.remove(); }
+  function closeAsk() { for (const p of ["cs-ask", "cs-plan"]) { const a = $(p); if (a) a.remove(); } }
   async function showLibrary() {
     closeAsk();
     stopLive();
@@ -318,7 +325,7 @@ const Sheets = (() => {
     const list = $("cs-list");
     if (!S.list.length) { list.replaceChildren(el("p", { class: "cs-empty" }, "No Chargesheets yet. Add a file or link a Google Sheet above.")); return; }
     list.replaceChildren(...S.list.map((sh) => el("button", { type: "button", class: "cs-card", onclick: () => open(sh.id) },
-      el("div", { class: "cs-row" }, el("h4", { class: "cs-grow" }, sh.title), sh.sources.some((s) => s.url) ? el("span", { class: "cs-live" }, "Live") : null),
+      el("div", { class: "cs-row" }, el("h4", { class: "cs-grow" }, sh.title), sh.sources.some((s) => s.url || s.kind) ? el("span", { class: "cs-live" }, "Live") : null),
       el("p", {}, sh.error ? `Could not read: ${sh.error}` : sh.about || sh.sources.map((s) => s.label).join(", ")),
       el("div", { class: "cs-meta" }, sh.rows ? el("span", {}, plural(sh.rows, "row")) : null, el("span", {}, plural(sh.sources.length, "source")), el("span", {}, "Updated " + ago(sh.updated))))));
   }
@@ -351,7 +358,101 @@ const Sheets = (() => {
         el("p", {}, "Months in separate files are stacked; a customers or products sheet is linked to the orders."), drop, input),
       el("div", { class: "cs-option" }, el("h3", {}, el("span", { class: "cs-badge" }, icon("M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1")), "Link a Google Sheet"),
         el("p", {}, "Every tab is read, and the dashboard updates itself while it is open: a live dashboard."), form,
-        el("p", { class: "cs-hint" }, "First, in Google Sheets: ", el("b", {}, "Share"), " → General access → ", el("b", {}, "Anyone with the link"), " (Viewer).")));
+        el("p", { class: "cs-hint" }, "First, in Google Sheets: ", el("b", {}, "Share"), " → General access → ", el("b", {}, "Anyone with the link"), " (Viewer).")),
+      connectPanel(id));
+  }
+
+  // ---------- connections: Shopify, Meta Ads, Google Ads ----------
+  // Google's API needs an approved developer account, so Google Ads comes in
+  // through a Google Sheet that a Google Ads script fills every day.
+  const ADS_SCRIPT = `// MangoMan Chargesheets: writes each campaign's daily results to a Google Sheet.
+const SHEET_URL = 'PASTE YOUR GOOGLE SHEET LINK HERE';
+
+function main() {
+  const account = AdsApp.currentAccount();
+  const zone = account.getTimeZone();
+  const day = (d) => Utilities.formatDate(d, zone, 'yyyy-MM-dd');
+  const end = new Date();
+  const start = new Date(end.getTime() - 364 * 24 * 3600 * 1000);
+  const cur = account.getCurrencyCode();
+  const rows = [['Date', 'Campaign', 'Cost (' + cur + ')', 'Impressions', 'Clicks', 'Conversions', 'Conversion value (' + cur + ')']];
+  const it = AdsApp.search('SELECT segments.date, campaign.name, metrics.cost_micros, metrics.impressions, metrics.clicks, ' +
+    'metrics.conversions, metrics.conversions_value FROM campaign ' +
+    "WHERE segments.date BETWEEN '" + day(start) + "' AND '" + day(end) + "'");
+  while (it.hasNext()) {
+    const r = it.next();
+    rows.push([r.segments.date, r.campaign.name, r.metrics.costMicros / 1e6, r.metrics.impressions,
+      r.metrics.clicks, r.metrics.conversions, r.metrics.conversionsValue]);
+  }
+  const sheet = SpreadsheetApp.openByUrl(SHEET_URL).getSheets()[0];
+  sheet.clearContents();
+  sheet.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+}
+`;
+  function connectPanel(id) {
+    const box = el("div", { class: "cs-connect" });
+    const field = (label, attrs) => { const i = el("input", { ...attrs, "aria-label": label }); return [el("label", { class: "cs-field" }, el("span", {}, label), i), i]; };
+    const steps = (items) => el("ol", { class: "cs-howto" }, items.map((x) => el("li", {}, x)));
+    const forms = {
+      shopify() {
+        const [a, shop] = field("Store address", { placeholder: "my-store.myshopify.com", autocomplete: "off" });
+        const [b, cid] = field("Client ID", { autocomplete: "off" });
+        const [c, sec] = field("Client secret", { type: "password", autocomplete: "off" });
+        const f = el("form", { class: "cs-cform" }, a, b, c, el("button", { type: "submit", class: "primary" }, "Connect Shopify"));
+        f.addEventListener("submit", (e) => { e.preventDefault(); connect(id, "shopify", shop.value, cid.value.trim() + "\n" + sec.value.trim(), "Connecting your Shopify store", "Reading your orders from Shopify"); });
+        return [f, el("details", {}, el("summary", {}, "How to get these (about 10 minutes)"), steps([
+          "Open Shopify's Dev Dashboard, signed in as the store's owner, and create an app.",
+          "In the app's Versions tab, choose the access scope read_orders, then click Release.",
+          "Install the app on your store.",
+          "In the app's Settings, copy the Client ID and the Client secret into the boxes above."]),
+          el("p", { class: "cs-hint" }, "No store yet? In the Dev Dashboard, make a free development store and let Shopify fill it with test orders. Shopify shares the last 60 days of orders unless the app is allowed all orders.")),
+          el("p", { class: "cs-hint" }, "MangoMan reads orders and the products in them, and keeps the secret in this computer's key store.")];
+      },
+      meta() {
+        const [a, acct] = field("Ad account ID", { placeholder: "act_1234567890", autocomplete: "off" });
+        const [b, tok] = field("Access token", { type: "password", autocomplete: "off" });
+        const f = el("form", { class: "cs-cform" }, a, b, el("button", { type: "submit", class: "primary" }, "Connect Meta Ads"));
+        f.addEventListener("submit", (e) => { e.preventDefault(); connect(id, "meta", acct.value, tok.value, "Connecting your Meta ad account", "Reading a year of campaign results from Meta"); });
+        return [f, el("details", {}, el("summary", {}, "How to get these (about 10 minutes)"), steps([
+          "In Ads Manager, copy the ad account ID: the number shown with the account's name.",
+          "In Meta Business settings, open System users, add one, and give it your ad account.",
+          "Generate a token for that system user with the ads_read permission. It asks for an app: make one in Meta for Developers, any name will do.",
+          "For the token's expiry, choose Never; with 60 days, paste a new token here when it runs out."])),
+          el("p", { class: "cs-hint" }, "MangoMan reads each campaign's daily spend, clicks and purchases for the last year, and keeps the token in this computer's key store.")];
+      },
+      google() {
+        const url = el("input", { type: "url", placeholder: "https://docs.google.com/spreadsheets/d/…", "aria-label": "Google Sheet link" });
+        const f = el("form", { class: "cs-link" }, url, el("button", { type: "submit", class: "primary" }, "Link"));
+        f.addEventListener("submit", (e) => { e.preventDefault(); if (url.value.trim()) addGoogle(id, url.value.trim()); });
+        const copy = el("button", { type: "button", class: "cs-mini" }, "Copy the script");
+        copy.addEventListener("click", async () => { try { await navigator.clipboard.writeText(ADS_SCRIPT); copy.textContent = "Copied"; } catch (_) { copy.textContent = "Select the script and copy it"; } });
+        return [el("p", { class: "cs-hint" }, "Google's API needs an approved developer account, so Google Ads comes in through a Google Sheet that a small Google Ads script fills every day."),
+          steps(["Make a new Google Sheet. Share → General access → Anyone with the link (Viewer).",
+            "In Google Ads: Tools → Bulk actions → Scripts → New script. Paste the script, put your sheet's link in its second line, then Authorize and Run.",
+            "Set the script's frequency to Daily.",
+            "Paste the sheet's link here."]),
+          f, el("details", {}, el("summary", {}, "The script"), el("div", { class: "cs-row" }, copy), el("pre", { class: "cs-code" }, ADS_SCRIPT))];
+      },
+    };
+    const pick = el("div", { class: "cs-seg", role: "group", "aria-label": "App" }, [["shopify", "Shopify"], ["meta", "Meta Ads"], ["google", "Google Ads"]].map(([k, l]) => {
+      const b = el("button", { type: "button", "aria-pressed": "false" }, l);
+      b.addEventListener("click", () => { for (const x of pick.children) x.setAttribute("aria-pressed", String(x === b)); box.replaceChildren(...forms[k]()); const f = box.querySelector("input"); if (f) f.focus(); });
+      return b;
+    }));
+    return el("div", { class: "cs-option cs-span" }, el("h3", {}, el("span", { class: "cs-badge" }, icon("M4 12h4l3-8 4 16 3-8h2")), "Connect an app"),
+      el("p", {}, "Shopify orders and Meta Ads come straight from their apps and stay up to date. Put several in one Chargesheet for the whole picture: sales against ad spend."), pick, box);
+  }
+  async function connect(id, kind, account, secret, title, step) {
+    const p = progress(title, [step, "Reading and cleaning the data", "Linking tables and checking totals", "Getting the dashboard ready"]);
+    let fresh = false, added = 0;
+    try {
+      p.next();
+      if (!id) { id = (await newSheet()).id; fresh = true; }
+      await api(`/mangoman/sheets/${id}/connect`, { method: "POST", body: JSON.stringify({ kind, account: account.trim(), secret }) });
+      added = 1;
+      p.next();
+      await load(id, p);
+    } catch (err) { if (fresh) await forget(id, added); p.fail(err.message); }
   }
 
   function progress(title, steps) {
@@ -456,7 +557,7 @@ const Sheets = (() => {
         parts.splice(1, 0, el("label", { class: "cs-ds cs-row" }, box, el("span", {}, `Link ${l.to} to ${l.from} by ${l.by}: ${l.matched}% of rows match.`)));
       }
     }
-    const sources = el("div", { class: "cs-sources" }, v.sheet.sources.map((s) => el("span", { class: "cs-chip" + (s.url ? " on" : "") }, s.url ? "Google Sheet: " : "", s.label,
+    const sources = el("div", { class: "cs-sources" }, v.sheet.sources.map((s) => el("span", { class: "cs-chip" + (s.url || s.kind ? " on" : "") }, s.url ? "Google Sheet: " : "", s.label,
       el("button", { type: "button", title: "Remove", "aria-label": `Remove ${s.label}`, onclick: async () => {
         if (!confirm(`Remove ${s.label} from this Chargesheet?`)) return;
         try { await api(`/mangoman/sheets/${id}/files/${encodeURIComponent(s.file)}`, { method: "DELETE" }); S.view = null; S.data = null;
@@ -478,8 +579,7 @@ const Sheets = (() => {
   // ---------- the dashboard ----------
   async function open(id, tab) {
     disposeCharts();
-    const a = $("cs-ask");
-    if (a && a.dataset.sheet !== id) a.remove();
+    for (const a of [$("cs-ask"), $("cs-plan")]) if (a && a.dataset.sheet !== id) a.remove();
     try {
       if (!S.view || S.view.sheet.id !== id) S.view = await api(`/mangoman/sheets/${id}`);
       if (!S.view.profile) { showCheck(id); return; }
@@ -488,7 +588,7 @@ const Sheets = (() => {
         S.data = await api(`/mangoman/sheets/${id}/data`);
         S.data.id = id;
         S.ds = Math.max(0, S.data.datasets.findIndex((d) => d.name === (S.view.sheet.roles || {}).table));
-        S.dims = {}; S.range = "all"; S.from = null; S.to = null; S.measure = null; S.grain = null; S.page = 0; S.q = ""; S.sortTable = null; S.tab = "overview";
+        S.dims = {}; S.range = "all"; S.from = null; S.to = null; S.measure = null; S.grain = null; S.page = 0; S.q = ""; S.sortTable = null; S.tab = "overview"; S.open = null;
       }
     } catch (err) { say(err.message, "err"); showLibrary(); return; }
     const cur = S.view.profile.datasets.find((d) => d.name === dataset().name);
@@ -501,6 +601,8 @@ const Sheets = (() => {
   function tabs() {
     const r = roles();
     const t = [["overview", "Overview"]];
+    if (tables().filter((d) => rolesOf(d).date && rolesOf(d).measures.length).length >= 2) t.push(["business", "Business overview"]);
+    t.push(["boards", "My dashboards"]);
     if (r.date) t.push(["trends", "Trends"]);
     if (r.dims.length || r.entity) t.push(["breakdown", "Breakdown"]);
     if (r.dims.length >= 1 && (r.dims.length >= 2 || r.entity)) t.push(["drill", "Drill-down"]);
@@ -522,7 +624,7 @@ const Sheets = (() => {
       const name = title.textContent.trim();
       if (name && name !== sh.title) { try { S.view.sheet = { ...S.view.sheet, ...(await api(`/mangoman/sheets/${sh.id}`, { method: "PATCH", body: JSON.stringify({ title: name }) })) }; } catch (err) { say(err.message, "err"); } }
     });
-    const live = v.live ? el("span", { class: "cs-live", id: "cs-live" }, "Live · checked " + ago(sh.sources.find((s) => s.url).fetched)) : null;
+    const live = v.live ? el("span", { class: "cs-live", id: "cs-live" }, "Live · checked " + ago(liveSource().fetched)) : null;
     const actions = el("div", { class: "cs-actions" },
       live,
       v.live ? el("button", { type: "button", class: "ghost", onclick: () => refresh(true) }, "Update now") : null,
@@ -545,6 +647,7 @@ const Sheets = (() => {
     host().replaceChildren(...nodes);
     const sel = host().querySelector('.cs-tab[aria-selected="true"]');
     if (sel) sel.scrollIntoView({ block: "nearest", inline: "center" });
+    if (S.tab === "boards" || S.tab === "business") { (S.tab === "boards" ? boardsTab : businessTab)(body); return; }
     const idx = rowsNow();
     if (!idx.length) { body.append(el("p", { class: "cs-empty" }, "No rows match these filters.")); return; }
     const draw = { overview, trends, breakdown, drill, spread, quality, table: allRows, readout }[S.tab] || packs().find((p) => p.id === S.tab).draw;
@@ -553,7 +656,9 @@ const Sheets = (() => {
 
   function toolbar(r) {
     const parts = [];
-    if (S.data.datasets.length > 1) {
+    const many = S.tab === "boards" || S.tab === "business"; // dashboards span every table
+    if (many) r = { ...r, date: tables().map((d) => rolesOf(d).date).find(Boolean) || null, measures: [] };
+    if (S.data.datasets.length > 1 && !many) {
       const pick = el("select", { "aria-label": "Table" }, S.data.datasets.map((d, i) => el("option", { value: i, selected: i === S.ds }, `${d.name} (${plural(d.rows, "row")})`)));
       pick.addEventListener("change", () => { S.ds = +pick.value; S.dims = {}; S.measure = null; S.range = "all"; render(); });
       parts.push(pick);
@@ -561,7 +666,7 @@ const Sheets = (() => {
     if (r.date) {
       const opts = [["all", "All time"], ["7", "Last 7 days"], ["30", "Last 30 days"], ["90", "Last 90 days"], ["month", "Latest month"], ["lastmonth", "Month before"], ["year", "Latest year"], ["custom", "Pick dates"]];
       const sel = el("select", { "aria-label": "Dates" }, opts.map(([k, l]) => el("option", { value: k, selected: S.range === k }, l)));
-      sel.addEventListener("change", () => { S.range = sel.value; if (S.range === "custom" && S.from === null) { const [lo, hi] = dateBounds(r.date); S.from = lo; S.to = hi; } render(); });
+      sel.addEventListener("change", () => { S.range = sel.value; if (S.range === "custom" && S.from === null) { const [lo, hi] = many ? (S.span = [null, null], allBounds()) : dateBounds(r.date); S.from = lo; S.to = hi; } render(); });
       parts.push(sel);
       if (S.range === "custom") {
         const from = el("input", { type: "date", value: S.from !== null ? isoDay(S.from) : "", "aria-label": "From" });
@@ -1356,6 +1461,7 @@ const Sheets = (() => {
   function openAsk() {
     let panel = $("cs-ask");
     if (panel) { panel.querySelector("textarea").focus(); return; }
+    if ($("cs-plan")) $("cs-plan").remove();
     const id = S.view.sheet.id;
     const chat = (S.chat[id] = S.chat[id] || []);
     const thread = el("div", { class: "cs-thread", "aria-live": "polite" });
@@ -1454,22 +1560,655 @@ const Sheets = (() => {
   }
   function fmtNum(v) { return typeof v === "number" ? new Intl.NumberFormat(S.locale, { maximumFractionDigits: 2 }).format(v) : String(v ?? ""); }
 
+  // ---------- custom dashboards ----------
+  // A tile shows values: a column counted one way in one table, the rows of a
+  // table, or the user's own metric. Tables meet on time (by date: exact) or
+  // on a column with the same name in each (by matching words). The browser
+  // counts every tile; the server only keeps them (internal/sheets/boards.go).
+  const AGG = { sum: "Total", avg: "Average", min: "Lowest", max: "Highest", count: "Count of", distinct: "Different" };
+  const TYPES = { kpi: "Number", line: "Line over time", column: "Columns", bar: "Bars", pie: "Pie", table: "Table" };
+  const GRAIN = { "@day": "day", "@week": "week", "@month": "month", "@quarter": "quarter", "@year": "year" };
+  const newId = () => Math.random().toString(36).slice(2, 10) || "x";
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  const dsNamed = (name) => S.data.datasets.find((d) => d.name === name);
+  function tables() {
+    return S.data.datasets.filter((d) => { const p = S.view.profile.datasets.find((x) => x.name === d.name); return !(p && p.joined_into); });
+  }
+  function metricById(id) {
+    const open = S.open && S.open.metrics ? S.open.metrics : [];
+    return [...open, ...((S.boards && S.boards.metrics) || [])].find((m) => m.id === id) || null;
+  }
+  // The dates in view on a dashboard: counted back from the latest day in any table.
+  function boardSpan() {
+    if (S.range === "all") return [null, null];
+    if (S.range === "custom") return [S.from ?? -Infinity, S.to ?? Infinity];
+    let end = null;
+    for (const d of tables()) { const c = rolesOf(d).date; const e = c ? dateBounds(c)[1] : null; if (e !== null && (end === null || e > end)) end = e; }
+    return spanEnding(end);
+  }
+  // the first and last day in view across the tables
+  function allBounds() {
+    let lo = Infinity, hi = -Infinity;
+    for (const d of tables()) { const c = rolesOf(d).date; if (!c) continue; const [a, b] = dateBounds(c); if (a !== null) { lo = Math.min(lo, a); hi = Math.max(hi, b); } }
+    if (lo === Infinity) return [null, null];
+    const [a, b] = S.span;
+    return [a !== null && a > lo ? a : lo, b !== null && b < hi ? b : hi];
+  }
+  const autoBy = () => { const [lo, hi] = allBounds(); return lo === null ? "@month" : "@" + grainFor(hi - lo); };
+  // Rows of a table in view: the dates in view, the page's filters and the
+  // tile's (by column name, where the table has the column), and clip.
+  function rowsOf(ds, filters, clip) {
+    const key = ds.name + "\u0001" + JSON.stringify(filters || []) + "\u0001" + JSON.stringify(clip);
+    if (S.rowCache.has(key)) return S.rowCache.get(key);
+    const date = rolesOf(ds).date;
+    const [lo, hi] = S.span;
+    const fs = [...Object.entries(S.dims), ...(filters || []).map((f) => [f.col, new Set(f.values)])].map(([n, set]) => [colIn(ds, n), set]).filter(([c]) => c);
+    const out = [];
+    for (let i = 0; i < ds.rows; i++) {
+      if (date && (lo !== null || clip)) {
+        const d = date.values[i];
+        if (d === null || (lo !== null && (d < lo || d > hi)) || (clip && (d < clip[0] || d > clip[1]))) continue;
+      }
+      let ok = true;
+      for (const [c, set] of fs) { if (!set.has(c.codes ? word(c, i) : c.values[i])) { ok = false; break; } }
+      if (ok) out.push(i);
+    }
+    S.rowCache.set(key, out);
+    return out;
+  }
+  function keyer(ds, by) {
+    if (!by) return () => "";
+    if (GRAIN[by]) {
+      const c = rolesOf(ds).date;
+      if (!c) throw new Error(`${ds.name} has no dates to split by`);
+      return (i) => (c.values[i] === null ? null : bucket(c.values[i], GRAIN[by]));
+    }
+    const c = colIn(ds, by);
+    if (!c) throw new Error(`${ds.name} has no ${by} column`);
+    return (i) => { const v = c.codes ? word(c, i) : c.values[i]; return v === null ? null : String(v).trim().toLowerCase(); };
+  }
+  // One value of a tile, per key ("" when not split): Map key → number.
+  function values(ref, t, clip, cx) {
+    if (ref.metric) return metricValues(metricById(ref.metric), t, cx);
+    const ds = dsNamed(ref.ds);
+    if (!ds) throw new Error(`the table ${ref.ds} is not in the data now`);
+    const c = ref.col ? colIn(ds, ref.col) : null;
+    if (ref.col && !c) throw new Error(`the column ${ref.col} is not in ${ref.ds} now`);
+    const key = keyer(ds, t.by);
+    const byCol = t.by && !GRAIN[t.by] ? colIn(ds, t.by) : null;
+    const acc = new Map();
+    for (const i of rowsOf(ds, t.filters, clip)) {
+      const k = key(i);
+      if (k === null) continue;
+      const v = !c ? 1 : c.codes ? word(c, i) : c.values[i];
+      if (v === null) continue;
+      if (byCol && !cx.names.has(k)) cx.names.set(k, String(byCol.codes ? word(byCol, i) : byCol.values[i]).trim());
+      let e = acc.get(k);
+      if (!e) acc.set(k, (e = { s: 0, n: 0, lo: Infinity, hi: -Infinity, set: ref.agg === "distinct" ? new Set() : null }));
+      e.n++;
+      if (e.set) e.set.add(v);
+      else if (typeof v === "number") { e.s += v; e.lo = Math.min(e.lo, v); e.hi = Math.max(e.hi, v); }
+    }
+    const out = new Map();
+    for (const [k, e] of acc) out.set(k, { sum: e.s, avg: e.s / e.n, min: e.lo, max: e.hi, count: e.n, distinct: e.set ? e.set.size : 0 }[ref.agg]);
+    return out;
+  }
+  // (sum of add - sum of minus) / sum of per × times. Tables with dates are
+  // counted over the days they all cover, so a ratio never compares months
+  // one side has and the other lacks.
+  function metricValues(m, t, cx) {
+    if (!m) throw new Error("its metric was deleted");
+    const refs = [...m.add, ...(m.minus || []), ...(m.per || [])];
+    const clip = overlap(refs);
+    if (clip) cx.notes.add(clip[0] <= clip[1] ? `${m.name} counts ${fmtDate(clip[0])} to ${fmtDate(clip[1])}, the days all its sources cover.` : `${m.name}: its sources share no dates.`);
+    const [add, minus, per] = [m.add, m.minus || [], m.per || []].map((rs) => rs.map((r) => values(r, t, clip, cx)));
+    const sum = (maps, k) => maps.reduce((a, mp) => a + (mp.get(k) || 0), 0);
+    const out = new Map();
+    for (const k of new Set([...add, ...per].flatMap((mp) => [...mp.keys()]))) {
+      const top = sum(add, k) - sum(minus, k);
+      if (!per.length) out.set(k, top * (m.times || 1));
+      else if (sum(per, k)) out.set(k, (top / sum(per, k)) * (m.times || 1));
+    }
+    return out;
+  }
+  function overlap(refs) {
+    const names = [...new Set(refs.map((r) => r.ds))];
+    if (names.length < 2) return null;
+    let lo = -Infinity, hi = Infinity, n = 0;
+    for (const name of names) {
+      const ds = dsNamed(name), c = ds && rolesOf(ds).date;
+      const [a, b] = c ? dateBounds(c) : [null, null];
+      if (a !== null) { lo = Math.max(lo, a); hi = Math.min(hi, b); n++; }
+    }
+    return n >= 2 ? [lo, hi] : null;
+  }
+  function fmtOf(ref) {
+    if (ref.metric) {
+      const m = metricById(ref.metric);
+      if (!m) return null;
+      const first = m.add[0] && m.add[0].col ? colIn(dsNamed(m.add[0].ds), m.add[0].col) : null;
+      return { kind: m.kind, unit: m.kind === "money" && first ? first.unit : m.kind === "percent" ? "%" : undefined, name: m.name };
+    }
+    if (ref.agg === "count" || ref.agg === "distinct") return null;
+    const c = colIn(dsNamed(ref.ds), ref.col);
+    return c ? { kind: c.kind, unit: c.unit, name: c.name } : null;
+  }
+  function refName(ref, multi) {
+    if (ref.metric) { const m = metricById(ref.metric); return m ? m.name : "Deleted metric"; }
+    const base = !ref.col ? `Rows in ${ref.ds}` : ref.agg === "sum" ? ref.col : `${AGG[ref.agg]} ${ref.col}`;
+    return multi && ref.col ? `${base} · ${ref.ds}` : base;
+  }
+  // Everything a tile shows: its keys in order and a series per value.
+  function tileData(t) {
+    const cx = { names: new Map(), notes: new Set() };
+    const multi = new Set(t.values.filter((r) => !r.metric).map((r) => r.ds)).size > 1;
+    const series = t.values.map((ref) => ({ ref, name: refName(ref, multi), fmt: fmtOf(ref), vals: values(ref, t, null, cx) }));
+    let keys = [...new Set(series.flatMap((s) => [...s.vals.keys()]))];
+    const time = !!GRAIN[t.by];
+    if (time && keys.length) {
+      const lo = Math.min(...keys), hi = Math.max(...keys), g = GRAIN[t.by];
+      keys = [];
+      for (let k = lo; k <= hi && keys.length < 2000; k = nextKey(k, g)) keys.push(k);
+    } else if (t.by) {
+      keys.sort((a, b) => (series[0].vals.get(b) ?? -Infinity) - (series[0].vals.get(a) ?? -Infinity));
+    }
+    const name = (k) => (time ? label(k, GRAIN[t.by]) : cx.names.get(k) ?? String(k));
+    return { keys, name, series, time, notes: [...cx.notes] };
+  }
+  function tileSub(t, d) {
+    const parts = [];
+    if (t.by) parts.push(GRAIN[t.by] ? `By ${GRAIN[t.by]}` : `By ${t.by}`);
+    for (const f of t.filters || []) parts.push(`only ${f.col}: ${f.values.slice(0, 3).join(", ")}${f.values.length > 3 ? ` +${f.values.length - 3}` : ""}`);
+    const head = parts.join("; ");
+    return [head ? head[0].toUpperCase() + head.slice(1) + "." : "", ...(d ? d.notes : [])].filter(Boolean).join(" ");
+  }
+  // A tile as the dashboard shows it. tools: edit buttons, when editing.
+  function tileNode(t, tools) {
+    const size = t.size || (t.type === "kpi" ? "s" : "m");
+    let d = null, error = null;
+    try { d = tileData(t); } catch (err) { error = err.message; }
+    const head = el("header", {}, el("div", { class: "cs-grow" }, el("h3", {}, t.title), el("p", { class: "sub" }, tileSub(t, d))), tools ? el("div", { class: "cs-row cs-noprint" }, tools) : null);
+    const node = el("section", { class: `cs-card2 cs-${size}`, "data-tile": t.id }, head);
+    if (error) { node.append(el("p", { class: "cs-unverified" }, `This chart cannot be drawn: ${error}.`)); return node; }
+    if (!d.keys.length) { node.append(el("p", { class: "cs-muted cs-small" }, "Nothing in view for this chart.")); return node; }
+    const fmt = (s, v) => fmtVal(s.fmt, v);
+    if (t.type === "kpi") {
+      const [first, ...rest] = d.series;
+      node.classList.add("cs-kpi");
+      node.append(el("div", { class: "val" }, fmtVal(first.fmt, first.vals.get(""), true)));
+      if (rest.length) node.append(el("div", { class: "cs-small cs-muted" }, rest.map((s) => `${s.name}: ${fmt(s, s.vals.get(""))}`).join(" · ")));
+      try { // a sparkline when every value has dates
+        const [lo, hi] = allBounds();
+        if (lo !== null && hi > lo) {
+          const sd = tileData({ ...t, values: [first.ref], by: "@" + grainFor(hi - lo) });
+          const line = spark(sd.keys.map((k) => ({ v: sd.series[0].vals.get(k) || 0 })));
+          if (line) node.append(line);
+        }
+      } catch (_) { /* a value without dates: no sparkline */ }
+      return node;
+    }
+    if (t.type === "table") {
+      const keys = d.time ? d.keys : d.keys.slice(0, t.top || 50);
+      node.append(el("div", { class: "cs-tw cs-scroll" }, simpleTable({ head: [GRAIN[t.by] ? GRAIN[t.by][0].toUpperCase() + GRAIN[t.by].slice(1) : t.by, ...d.series.map((s) => s.name)],
+        rows: keys.map((k) => [d.name(k), ...d.series.map((s) => (s.vals.has(k) ? fmt(s, s.vals.get(k)) : "-"))]), right: d.series.map((_, i) => i + 1) })));
+      return node;
+    }
+    const body = el("div", { class: "cs-chart" + (size === "l" ? " tall" : "") });
+    node.append(body);
+    if (d.series.length > 1) node.append(legend(d.series.map((s, i) => [slot(i), s.name])));
+    requestAnimationFrame(() => { if (body.isConnected) drawTile(body, t, d); });
+    return node;
+  }
+  function drawTile(node, t, d) {
+    const keys = d.time ? d.keys : d.keys.slice(0, t.top || 10);
+    if (t.type === "pie") {
+      const s = d.series[0];
+      const rest = d.keys.slice(keys.length).reduce((a, k) => a + Math.max(0, s.vals.get(k) || 0), 0);
+      const data = keys.map((k, i) => ({ name: d.name(k), value: Math.max(0, s.vals.get(k) || 0), itemStyle: { color: slot(i) } }));
+      if (rest) data.push({ name: "Other", value: rest, itemStyle: { color: slot(SLOTS) } });
+      chart(node, { tooltip: { trigger: "item", formatter: (p) => `{t|${rt(p.name)}}\n${rt(fmtVal(s.fmt, p.value))} · ${rt(pct(p.percent))}` },
+        series: [{ type: "pie", radius: ["52%", "80%"], padAngle: 1.5, itemStyle: { borderRadius: 4, borderColor: css("--surface"), borderWidth: 2 },
+          label: { show: node.clientWidth > 420, formatter: (p) => `${p.name}\n${pct(p.percent)}`, color: css("--ink-2"), fontSize: 11.5 }, data }] });
+      return;
+    }
+    // Up to two scales: values in other units get their own axis on the right.
+    const scales = [];
+    const axisOf = d.series.map((s) => { const u = s.fmt ? `${s.fmt.kind}|${s.fmt.unit}` : "count"; let i = scales.findIndex((x) => x.u === u); if (i < 0 && scales.length < 2) { scales.push({ u, fmt: s.fmt }); i = scales.length - 1; } return Math.max(0, i); });
+    const horizontal = t.type === "bar";
+    const cats = axis({ type: "category", data: keys.map(d.name), inverse: horizontal, boundaryGap: t.type !== "line", splitLine: { show: false }, axisLabel: { width: horizontal ? 130 : 90, overflow: "truncate" } });
+    const vals = scales.map((x, i) => axis({ type: "value", position: horizontal ? (i ? "top" : "bottom") : i ? "right" : "left", splitLine: { show: i === 0 }, minInterval: x.fmt ? 0 : 1, axisLabel: { formatter: (v) => fmtVal(x.fmt, v, true) } }));
+    chart(node, {
+      grid: { left: 8, right: t.type === "line" || scales.length > 1 ? 30 : 16, top: 16, bottom: 8, containLabel: true },
+      xAxis: horizontal ? vals : cats, yAxis: horizontal ? cats : vals,
+      tooltip: { trigger: "axis", axisPointer: { type: t.type === "line" ? "line" : "shadow" }, formatter: (ps) => `{t|${rt(ps[0].axisValue)}}\n` + ps.map((p) => tipRow("k" + (Math.min(p.seriesIndex, SLOTS) + 1), p.seriesName, p.value === null || p.value === undefined ? "-" : fmtVal(d.series[p.seriesIndex].fmt, p.value))).join("\n") },
+      series: d.series.map((s, j) => ({ name: s.name, type: t.type === "line" ? "line" : "bar", [horizontal ? "xAxisIndex" : "yAxisIndex"]: axisOf[j],
+        data: keys.map((k) => (s.vals.has(k) ? s.vals.get(k) : t.type === "line" ? null : 0)), connectNulls: false, smooth: 0.2, symbolSize: 7, showSymbol: keys.length <= 24, barMaxWidth: 26,
+        lineStyle: { width: 2, color: slot(j) }, itemStyle: { color: slot(j), borderRadius: t.type === "line" ? 0 : horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0] } })),
+    });
+  }
+
+  // ---------- suggestions: dashboards worked out from the data ----------
+  function suggestions() {
+    const out = [];
+    const g = autoBy();
+    const tile = (title, type, vals, by = "", extra = {}) => ({ id: newId(), title: title.slice(0, 80), type, values: vals, by, ...extra });
+    const total = (ds, c) => ({ ds: ds.name, col: c.name, agg: averaged(c) ? "avg" : "sum" });
+    const rows = (ds) => ({ ds: ds.name, agg: "count" });
+    const metric = (name, kind, add, per, times = 1) => ({ id: "m" + newId(), name: name.slice(0, 60), kind, add, per, times });
+    const ov = overviewSuggestion(g);
+    if (ov) out.push(ov);
+    const main = dataset();
+    for (const ds of [main, ...tables().filter((x) => x !== main)].slice(0, 3)) {
+      const r = rolesOf(ds), m = r.measures[0];
+      const v = m ? total(ds, m) : rows(ds);
+      const tiles = r.measures.slice(0, 3).map((mm) => tile(`${averaged(mm) ? "Average" : "Total"} ${mm.name}`, "kpi", [total(ds, mm)]));
+      tiles.push(tile("Rows", "kpi", [rows(ds)]));
+      if (r.date) tiles.push(tile(`${refName(v)} by ${GRAIN[g]}`, "line", [v], g, { size: "l" }));
+      if (r.dims[0]) tiles.push(tile(`${refName(v)} by ${r.dims[0].name}`, "bar", [v], r.dims[0].name, { top: 10 }));
+      const small = r.dims.find((x) => x !== r.dims[0] && x.words.length <= 6);
+      if (small && !(m && averaged(m))) tiles.push(tile(`Share by ${small.name}`, "pie", [v], small.name, { top: 6 }));
+      if (r.entity && r.entity.codes) tiles.push(tile(`Top ${r.entity.name}`, "table", m ? [v, rows(ds)] : [v], r.entity.name, { top: 10, size: "m" }));
+      const name = `${ds.name} at a glance`.slice(0, 60);
+      if (tiles.length > 2) out.push({ name, why: `The main numbers${r.date ? ", the trend" : ""}${r.dims[0] ? ` and the split by ${r.dims[0].name}` : ""}.`, board: { name, tiles }, metrics: [] });
+    }
+    for (const ds of tables()) {
+      const spend = ds.columns.find((c) => c.kind === "money" && /spend|cost|amount spent/i.test(c.name) && !/per|cpc|cpa|cpm/i.test(c.name));
+      const conv = ds.columns.find((c) => numeric(c) && /conv|purchase|results|leads/i.test(c.name) && !/rate|value|cost|per/i.test(c.name));
+      const camp = ds.columns.find((c) => c.codes && /campaign|ad.?group|ad name/i.test(c.name));
+      if (!spend || !conv || !camp) continue;
+      const cpa = metric(`Cost per ${conv.name.toLowerCase()} (${ds.name})`, "money", [total(ds, spend)], [total(ds, conv)]);
+      const tiles = [tile(`Total ${spend.name}`, "kpi", [total(ds, spend)]), tile(`Total ${conv.name}`, "kpi", [total(ds, conv)]), tile(cpa.name, "kpi", [{ metric: cpa.id }]),
+        tile(`${spend.name} by ${camp.name}`, "bar", [total(ds, spend)], camp.name, { top: 10 }), tile(`${cpa.name} by ${camp.name}`, "bar", [{ metric: cpa.id }], camp.name, { top: 10 })];
+      if (rolesOf(ds).date) tiles.push(tile(`${spend.name} and ${conv.name} by ${GRAIN[g]}`, "column", [total(ds, spend), total(ds, conv)], g, { size: "l" }));
+      const name = `Ads: ${ds.name}`.slice(0, 60);
+      out.push({ name, why: "Where the money goes, what it brings and which campaigns cost most per result.", board: { name, tiles }, metrics: [cpa] });
+    }
+    const sc = salesCols();
+    if (sc) {
+      const cust = { ds: main.name, col: sc.cust.name, agg: "distinct" };
+      const avg = metric(`${sc.money.name} per customer`, "money", [total(main, sc.money)], [cust]);
+      out.push({ name: "Customers", why: `${sc.cust.name}: how many buy, how many come back, who matters most.`, metrics: [avg], board: { name: "Customers", tiles: [
+        tile("Customers", "kpi", [cust]), tile(avg.name, "kpi", [{ metric: avg.id }]), tile(`Customers by ${GRAIN[g] === "day" ? "week" : GRAIN[g]}`, "column", [cust], g === "@day" ? "@week" : g),
+        tile("Top customers", "table", [total(main, sc.money), rows(main)], sc.cust.name, { top: 15 })] } });
+    }
+    return out.slice(0, 6);
+  }
+  // Every source added up by date, side by side: sales against ad spend.
+  function overviewSuggestion(g) {
+    const dated = tables().filter((d) => rolesOf(d).date && rolesOf(d).measures.length);
+    if (dated.length < 2) return null;
+    const isSpend = (c) => c.kind === "money" && /spend|cost|amount spent/i.test(c.name) && !/per|cpc|cpa|cpm|unit/i.test(c.name);
+    const spend = [], mains = [];
+    let sales = null;
+    for (const ds of dated) {
+      const s = ds.columns.find(isSpend);
+      const m = s || rolesOf(ds).measures.find((c) => c.kind === "money" && !averaged(c)) || rolesOf(ds).measures[0];
+      mains.push({ ds, m });
+      if (s) spend.push({ ds: ds.name, col: s.name, agg: "sum" });
+      else if (m.kind === "money" && (!sales || (/revenue|sales|total/i.test(m.name) && !/revenue|sales|total/i.test(sales.col)))) sales = { ds: ds.name, col: m.name, agg: "sum" };
+    }
+    const tile = (title, type, vals, by = "", extra = {}) => ({ id: newId(), title: title.slice(0, 80), type, values: vals, by, ...extra });
+    const ref = (x) => ({ ds: x.ds.name, col: x.m.name, agg: averaged(x.m) ? "avg" : "sum" });
+    const tiles = mains.slice(0, 4).map((x) => tile(`${x.m.name} · ${x.ds.name}`, "kpi", [ref(x)]));
+    const metrics = [];
+    if (sales && spend.length) {
+      const roas = { id: "m" + newId(), name: "Return on ad spend", kind: "number", add: [sales], per: spend, times: 1 };
+      const share = { id: "m" + newId(), name: "Ad spend as % of sales", kind: "percent", add: spend, per: [sales], times: 100 };
+      metrics.push(roas, share);
+      tiles.push(tile(roas.name, "kpi", [{ metric: roas.id }]), tile(share.name, "kpi", [{ metric: share.id }]));
+      const sds = dsNamed(sales.ds);
+      if (/order/i.test(sds.name) || sds.columns.some((c) => /^order/i.test(c.name))) {
+        const cpo = { id: "m" + newId(), name: "Ad spend per order", kind: "money", add: spend, per: [{ ds: sales.ds, agg: "count" }], times: 1 };
+        metrics.push(cpo);
+        tiles.push(tile(cpo.name, "kpi", [{ metric: cpo.id }]));
+      }
+      tiles.push(tile(`Sales and ad spend by ${GRAIN[g]}`, "column", [sales, ...spend].slice(0, 4), g, { size: "l" }), tile(`Return on ad spend by ${GRAIN[g]}`, "line", [{ metric: roas.id }], g, { size: "l" }));
+    } else {
+      tiles.push(tile(`Each source by ${GRAIN[g]}`, "column", mains.slice(0, 4).map(ref), g, { size: "l" }));
+    }
+    return { overview: true, name: "Business overview", why: "Every source added up by date and set side by side" + (metrics.length ? ": sales against ad spend." : "."), board: { name: "Business overview", tiles }, metrics };
+  }
+
+  // ---------- the dashboards tabs ----------
+  async function loadBoards() {
+    const id = S.view.sheet.id;
+    if (!S.boards || S.boards.sheet !== id) S.boards = { sheet: id, ...(await api(`/mangoman/sheets/${id}/boards`)) };
+  }
+  async function saveBoards(boards, metrics) {
+    try {
+      const out = await api(`/mangoman/sheets/${S.view.sheet.id}/boards`, { method: "PUT", body: JSON.stringify({ boards, metrics }) });
+      S.boards = { sheet: S.view.sheet.id, ...out };
+      return true;
+    } catch (err) { say(err.message, "err"); return false; }
+  }
+  // Metrics no board uses any more are kept: the user may want them later.
+  async function keepDraft() {
+    const b = { ...clone(S.open.board), id: newId() };
+    const used = new Set(b.tiles.flatMap((t) => t.values.map((r) => r.metric)).filter(Boolean));
+    const metrics = [...S.boards.metrics, ...S.open.metrics.filter((m) => used.has(m.id))];
+    if (await saveBoards([...S.boards.boards, b], metrics)) { S.open = { id: b.id }; render(); say("Kept in My dashboards.", "ok"); }
+  }
+  function currentBoard() { return S.open && (S.open.board || S.boards.boards.find((b) => b.id === S.open.id)); }
+  async function boardsTab(body) {
+    body.append(el("p", { class: "cs-muted" }, "Opening…"));
+    try { await loadBoards(); } catch (err) { body.replaceChildren(el("p", { class: "msg err" }, err.message)); return; }
+    if (!body.isConnected) return;
+    body.replaceChildren();
+    S.span = boardSpan(); S.rowCache = new Map();
+    if (S.open && !currentBoard()) S.open = null;
+    if (S.open) drawBoard(body); else boardList(body);
+  }
+  function businessTab(body) {
+    S.span = boardSpan(); S.rowCache = new Map();
+    const sug = overviewSuggestion(autoBy());
+    const cover = tables().filter((d) => rolesOf(d).date).map((d) => { const [a, b] = dateBounds(rolesOf(d).date); return a === null ? null : `${d.name}: ${fmtDate(a)} to ${fmtDate(b)}`; }).filter(Boolean);
+    const keep = el("button", { type: "button", class: "ghost" }, "Change this dashboard");
+    keep.addEventListener("click", async () => { try { await loadBoards(); } catch (err) { say(err.message, "err"); return; } S.open = { board: sug.board, metrics: sug.metrics }; S.tab = "boards"; render(); });
+    body.append(el("div", { class: "cs-row" }, el("p", { class: "cs-muted cs-small cs-grow" }, "Every source added up by date, then set side by side. Dates line up exactly; which ad brought which order is not in these numbers (that needs tracking tags on orders)."), keep),
+      el("p", { class: "cs-small cs-muted" }, "What each source covers: " + cover.join("; ") + "."));
+    const was = S.open; // its metrics are found through S.open while the tiles are counted
+    S.open = { board: sug.board, metrics: sug.metrics };
+    body.append(el("div", { class: "cs-board cs-mt" }, sug.board.tiles.map((t) => tileNode(t))));
+    S.open = was;
+  }
+  function boardList(body) {
+    const sugs = suggestions();
+    const card = (title, text, chips, go) => el("button", { type: "button", class: "cs-card", onclick: go }, el("h4", {}, title), el("p", {}, text), chips.length ? el("div", { class: "cs-meta" }, chips.map((c) => el("span", {}, c))) : null);
+    body.append(el("div", { class: "cs-row" }, el("div", { class: "cs-grow" }, el("h3", { class: "cs-section" }, "Suggested for your data"), el("p", { class: "cs-muted cs-small" }, "Worked out from what was read in your data. Open one to look; keep it to change anything.")),
+      el("button", { type: "button", class: "primary", onclick: () => openPlan() }, "Plan one with AI")));
+    body.append(el("div", { class: "cs-list cs-mt" }, sugs.map((s) => card(s.name, s.why, s.board.tiles.slice(0, 4).map((t) => t.title), () => { S.open = { board: s.board, metrics: s.metrics }; render(); }))));
+    const own = S.boards.boards;
+    const blank = el("button", { type: "button", class: "ghost" }, "+ New dashboard");
+    blank.addEventListener("click", async () => { const b = { id: newId(), name: `My dashboard ${own.length + 1}`, tiles: [] }; if (await saveBoards([...own, b], S.boards.metrics)) { S.open = { id: b.id }; render(); } });
+    body.append(el("div", { class: "cs-row cs-mt" }, el("h3", { class: "cs-section cs-grow" }, "My dashboards"), blank),
+      own.length ? el("div", { class: "cs-list" }, own.map((b) => card(b.name, plural(b.tiles.length, "chart"), b.tiles.slice(0, 4).map((t) => t.title), () => { S.open = { id: b.id }; render(); })))
+        : el("p", { class: "cs-empty" }, "None yet. Keep a suggestion, start a new one, or plan one with the AI."));
+    const metrics = S.boards.metrics;
+    const addM = el("button", { type: "button", class: "ghost" }, "+ Add a metric");
+    addM.addEventListener("click", () => metricEditor(null));
+    body.append(el("div", { class: "cs-row cs-mt" }, el("div", { class: "cs-grow" }, el("h3", { class: "cs-section" }, "My metrics"), el("p", { class: "cs-muted cs-small" }, "Your own measures, worked out from your columns: return on ad spend, margin, cost per order.")), addM),
+      metrics.length ? el("div", { class: "cs-card2" }, simpleTable({ head: ["Metric", "Worked out as", "Now", ""], right: [2], rows: metrics.map((m) => [m.name, formula(m), metricNow(m),
+        el("span", { class: "cs-row" }, el("button", { type: "button", class: "cs-mini", onclick: () => metricEditor(m) }, "Edit"), el("button", { type: "button", class: "cs-mini", onclick: () => dropMetric(m) }, "Delete"))]) }))
+        : el("p", { class: "cs-empty" }, "No metrics yet."));
+  }
+  function formula(m) {
+    const names = (rs) => rs.map((r) => refName(r, true)).join(" + ");
+    let f = m.minus && m.minus.length ? `(${names(m.add)} − ${names(m.minus)})` : names(m.add);
+    if (m.per && m.per.length) f += ` ÷ ${m.per.length > 1 ? `(${names(m.per)})` : names(m.per)}`;
+    return m.times === 100 ? f + " × 100" : f;
+  }
+  function metricNow(m) {
+    try { const v = metricValues(m, { by: "" }, { names: new Map(), notes: new Set() }).get(""); return v === undefined ? "-" : fmtVal(fmtOf({ metric: m.id }) || { kind: m.kind }, v); } catch (err) { return err.message; }
+  }
+  async function dropMetric(m) {
+    const users = S.boards.boards.filter((b) => b.tiles.some((t) => t.values.some((r) => r.metric === m.id)));
+    if (users.length) { say(`${m.name} is used in ${users.map((b) => b.name).join(", ")}: take it out of those charts first.`, "err"); return; }
+    if (confirm(`Delete the metric ${m.name}?`) && (await saveBoards(S.boards.boards, S.boards.metrics.filter((x) => x.id !== m.id)))) render();
+  }
+
+  function drawBoard(body) {
+    const b = currentBoard();
+    const saved = !S.open.board;
+    const title = el("h3", { class: "cs-section", contenteditable: saved ? "true" : null, spellcheck: "false", title: saved ? "Click to rename" : null }, b.name);
+    if (saved) {
+      title.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); title.blur(); } });
+      title.addEventListener("blur", () => { const name = title.textContent.trim().slice(0, 60); if (name && name !== b.name) { b.name = name; saveBoards(S.boards.boards, S.boards.metrics); } });
+    }
+    const save = () => (saved ? saveBoards(S.boards.boards, S.boards.metrics) : Promise.resolve(true));
+    const actions = [el("button", { type: "button", class: "ghost", onclick: () => tileEditor(null, b, save) }, "+ Add a chart"),
+      el("button", { type: "button", class: "ghost", onclick: () => openPlan() }, "Plan with AI"),
+      el("button", { type: "button", class: "ghost", onclick: () => window.print() }, "Save as PDF")];
+    if (saved) actions.push(el("button", { type: "button", class: "ghost", onclick: async () => { if (confirm(`Delete the dashboard ${b.name}?`) && (await saveBoards(S.boards.boards.filter((x) => x !== b), S.boards.metrics))) { S.open = null; render(); } } }, "Delete"));
+    else actions.unshift(el("button", { type: "button", class: "primary", onclick: keepDraft }, "Keep this dashboard"));
+    body.append(el("div", { class: "cs-row cs-noprint" }, el("button", { type: "button", class: "cs-back", onclick: () => { S.open = null; render(); } }, "← All dashboards")),
+      el("div", { class: "cs-row" }, el("div", { class: "cs-grow" }, title, saved ? null : el("p", { class: "cs-muted cs-small" }, "Not kept yet: keep it to have it here next time. Changes you make now are kept with it.")), el("div", { class: "cs-actions cs-noprint" }, actions)));
+    const grid = el("div", { class: "cs-board cs-mt" });
+    if (!b.tiles.length) grid.append(el("p", { class: "cs-empty cs-l" }, "No charts yet. Add one, or plan the dashboard with the AI."));
+    let dragged = null;
+    for (const t of b.tiles) {
+      const sizeBtn = el("button", { type: "button", class: "cs-mini", title: "Size", "aria-label": `Size of ${t.title}` }, { s: "S", m: "M", l: "L" }[t.size || (t.type === "kpi" ? "s" : "m")]);
+      sizeBtn.addEventListener("click", async () => { const cur = t.size || (t.type === "kpi" ? "s" : "m"); t.size = { s: "m", m: "l", l: "s" }[cur]; await save(); render(); });
+      const node = tileNode(t, [sizeBtn,
+        el("button", { type: "button", class: "cs-mini", onclick: () => tileEditor(t, b, save) }, "Edit"),
+        el("button", { type: "button", class: "cs-mini", "aria-label": `Remove ${t.title}`, onclick: async () => { b.tiles = b.tiles.filter((x) => x !== t); await save(); render(); } }, "×")]);
+      // Drag a chart onto another to put it there.
+      node.draggable = true;
+      node.addEventListener("dragstart", (e) => { dragged = t; e.dataTransfer.effectAllowed = "move"; node.classList.add("drag"); });
+      node.addEventListener("dragend", () => node.classList.remove("drag"));
+      node.addEventListener("dragover", (e) => { if (dragged && dragged !== t) { e.preventDefault(); node.classList.add("over"); } });
+      node.addEventListener("dragleave", () => node.classList.remove("over"));
+      node.addEventListener("drop", async (e) => {
+        e.preventDefault(); node.classList.remove("over");
+        if (!dragged || dragged === t) return;
+        const from = b.tiles.indexOf(dragged);
+        b.tiles.splice(from, 1);
+        b.tiles.splice(b.tiles.indexOf(t) + (from <= b.tiles.indexOf(t) ? 1 : 0), 0, dragged);
+        await save(); render();
+      });
+      grid.append(node);
+    }
+    body.append(grid);
+  }
+
+  // ---------- editing: a chart, a metric ----------
+  // The values a select offers: each table's rows and columns, and the metrics.
+  function refSelect(sel, withMetrics) {
+    const key = (r) => JSON.stringify(r.metric ? { metric: r.metric } : { ds: r.ds, col: r.col || undefined, agg: r.agg });
+    const s = el("select", { "aria-label": "Value" });
+    for (const d of tables()) {
+      const opts = [el("option", { value: key({ ds: d.name, agg: "count" }) }, `Number of rows (${d.name})`)];
+      for (const c of d.columns) {
+        if (numeric(c)) for (const a of averaged(c) ? ["avg", "min", "max"] : ["sum", "avg", "min", "max"]) opts.push(el("option", { value: key({ ds: d.name, col: c.name, agg: a }) }, `${AGG[a]} ${c.name}`));
+        else if (c.codes) opts.push(el("option", { value: key({ ds: d.name, col: c.name, agg: "distinct" }) }, `Different ${c.name}`));
+      }
+      s.append(el("optgroup", { label: d.name }, opts));
+    }
+    const ms = (S.boards.metrics || []).concat(S.open && S.open.metrics ? S.open.metrics : []);
+    if (withMetrics && ms.length) s.append(el("optgroup", { label: "My metrics" }, ms.map((m) => el("option", { value: key({ metric: m.id }) }, m.name))));
+    if (!sel) { // a new value starts on the main table's first measure
+      const m = roles().measures[0];
+      if (m) s.value = key({ ds: dataset().name, col: m.name, agg: averaged(m) ? "avg" : "sum" });
+    } else {
+      s.value = key(sel);
+      if (s.value !== key(sel)) s.append(el("option", { value: key(sel), selected: true }, `${refName(sel)} (not in the data now)`));
+    }
+    return s;
+  }
+  const readRef = (s) => JSON.parse(s.value);
+  // A list of value pickers with + and ×.
+  function refList(refs, withMetrics, max, onChange) {
+    const box = el("div", { class: "cs-refs" });
+    const add = el("button", { type: "button", class: "cs-mini" }, "+ Add a value");
+    const row = (r) => {
+      const s = refSelect(r, withMetrics);
+      s.addEventListener("change", onChange);
+      const x = el("button", { type: "button", class: "cs-mini", "aria-label": "Remove this value" }, "×");
+      const line = el("div", { class: "cs-row" }, s, x);
+      x.addEventListener("click", () => { line.remove(); add.hidden = false; onChange(); });
+      box.insertBefore(line, add);
+      add.hidden = box.querySelectorAll("select").length >= max;
+    };
+    box.append(add);
+    add.addEventListener("click", () => { row(null); onChange(); });
+    for (const r of refs) row(r);
+    return { node: box, read: () => [...box.querySelectorAll("select")].map(readRef) };
+  }
+  function editorBox(title, fields, preview, onSave) {
+    const box = el("section", { class: "cs-card2 cs-editor cs-l" }, el("header", {}, el("h3", {}, title)), el("div", { class: "cs-fields" }, fields), preview,
+      el("div", { class: "cs-row cs-mt" }, el("button", { type: "button", class: "primary", onclick: onSave }, "Save"), el("button", { type: "button", class: "ghost", onclick: () => box.remove() }, "Cancel")));
+    $("cs-body").prepend(box);
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+    return box;
+  }
+  const labelled = (text, node) => el("label", { class: "cs-field" }, el("span", {}, text), node);
+  function tileEditor(t, b, save) {
+    const draft = clone(t || { id: newId(), title: "", type: "column", values: [], by: "" });
+    const name = el("input", { type: "text", value: draft.title, maxlength: "80", placeholder: "Named after what it shows" });
+    const type = el("select", {}, Object.entries(TYPES).map(([k, l]) => el("option", { value: k, selected: k === draft.type }, l)));
+    const by = el("select", {});
+    const top = el("input", { type: "number", min: "1", max: "50", value: String(draft.top || 10) });
+    const fcol = el("select", {});
+    const fvals = el("div", { class: "cs-scroll cs-fvals" });
+    const size = el("select", {}, [["s", "Small"], ["m", "Medium"], ["l", "Wide"]].map(([k, l]) => el("option", { value: k, selected: k === (draft.size || (draft.type === "kpi" ? "s" : "m")) }, l)));
+    const preview = el("div", { class: "cs-board cs-mt" });
+    const vals = refList(draft.values.length ? draft.values : [null], true, 4, () => update());
+    // the tables a value counts in
+    const tablesOf = (r) => (r.metric ? (metricById(r.metric) ? [...metricById(r.metric).add, ...(metricById(r.metric).minus || []), ...(metricById(r.metric).per || [])].map((x) => dsNamed(x.ds)) : []) : [dsNamed(r.ds)]).filter(Boolean);
+    function splits(refs) {
+      const ts = [...new Set(refs.flatMap(tablesOf))];
+      const out = [];
+      if (ts.length && ts.every((d) => rolesOf(d).date)) out.push(...Object.entries(GRAIN).map(([k, g]) => [k, `Time: by ${g}`]));
+      const shared = ts.length ? ts[0].columns.filter((c) => c.codes && ts.every((d) => { const x = colIn(d, c.name); return x && x.codes; })) : [];
+      out.push(...shared.map((c) => [c.name, c.name]));
+      return out;
+    }
+    function filterCols(refs) {
+      const ts = [...new Set(refs.flatMap(tablesOf))];
+      return ts.length ? ts[0].columns.filter((c) => c.codes && c.words.length <= 200) : [];
+    }
+    function read() {
+      const refs = vals.read();
+      const f = fcol.value ? [...fvals.querySelectorAll("input:checked")].map((x) => x.value) : [];
+      const out = { id: draft.id, title: name.value.trim() || (refs[0] ? refName(refs[0]) : "Chart"), type: type.value, values: refs, by: type.value === "kpi" ? "" : by.value };
+      if (fcol.value && f.length) out.filters = [{ col: fcol.value, values: f }];
+      if (!["kpi", "line"].includes(out.type) && !GRAIN[out.by]) out.top = Math.max(1, Math.min(50, +top.value || 10));
+      out.size = size.value;
+      return out;
+    }
+    function update(rebuild = true) {
+      const refs = vals.read();
+      if (rebuild) {
+        const want = by.value || draft.by || autoBy();
+        const opts = splits(refs).filter(([k]) => type.value !== "line" || GRAIN[k]);
+        by.replaceChildren(...opts.map(([k, l]) => el("option", { value: k, selected: k === want }, l)));
+        by.disabled = type.value === "kpi";
+        const fwant = fcol.value || (draft.filters && draft.filters[0] && draft.filters[0].col) || "";
+        fcol.replaceChildren(el("option", { value: "" }, "No filter"), ...filterCols(refs).map((c) => el("option", { value: c.name, selected: c.name === fwant }, c.name)));
+      }
+      const fc = fcol.value && tablesOf(refs[0] || {})[0] ? colIn(tablesOf(refs[0])[0], fcol.value) : null;
+      if (rebuild || fvals.dataset.col !== fcol.value) {
+        const had = new Set(draft.filters && draft.filters[0] ? draft.filters[0].values : []);
+        fvals.dataset.col = fcol.value;
+        fvals.replaceChildren(...(fc ? fc.words.slice(0, 200).map((w) => el("label", { class: "cs-row cs-small" }, el("input", { type: "checkbox", value: w, checked: had.has(w) }), w)) : []));
+      }
+      top.disabled = ["kpi", "line"].includes(type.value) || !!GRAIN[by.value];
+      preview.replaceChildren();
+      if (!refs.length) return;
+      S.rowCache = new Map();
+      if (type.value !== "kpi" && !by.value) { preview.append(el("p", { class: "cs-unverified" }, type.value === "line" ? "A line needs values with dates." : "These values share no column to split by: pick values from one table, or split by time.")); return; }
+      preview.append(tileNode(read()));
+    }
+    for (const n of [type, by, fcol]) n.addEventListener("change", () => update(n !== by));
+    for (const n of [top, size]) n.addEventListener("change", () => update(false));
+    fvals.addEventListener("change", () => update(false));
+    const box = editorBox(t ? "Change this chart" : "Add a chart", [labelled("Title", name), labelled("Chart", type), labelled("What it shows", vals.node), labelled("Split by", by), labelled("How many", top),
+      labelled("Only rows where", el("div", {}, fcol, fvals)), labelled("Size", size)], preview, async () => {
+      const out = read();
+      if (!out.values.length || (out.type !== "kpi" && !out.by)) { say("Pick what the chart shows and how to split it.", "err"); return; }
+      if (t) Object.keys(t).forEach((k) => delete t[k]);
+      if (t) Object.assign(t, out); else b.tiles.push(out);
+      if (await save()) { box.remove(); render(); }
+    });
+    update();
+  }
+  function metricEditor(m) {
+    const draft = clone(m || { id: "m" + newId(), name: "", kind: "money", add: [], minus: [], per: [], times: 1 });
+    const name = el("input", { type: "text", value: draft.name, maxlength: "60", placeholder: "Return on ad spend" });
+    const kind = el("select", {}, [["money", "Money"], ["number", "Number"], ["percent", "Percent"]].map(([k, l]) => el("option", { value: k, selected: k === draft.kind }, l)));
+    const times = el("input", { type: "checkbox", checked: draft.times === 100 });
+    const now = el("div", { class: "cs-tile cs-mt" });
+    const show = () => {
+      const x = read();
+      now.replaceChildren(el("div", { class: "lab" }, "Now, for the dates and filters in view"), el("div", { class: "val" }, x.add.length ? metricNowOf(x) : "-"), el("div", { class: "foot" }, x.add.length ? formulaOf(x) : ""));
+    };
+    const add = refList(draft.add.length ? draft.add : [null], false, 6, show), minus = refList(draft.minus || [], false, 6, show), per = refList(draft.per || [], false, 6, show);
+    function read() { return { id: draft.id, name: name.value.trim(), kind: kind.value, add: add.read(), minus: minus.read(), per: per.read(), times: times.checked ? 100 : 1 }; }
+    const metricNowOf = (x) => { const keep = S.open; S.open = { metrics: [x] }; try { return metricNow(x); } finally { S.open = keep; } };
+    const formulaOf = (x) => formula(x);
+    for (const n of [name, kind, times]) n.addEventListener("change", show);
+    const box = editorBox(m ? "Change this metric" : "Add a metric", [labelled("Name", name), labelled("Shown as", kind), labelled("Add up", add.node), labelled("Take away", minus.node), labelled("Divide by", per.node),
+      labelled("Times 100 (a percentage)", times)], now, async () => {
+      const x = read();
+      if (!x.name || !x.add.length) { say("Give the metric a name and at least one value to add up.", "err"); return; }
+      if (await saveBoards(S.boards.boards, m ? S.boards.metrics.map((y) => (y.id === m.id ? x : y)) : [...S.boards.metrics, x])) { box.remove(); render(); }
+    });
+    S.span = boardSpan(); S.rowCache = new Map();
+    show();
+  }
+
+  // ---------- planning a dashboard with the AI ----------
+  function openPlan() {
+    if ($("cs-plan")) { $("cs-plan").querySelector("textarea").focus(); return; }
+    closeAsk();
+    const id = S.view.sheet.id;
+    const chat = (S.plans[id] = S.plans[id] || []);
+    const thread = el("div", { class: "cs-thread", "aria-live": "polite" });
+    const box = el("textarea", { rows: "1", placeholder: "What do you want to keep an eye on?", "aria-label": "Your message" });
+    const send = el("button", { type: "submit", class: "primary" }, "Send");
+    const form = el("form", { class: "cs-askbox" }, box, send);
+    const panel = el("aside", { class: "cs cs-ask", id: "cs-plan", "data-sheet": id, "aria-label": "Plan a dashboard" },
+      el("header", {}, el("h3", { class: "cs-grow" }, "Plan a dashboard with AI"), el("button", { type: "button", class: "ghost", onclick: () => panel.remove() }, "Close")), thread, form);
+    document.body.append(panel);
+    thread.append(el("div", { class: "cs-a" }, el("p", {}, "Tell me what you want to watch, or ask what is worth watching. I see your column names, not your rows. When we agree, I lay the dashboard out for you to check; code counts every number in it."),
+      el("div", { class: "cs-suggest" }, ["What should a business like mine watch every week?", "Do my ads pay off?", "Show me sales by month and by channel"].map((q) => el("button", { type: "button", onclick: () => talk(q) }, q)))));
+    for (const turn of chat) thread.append(turn.role === "user" ? el("div", { class: "cs-q" }, turn.text) : planNode(turn.plan));
+    thread.scrollTop = thread.scrollHeight;
+    box.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+    form.addEventListener("submit", (e) => { e.preventDefault(); if (box.value.trim()) talk(box.value.trim()); });
+    box.focus();
+    let busy = false;
+    async function talk(text) {
+      if (busy) return;
+      busy = true; send.disabled = true; box.value = "";
+      chat.push({ role: "user", text });
+      thread.append(el("div", { class: "cs-q" }, text));
+      const wait = el("div", { class: "cs-a" }, el("div", { class: "cs-thinking" }, el("div", { class: "now" }, "Thinking it through…")));
+      thread.append(wait);
+      thread.scrollTop = thread.scrollHeight;
+      let plan;
+      try {
+        plan = await api(`/mangoman/sheets/${id}/plan`, { method: "POST", body: JSON.stringify({ chat: chat.slice(-10).map((t) => ({ role: t.role, text: t.text })) }) });
+      } catch (err) { plan = { error: err.message }; }
+      // What it proposed rides along in the chat, so "add a chart of X" can change it.
+      chat.push({ role: "ai", text: plan.error ? "(no answer)" : plan.reply + (plan.board ? `\n(Proposed "${plan.board.name}": ${plan.board.tiles.map((t) => `${t.title} [${t.type}${t.by ? " by " + t.by : ""}]`).join("; ")})` : ""), plan });
+      if (!panel.isConnected) return;
+      wait.replaceWith(planNode(plan));
+      busy = false; send.disabled = false;
+      thread.scrollTop = thread.scrollHeight;
+      box.focus();
+    }
+  }
+  function planNode(p) {
+    if (p.error) return el("div", { class: "cs-a" }, el("p", { class: "msg err" }, p.error));
+    const node = el("div", { class: "cs-a" }, ...renderText(p.reply));
+    if (p.unchecked && p.unchecked.length) node.append(el("p", { class: "cs-unverified" }, `Check: ${p.unchecked.join(", ")} did not come from your data.`));
+    if (p.board) {
+      const show = el("button", { type: "button", class: "primary" }, `Show "${p.board.name}"`);
+      show.addEventListener("click", async () => { try { await loadBoards(); } catch (err) { say(err.message, "err"); return; } S.open = { board: clone(p.board), metrics: clone(p.metrics || []) }; S.tab = "boards"; render(); });
+      node.append(el("ul", { class: "cs-notes" }, p.board.tiles.map((t) => el("li", {}, `${t.title} (${TYPES[t.type].toLowerCase()})`))), show);
+    }
+    if (p.dropped && p.dropped.length) node.append(el("details", {}, el("summary", {}, `${plural(p.dropped.length, "part")} left out`), el("ul", {}, p.dropped.map((x) => el("li", {}, x)))));
+    return node;
+  }
+
   // ---------- live Google Sheets ----------
   function startLive() {
     stopLive();
     if (!S.view || !S.view.live) return;
     const id = S.view.sheet.id;
-    const fetched = Date.parse(S.view.sheet.sources.find((s) => s.url).fetched || 0);
+    const fetched = Date.parse(liveSource().fetched || 0);
     if (Date.now() - fetched > 60000) refresh(false);
     S.liveTimer = setInterval(() => { if (!document.hidden && S.view && S.view.sheet.id === id && location.hash.startsWith("#chargesheets/" + id)) refresh(false); }, 5 * 60000);
   }
+  // the linked Google Sheet or connection checked longest ago
+  function liveSource() { return S.view.sheet.sources.filter((s) => s.url || s.kind).sort((a, b) => Date.parse(a.fetched || 0) - Date.parse(b.fetched || 0))[0]; }
   function stopLive() { if (S.liveTimer) clearInterval(S.liveTimer); S.liveTimer = null; }
   async function refresh(byHand) {
     const id = S.view.sheet.id;
     const tag = $("cs-live");
     if (tag) tag.textContent = "Live · checking…";
     try {
-      const r = await api(`/mangoman/sheets/${id}/refresh`, { method: "POST" });
+      const r = await api(`/mangoman/sheets/${id}/refresh${byHand ? "?force=1" : ""}`, { method: "POST" });
       if (!S.view || S.view.sheet.id !== id) return;
       S.view.sheet = r.sheet;
       if (r.changed) {
@@ -1480,11 +2219,11 @@ const Sheets = (() => {
         S.view = view; S.data = data;
         S.ds = Math.min(S.ds, S.data.datasets.length - 1);
         if (location.hash.startsWith("#chargesheets/" + id) && host().querySelector("#cs-body")) render();
-        say(r.sheet.changed || "The Google Sheet changed; the dashboard is up to date.", "ok");
+        say(r.sheet.changed || "Your data changed; the dashboard is up to date.", "ok");
       } else {
         const t = $("cs-live");
         if (t) t.textContent = "Live · checked just now";
-        if (byHand) say("No changes in the Google Sheet since the last check.", "ok");
+        if (byHand) say("No changes since the last check.", "ok");
       }
     } catch (err) {
       const t = $("cs-live");
