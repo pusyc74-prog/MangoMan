@@ -126,9 +126,6 @@ func (st *Store) AddGoogle(ctx context.Context, id, link string) (Sheet, error) 
 // everything again when one changed. Connections are read at most every 30
 // minutes unless force. It says what changed in Sheet.Changed.
 func (st *Store) Refresh(ctx context.Context, id string, force bool) (Sheet, bool, error) {
-	l := st.lock(id)
-	l.Lock()
-	defer l.Unlock()
 	d, err := st.dir(id)
 	if err != nil {
 		return Sheet{}, false, err
@@ -137,11 +134,9 @@ func (st *Store) Refresh(ctx context.Context, id string, force bool) (Sheet, boo
 	if err != nil {
 		return sh, false, err
 	}
-	type got struct {
-		file, hash string
-		b          []byte
-	}
-	var fresh []got
+	// Download first, without the sheet's lock: a big store takes minutes.
+	var got []pulled
+	var failed error
 	checked, read := map[string]bool{}, map[string]bool{}
 	for _, s := range sh.Sources {
 		if s.URL == "" && s.Kind == "" {
@@ -155,14 +150,38 @@ func (st *Store) Refresh(ctx context.Context, id string, force bool) (Sheet, boo
 		}
 		tables, err := st.pull(ctx, id, s)
 		if err != nil {
-			return sh, false, err
+			if s.Kind == "" || force {
+				return sh, false, err
+			}
+			// A connection that fails waits its 30 minutes too; the rest still update.
+			failed = err
+			for _, x := range sh.Sources {
+				if x.Kind == s.Kind && x.Account == s.Account {
+					checked[x.File] = true
+				}
+			}
+			continue
 		}
 		for _, t := range tables {
 			checked[t.file] = true
-			for _, have := range sh.Sources {
-				if h := digest(t.b); have.File == t.file && h != have.Hash {
-					fresh = append(fresh, got{t.file, h, t.b})
-				}
+			got = append(got, t)
+		}
+	}
+	l := st.lock(id)
+	l.Lock()
+	defer l.Unlock()
+	if sh, err = st.Get(id); err != nil {
+		return sh, false, err
+	}
+	type changed struct {
+		file, hash string
+		b          []byte
+	}
+	var fresh []changed
+	for _, t := range got {
+		for _, have := range sh.Sources {
+			if h := digest(t.b); have.File == t.file && h != have.Hash {
+				fresh = append(fresh, changed{t.file, h, t.b})
 			}
 		}
 	}
@@ -175,6 +194,9 @@ func (st *Store) Refresh(ctx context.Context, id string, force bool) (Sheet, boo
 				}
 			}
 		})
+		if err == nil {
+			err = failed
+		}
 		return sh, false, err
 	}
 	before := sh.Rows

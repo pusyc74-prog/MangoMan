@@ -167,12 +167,12 @@ func TestOddFiles(t *testing.T) {
 	needPython(t, true)
 	st := &Store{Dir: t.TempDir()}
 	sh, _ := st.New("")
-	for name, body := range map[string]string{
-		"odd.csv": "Size (5\"),Sales,Sales,Sales 2\nS,1,2,3\nM,4,5,6\n",
-		"m1.csv":  "Source,Units\nweb,1\nshop,2\n",
-		"m2.csv":  "Source,Units\nweb,3\n",
+	for _, f := range [][2]string{ // in this order: the stacked table is named after its files in order
+		{"odd.csv", "Size (5\"),Sales,Sales,Sales 2\nS,1,2,3\nM,4,5,6\n"},
+		{"m1.csv", "Source,Units\nweb,1\nshop,2\n"},
+		{"m2.csv", "Source,Units\nweb,3\n"},
 	} {
-		if _, err := st.AddFile(sh.ID, name, strings.NewReader(body)); err != nil {
+		if _, err := st.AddFile(sh.ID, f[0], strings.NewReader(f[1])); err != nil {
 			t.Fatal(err)
 		}
 	}

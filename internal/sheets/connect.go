@@ -59,21 +59,39 @@ func (st *Store) Connect(ctx context.Context, id, kind, account, secret string) 
 	if secret == "" {
 		return Sheet{}, errors.New("paste the key first")
 	}
-	l := st.lock(id)
-	l.Lock()
-	defer l.Unlock()
+	taken := func(sh Sheet, tables []pulled) error {
+		for _, s := range sh.Sources {
+			if s.Kind == kind && s.Account == account {
+				return errors.New("this is already connected")
+			}
+			for _, t := range tables {
+				if strings.EqualFold(s.File, t.file) {
+					return fmt.Errorf("a file named %s is already in this Chargesheet: remove it first", s.File)
+				}
+			}
+		}
+		return nil
+	}
 	sh, err := st.Get(id)
+	if err == nil {
+		err = taken(sh, nil)
+	}
 	if err != nil {
 		return sh, err
 	}
-	for _, s := range sh.Sources {
-		if s.Kind == kind && s.Account == account {
-			return sh, errors.New("this is already connected")
-		}
-	}
+	// Read without the sheet's lock: a big store takes minutes.
 	tables, err := st.pullConnection(ctx, kind, account, secret)
 	if err != nil {
 		return Sheet{}, err
+	}
+	l := st.lock(id)
+	l.Lock()
+	defer l.Unlock()
+	if sh, err = st.Get(id); err == nil {
+		err = taken(sh, tables)
+	}
+	if err != nil {
+		return sh, err
 	}
 	name := secretName(id, kind, account)
 	if err := st.Keys.Set(name, secret); err != nil {

@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 	_ "time/tzdata" // the shop's time zone, on computers without a zone database
@@ -53,7 +54,7 @@ type shopToken struct {
 
 // shopifyToken buys a token, or reuses one bought earlier.
 func (st *Store) shopifyToken(ctx context.Context, shop, id, secret string) (string, error) {
-	key := shop + " " + id
+	key := shop + " " + id + " " + digest([]byte(secret))
 	st.mu.Lock()
 	t, ok := st.tokens[key]
 	st.mu.Unlock()
@@ -203,7 +204,7 @@ func (st *Store) shopify(ctx context.Context, shop, id, secret string) ([]pulled
 				return err
 			}
 			st.mu.Lock()
-			delete(st.tokens, shop+" "+id)
+			delete(st.tokens, shop+" "+id+" "+digest([]byte(secret)))
 			st.mu.Unlock()
 			token = ""
 		}
@@ -319,7 +320,20 @@ func shopifyTables(ctx context.Context, shop string, link *string, zone *time.Lo
 		return m.ShopMoney.Amount
 	}
 	head := []string{"Order", "Date", "Payment status", "Fulfilment", "Channel", "Customer ID", "Cancelled",
-		"Order total" + unit, "Discounts" + unit, "Shipping" + unit, "Tax" + unit, "Refunded" + unit}
+		"Sales after refunds" + unit, "Order total" + unit, "Discounts" + unit, "Shipping" + unit, "Tax" + unit, "Refunded" + unit}
+	// Sales after refunds: the order's total less what was paid back, so a
+	// cancelled and refunded order counts nothing.
+	net := func(o *bulkLine) string {
+		a, errA := strconv.ParseFloat(amount(o.Total), 64)
+		b, errB := strconv.ParseFloat(amount(o.Refunded), 64)
+		if errA != nil {
+			return ""
+		}
+		if errB != nil {
+			b = 0
+		}
+		return strconv.FormatFloat(a-b, 'f', 2, 64)
+	}
 	var rows, items [][]string
 	for _, o := range orders {
 		cust := ""
@@ -327,10 +341,10 @@ func shopifyTables(ctx context.Context, shop string, link *string, zone *time.Lo
 			cust = o.Customer.ID[strings.LastIndexByte(o.Customer.ID, '/')+1:]
 		}
 		rows = append(rows, []string{o.Name, day(o.CreatedAt), words(o.Financial), words(o.Fulfilment), channel(o.Source), cust,
-			map[bool]string{true: "yes", false: "no"}[o.CancelledAt != nil], amount(o.Total), amount(o.Discounts), amount(o.Shipping), amount(o.Tax), amount(o.Refunded)})
+			map[bool]string{true: "yes", false: "no"}[o.CancelledAt != nil], net(o), amount(o.Total), amount(o.Discounts), amount(o.Shipping), amount(o.Tax), amount(o.Refunded)})
 	}
 	for _, l := range lines {
-		if o := orders[l.Parent]; o != nil {
+		if o := orders[l.Parent]; o != nil && o.CancelledAt == nil { // cancelled orders sold nothing
 			items = append(items, []string{o.Name, day(o.CreatedAt), l.Title, l.SKU, l.Vendor, fmt.Sprint(l.Quantity), amount(l.Sales)})
 		}
 	}

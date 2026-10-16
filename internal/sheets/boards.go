@@ -160,14 +160,31 @@ func checkTile(t Tile, metrics map[string]Metric, prof *Profile) error {
 		}
 	}
 	for _, f := range t.Filters {
-		if f.Col == "" || len(f.Values) == 0 || len(f.Values) > 50 {
+		if f.Col == "" || len(f.Values) == 0 || len(f.Values) > 200 {
 			return fmt.Errorf("%s: a filter needs a column and its values", t.Title)
 		}
 	}
 	if (t.Type == "kpi") != (t.By == "") || t.Type == "line" && !grains[t.By] {
 		return fmt.Errorf("%s: a number tile has no split; a line splits by time; other charts by time or a column", t.Title)
 	}
-	if prof == nil || t.By == "" {
+	if prof == nil {
+		return nil
+	}
+	var all []Dataset
+	for _, r := range t.Values {
+		all = append(all, refTables(r, metrics, *prof)...)
+	}
+	for _, f := range t.Filters {
+		found := false
+		for _, ds := range all {
+			_, ok := column(ds, f.Col)
+			found = found || ok
+		}
+		if !found {
+			return fmt.Errorf("%s: no column %q to filter by", t.Title, f.Col)
+		}
+	}
+	if t.By == "" {
 		return nil
 	}
 	for _, r := range t.Values {
@@ -245,8 +262,9 @@ func (st *Store) GetBoards(id string) (Boards, error) {
 	if err != nil {
 		return b, err
 	}
-	if raw, err := os.ReadFile(filepath.Join(d, "boards.json")); err == nil {
-		_ = json.Unmarshal(raw, &b)
+	raw, err := os.ReadFile(filepath.Join(d, "boards.json"))
+	if err == nil && json.Unmarshal(raw, &b) != nil {
+		return b, errors.New("the saved dashboards could not be read")
 	}
 	return b, nil
 }
@@ -260,6 +278,9 @@ func (st *Store) SaveBoards(id string, b Boards) error {
 	if err := b.check(); err != nil {
 		return err
 	}
+	l := st.lock(id + " boards") // not the sheet's lock: a refresh may hold that for minutes
+	l.Lock()
+	defer l.Unlock()
 	raw, _ := json.Marshal(b)
 	if len(raw) > 512<<10 {
 		return errors.New("these dashboards are too big to keep")
@@ -327,6 +348,19 @@ func (st *Store) PlanBoard(ctx context.Context, id string, chat []PlanTurn) (Pla
 			continue
 		}
 		p := Plan{Reply: strings.TrimSpace(r.Reply)}
+		words := p.Reply
+		if r.Board != nil {
+			p.Board, p.Metrics, p.Dropped = cleanPlan(*r.Board, r.Metrics, saved.Metrics, prof)
+		}
+		if p.Board != nil {
+			words += "\n" + p.Board.Name
+			for _, t := range p.Board.Tiles {
+				words += "\n" + t.Title
+			}
+			for _, m := range p.Metrics {
+				words += "\n" + m.Name
+			}
+		}
 		// It sees the column summary only; any number it writes must be from
 		// there, the user's words, or the usual periods.
 		groups := [][]any{{schema(tables)}, {7.0, 14.0, 28.0, 30.0, 60.0, 90.0, 100.0, 180.0, 365.0}}
@@ -335,13 +369,10 @@ func (st *Store) PlanBoard(ctx context.Context, id string, chat []PlanTurn) (Pla
 				groups = append(groups, []any{t.Text})
 			}
 		}
-		p.Unchecked = Unchecked(p.Reply, groups)
+		p.Unchecked = Unchecked(words, groups)
 		if len(p.Unchecked) > 0 && try == 0 {
 			fix = "Your reply had numbers about the data that you cannot know: " + strings.Join(p.Unchecked, ", ") + ". Write it again without them."
 			continue
-		}
-		if r.Board != nil {
-			p.Board, p.Metrics, p.Dropped = cleanPlan(*r.Board, r.Metrics, saved.Metrics, prof)
 		}
 		return p, nil
 	}

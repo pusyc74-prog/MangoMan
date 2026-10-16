@@ -86,7 +86,7 @@ func purchases(stats []metaStat, kind string) (string, string) {
 	return "", kind
 }
 
-// metaAds reads the account's campaigns, day by day, for the last 364 days.
+// metaAds reads the account's campaigns, day by day, for the 364 days to yesterday.
 func metaAds(ctx context.Context, account, token string) ([]pulled, error) {
 	var acct struct {
 		Name     string `json:"name"`
@@ -102,7 +102,7 @@ func metaAds(ctx context.Context, account, token string) ([]pulled, error) {
 	}
 	head := []string{"Date", "Campaign", "Spend" + unit, "Impressions", "Clicks", "Purchases", "Purchase value" + unit}
 	var rows [][]string
-	end := time.Now().UTC()
+	end := time.Now().UTC().AddDate(0, 0, -1) // yesterday: Meta counts days in the account's own time zone
 	// Four windows of 91 days: short requests, which Meta answers without a report job.
 	for w := 3; w >= 0; w-- {
 		until := end.AddDate(0, 0, -91*w)

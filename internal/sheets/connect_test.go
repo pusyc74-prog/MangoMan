@@ -140,14 +140,15 @@ func TestShopifyConnection(t *testing.T) {
 		t.Fatalf("secret not kept: %v", ks.m)
 	}
 	b, _ := os.ReadFile(filepath.Join(st.Dir, sh.ID, "files", sh.Sources[0].File))
-	want := "Order,Date,Payment status,Fulfilment,Channel,Customer ID,Cancelled,Order total (INR),Discounts (INR),Shipping (INR),Tax (INR),Refunded (INR)\n" +
-		"#1002,2026-10-03,Partially refunded,Unfulfilled,Point of sale,,yes,500.00,0.0,40.0,0.0,100.0\n" +
-		"#1001,2026-10-02,Paid,Fulfilled,Online store,77,no,1250.00,50.00,0.0,190.68,0.0\n" // 8 pm UTC is the next day in India; test orders left out
+	want := "Order,Date,Payment status,Fulfilment,Channel,Customer ID,Cancelled,Sales after refunds (INR),Order total (INR),Discounts (INR),Shipping (INR),Tax (INR),Refunded (INR)\n" +
+		"#1002,2026-10-03,Partially refunded,Unfulfilled,Point of sale,,yes,400.00,500.00,0.0,40.0,0.0,100.0\n" +
+		"#1001,2026-10-02,Paid,Fulfilled,Online store,77,no,1250.00,1250.00,50.00,0.0,190.68,0.0\n" // 8 pm UTC is the next day in India; test orders left out
 	if string(b) != want {
 		t.Fatalf("orders:\n%s", b)
 	}
 	b, _ = os.ReadFile(filepath.Join(st.Dir, sh.ID, "files", sh.Sources[1].File))
-	if !strings.Contains(string(b), "Order number,Date,Product,SKU,Vendor,Quantity,Sales (INR)\n#1002,2026-10-03,Soap,S-1,Kesar,2,500.00\n") || strings.Count(string(b), "\n") != 4 {
+	// The cancelled order sold nothing.
+	if string(b) != "Order number,Date,Product,SKU,Vendor,Quantity,Sales (INR)\n#1001,2026-10-02,Kesar Oil,KO-1,Kesar,2,1000.00\n#1001,2026-10-02,Soap,S-1,Kesar,1,250.00\n" {
 		t.Fatalf("products:\n%s", b)
 	}
 	if _, err := st.Connect(context.Background(), sh.ID, "shopify", "kesar.myshopify.com", "cid\nsec"); err == nil {
@@ -169,6 +170,26 @@ func TestShopifyConnection(t *testing.T) {
 	if err != nil || !changed || sh.Changed != "Same number of rows; some values changed." {
 		t.Fatalf("changed data: %v %q %v", changed, sh.Changed, err)
 	}
+	// A connection that fails on an automatic refresh waits its 30 minutes and lets the rest update.
+	ks.m[secretName(sh.ID, "shopify", "kesar.myshopify.com")] = "cid\nwrong"
+	st.mu.Lock()
+	st.tokens = nil
+	st.mu.Unlock()
+	if _, _, err := st.Refresh(context.Background(), sh.ID, true); err == nil {
+		t.Fatal("a forced refresh hid the failure")
+	}
+	_, _ = st.update(sh.ID, func(sh *Sheet) {
+		for i := range sh.Sources {
+			sh.Sources[i].Fetched = time.Time{}
+		}
+	})
+	if _, _, err := st.Refresh(context.Background(), sh.ID, false); err == nil {
+		t.Fatal("the failure was not reported")
+	}
+	if _, _, err := st.Refresh(context.Background(), sh.ID, false); err != nil {
+		t.Fatalf("a failed connection was asked again at once: %v", err)
+	}
+	ks.m[secretName(sh.ID, "shopify", "kesar.myshopify.com")] = "cid\nsec"
 	prof, _ := st.Profile(sh.ID)
 	if len(prof.Datasets) != 2 || len(prof.Links) != 0 {
 		t.Fatalf("orders and products must stay two tables: %+v", prof.Links)
@@ -206,7 +227,7 @@ func TestMetaConnection(t *testing.T) {
 			case q.Get("after") == "p2":
 				pages++
 				fmt.Fprint(w, `{"data":[{"date_start":"2026-10-02","campaign_name":"Brand","spend":"300.5","impressions":"900","clicks":"30"}],"paging":{"next":"https://evil.example/x"}}`)
-			case span.Until == time.Now().UTC().Format("2006-01-02"): // the latest window
+			case span.Until == time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02"): // the latest window, to yesterday
 				pages++
 				// Purchases twice, as omni and as website: only one may count.
 				fmt.Fprintf(w, `{"data":[{"date_start":"2026-10-01","campaign_name":"Brand","spend":"1200.75","impressions":"5000","clicks":"120",`+

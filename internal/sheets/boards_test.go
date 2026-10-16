@@ -80,17 +80,21 @@ func TestPlanBoard(t *testing.T) {
 		{"title": "Revenue and spend by week", "type": "column", "by": "@week", "values": [{"ds": "jan + feb", "col": "Revenue (INR)", "agg": "sum"}, {"ds": "spend", "col": "Spend (INR)", "agg": "sum"}]},
 		{"title": "ROAS by week", "type": "line", "by": "@week", "values": [{"metric": "m1"}]},
 		{"title": "Profit", "type": "kpi", "values": [{"ds": "jan + feb", "col": "Profit", "agg": "sum"}]},
-		{"title": "By campaign", "type": "bar", "by": "Campaign", "values": [{"ds": "jan + feb", "col": "Units", "agg": "sum"}]}
+		{"title": "By campaign", "type": "bar", "by": "Campaign", "values": [{"ds": "jan + feb", "col": "Units", "agg": "sum"}]},
+		{"title": "Soap only", "type": "kpi", "values": [{"ds": "jan + feb", "col": "Units", "agg": "sum"}], "filters": [{"col": "Channel", "values": ["Web"]}]}
 	]}, "metrics": [{"id": "m1", "name": "Return on ad spend", "kind": "number", "add": [{"ds": "jan + feb", "col": "Revenue (INR)", "agg": "sum"}], "per": [{"ds": "spend", "col": "Spend (INR)", "agg": "sum"}]}]}`
 	p, err = st.PlanBoard(context.Background(), sh.ID, []PlanTurn{{Role: "user", Text: "yes"}})
 	if err != nil || p.Board == nil || len(p.Unchecked) != 0 {
 		t.Fatalf("plan: %+v %v", p, err)
 	}
-	if len(p.Board.Tiles) != 3 || len(p.Dropped) != 2 || len(p.Metrics) != 1 || p.Metrics[0].ID == "m1" || p.Board.Tiles[2].Values[0].Metric != p.Metrics[0].ID || p.Metrics[0].Times != 1 {
+	if len(p.Board.Tiles) != 3 || len(p.Dropped) != 3 || len(p.Metrics) != 1 || p.Metrics[0].ID == "m1" || p.Board.Tiles[2].Values[0].Metric != p.Metrics[0].ID || p.Metrics[0].Times != 1 {
 		t.Fatalf("checked plan: %+v dropped %v metrics %+v", p.Board, p.Dropped, p.Metrics)
 	}
 	if !strings.Contains(p.Dropped[0], `no column "Profit"`) || !strings.Contains(p.Dropped[1], `no column "Campaign" to split by`) {
 		t.Fatalf("dropped: %v", p.Dropped)
+	}
+	if !strings.Contains(p.Dropped[2], `no column "Channel" to filter by`) {
+		t.Fatalf("filter on a missing column kept: %v", p.Dropped)
 	}
 	// What it proposes can be kept as it is.
 	if err := st.SaveBoards(sh.ID, Boards{Boards: []Board{*p.Board}, Metrics: p.Metrics}); err != nil {

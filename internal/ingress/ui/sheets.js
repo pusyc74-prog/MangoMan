@@ -1701,6 +1701,8 @@ function main() {
   // Everything a tile shows: its keys in order and a series per value.
   function tileData(t) {
     const cx = { names: new Map(), notes: new Set() };
+    const refs = t.values.flatMap((r) => { const m = r.metric && metricById(r.metric); return m ? [...m.add, ...(m.minus || []), ...(m.per || [])] : [r]; });
+    for (const f of t.filters || []) if (!refs.some((r) => colIn(dsNamed(r.ds), f.col))) throw new Error(`no table here has the column ${f.col} it filters by`);
     const multi = new Set(t.values.filter((r) => !r.metric).map((r) => r.ds)).size > 1;
     const series = t.values.map((ref) => ({ ref, name: refName(ref, multi), fmt: fmtOf(ref), vals: values(ref, t, null, cx) }));
     let keys = [...new Set(series.flatMap((s) => [...s.vals.keys()]))];
@@ -1812,7 +1814,7 @@ function main() {
       if (tiles.length > 2) out.push({ name, why: `The main numbers${r.date ? ", the trend" : ""}${r.dims[0] ? ` and the split by ${r.dims[0].name}` : ""}.`, board: { name, tiles }, metrics: [] });
     }
     for (const ds of tables()) {
-      const spend = ds.columns.find((c) => c.kind === "money" && /spend|cost|amount spent/i.test(c.name) && !/per|cpc|cpa|cpm/i.test(c.name));
+      const spend = adSpend(ds);
       const conv = ds.columns.find((c) => numeric(c) && /conv|purchase|results|leads/i.test(c.name) && !/rate|value|cost|per/i.test(c.name));
       const camp = ds.columns.find((c) => c.codes && /campaign|ad.?group|ad name/i.test(c.name));
       if (!spend || !conv || !camp) continue;
@@ -1833,15 +1835,19 @@ function main() {
     }
     return out.slice(0, 6);
   }
+  // A table's ad spend: "spend", or "cost" in a table of campaigns (not shipping or goods costs).
+  function adSpend(ds) {
+    const camp = ds.columns.some((c) => c.codes && /campaign|ad.?group|ad name/i.test(c.name));
+    return ds.columns.find((c) => c.kind === "money" && (/spend/i.test(c.name) || (camp && /^cost\b/i.test(c.name))) && !/per|cpc|cpa|cpm|unit/i.test(c.name)) || null;
+  }
   // Every source added up by date, side by side: sales against ad spend.
   function overviewSuggestion(g) {
     const dated = tables().filter((d) => rolesOf(d).date && rolesOf(d).measures.length);
     if (dated.length < 2) return null;
-    const isSpend = (c) => c.kind === "money" && /spend|cost|amount spent/i.test(c.name) && !/per|cpc|cpa|cpm|unit/i.test(c.name);
     const spend = [], mains = [];
     let sales = null;
     for (const ds of dated) {
-      const s = ds.columns.find(isSpend);
+      const s = adSpend(ds);
       const m = s || rolesOf(ds).measures.find((c) => c.kind === "money" && !averaged(c)) || rolesOf(ds).measures[0];
       mains.push({ ds, m });
       if (s) spend.push({ ds: ds.name, col: s.name, agg: "sum" });
@@ -1851,14 +1857,17 @@ function main() {
     const ref = (x) => ({ ds: x.ds.name, col: x.m.name, agg: averaged(x.m) ? "avg" : "sum" });
     const tiles = mains.slice(0, 4).map((x) => tile(`${x.m.name} · ${x.ds.name}`, "kpi", [ref(x)]));
     const metrics = [];
+    // Sales and spend in different currencies are never divided.
+    const unitOf = (r) => colIn(dsNamed(r.ds), r.col).unit;
+    if (sales) spend.splice(0, spend.length, ...spend.filter((r) => unitOf(r) === unitOf(sales)));
     if (sales && spend.length) {
       const roas = { id: "m" + newId(), name: "Return on ad spend", kind: "number", add: [sales], per: spend, times: 1 };
       const share = { id: "m" + newId(), name: "Ad spend as % of sales", kind: "percent", add: spend, per: [sales], times: 100 };
       metrics.push(roas, share);
       tiles.push(tile(roas.name, "kpi", [{ metric: roas.id }]), tile(share.name, "kpi", [{ metric: share.id }]));
-      const sds = dsNamed(sales.ds);
-      if (/order/i.test(sds.name) || sds.columns.some((c) => /^order/i.test(c.name))) {
-        const cpo = { id: "m" + newId(), name: "Ad spend per order", kind: "money", add: spend, per: [{ ds: sales.ds, agg: "count" }], times: 1 };
+      const order = dsNamed(sales.ds).columns.find((c) => c.codes && /^order\b/i.test(c.name));
+      if (order) { // different orders, not rows: a table of order lines has several rows an order
+        const cpo = { id: "m" + newId(), name: "Ad spend per order", kind: "money", add: spend, per: [{ ds: sales.ds, col: order.name, agg: "distinct" }], times: 1 };
         metrics.push(cpo);
         tiles.push(tile(cpo.name, "kpi", [{ metric: cpo.id }]));
       }
@@ -2069,9 +2078,9 @@ function main() {
     function read() {
       const refs = vals.read();
       const f = fcol.value ? [...fvals.querySelectorAll("input:checked")].map((x) => x.value) : [];
-      const out = { id: draft.id, title: name.value.trim() || (refs[0] ? refName(refs[0]) : "Chart"), type: type.value, values: refs, by: type.value === "kpi" ? "" : by.value };
+      const out = { id: draft.id, title: (name.value.trim() || (refs[0] ? refName(refs[0]) : "Chart")).slice(0, 80), type: type.value, values: refs, by: type.value === "kpi" ? "" : by.value };
       if (fcol.value && f.length) out.filters = [{ col: fcol.value, values: f }];
-      if (!["kpi", "line"].includes(out.type) && !GRAIN[out.by]) out.top = Math.max(1, Math.min(50, +top.value || 10));
+      if (!["kpi", "line"].includes(out.type) && !GRAIN[out.by]) out.top = Math.max(1, Math.min(50, Math.round(+top.value) || 10));
       out.size = size.value;
       return out;
     }
