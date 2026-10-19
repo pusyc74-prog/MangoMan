@@ -56,11 +56,14 @@ jobs:
           { date; scripts/make-site.sh "$site"; date; } 2>&1 | tee out/install.txt
           curl -fsSL "$site/install.sh" | MANGOMAN_SITE="$site" MANGOMAN_NO_START=1 sh -x 2>&1 | tee -a out/install.txt
           app="$HOME/Applications/MangoMan.app"
+          # The launcher and the program are two files (a Mac ignores case in names).
+          ls "$app/Contents/MacOS" | tee -a out/install.txt
+          [ "$(ls "$app/Contents/MacOS" | wc -l | tr -d ' ')" = 2 ] || exit 1
           plutil -lint "$app/Contents/Info.plist" | tee -a out/install.txt
-          codesign -dv "$app/Contents/MacOS/mangoman" 2>&1 | tee -a out/install.txt || true
+          codesign -dv "$app/Contents/MacOS/mangoman-cli" 2>&1 | tee -a out/install.txt || true
           # The first run of the program hung on 19 Oct: give it 60 s, and if it
           # hangs, keep its stacks (sample) for the report.
-          "$app/Contents/MacOS/mangoman" version > out/version.txt 2>&1 &
+          "$app/Contents/MacOS/mangoman-cli" version > out/version.txt 2>&1 &
           pid=$!
           for i in $(seq 60); do kill -0 "$pid" 2>/dev/null || break; sleep 1; done
           if kill -0 "$pid" 2>/dev/null; then
@@ -72,7 +75,7 @@ jobs:
           wait "$pid" || { echo "version failed: $?" | tee -a out/install.txt; exit 1; }
           cat out/version.txt | tee -a out/install.txt
           # No quarantine flag: Gatekeeper will not stop the app.
-          if xattr "$app/Contents/MacOS/mangoman" | grep -q quarantine; then echo "quarantine flag set" | tee -a out/install.txt; exit 1; fi
+          if xattr "$app/Contents/MacOS/mangoman-cli" | grep -q quarantine; then echo "quarantine flag set" | tee -a out/install.txt; exit 1; fi
           echo "no quarantine flag" | tee -a out/install.txt
       - name: The app runs in the background, opens no window, and stops from the page
         timeout-minutes: 3
@@ -84,7 +87,7 @@ jobs:
           if ! curl -sf http://127.0.0.1:4141/healthz > /dev/null; then echo "not running after open"; cat "$HOMEDIR/serve.log"; exit 1; fi
           sleep 3
           open "$HOME/Applications/MangoMan.app"; sleep 5
-          n=$(pgrep -f "MangoMan.app/Contents/MacOS/mangoman serve" | wc -l | tr -d ' ')
+          n=$(pgrep -f "MangoMan.app/Contents/MacOS/mangoman-cli serve" | wc -l | tr -d ' ')
           echo "routers running after two opens: $n" | tee out/app.txt
           [ "$n" = 1 ] || exit 1
           tok=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['token'])" "$HOMEDIR/config.json")

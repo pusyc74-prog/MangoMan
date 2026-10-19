@@ -47,13 +47,17 @@ chmod +x "$tmp/mangoman"
 
 if [ "$os" = darwin ]; then
 	app="$HOME/Applications/MangoMan.app"
+	# A Mac's disk ignores the case of names: the program must not be called
+	# mangoman next to the launcher MangoMan, or one overwrites the other (the
+	# launcher then opened itself in Terminal again and again, 19 Oct).
+	rm -rf "$app/Contents/MacOS"
 	mkdir -p "$app/Contents/MacOS"
-	mv -f "$tmp/mangoman" "$app/Contents/MacOS/mangoman"
+	mv -f "$tmp/mangoman" "$app/Contents/MacOS/mangoman-cli"
 	# Started with no window, MangoMan runs in the background and opens in the
 	# browser; another click only opens the page. Stop MangoMan is on Settings.
 	cat >"$app/Contents/MacOS/MangoMan" <<'EOF'
 #!/bin/sh
-exec "$(dirname "$0")/mangoman" app </dev/null
+exec "$(dirname "$0")/mangoman-cli" app </dev/null
 EOF
 	chmod +x "$app/Contents/MacOS/MangoMan"
 	cat >"$app/Contents/Info.plist" <<'EOF'
