@@ -1,0 +1,72 @@
+FAIL  dashboard
+      analysis failed:
+      Traceback (most recent call last):
+        File "/private/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/dashboard/analysis.py", line 1, in <module>
+          import pandas as pd, json
+      ModuleNotFoundError: No module named 'pandas'
+      
+FAIL  deck
+      analysis failed:
+      Traceback (most recent call last):
+        File "/private/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/deck/analysis.py", line 1, in <module>
+          import pandas as pd, json
+      ModuleNotFoundError: No module named 'pandas'
+      
+PASS  resume (11 checks)
+FAIL  social
+      Traceback (most recent call last):
+        File "/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/skills/mangoman-social-posts/scripts/build_posts.py", line 525, in <module>
+          main()
+          ~~~~^^
+        File "/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/skills/mangoman-social-posts/scripts/build_posts.py", line 507, in main
+          from PIL import Image
+      ModuleNotFoundError: No module named 'PIL'
+FAIL  landing
+      Traceback (most recent call last):
+        File "/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/skills/mangoman-landing-page/scripts/build_page.py", line 622, in <module>
+          main()
+          ~~~~^^
+        File "/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/skills/mangoman-landing-page/scripts/build_page.py", line 607, in main
+          note = build(spec, bdir, out)
+        File "/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/skills/mangoman-landing-page/scripts/build_page.py", line 551, in build
+          imgs[src] = web_image(path_in(bdir, src), adir, "img-%02d-%s" % (k, slug(os.path.splitext(os.path.basename(src))[0])[:24]))
+                      ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/skills/mangoman-landing-page/scripts/build_page.py", line 151, in web_image
+          from PIL import Image, ImageOps
+      ModuleNotFoundError: No module named 'PIL'
+PASS  proposal (8 checks)
+FAIL  email
+      Traceback (most recent call last):
+        File "/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/skills/mangoman-email-campaign/scripts/build_emails.py", line 419, in <module>
+          main()
+          ~~~~^^
+        File "/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/skills/mangoman-email-campaign/scripts/build_emails.py", line 386, in main
+          imgs, logo = prepare_images(spec_r, bdir, out)
+                       ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+        File "/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/skills/mangoman-email-campaign/scripts/build_emails.py", line 312, in prepare_images
+          from PIL import Image
+      ModuleNotFoundError: No module named 'PIL'
+PASS  listing (14 checks)
+FAIL  invoice
+      Tax Invoice NB/26-27/041: total ₹2,18,300.00 (IGST)
+      built invoice.html, invoice.pdf
+      FAIL  missing from the PDF: NB/26-27/041; ₹2,18,300.00
+PASS  ads (7 checks)
+PASS  seo (14 checks)
+FAIL  report
+      analysis failed:
+      Traceback (most recent call last):
+        File "/private/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T/tmp.esSnANgIme/report/analysis.py", line 2, in <module>
+          import pandas as pd
+      ModuleNotFoundError: No module named 'pandas'
+      
+PASS  minutes (10 checks)
+PASS  brand (6 checks)
+PASS  review (7 checks)
+PASS  copy (18 checks)
+PASS  strategy (23 checks)
+FAIL  webapp
+      wrote starter/index.html
+      FAIL  Playwright is missing: run mangoman ready (or click Get ready in the dashboard)
+PASS  listing-pro (15 checks)
+PASS  ads-pro (6 checks)
