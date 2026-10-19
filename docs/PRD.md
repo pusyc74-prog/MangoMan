@@ -4,6 +4,259 @@ Oct 6, 2026 · MANGO
 
 MangoMan is a free, local-first AI router that pools every free model a builder can reach, switches automatically when one runs dry, and never holds their keys or sees their prompts.
 
+## Contents
+
+Click a topic to jump to it.
+
+1. [MangoMan today (19 Oct 2026)](#mangoman-today-19-oct-2026)
+   - [Why people choose it (USPs)](#why-people-choose-it-usps)
+   - [What makes it different](#what-makes-it-different)
+   - [Architecture](#architecture)
+   - [How a Super Agent works](#how-a-super-agent-works)
+   - [The screens](#the-screens)
+     - [Setup](#setup) · [Super Agents](#super-agents) · [Brief: your business](#brief-your-business) · [Brief: this job](#brief-this-job) · [Coding screen](#coding-screen) · [Skills library](#your-agents-and-the-skills-library) · [Build an agent](#build-an-agent) · [Chargesheets](#chargesheets) · [Overview](#chargesheets-overview) · [Business overview](#chargesheets-business-overview) · [My dashboards](#chargesheets-my-dashboards) · [Readout](#chargesheets-readout) · [Guardian](#guardian) · [Templates](#templates) · [Connections](#connections) · [Settings](#settings)
+   - [Status at a glance](#status-at-a-glance)
+2. [Problem and pain points](#problem-and-pain-points)
+3. [Users and jobs to be done](#users-and-jobs-to-be-done)
+4. [Product principles](#product-principles)
+5. [Competitive landscape](#competitive-landscape)
+6. [Feature comparison](#feature-comparison)
+7. [Feature list by layer](#feature-list-by-layer)
+8. [Smart layer (Jev-style intelligence)](#smart-layer-jev-style-intelligence)
+9. [Skill packs and agent marketplace](#skill-packs-and-agent-marketplace)
+10. [MangoMan app for everyone (M5)](#mangoman-app-for-everyone-m5)
+11. [System architecture and routing engine](#system-architecture-and-routing-engine)
+12. [API compatibility layer](#api-compatibility-layer)
+13. [Catalogue, model radar and network intelligence](#catalogue-model-radar-and-network-intelligence)
+    - [Mango Arch: shared learning (phase 1 built 15 Oct, not live)](#mango-arch-shared-learning-phase-1-built-15-oct-not-live)
+14. [Security model](#security-model)
+15. [User experience and technology stack](#user-experience-and-technology-stack)
+16. [Phased roadmap](#phased-roadmap)
+17. [Build status and change log](#build-status-and-change-log)
+18. [Success metrics, risks and open questions](#success-metrics-risks-and-open-questions)
+19. [Sources](#sources)
+
+## MangoMan today (19 Oct 2026)
+
+MangoMan turns free AI into finished, checked work on the user's own computer. A router pools every free AI model the user can reach; on top of it, Super Agents, Chargesheets and Guardian do whole jobs, and scripts check every file before it is handed over. Keys, files and data stay on the computer. A clickable tour of the real screens: [MangoMan Tour](https://claude.ai/artifact/AuBFenCXihENmwaXLkUSG2).
+
+| Part | What it does | Who it is for |
+| --- | --- | --- |
+| Router | Pools free models (Groq, Cerebras, NVIDIA, OpenRouter free models, OpenCode Zen, and Ollama on the computer), learns their limits, and switches when one is busy, slow or out of quota. One local address for any AI tool. | Everyone; builders using Claude Code, Codex, Cursor or OpenCode |
+| Super Agents | Agents that do a senior person's whole job from one brief: Social Media Manager, Marketing Strategist, SEO Strategist; plus task agents such as Data Analyst and Website Builder. | Owners, marketers, freelancers |
+| Skills library | 26 skills: 18 that build and check files, 5 of expert know-how, 3 agent playbooks. Read any, copy one to improve it, write a new one, or build a new agent from them. | Everyone; power users |
+| Coding screen | OpenCode, run by MangoMan: chat, Plan or Build, Changes, Terminal and Preview. Agents do their work here. | Everyone, through the agents; builders |
+| Chargesheets | Spreadsheets and connected apps (Shopify, Meta ads, Google Ads through a Google Sheet) as dashboards; questions in plain words; every number checked against the data. | Owners, analysts, agencies |
+| Guardian | Watches a website or app the way a visitor would, explains what broke, and fixes it in a safe copy with the owner's approval. | Anyone with a site or app |
+| Mango Arch | Shared learning between MangoMans: which free models are failing right now. Opt-in, counts only. | Everyone (built, not live) |
+| Templates, My Files, Connections, Usage, Settings | One-job templates, a folder per task, the free AI services, what was used, and Stop MangoMan. | Everyone |
+
+### Why people choose it (USPs)
+
+1. **Free by default.** It runs on the free tiers of many AI providers at once, so one running out does not stop the work. A paid key for a stronger model is the user's own choice (decided, not built).
+2. **Private by design.** Keys sit in the computer's own key store, files and data stay on the computer, prompts go straight to the provider, and MangoMan stores no prompts or answers.
+3. **Finished work, not chat.** Skill packs turn the model's writing into real files (PDF, PowerPoint, web pages, images, CSV), and a checker runs before delivery. Every number in a file must trace to the user's facts or to computed values.
+4. **Super Agents that work like a senior hire.** One brief, then stages: research with sources, strategy, plan, a designed report, and the first posts, ads, emails or articles, each checked.
+5. **It fixes, not only reports.** Guardian finds the cause of a failure and fixes it in a safe copy; nothing goes live without approval.
+6. **Your data as a dashboard in one click.** Chargesheets reads messy spreadsheets and connected apps, and checks every number an answer gives.
+7. **Open to the user.** Any skill can be read and copied, and anyone can build their own agent from the library without code.
+8. **Universal.** Any country, language and currency; nothing is tied to one market.
+
+### What makes it different
+
+Each row is a need; the columns compare MangoMan with the kinds of tools people use for it today.
+
+| Need | MangoMan | Typical AI chat app | Typical single-purpose tool (social, SEO, dashboards) |
+| --- | --- | --- | --- |
+| Cost to start | Free AI tiers, pooled; own key optional | Free plan with limits; paid plan for the strongest models | Monthly subscription per tool |
+| Where data lives | On the user's computer | The provider's cloud | The tool's cloud |
+| What you get | Finished files, checked by scripts | Answers in a chat | Reports inside the tool |
+| Numbers | Traced to the user's facts or computed by code | Written by the model | Computed by the tool |
+| Changes made for you | Agents write the work; Guardian fixes the site with approval | Copy and paste by the user | Mostly suggestions |
+| Several jobs in one place | Agents share one business brief and one library | One chat at a time | One job per tool |
+| Grow it yourself | Copy skills, build agents | Custom instructions | Settings only |
+
+The combination is the point. Each piece exists somewhere, but in the sources checked on 15 Oct no tool for non-technical users combined free AI, approval-gated self-healing of their own app, and verified lessons shared between users.
+
+### Architecture
+
+```mermaid
+flowchart LR
+  subgraph pc["On the user's computer"]
+    ui["Dashboard in the browser<br/>Super Agents, Chargesheets, Guardian,<br/>Templates, My Files, Settings"]
+    subgraph core["MangoMan program (one file, Go)"]
+      api["Local API on 127.0.0.1<br/>brief, skills library, files, quit"]
+      router["Router<br/>classify, rank, quota, failover"]
+      keys["Key store<br/>the computer's own keychain"]
+      sheets["Chargesheets engine<br/>reads files, runs checked queries"]
+      guard["Guardian<br/>checks, first aid, fix in a safe copy"]
+    end
+    code["Coding screen<br/>OpenCode with MangoMan's skills"]
+    skills["Skill packs<br/>build and check files with Python"]
+    files["MangoMan Projects<br/>a folder per task, brief.json"]
+    local["Local models<br/>Ollama"]
+  end
+  subgraph free["Free AI providers"]
+    prov["Groq, Cerebras, NVIDIA,<br/>OpenRouter, OpenCode Zen"]
+  end
+  subgraph apps["The user's apps"]
+    conn["Shopify, Meta ads,<br/>Google Sheets"]
+  end
+  subgraph ours["MangoMan's cloud"]
+    cat["Signed model catalogue"]
+    arch["Mango Arch<br/>opt-in counts, signed lessons"]
+  end
+  ui --> api
+  api --> router
+  api --> sheets
+  api --> guard
+  code --> router
+  code --> skills
+  skills --> files
+  router --> keys
+  router --> prov
+  router --> local
+  sheets --> conn
+  cat -.-> router
+  router -.-> arch
+```
+
+Only the router holds keys and sees prompts, and it sends them straight to each provider. MangoMan's own cloud only publishes the model catalogue and, when Mango Arch goes live, receives opt-in counts with no content. Dashed lines are data that changes the order models are tried in, never code.
+
+### How a Super Agent works
+
+```mermaid
+flowchart TD
+  start["Press Start on an agent card"] --> form["Brief form<br/>business saved once, plus this job's answers"]
+  form --> folder["New task folder<br/>brief.json and the logo"]
+  folder --> screen["Coding screen opens<br/>with the agent's first message"]
+  screen --> research["Research<br/>web pages opened, every finding with its source"]
+  research --> strategy["Strategy<br/>positioning, voice, goals"]
+  strategy --> plan["Plan<br/>pillars, channels, calendar, targets"]
+  plan --> report["Report<br/>build_report makes HTML, PDF, calendar CSV"]
+  report --> check{"check_report<br/>all checks pass?"}
+  check -- "no: fix and rebuild" --> report
+  check -- yes --> assets["Assets<br/>posts, ads, emails or articles, each built and checked"]
+  assets --> deliver["Deliver<br/>three-line summary, files in My Files, what to do this week"]
+```
+
+The model writes the content; scripts lay it out and check it. A report fails when a research claim has no source, a number is not in the user's facts or a source's findings, pillar or budget shares do not add up to 100, or a target has no way to be measured.
+
+### The screens
+
+Real screens from the current build; the businesses and numbers in them are made up.
+
+#### Setup
+
+![Setup](screens/setup.webp)
+
+The first page after install. Connect one free AI service, press Get ready (it installs MangoMan's own Python and the coding helper, sizes shown first), and start. About five minutes.
+
+#### Super Agents
+
+![Super Agents](screens/agents.webp)
+
+The home page. Each card says what the agent delivers, the stages it works through, and what to have ready. Start opens its brief.
+
+#### Brief: your business
+
+![Brief: your business](screens/brief-business.webp)
+
+Asked once and kept for every agent in MangoMan Projects/Brand: name, what you sell with prices, customers, where, language, currency, competitors, real facts, tone, colours and the logo.
+
+#### Brief: this job
+
+![Brief: this job](screens/brief-job.webp)
+
+The job's questions as buttons, with a box for your own answer. Start the agent saves brief.json in a new task folder and opens the coding screen with the agent's first message.
+
+#### Coding screen
+
+![Coding screen](screens/code.webp)
+
+Where agents and tasks run: the chat with each step it takes, Plan or Build, and tabs for Changes, Terminal and Preview. Shown with a short test task.
+
+#### Your agents and the Skills library
+
+![Your agents and the Skills library](screens/library.webp)
+
+Your own agents sit above the library. The library lists every skill by kind, with Read for MangoMan's skills and Edit or Improve with AI for your own.
+
+#### Build an agent
+
+![Build an agent](screens/build-agent.webp)
+
+Name, job, the skills it uses and its stages, one per line. MangoMan writes the agent's playbook, and it starts from the same brief as the built-in agents.
+
+#### Chargesheets
+
+![Chargesheets](screens/sheets-home.webp)
+
+Upload Excel or CSV files, link a Google Sheet shared by link, or connect Shopify, Meta ads and Google Ads. Each Chargesheet keeps its own dashboard.
+
+#### Chargesheets: Overview
+
+![Chargesheets: Overview](screens/sheet-overview.webp)
+
+Key numbers with their change against the period before, splits, short rankings and what stands out, all counted by code from the rows, for every filter.
+
+#### Chargesheets: Business overview
+
+![Chargesheets: Business overview](screens/sheet-business-overview.webp)
+
+Sources added up by date and set side by side: sales against ad spend, return on ad spend, ad spend as a share of sales and per order, over the days all sources cover.
+
+#### Chargesheets: My dashboards
+
+![Chargesheets: My dashboards](screens/sheet-my-dashboards.webp)
+
+Suggested dashboards from the analysis, your own dashboards and metrics, and Plan with AI, where code checks every proposed chart against the data.
+
+#### Chargesheets: Readout
+
+![Chargesheets: Readout](screens/sheet-readout.webp)
+
+A written summary made from the counted facts, with every number checked against the data, ready to save as PDF. Trends, Breakdown, Drill-down, Spread, Data quality and All rows sit in the other tabs.
+
+#### Guardian
+
+![Guardian](screens/healing.webp)
+
+Connect a website or app with its live address (or its code folder). Guardian checks it like a visitor, explains failures with a fix request, and with the code it fixes the cause in a safe copy and asks before going live.
+
+#### Templates
+
+![Templates](screens/templates.webp)
+
+One job each, done well: ad copy, brand guide, slide deck, client report, code review, data dashboard, product listing, email campaign, GST invoice, one-page website, meeting minutes, proposal, resume, blog article, social posts, small app, website copy and the strategy report.
+
+#### Connections
+
+![Connections](screens/connections.webp)
+
+The free AI services MangoMan uses, how many models each gives, and whether each may train on prompts. One key is enough to start; team keys take turns.
+
+#### Settings
+
+![Settings](screens/settings.webp)
+
+Version, the files folder, the setup page, Stop MangoMan, and Mango Arch sharing (off until it goes live).
+
+### Status at a glance
+
+| Part | State | Evidence or what is missing |
+| --- | --- | --- |
+| Router and dashboard | Built and tested | Load test: 3,000 requests, 300 at once, 0 failed |
+| 18 file-building skill packs | Built and tested | Every pack's sample built and checked in CI; real-model runs for 7 test sets |
+| Chargesheets | Built and tested | Real-model test: 17 of 17 questions right (run 38788709770). Shopify and Meta not yet run against a real store or ad account |
+| Mac app | Built and tested | 19 Oct: runs in the background, Stop on Settings; Mac check passed every step |
+| Super Agents, brief, Skills library, agent builder | Built, not yet proven | Tested with samples and a browser; no run on a real model yet |
+| Guardian | Built, not yet proven | Tested with a stand-in AI only |
+| Mango Arch phase 1 | Built, not live | Needs the owner's Cloudflare setup and the privacy policy |
+| Own paid key for a stronger model | Decided, not built | The user's choice; no promotion unless a provider has an affiliate programme |
+| SEO and AI search agent (GEO, AEO) | Proposed | Hidden-search map, passage tests, proof by repeated measurement |
+| History page, phone app, cloud service | Not built | History is a placeholder; the phone app and a paid cloud need the owner's pricing decision |
+
 ## Problem and pain points
 
 There is a lot of free AI capacity in 2026, but it is scattered across a dozen providers, each with its own limits, terms and data policy, and it changes every week. Builders either pay for convenience or spend hours stitching free tiers together by hand.
@@ -618,6 +871,7 @@ Phase 1 milestones M1 to M4, decision brain v1, all 17 skill packs (waves 1 to 5
 
 | Date | Item | What changed |
 | --- | --- | --- |
+| 2026-10-19 | PRD: MangoMan today, contents and screens | Owner (19 Oct): the PRD should show the USPs, the architecture, what makes MangoMan different, the screens and what each part does, with diagrams, and a clickable contents list at the top. Added after the lead: Contents (links to every section), MangoMan today (each part and what it does), the USPs, a comparison with chat apps and single-purpose tools, an architecture diagram, the Super Agent flow, 16 screenshots of the current build with what each screen does (made-up sample data; also a clickable tour artifact), and a status table (built and tested, built but not proven, not live, decided, proposed). |
 | 2026-10-19 | Mac app runs in the background | Owner (19 Oct, on his Mac): every click on the MangoMan app opened another Terminal window, and they piled up; pressing Ctrl-C in one stopped MangoMan. Cause: a Mac's disk ignores the case of names, so the install's launcher MangoMan overwrote the program mangoman in the same folder; the launcher then opened itself in Terminal again and again (found by mac-check, which checked the file but never ran it). The program is now Contents/MacOS/mangoman-cli. Now the app runs `mangoman app`: MangoMan starts in the background (log in serve.log in MangoMan's folder), opens in the browser, and the app's own process ends; another click only opens the page; a start error shows in a Mac dialog. Settings has Stop MangoMan (POST /mangoman/quit). A Mac already installed needs the install line once more to get the new app. Windows still opens a window. mac-check.yml now opens the app twice, checks one MangoMan runs, and stops it from the page. |
 | 2026-10-16 | Super agents, skills library and agent builder | Owner (16 Oct): the agents were too basic and the social media agent asked questions with no way to answer; he wants world-class super agents that do a senior person's whole job, a library of skills that shows what MangoMan already has, and a way to improve skills and build new agents; universal, not India only. He chose Social Media Manager, Marketing Strategist and SEO Strategist first. Built: a brief form on Start (business kept in MangoMan Projects/Brand with the logo, the job's questions as buttons or own words; MangoMan writes brief.json to a new task folder, internal/ingress/brief.go); the three agents as playbooks (kind agent) that work in stages: research with sources, strategy, plan, a designed report, then the first posts, ads and emails, or articles, each checked; the strategy report pack (report.json to HTML, PDF, Markdown and a calendar CSV; the checker wants each kind's sections, citations for research, every number in the facts or a source's findings, pillar and budget shares adding to 100, dated calendars and measurable targets); five know-how skills (kind method) adapted from coreyhaines31/marketingskills under MIT with the licence kept; the posts pack made country-neutral. The Skills library and agent builder sit on the Super Agents page (internal/ingress/library.go): every skill by kind, read ours, copy one to change as the user's own (no marker file, so updates leave it alone; the LICENSE now allows such copies inside MangoMan), write a new skill by hand or with the AI, and build an agent from skills, started from the same brief. The question card bug was fixed first (7b5fb95). A separate review found 8 issues (an advanced agent install could delete a user's skill of the same name; the checker missed numbers stored as JSON numbers and a budget with no total; long answers in Hindi failed byte limits; the tab could be blocked after saving; the logo name was trusted as a path; the skill size limit; crashes on loose shares) plus invalid YAML in the code review pack; all fixed with tests. Not yet run on a real model. Paid keys for a better brain: the user's choice, no promotion unless a provider has an affiliate programme; not built yet. |
 | 2026-10-16 | Chargesheets: the sample dashboard's look | Owner (16 Oct): the hand-made sample dashboard from his feed file looked better and told more (colours, layout, cards). Redone in its style, keeping the colour-blind-checked palette in the sample's warmer order (green, amber, blue, orange, purple, pink; the sample's own colours failed the checks). Overview: number tiles with context (an "of total" figure, change as a coloured tag, a ring for shares such as data filled in and feed health, a tag for problems), a row of a donut with the total in its middle (only for a split of a few groups where no single one is nearly everything; rows are counted when the measure is an average), labelled meter bars instead of axis charts for short rankings, and What stands out (for a product feed: Fix these first with View buttons), then the trend and an In brief card that code writes from its own counts. Header with a logo and the file line; a badge on Data quality with the number of key columns that have blanks. Short bar lists everywhere are labelled meters; custom dashboards draw one scale a chart (two units become two charts, never two axes), pies as donuts, and number tiles like the Overview's. Numbers that name things (category numbers, ids, codes, years) are never added up. The business overview says so plainly when sales and ad spend share no dates. |

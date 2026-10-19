@@ -32,6 +32,11 @@ def norm(text):
             continue
         if "embedded content" in line:
             continue
+        # In-page links and pictures point at different places in the two
+        # copies (block ids and blobs in the doc, slugs and files here); the
+        # doc exports a picture as [image: name].
+        line = re.sub(r"\]\(#[^)]*\)", "](#)", line)
+        line = re.sub(r"!\[([^\]]*)\]\([^)]*\)", r"[image: \1]", line).replace("&#91;image: ", "[image: ")
         out.append(re.sub(r"[`\\]", "", line))
     return out
 
