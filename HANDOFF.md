@@ -429,6 +429,7 @@ Touch files in the control dir to change the next coding request:
 | Garbling cause | Not proven; a test sending a sensible temperature (for example 0.6) could tell. |
 | Quality after a mid-task model switch | Not measured. |
 | Release, next steps | Automatic Netlify deploy from ci (token); the owner's domain; Windows in the background like the Mac (the Mac app runs in the background since 19 Oct: `mangoman app`, Stop MangoMan on Settings; Windows still opens a black window); Windows Smart App Control (new Windows 11 installs) may block the unsigned app whatever the install route. Code signing is the owner's cost decision. |
+| A Windows test failed once (19 Oct) | ci run 39213185632: other-systems (windows-latest) failed in Test, then passed on a rerun of the same commit. The log could not be read from the session (log storage blocked), so the test is not known. If it fails again, read the log on github.com. |
 | mac-check (19 Oct) | Run 39212621552 passed every step: install, the app in the background (opened twice, one MangoMan, stopped from the page), Get ready, OpenCode in zsh, every pack sample. The 13 Oct hangs are not seen since; the app had never run the real program before 19 Oct (the launcher overwrote it, a Mac ignores case in names). |
 | `OPENCODE_ZEN_API_KEY` secret | So the doctor also checks Zen. |
 | Guardian real run | Needs a Telegram bot from @BotFather and a real app. |
