@@ -125,6 +125,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	s.readyRoutes(mux)
 	s.briefRoutes(mux)
 	s.libraryRoutes(mux)
+	mux.Handle("POST /mangoman/quit", s.auth(http.HandlerFunc(s.quit)))
 	s.brainRoutes(mux)
 	s.agentRoutes(mux)
 	s.guardianRoutes(mux)
@@ -435,4 +436,15 @@ func (s *Server) ownOrigin(o string) bool {
 		}
 	}
 	return false
+}
+
+// quit stops MangoMan, for a copy running in the background with no window
+// to close. The answer goes out first.
+func (s *Server) quit(w http.ResponseWriter, _ *http.Request) {
+	if s.Quit == nil {
+		core.WriteError(w, http.StatusNotImplemented, "no_quit", "close the window MangoMan runs in to stop it")
+		return
+	}
+	writeJSON(w, map[string]bool{"stopping": true})
+	go func() { time.Sleep(300 * time.Millisecond); s.Quit() }()
 }

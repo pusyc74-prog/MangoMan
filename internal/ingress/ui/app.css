@@ -427,6 +427,7 @@ body.app { padding: 0; display: grid; grid-template-columns: 248px minmax(0, 1fr
 .lib-card .acts button { font-size: 14px; padding: 5px 12px; }
 .skill-text { width: 100%; box-sizing: border-box; min-height: 340px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   padding: 10px; border: 1px solid var(--axis); border-radius: var(--r-sm); background: var(--sunk); white-space: pre; overflow: auto; }
+.stopped { max-width: 520px; margin: 18vh auto; padding: 0 16px; text-align: center; }
 .later-head { font-size: 17px; margin: 36px 0 12px; color: var(--ink); }
 
 /* My Files and Settings */

@@ -453,3 +453,25 @@ func TestParseSteps(t *testing.T) {
 		t.Fatal(st, err)
 	}
 }
+
+// Stop MangoMan answers first, then stops; without a way to stop (a copy
+// running in a window) it says to close the window.
+func TestQuit(t *testing.T) {
+	h, s := dashServer(t, mem{})
+	if w := call(h, "POST", "/mangoman/quit", "127.0.0.1:4141", authz, ""); w.Code != http.StatusNotImplemented {
+		t.Fatalf("no quit: %d", w.Code)
+	}
+	done := make(chan struct{})
+	s.Quit = func() { close(done) }
+	if w := call(h, "POST", "/mangoman/quit", "127.0.0.1:4141", nil, ""); w.Code != http.StatusUnauthorized {
+		t.Fatalf("no token: %d", w.Code)
+	}
+	if w := call(h, "POST", "/mangoman/quit", "127.0.0.1:4141", authz, ""); w.Code != 200 {
+		t.Fatalf("quit: %d", w.Code)
+	}
+	select {
+	case <-done:
+	case <-time.After(3 * time.Second):
+		t.Fatal("did not stop")
+	}
+}

@@ -2,7 +2,7 @@
 # Installs MangoMan on a Mac or Linux:  curl -fsSL __SITE__/install.sh | sh
 # A file fetched with curl carries no quarantine flag, so macOS does not block
 # it as an app from an unknown developer. Mac: ~/Applications/MangoMan.app,
-# found with Spotlight; it opens MangoMan in a Terminal window. Linux:
+# found with Spotlight; it runs MangoMan in the background and opens it in the browser. Linux:
 # ~/.local/bin/mangoman. MANGOMAN_SITE fetches from another copy of the site
 # and MANGOMAN_NO_START skips starting MangoMan (both for the CI checks).
 # Everything is in main, called on the last line: a download cut off halfway
@@ -49,10 +49,11 @@ if [ "$os" = darwin ]; then
 	app="$HOME/Applications/MangoMan.app"
 	mkdir -p "$app/Contents/MacOS"
 	mv -f "$tmp/mangoman" "$app/Contents/MacOS/mangoman"
-	# Terminal runs MangoMan in its own window; closing the window stops it.
+	# Started with no window, MangoMan runs in the background and opens in the
+	# browser; another click only opens the page. Stop MangoMan is on Settings.
 	cat >"$app/Contents/MacOS/MangoMan" <<'EOF'
 #!/bin/sh
-exec open -a Terminal "$(dirname "$0")/mangoman"
+exec "$(dirname "$0")/mangoman" app </dev/null
 EOF
 	chmod +x "$app/Contents/MacOS/MangoMan"
 	cat >"$app/Contents/Info.plist" <<'EOF'

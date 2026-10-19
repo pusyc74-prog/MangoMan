@@ -1429,6 +1429,14 @@ document.addEventListener("DOMContentLoaded", () => {
   showView();
   loadStarters();
   loadLibrary();
+  $("quit").addEventListener("click", async () => {
+    if (!confirm("Stop MangoMan? Agents and tools using it stop too.")) return;
+    try {
+      await api("/mangoman/quit", { method: "POST" });
+      document.body.replaceChildren(el("main", { class: "stopped" }, el("h1", {}, "MangoMan has stopped."),
+        el("p", {}, "Open it again from its app or icon. You can close this tab.")));
+    } catch (err) { alert(err.message); }
+  });
   $("lib-new").addEventListener("click", newSkill);
   $("lib-agent").addEventListener("click", newAgent);
   $("mylist-add").addEventListener("submit", (e) => {

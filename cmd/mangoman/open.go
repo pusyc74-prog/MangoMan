@@ -6,8 +6,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/pyenv"
@@ -26,8 +29,9 @@ func ensureConfig() (*config.Config, error) {
 
 // cmdOpen is what a double-click does: it opens the setup page until
 // MangoMan is set up, the dashboard after that. If the router is not
-// running yet, it runs in this window until the window is closed.
-func cmdOpen() error {
+// running yet, it runs in this window until the window is closed, or, for
+// the Mac app (app), in the background until Stop MangoMan on Settings.
+func cmdOpen(app bool) error {
 	cfg, err := ensureConfig()
 	if err != nil {
 		return err
@@ -53,8 +57,47 @@ func cmdOpen() error {
 		open(connectedNow(cfg))
 		return nil
 	}
+	if app {
+		return serveInBackground(cfg, home, open)
+	}
 	fmt.Println("Keep this window open while you use MangoMan; closing it stops MangoMan.")
 	return serve(0, open)
+}
+
+// serveInBackground starts the router as its own process, logging to
+// serve.log, waits until it answers, then opens the page and returns, so a
+// click on the app opens no window and a second click only opens the page.
+func serveInBackground(cfg *config.Config, home string, open func(int)) error {
+	self, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	logPath := filepath.Join(home, "serve.log")
+	logf, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+	if err != nil {
+		return err
+	}
+	defer logf.Close()
+	c := exec.Command(self, "serve")
+	c.Stdout, c.Stderr = logf, logf
+	background(c)
+	if err := c.Start(); err != nil {
+		return fmt.Errorf("could not start MangoMan: %w", err)
+	}
+	exited := make(chan error, 1)
+	go func() { exited <- c.Wait() }()
+	for i := 0; i < 300; i++ { // 30 s: the first start unlocks the key store
+		select {
+		case <-exited:
+			return fmt.Errorf("MangoMan stopped while starting; see %s", logPath)
+		case <-time.After(100 * time.Millisecond):
+		}
+		if routerUp(cfg) {
+			open(connectedNow(cfg))
+			return nil
+		}
+	}
+	return fmt.Errorf("MangoMan did not start within 30 seconds; see %s", logPath)
 }
 
 // connectedNow asks the running router how many cloud providers it has.
@@ -82,8 +125,13 @@ func connectedNow(cfg *config.Config) int {
 }
 
 // waitIfDoubleClicked keeps a Windows console open after an error, so the
-// message can be read before the window closes.
-func waitIfDoubleClicked() {
+// message can be read before the window closes. The Mac app has no window,
+// so the error shows in a dialog instead.
+func waitIfDoubleClicked(app bool, msg string) {
+	if app && runtime.GOOS == "darwin" {
+		_ = exec.Command("osascript", "-e", "on run argv", "-e", "display alert \"MangoMan could not start\" message (item 1 of argv)", "-e", "end run", msg).Run()
+		return
+	}
 	if runtime.GOOS == "windows" && stdinIsTerminal() {
 		fmt.Print("Press Enter to close this window.")
 		_, _ = stdin.ReadString('\n')

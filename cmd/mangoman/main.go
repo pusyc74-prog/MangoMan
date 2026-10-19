@@ -87,11 +87,13 @@ func main() {
 	if home, err := config.Dir(); err == nil {
 		pyenv.Use(home)
 	}
-	if len(os.Args) < 2 {
-		// A double-click: no terminal knowledge needed.
-		if err := cmdOpen(); err != nil {
+	if len(os.Args) < 2 || os.Args[1] == "app" {
+		// A double-click, or the Mac app ("app": no window, so it runs in
+		// the background): no terminal knowledge needed.
+		app := len(os.Args) > 1
+		if err := cmdOpen(app); err != nil {
 			fmt.Fprintln(os.Stderr, "error:", err)
-			waitIfDoubleClicked()
+			waitIfDoubleClicked(app, err.Error())
 			os.Exit(1)
 		}
 		return
@@ -372,8 +374,8 @@ func serve(port int, opened func(connected int)) error {
 			g.Logf = func(f string, a ...any) { logger.Printf("%s: %s", g.Cfg.App, fmt.Sprintf(f, a...)) }
 			return g.Serve(ctx, 5*time.Minute, func([]guardian.Event) {})
 		},
-		Arch: archClient(dir, cat, cfg, rt),
-		Ask:  func(p string) (string, error) { a, _, err := askRouter(p); return a, err }}
+		Arch: archClient(dir, cat, cfg, rt), Quit: stop,
+		Ask: func(p string) (string, error) { a, _, err := askRouter(p); return a, err }}
 	srv.Sheets = &sheets.Store{Dir: filepath.Join(dir, "chargesheets"), Keys: st,
 		Model: func(p string, asJSON bool) (string, error) { a, _, err := askRouterAs(p, asJSON); return a, err }}
 	ln, err := net.Listen("tcp", srv.Addr())

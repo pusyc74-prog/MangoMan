@@ -62,6 +62,8 @@ type Server struct {
 	Arch *arch.Client
 	// Sheets is Chargesheets, the user's spreadsheets as dashboards; nil = off.
 	Sheets *sheets.Store
+	// Quit stops MangoMan (Stop MangoMan on the Settings page); nil = no button.
+	Quit func()
 
 	code  codeState  // the attached coding workspace, if any
 	ready readyState // the setup page's Get ready step

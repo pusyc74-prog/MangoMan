@@ -61,6 +61,24 @@ jobs:
           # No quarantine flag: Gatekeeper will not stop the app.
           if xattr "$app/Contents/MacOS/mangoman" | grep -q quarantine; then echo "quarantine flag set" | tee -a out/install.txt; exit 1; fi
           echo "no quarantine flag" | tee -a out/install.txt
+      - name: The app runs in the background, opens no window, and stops from the page
+        timeout-minutes: 3
+        run: |
+          # Opened the way Spotlight opens it: MangoMan starts in the background,
+          # survives the app's own process, and a second open starts nothing new.
+          open "$HOME/Applications/MangoMan.app"
+          for i in $(seq 40); do curl -sf http://127.0.0.1:4141/healthz > /dev/null && break; sleep 1; done
+          if ! curl -sf http://127.0.0.1:4141/healthz > /dev/null; then echo "not running after open"; cat "$HOMEDIR/serve.log"; exit 1; fi
+          sleep 3
+          open "$HOME/Applications/MangoMan.app"; sleep 5
+          n=$(pgrep -f "MangoMan.app/Contents/MacOS/mangoman serve" | wc -l | tr -d ' ')
+          echo "routers running after two opens: $n" | tee out/app.txt
+          [ "$n" = 1 ] || exit 1
+          tok=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['token'])" "$HOMEDIR/config.json")
+          curl -sf -X POST -H "Authorization: Bearer $tok" http://127.0.0.1:4141/mangoman/quit | tee -a out/app.txt
+          for i in $(seq 10); do curl -sf http://127.0.0.1:4141/healthz > /dev/null || break; sleep 1; done
+          if curl -sf http://127.0.0.1:4141/healthz > /dev/null; then echo "still running after Stop" | tee -a out/app.txt; exit 1; fi
+          echo "stopped from the page" | tee -a out/app.txt
       - name: Get ready, as a user would
         timeout-minutes: 8
         run: |
