@@ -57,7 +57,20 @@ jobs:
           curl -fsSL "$site/install.sh" | MANGOMAN_SITE="$site" MANGOMAN_NO_START=1 sh -x 2>&1 | tee -a out/install.txt
           app="$HOME/Applications/MangoMan.app"
           plutil -lint "$app/Contents/Info.plist" | tee -a out/install.txt
-          "$app/Contents/MacOS/mangoman" version | tee -a out/install.txt
+          codesign -dv "$app/Contents/MacOS/mangoman" 2>&1 | tee -a out/install.txt || true
+          # The first run of the program hung on 19 Oct: give it 60 s, and if it
+          # hangs, keep its stacks (sample) for the report.
+          "$app/Contents/MacOS/mangoman" version > out/version.txt 2>&1 &
+          pid=$!
+          for i in $(seq 60); do kill -0 "$pid" 2>/dev/null || break; sleep 1; done
+          if kill -0 "$pid" 2>/dev/null; then
+            { echo "version still running after 60 s"; ps -o pid,stat,etime,args -p "$pid"; } | tee -a out/install.txt
+            sample "$pid" 5 -file out/sample.txt > /dev/null 2>&1 || true
+            log show --last 3m --predicate 'process == "syspolicyd" OR process == "amfid" OR process == "kernel"' --style compact 2>/dev/null | tail -60 > out/syslog.txt || true
+            kill -9 "$pid"; exit 1
+          fi
+          wait "$pid" || { echo "version failed: $?" | tee -a out/install.txt; exit 1; }
+          cat out/version.txt | tee -a out/install.txt
           # No quarantine flag: Gatekeeper will not stop the app.
           if xattr "$app/Contents/MacOS/mangoman" | grep -q quarantine; then echo "quarantine flag set" | tee -a out/install.txt; exit 1; fi
           echo "no quarantine flag" | tee -a out/install.txt
