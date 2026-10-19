@@ -13,6 +13,8 @@ Click a topic to jump to it.
    - [What makes it different](#what-makes-it-different)
    - [Architecture](#architecture)
    - [How a Super Agent works](#how-a-super-agent-works)
+   - [The agent platform (any agent)](#the-agent-platform-any-agent)
+   - [What makes our agents better](#what-makes-our-agents-better)
    - [The screens](#the-screens)
      - [Setup](#setup) · [Super Agents](#super-agents) · [Brief: your business](#brief-your-business) · [Brief: this job](#brief-this-job) · [Coding screen](#coding-screen) · [Skills library](#your-agents-and-the-skills-library) · [Build an agent](#build-an-agent) · [Chargesheets](#chargesheets) · [Overview](#chargesheets-overview) · [Business overview](#chargesheets-business-overview) · [My dashboards](#chargesheets-my-dashboards) · [Readout](#chargesheets-readout) · [Guardian](#guardian) · [Templates](#templates) · [Connections](#connections) · [Settings](#settings)
    - [Status at a glance](#status-at-a-glance)
@@ -150,6 +152,69 @@ The flow is the same for every built-in Super Agent; what changes is the job don
 | First work | 6 to 10 posts with images, captions and hashtags | Search and social ads, an email sequence, launch posts | The first one or two articles |
 
 An agent the user builds from the Skills library starts from the same brief and follows the stages the user gave it.
+
+### The agent platform (any agent)
+
+```mermaid
+flowchart TB
+  brief["Brief<br/>business profile, this job"] --> runtime
+  files["Files and apps<br/>uploads and connected apps"] --> runtime
+  subgraph runtime["Agent runtime: each stage of the playbook"]
+    plan["Plan the stage<br/>what to find, decide or make"] --> doit["Do the work<br/>research, write, build files"]
+    doit --> check["Check<br/>scripts test facts, sources"]
+    check -- fails --> fix["Fix<br/>correct what failed, rebuild"]
+    fix -- re-check --> check
+  end
+  skills["Skills<br/>know-how and checkers"] --> runtime
+  brain["Brain<br/>pooled free models"] --> runtime
+  tools["Tools<br/>web, files, code, apps"] --> runtime
+  memory["Memory<br/>business profile, folders"] --> runtime
+  runtime -- "passes: next stage; the last delivers" --> work["Checked work<br/>reports, decks, posts, data"]
+  runtime --> changes["Changes, with approval<br/>site and app fixes you approve"]
+  work -.-> learn["Learning loop<br/>test sets score skills before release (7 packs so far);<br/>lessons shared across MangoMans (designed)"]
+  changes -.-> learn
+```
+
+A MangoMan agent is a playbook: its stages, the skill it uses at each stage, and the checks its work must pass. Everything else is shared, so a new agent for any job (finance, HR, legal paperwork, teaching, e-commerce, operations) is a new playbook, not a new product.
+
+| Building block | What it gives every agent | Status |
+| --- | --- | --- |
+| Brief | One form: the business profile (kept for every agent) and the job's own questions, saved as brief.json in a task folder | Built |
+| Playbook | The agent's stages, the skill for each stage, and its rules (a SKILL.md of kind agent) | Built |
+| Skills | Know-how (how an expert does the job) and builders with checkers (scripts that make files and test them) | Built: 26 skills |
+| Brain | The router: pooled free models with failover; the user's own key is optional | Built; own key decided, not built |
+| Tools | Web search and pages, files, code and the user's connected apps, with approval before risky steps | Built, in the coding screen |
+| Checks | Scripts that fail work with untraced numbers, missing sources, broken formats or missing parts | Built for every pack and the strategy report |
+| Memory | The business profile, and every run's files in its own folder | Built; learning from past runs not built |
+| Learning loop | Test sets and scores before release; lessons shared across MangoMans | Built for 7 packs; shared lessons designed |
+
+**The bar for every new agent (proposed rule).** Before an agent is listed it needs a brief with its questions, a playbook with stages, at least one checker on its main output, a test set with known good answers, and a score on free models above the bar, shown on its card.
+
+### What makes our agents better
+
+Most agents today are a model, a prompt and a few tools. Ours are built so their work can be trusted and checked.
+
+| What matters | Common in agents today | MangoMan agents | Status |
+| --- | --- | --- | --- |
+| Getting started | Questions one by one in a chat | One brief; the business is kept for every agent | Built |
+| Quality | The model's text is the result | Scripts build the files, and checks block delivery until they pass | Built |
+| Truth | Numbers and claims can be made up | Every number traced to the user's facts or a source; research cites its pages | Built |
+| Proof before release | Scores are rarely shown | Skill packs are scored on test sets before release; agents get the same before listing | Built for 7 packs; agents next |
+| Cost and lock-in | One model or one paid plan | Pooled free models with failover; own key optional | Built; own key decided |
+| Privacy | Runs in the vendor's cloud | Runs on the user's computer | Built |
+| Openness | Closed | Read and copy any skill; build new agents without code | Built |
+| Action | Advice to copy and paste | Writes the files; fixes sites with approval | Built for files and site fixes |
+| Learning | Each install learns alone | Verified lessons shared across MangoMans | Phase 1 built, not live; phase 2 designed |
+| Results | Claims | Measured before and after, such as repeated checks of AI search answers | Proposed |
+
+**Next, to stay ahead (proposed):**
+
+1. A scorecard on every agent card: its test-set score on free models and on the user's own key.
+2. A review stage by a second model from a different family before delivery.
+3. Memory of past runs, so what worked feeds the next run.
+4. Scheduled runs: weekly reports, monitoring, and refreshed plans.
+5. Acting in the user's apps with approval: posting, publishing, uploading listings.
+6. Proof by measurement for every agent whose result can be measured.
 
 The model writes the content; scripts lay it out and check it. A report fails when a research claim has no source, a number is not in the user's facts or a source's findings, pillar or budget shares do not add up to 100, or a target has no way to be measured.
 
@@ -882,6 +947,7 @@ Phase 1 milestones M1 to M4, decision brain v1, all 17 skill packs (waves 1 to 5
 
 | Date | Item | What changed |
 | --- | --- | --- |
+| 2026-10-19 | PRD: the agent platform and what makes our agents better | Owner (19 Oct): the flow must not be tied to one agent; MangoMan is a universal agent platform, and its agents must be clearly better than those on the market. Added: a diagram of the platform every agent runs on (brief and files in; a runtime that plans, does, checks and fixes each stage; skills, brain, tools and memory shared; checked work and approved changes out; a learning loop), a table of the building blocks with what is built, a proposed bar every new agent must pass before listing (brief, playbook, checker, test set, score shown on its card), a comparison of MangoMan agents with common agents today, and six proposed next steps (scorecards, a second-model review, memory of past runs, scheduled runs, acting in apps with approval, proof by measurement). The Super Agent flow now says it is shared by all three built-in agents, with a table of what each does at each stage. |
 | 2026-10-19 | PRD: MangoMan today, contents and screens | Owner (19 Oct): the PRD should show the USPs, the architecture, what makes MangoMan different, the screens and what each part does, with diagrams, and a clickable contents list at the top. Added after the lead: Contents (links to every section), MangoMan today (each part and what it does), the USPs, a comparison with chat apps and single-purpose tools, an architecture diagram, the Super Agent flow, 16 screenshots of the current build with what each screen does (made-up sample data; also a clickable tour artifact), and a status table (built and tested, built but not proven, not live, decided, proposed). |
 | 2026-10-19 | Mac app runs in the background | Owner (19 Oct, on his Mac): every click on the MangoMan app opened another Terminal window, and they piled up; pressing Ctrl-C in one stopped MangoMan. Cause: a Mac's disk ignores the case of names, so the install's launcher MangoMan overwrote the program mangoman in the same folder; the launcher then opened itself in Terminal again and again (found by mac-check, which checked the file but never ran it). The program is now Contents/MacOS/mangoman-cli. Now the app runs `mangoman app`: MangoMan starts in the background (log in serve.log in MangoMan's folder), opens in the browser, and the app's own process ends; another click only opens the page; a start error shows in a Mac dialog. Settings has Stop MangoMan (POST /mangoman/quit). A Mac already installed needs the install line once more to get the new app. Windows still opens a window. mac-check.yml now opens the app twice, checks one MangoMan runs, and stops it from the page. |
 | 2026-10-16 | Super agents, skills library and agent builder | Owner (16 Oct): the agents were too basic and the social media agent asked questions with no way to answer; he wants world-class super agents that do a senior person's whole job, a library of skills that shows what MangoMan already has, and a way to improve skills and build new agents; universal, not India only. He chose Social Media Manager, Marketing Strategist and SEO Strategist first. Built: a brief form on Start (business kept in MangoMan Projects/Brand with the logo, the job's questions as buttons or own words; MangoMan writes brief.json to a new task folder, internal/ingress/brief.go); the three agents as playbooks (kind agent) that work in stages: research with sources, strategy, plan, a designed report, then the first posts, ads and emails, or articles, each checked; the strategy report pack (report.json to HTML, PDF, Markdown and a calendar CSV; the checker wants each kind's sections, citations for research, every number in the facts or a source's findings, pillar and budget shares adding to 100, dated calendars and measurable targets); five know-how skills (kind method) adapted from coreyhaines31/marketingskills under MIT with the licence kept; the posts pack made country-neutral. The Skills library and agent builder sit on the Super Agents page (internal/ingress/library.go): every skill by kind, read ours, copy one to change as the user's own (no marker file, so updates leave it alone; the LICENSE now allows such copies inside MangoMan), write a new skill by hand or with the AI, and build an agent from skills, started from the same brief. The question card bug was fixed first (7b5fb95). A separate review found 8 issues (an advanced agent install could delete a user's skill of the same name; the checker missed numbers stored as JSON numbers and a budget with no total; long answers in Hindi failed byte limits; the tab could be blocked after saving; the logo name was trusted as a path; the skill size limit; crashes on loose shares) plus invalid YAML in the code review pack; all fixed with tests. Not yet run on a real model. Paid keys for a better brain: the user's choice, no promotion unless a provider has an affiliate programme; not built yet. |
