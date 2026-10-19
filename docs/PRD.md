@@ -130,15 +130,26 @@ flowchart TD
   start["Press Start on an agent card"] --> form["Brief form<br/>business saved once, plus this job's answers"]
   form --> folder["New task folder<br/>brief.json and the logo"]
   folder --> screen["Coding screen opens<br/>with the agent's first message"]
-  screen --> research["Research<br/>web pages opened, every finding with its source"]
-  research --> strategy["Strategy<br/>positioning, voice, goals"]
-  strategy --> plan["Plan<br/>pillars, channels, calendar, targets"]
-  plan --> report["Report<br/>build_report makes HTML, PDF, calendar CSV"]
+  screen --> research["Research<br/>business, rivals, customers; each with its source"]
+  research --> strategy["Strategy<br/>what to do and why"]
+  strategy --> plan["Plan<br/>by when, with targets"]
+  plan --> report["Report<br/>a designed report as a web page and PDF"]
   report --> check{"check_report<br/>all checks pass?"}
   check -- "no: fix and rebuild" --> report
-  check -- yes --> assets["Assets<br/>posts, ads, emails or articles, each built and checked"]
+  check -- yes --> assets["First work<br/>what the plan calls for, built and checked"]
   assets --> deliver["Deliver<br/>three-line summary, files in My Files, what to do this week"]
 ```
+
+The flow is the same for every built-in Super Agent; what changes is the job done at each stage:
+
+| Stage | Social Media Manager | Marketing Strategist | SEO Strategist |
+| --- | --- | --- | --- |
+| Research | Own profiles and listings, 3 to 5 competitors on social, the audience, seasons and events | The market, 3 to 5 competitors, customers' words, timing | The site page by page, the phrases customers search, who ranks today |
+| Strategy and plan | Goals, positioning, brand and content voice, 3 to 6 content pillars, platforms, a dated calendar | Positioning, SWOT, channels and budget split, a 90-day plan | A fix list by priority, pages to improve, new pages on a dated plan |
+| Report | Social media strategy | Marketing strategy | Search strategy |
+| First work | 6 to 10 posts with images, captions and hashtags | Search and social ads, an email sequence, launch posts | The first one or two articles |
+
+An agent the user builds from the Skills library starts from the same brief and follows the stages the user gave it.
 
 The model writes the content; scripts lay it out and check it. A report fails when a research claim has no source, a number is not in the user's facts or a source's findings, pillar or budget shares do not add up to 100, or a target has no way to be measured.
 
