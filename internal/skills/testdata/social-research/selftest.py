@@ -38,6 +38,8 @@ class Profile:
             raise ProfileNotExistsException("no profile")
         if name == "busy":
             raise TooManyRequestsException("429 Too Many Requests")
+        if name == "walled":  # what a cloud server got on 20 Oct (social-check)
+            raise InstaloaderException("302 Found when accessing https://www.instagram.com/walled/")
         return cls()
 
     def get_posts(self):
@@ -111,11 +113,13 @@ expect(p1["type"] == "reel" and p1["likes"] == 90 and p1["comments"] == 7 and p1
 expect(p2["type"] == "carousel" and p2["likes"] is None and p2["views"] is None, "hidden counts stay unknown")
 expect(R.instagram("https://www.instagram.com/missing/", 12)["why"] == "no public Instagram account with this name", "missing account")
 expect("slow down" in R.instagram("busy", 12)["why"], "rate limit in plain words")
+expect("login wall" in R.instagram("walled", 12)["why"], "a redirect to the login page in plain words")
 
 v = R.videos("https://www.youtube.com/@testbrand", 12)
 expect(v["ok"] and v["platform"] == "youtube" and v["account"] == "testbrand" and v["url"].endswith("/shorts"), "youtube channel reads its shorts")
 expect(v["posts"][0]["date"] == "2026-10-12" and v["posts"][0]["views"] == 3000 and v["posts"][0]["sound"] == "Band - Song", "short details")
 expect(v["posts"][1]["url"].endswith("v2") and v["posts"][1]["views"] is None, "a video page that refuses keeps the list entry")
+expect(v.get("note", "").startswith("1 of 2 videos"), "a partial read says so")
 expect("sign in" in R.videos("https://www.tiktok.com/@blocked", 12)["why"], "bot check in plain words")
 
 expect(R.page_url("meta-ads:Kesari Foods@US") == R.PAGES["meta-ads"].format(q="Kesari%20Foods", region="US"), "meta ads shortcut")

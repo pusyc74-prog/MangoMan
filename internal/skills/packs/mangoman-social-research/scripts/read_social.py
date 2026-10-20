@@ -97,7 +97,7 @@ def ig_why(e):
         return "no public Instagram account with this name"
     if name == "TooManyRequestsException" or "429" in str(e) or "wait a few minutes" in str(e).lower():
         return "Instagram asked to slow down; try again in an hour, or add links to its posts by hand"
-    if name in ("LoginRequiredException", "QueryReturnedForbiddenException") or "login" in str(e).lower():
+    if name in ("LoginRequiredException", "QueryReturnedForbiddenException") or "login" in str(e).lower() or "302" in str(e):
         return "Instagram showed a login wall for this account; add links to its posts or screenshots by hand"
     return "Instagram did not answer as expected (%s)" % str(e)[:160]
 
@@ -151,6 +151,8 @@ def video_why(e):
         return "the site asked to sign in or to prove it is not a bot; add links to its videos by hand"
     if "429" in s or "Too Many" in s:
         return "the site asked to slow down; try again in an hour"
+    if "Failed to parse JSON" in s or "Unable to extract" in s:
+        return "the site sent a page the reader could not use, often a bot check; add links to its videos by hand"
     return "the site did not answer as expected (%s)" % s.replace("ERROR: ", "")[:160]
 
 
@@ -165,13 +167,17 @@ def videos(url, n):
             info = y.extract_info(url, download=False)
             rec["profile"] = {"name": info.get("channel") or info.get("uploader") or info.get("title") or "",
                               "followers": number(info.get("channel_follower_count")), "posts": None, "bio": "", "link": ""}
+            refused = 0
             for e in list(info.get("entries") or [])[:n]:
                 full = e
                 try:  # the list gives little; each video's page gives the date and the counts
                     full = y.extract_info(e.get("url") or e.get("webpage_url"), download=False) or e
                 except yt_dlp.utils.DownloadError:
-                    pass
+                    refused += 1
                 rec["posts"].append(vid_post(full, platform))
+            if refused:
+                rec["note"] = ("%d of %d videos: only the list could be read, so titles and views (rounded as the list shows "
+                               "them) but no date, likes or comments; the site refused their own pages" % (refused, len(rec["posts"])))
     except yt_dlp.utils.DownloadError as e:
         return failed(rec, video_why(e))
     return rec
@@ -220,8 +226,11 @@ def page(target, out):
         return failed(rec, "the page did not open (%s)" % str(e).splitlines()[0][:160])
     text = re.sub(r"\n\s*\n+", "\n", text).strip()
     rec.update(text=text[:30000], screenshot=shot)
+    blocked = re.search(r"you have been blocked|access denied|verify you are human|are you a robot|unusual traffic", text, re.I)
+    if blocked:
+        return failed(rec, "the site blocked the visit with a security check; see the screenshot, or open the page yourself")
     if len(text) < 200:
-        return failed(rec, "the page showed little or nothing, likely a login wall or a block; see the screenshot")
+        return failed(rec, "the page showed little or nothing, likely a login wall; see the screenshot")
     return rec
 
 

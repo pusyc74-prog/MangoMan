@@ -48,9 +48,8 @@ def problems(r, folder):
     if r["platform"] == "page":
         ok = r.get("text") and os.path.exists(os.path.join(folder, r.get("screenshot") or ""))
         return [] if ok else ["%s: a read page needs its text and its screenshot file" % f]
-    bad = [p for p in r["posts"] if not isinstance(p, dict) or p.get("date") and not _iso(p["date"])]
-    if bad or not [p for p in r["posts"] if p.get("date")]:
-        return ["%s: read, but no posts with a date written as YYYY-MM-DD" % f]
+    if not r["posts"] or [p for p in r["posts"] if not isinstance(p, dict) or p.get("date") and not _iso(p["date"])]:
+        return ["%s: read, but no posts, or a date not written as YYYY-MM-DD" % f]
     return []
 
 
@@ -72,8 +71,8 @@ def first_line(text):
 
 
 def stats(r):
-    posts = [p for p in r["posts"] if p.get("date")]
-    dates = sorted(dt.date.fromisoformat(p["date"]) for p in posts)
+    posts = r["posts"]
+    dates = sorted(dt.date.fromisoformat(p["date"]) for p in posts if p.get("date"))
     span = (dates[-1] - dates[0]).days if len(dates) > 1 else 0
     eng = [(p.get("likes") or 0) + (p.get("comments") or 0) for p in posts if p.get("likes") is not None]
     followers = r.get("profile", {}).get("followers")
@@ -93,7 +92,7 @@ def stats(r):
                        "likes": p.get("likes"), "comments": p.get("comments"), "views": p.get("views")} for p in top],
         "top_hashtags": [h for h, _ in tags.most_common(10)],
         "days": dict(collections.Counter(DAYS[d.weekday()] for d in dates).most_common()),
-        "bio": r.get("profile", {}).get("bio", ""),
+        "bio": r.get("profile", {}).get("bio", ""), "note": r.get("note", ""),
     }
 
 
@@ -119,14 +118,17 @@ def markdown(s):
     md = ["# Social research", "", "Numbers computed from the public pages on the dates shown; \"not shown\" means the site hid it.", ""]
     for a in s["accounts"]:
         md += ["## %s on %s (%s)" % (a["name"] or a["account"], a["platform"], a["url"]), "",
-               "Read %s. Followers: %s. Posts read: %d, from %s to %s; about %s posts a week." % (
-                   a["read_at"], fmt(a["followers"]), a["posts_read"], a["oldest"] or "-", a["newest"] or "-", fmt(a["posts_per_week"])),
-               "Formats: %s. Posting days: %s." % (", ".join("%s %d" % kv for kv in a["formats"].items()) or "-",
-                                                     ", ".join("%s %d" % kv for kv in a["days"].items()) or "-"),
-               "Typical post: %s likes, %s comments, %s views; engagement %s of followers." % (
+               "Read %s. Followers: %s. Posts read: %d, %s." % (
+                   a["read_at"], fmt(a["followers"]), a["posts_read"],
+                   "from %s to %s, about %s posts a week" % (a["oldest"], a["newest"], fmt(a["posts_per_week"])) if a["newest"] else "dates not shown"),
+               "Formats: %s. Posting days: %s." % (", ".join("%s %d" % kv for kv in a["formats"].items()) or "none",
+                                                     ", ".join("%s %d" % kv for kv in a["days"].items()) or "not shown"),
+               "Typical post: %s likes, %s comments, %s views. Engagement against followers: %s." % (
                    fmt(a["median_likes"]), fmt(a["median_comments"]), fmt(a["median_views"]), fmt(a["engagement_rate_pct"], "%")),
-               "Top hashtags: %s." % (", ".join("#" + h for h in a["top_hashtags"]) or "none"), "", "Top posts:", ""]
-        md += ["- %s %s: \"%s\" (%s likes, %s comments, %s views) %s" % (p["date"], p["type"], p["first_line"], fmt(p["likes"]),
+               "Top hashtags: %s." % (", ".join("#" + h for h in a["top_hashtags"]) or "none")]
+        md += ["Note: " + a["note"] + "."] if a["note"] else []
+        md += ["", "Top posts:", ""]
+        md += ["- %s %s: \"%s\" (%s likes, %s comments, %s views) %s" % (p["date"] or "undated", p["type"], p["first_line"], fmt(p["likes"]),
                fmt(p["comments"]), fmt(p["views"]), p["url"]) for p in a["top_posts"]] + [""]
     if s["pages"]:
         md += ["## Pages read", ""] + ["- %s: %s (text in %s, screenshot %s), read %s" % (p["page"], p["url"], p["file"], p["screenshot"], p["read_at"])
