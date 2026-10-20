@@ -51,10 +51,14 @@ from the brief. Nothing here assumes one country.
    borrow and one gap the user can own.
 3. **Audience.** Where the user's buyers talk without a filter: reviews of
    the user and competitors (the 2 to 4 star ones say the most), forums and
-   community groups, marketplace questions, comments under competitor posts.
-   Capture verbatim phrases, triggers (what makes someone start looking),
-   desired outcomes, objections and alternatives they consider. Build 2 or 3
-   audience profiles only from what you found; tag each with its sources.
+   community groups, marketplace questions, comments under competitor posts,
+   the platform's search suggestions. Capture triggers (what makes someone
+   start looking) and the alternatives they consider, and build the audience
+   map: up to 10 of each, in their own words, only from what you found:
+   problems, frustrations, desired outcomes, questions they ask again and
+   again, common mistakes, objections, limiting beliefs, the emotions behind
+   the problems, and exact phrases they use. Build 2 or 3 audience profiles
+   from the same findings; tag each with its sources.
 4. **Timing.** Seasons, holidays, festivals, paydays and local events in the
    user's market during the plan's period. Look them up for that country and
    year; never assume another country's calendar.
@@ -85,6 +89,16 @@ Then write a short synthesis for each part:
   triggers, top pains in their words, objections, where to reach them.
 - **Openings:** 3 to 5 opportunities the research shows, each tied to the
   finding that supports it.
+
+Save the audience map as `audience.json` in the task folder, so content,
+posts and reel scripts start from it:
+
+```json
+{"problems": ["..."], "frustrations": ["..."], "outcomes": ["..."], "questions": ["..."],
+ "mistakes": ["..."], "objections": ["..."], "beliefs": ["..."], "emotions": ["..."], "phrases": ["..."]}
+```
+
+Leave a list empty rather than fill it with guesses.
 
 If you had no web access at all, say so plainly at the start, mark the
 research as assumptions to check, and do not invent sources.

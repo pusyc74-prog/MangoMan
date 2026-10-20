@@ -1,0 +1,98 @@
+{
+ "brand": "Kesari Foods",
+ "language": "en",
+ "facts": {
+  "price": "₹1,299 for a box of 12",
+  "delivery": "delivered in 48 hours",
+  "repeat_rate": "41% of customers ordered again"
+ },
+ "audience": {
+  "problems": ["the mangoes looked ripe but tasted sour", "half the box went bad before we could eat it"],
+  "frustrations": ["every seller says their mangoes are natural"],
+  "outcomes": ["sweet mangoes every time without guessing"],
+  "questions": ["how do I know a mango is naturally ripened", "should I keep mangoes in the fridge"],
+  "mistakes": ["ripening mangoes in the fridge", "buying mangoes only by their colour"],
+  "objections": ["online mangoes cost too much"],
+  "beliefs": ["good Alphonso is only available in Mumbai"],
+  "emotions": ["guilt about wasting money on a bad box"],
+  "phrases": ["chemical mangoes", "carbide wale aam"]
+ },
+ "reels": [
+  {
+   "id": "fridge-mistake",
+   "title": "Stop ripening mangoes in the fridge",
+   "goal": "saves",
+   "angle": {"from": "mistakes", "text": "ripening mangoes in the fridge"},
+   "platforms": ["instagram", "youtube"],
+   "length": 25,
+   "date": "2026-11-02",
+   "time": "19:00",
+   "hooks": [
+    {"say": "Your fridge is ruining your mangoes.", "text": "The fridge mistake", "show": "A hand pulls a hard green mango out of the fridge"},
+    {"say": "Cold mangoes never ripen. Here is why.", "text": "Why cold mangoes stay sour", "show": "Close-up of a cut mango with a pale centre"},
+    {"say": "Stop putting raw mangoes in the fridge.", "text": "Raw mango? Not the fridge", "show": "A mango box being opened on a kitchen counter"}
+   ],
+   "beats": [
+    {"part": "value", "say": "Cold stops the ripening. The mango stays hard outside and sour inside, so it feels like a bad box.", "text": "Ripening mangoes? Not in the cold", "show": "Side by side: a fridge mango and a counter mango"},
+    {"part": "solution", "say": "Keep them in the box at room temperature, wrapped in paper. Press the top gently each morning.", "text": "Room temperature, in paper", "show": "Mangoes wrapped in newspaper inside the box"},
+    {"part": "solution", "say": "When it gives a little and smells sweet at the stem, then it goes in the fridge.", "text": "Soft + sweet smell = ready", "show": "A thumb presses the mango, then the nose at the stem"}
+   ],
+   "cta": {"action": "save", "say": "Save this for your next box.", "text": "Save for mango season", "show": "A ripe mango sliced on a plate"},
+   "caption": "Ripening mangoes in the fridge keeps them sour.\nKeep them in the box at room temperature until they smell sweet at the stem, then chill.\n\nSave this for your next box.",
+   "cover": "The fridge mistake",
+   "keywords": ["ripening mangoes", "Alphonso mango"],
+   "hashtags": ["Mangoes", "Alphonso", "KitchenTips", "MangoSeason"],
+   "sound": "Calm acoustic; pick one trending this week in the Reels audio list"
+  },
+  {
+   "id": "natural-or-carbide",
+   "title": "How to tell a naturally ripened mango",
+   "goal": "shares",
+   "angle": {"from": "questions", "text": "how do I know a mango is naturally ripened"},
+   "platforms": ["instagram", "facebook"],
+   "length": 30,
+   "date": "2026-11-05",
+   "time": "19:00",
+   "hooks": [
+    {"say": "Chemical mangoes have one giveaway.", "text": "The carbide giveaway", "show": "Two mangoes on a table, one bright yellow, one patchy"},
+    {"say": "Natural or carbide? Check the colour first.", "text": "Natural or carbide?", "show": "A finger points at green patches on a mango"},
+    {"say": "That perfect yellow mango is a warning.", "text": "Too yellow to be true", "show": "A shiny, evenly yellow mango turning in a hand"}
+   ],
+   "beats": [
+    {"part": "value", "say": "Carbide colours the skin fast but leaves the inside raw, which is why some boxes look ripe and taste sour.", "text": "Yellow skin, raw inside", "show": "A bright mango cut open with a white centre"},
+    {"part": "solution", "say": "A natural mango has patches of green and yellow, smells sweet at the stem, and is soft all over.", "text": "Naturally ripened mango: patches, smell, soft", "show": "Three quick shots: the patches, the stem, a gentle press"}
+   ],
+   "cta": {"action": "share", "say": "Send this to the friend who buys mangoes every Sunday.", "text": "Send this to them", "show": "Two people sharing a mango slice"},
+   "caption": "How to tell a naturally ripened mango from a carbide one: patchy colour, a sweet smell at the stem, soft all over.\n\nSend this to the friend who buys the mangoes.",
+   "cover": "Natural or carbide?",
+   "keywords": ["naturally ripened mango", "carbide mango"],
+   "hashtags": ["Mangoes", "FoodSafety", "Alphonso"],
+   "sound": "Upbeat; pick one trending this week in the Reels audio list"
+  },
+  {
+   "id": "box-price",
+   "title": "What a box of 12 really costs",
+   "goal": "leads",
+   "angle": {"from": "objections", "text": "online mangoes cost too much"},
+   "platforms": ["instagram"],
+   "length": 20,
+   "date": "2026-11-08",
+   "time": "12:30",
+   "hooks": [
+    {"say": "Online mangoes are too expensive? Do the maths.", "text": "Too expensive?", "show": "A calculator next to a mango box"},
+    {"say": "Here is what one box really costs.", "text": "The real cost of a box", "show": "A box of 12 mangoes opened from above"},
+    {"say": "41% came back for a second box.", "text": "Why 41% ordered again", "show": "A customer unpacking a box at the door"}
+   ],
+   "beats": [
+    {"part": "value", "say": "A cheap box that goes bad costs more than a good one you finish.", "text": "Wasted mangoes cost more", "show": "Spoiled mangoes in a bin, then a full fruit bowl"},
+    {"part": "solution", "say": "Our box of 12 is ₹1,299, delivered in 48 hours, hand-picked and ripened naturally.", "text": "Alphonso mango box: ₹1,299 for 12", "show": "The box being packed in the orchard"}
+   ],
+   "cta": {"action": "dm", "say": "Message us BOX for this week's slots.", "text": "DM BOX to order", "show": "A phone screen with the chat open"},
+   "caption": "Alphonso mango box of 12 for ₹1,299, delivered in 48 hours. A box you finish costs less than a cheap one that goes bad.\n\nMessage us BOX for this week's slots.",
+   "cover": "The real cost",
+   "keywords": ["Alphonso mango box", "Alphonso mango"],
+   "hashtags": ["Alphonso", "Mangoes", "MangoDelivery"],
+   "sound": "Light and upbeat; pick one trending this week in the Reels audio list"
+  }
+ ]
+}
