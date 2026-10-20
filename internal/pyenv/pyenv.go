@@ -29,7 +29,7 @@ const (
 )
 
 // Imports is what the packs need; Check runs it.
-const Imports = "import PIL, pptx, docx, pypdf, openpyxl, pandas, playwright"
+const Imports = "import PIL, pptx, docx, pypdf, openpyxl, pandas, playwright, instaloader, yt_dlp"
 
 var releases = "https://github.com/astral-sh/uv/releases/download/" + UVVersion + "/"
 
