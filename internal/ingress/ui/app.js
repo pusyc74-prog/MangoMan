@@ -1055,7 +1055,7 @@ const BUSINESS = [
   ["currency", "Currency", "text", true, "For example: INR, USD, EUR"],
   ["timezone", "Time zone", "text", false],
   ["social", "Your social pages", "long", false, "One link per line"],
-  ["competitors", "Competitors", "long", false, "Names or links, one per line"],
+  ["competitors", "Competitors", "long", false, "Names, and their Instagram, YouTube or TikTok links if you know them, one per line"],
   ["facts", "Real facts to use", "long", false, "Ratings, follower counts, awards, years in business, offers"],
   ["tone", "How you talk to customers", "text", false, "For example: warm and simple, never pushy"],
   ["colours", "Brand colours", "text", false, "For example: #1E3A2F and #F2A516"],

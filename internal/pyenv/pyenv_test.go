@@ -40,7 +40,7 @@ func TestLockCoversImports(t *testing.T) {
 			pinned[strings.ToLower(name)] = true
 		}
 	}
-	for _, pkg := range []string{"pillow", "python-pptx", "python-docx", "pypdf", "openpyxl", "pandas", "playwright"} {
+	for _, pkg := range []string{"pillow", "python-pptx", "python-docx", "pypdf", "openpyxl", "pandas", "playwright", "instaloader", "yt-dlp"} {
 		if !pinned[pkg] {
 			t.Errorf("%s is not in requirements.txt", pkg)
 		}

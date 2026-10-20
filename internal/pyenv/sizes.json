@@ -1,22 +1,22 @@
 {
  "darwin-amd64": {
-  "packages": 83824689,
+  "packages": 87864903,
   "playwright": 44278410
  },
  "darwin-arm64": {
-  "packages": 73993389,
+  "packages": 78033603,
   "playwright": 42944679
  },
  "linux-amd64": {
-  "packages": 90403612,
+  "packages": 94333647,
   "playwright": 48217159
  },
  "linux-arm64": {
-  "packages": 87658403,
+  "packages": 91577567,
   "playwright": 47902708
  },
  "windows-amd64": {
-  "packages": 74614625,
+  "packages": 78494545,
   "playwright": 38606082
  }
 }

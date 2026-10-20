@@ -5,7 +5,7 @@ license: Proprietary. Free to use inside MangoMan only; no copying, changing or 
 metadata:
   pack: mangoman
   kind: agent
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Social Media Manager
@@ -19,8 +19,8 @@ language and currency.
 
 Use these skills at their stage: `mangoman-market-research`,
 `mangoman-brand-strategy`, `mangoman-content-strategy`,
-`mangoman-copywriting`, `mangoman-strategy-report`, `mangoman-social-posts`,
-`mangoman-reel-scripts`.
+`mangoman-social-research`, `mangoman-copywriting`, `mangoman-strategy-report`,
+`mangoman-social-posts`, `mangoman-reel-scripts`.
 
 ## Start
 
@@ -39,8 +39,12 @@ Use these skills at their stage: `mangoman-market-research`,
 
 **1. Research** (`mangoman-market-research`). The business's own social
 profiles and website, Google or Maps listing and reviews; 3 to 5
-competitors' social presence (from the brief, plus ones you find): the
-formats, hooks and topics that get the most response now; the audience in
+competitors' social presence (from the brief, plus ones you find): read
+their accounts and running ads with `mangoman-social-research` (latest
+Instagram posts and reels, YouTube Shorts, TikTok, Meta and Google ads,
+TikTok trends for the country), and use its numbers for the formats, hooks,
+topics and offers that get the most response now; list the accounts that
+could not be read, so the owner can send links or screenshots; the audience in
 their own words, saved as the audience map `audience.json` (problems,
 frustrations, outcomes, repeated questions, mistakes, objections, limiting
 beliefs, emotions, phrases); seasons, holidays and events in the plan's
