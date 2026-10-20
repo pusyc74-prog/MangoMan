@@ -1,0 +1,10 @@
+{
+ "platform": "tiktok",
+ "account": "nike",
+ "url": "https://www.tiktok.com/@nike",
+ "read_at": "2026-10-20T12:36:42+00:00",
+ "ok": false,
+ "why": "the site did not answer as expected (nike: Failed to parse JSON (caused by JSONDecodeError(\"Expecting value in '': line 1 column 1 (char 0)\")); please report this issue on  https://github.com/yt-dl)",
+ "profile": {},
+ "posts": []
+}
