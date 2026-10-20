@@ -19,11 +19,11 @@ import (
 )
 
 // stream relays an SSE response. Events are buffered until the first one that
-// carries real output (content, reasoning or a tool call). Until then nothing
-// has reached the client, so a failure or an empty stream fails over to the
-// next candidate transparently. After that point the stream is committed: a
-// later failure ends the stream with an error event (continuation is a P2
-// research item).
+// carries an answer (words or a tool call); reasoning alone is held back with
+// them. Until then nothing has reached the client, so a failure, an empty
+// stream or a model that only thought fails over to the next candidate
+// transparently. After that point the stream is committed: a later failure
+// ends the stream with an error event (continuation is a P2 research item).
 func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.ResponseWriter,
 	req *core.Request, c Candidate, class string, n int, resp *http.Response, addedUsage bool, sent time.Time) (res attemptResult) {
 
@@ -44,7 +44,6 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		event     bytes.Buffer // current event
 		committed bool
 		sawDone   bool
-		answered  bool // content or a tool call reached the client
 		outChars  int
 		usageTot  int
 		finish    string
@@ -66,9 +65,6 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 			flusher.Flush()
 		}
 		committed = true
-		// From when the request was sent: providers often hold back even
-		// the response headers until the answer starts.
-		firstOut = time.Since(sent)
 		// The answer is on its way to the client, so there is no other model
 		// to fall back to any more. A long pause now is worth waiting out
 		// rather than killing the answer: measured on real free models, a
@@ -103,14 +99,18 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 				if data, ok := sseData(trimmed); ok {
 					if string(data) == "[DONE]" {
 						sawDone = true
-						// Only reasoning so far: hold back the end, an error follows below.
-						if committed && !answered {
-							continue
-						}
 					} else {
 						d := parseDelta(data)
 						outChars += d.chars
-						answered = answered || d.answer
+						if d.meaningful && firstOut == 0 {
+							// From when the request was sent (providers often hold back
+							// even the headers until output starts) to the first output,
+							// thinking included: what ranks the model and tunes StreamIdle.
+							firstOut = time.Since(sent)
+							// From here a pause before the answer is worth waiting out
+							// (Nemotron Ultra goes quiet for minutes before a long tool call).
+							body.grow(rt.StreamStall)
+						}
 						if d.garbled {
 							// Measured on NVIDIA (GLM 5.3, then Kimi K3): a broken chat
 							// template turns answers into noise with tokens like <|close|>
@@ -119,6 +119,9 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 							// after, the client gets an error and an unattended run picks
 							// the task up again.
 							if !committed {
+								if outChars > d.chars { // it had been thinking: the provider counted that
+									rt.record(c, req.EstTokens+outChars/4)
+								}
 								return attemptResult{outcome: "garbled", status: 200, errMsg: "garbled answer"}
 							}
 							rt.record(c, req.EstTokens+outChars/4)
@@ -139,7 +142,7 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 							// Error delivered inside a 200 stream before any output.
 							return attemptResult{outcome: "stream_error", status: 200, errMsg: d.err}
 						}
-						if !committed && d.meaningful {
+						if !committed && d.answer {
 							event.Write(line)
 							finishEvent() // ensure this event goes out with the commit
 							commit()
@@ -175,6 +178,9 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		return attemptResult{done: true, outcome: "client_gone", tokens: tokens}
 	}
 	if !committed {
+		if outChars > 0 {
+			rt.record(c, tokens) // it thought: the provider counted that
+		}
 		if readErr != nil || !sawDone {
 			msg := "stream ended early"
 			if readErr != nil {
@@ -183,9 +189,18 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 			if body.fired.Load() {
 				// Silent past the limit before saying a word: not a dropped
 				// stream worth asking again, a model that is not answering.
-				return attemptResult{outcome: "timeout", status: 200, errMsg: "no answer within " + rt.StreamIdle.String()}
+				return attemptResult{outcome: "timeout", status: 200, errMsg: "no answer within " + body.timeout.String()}
 			}
 			return attemptResult{outcome: "stream_error", status: 200, errMsg: msg}
+		}
+		if outChars > 0 {
+			// Only reasoning, then the end. Measured on free models (owner's run,
+			// 20 Oct: three times in a row at the strategy report): sent on, the
+			// agent got no words and no tool call and stopped. Held back, the
+			// next model answers the same request. Cut off by the request's own
+			// token limit, every model would do the same: at most one more.
+			return attemptResult{outcome: "no_answer", status: 200, errMsg: "the model only thought and gave no answer",
+				tokens: tokens, firstOut: firstOut, clientIn: finish == "length"}
 		}
 		// Clean end with no output at all: an empty answer.
 		rt.record(c, tokens)
@@ -200,14 +215,6 @@ func (rt *Router) stream(ctx context.Context, cancel context.CancelFunc, w http.
 		}
 		writeStreamError(w, flusher, msg)
 		return attemptResult{done: true, outcome: "stream_broken_after_commit", status: 200, errMsg: msg, tokens: tokens}
-	}
-	if !answered {
-		// Only reasoning, then the end: an agent sees no words and no tool
-		// call and quietly stops the task. End it with an error instead, so
-		// an unattended run picks the task up again on another model.
-		msg := "the model only thought and gave no answer"
-		writeStreamError(w, flusher, msg)
-		return attemptResult{done: true, outcome: "no_answer", status: 200, errMsg: msg, tokens: tokens, firstOut: firstOut}
 	}
 	out := "ok"
 	switch {

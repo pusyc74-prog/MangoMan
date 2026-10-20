@@ -1212,28 +1212,47 @@ func TestSilentOnlyModelNotRetried(t *testing.T) {
 }
 
 // Measured on real free models: a coding model ended some turns with only
-// its reasoning, no words and no tool call, and the agent stopped the task.
-func TestReasoningOnlyStreamIsNoAnswer(t *testing.T) {
+// its reasoning, no words and no tool call, and the agent stopped the task
+// (owner's run, 20 Oct: three times in a row). The reasoning is held back, so
+// the next model answers the same request.
+func TestReasoningOnlyStreamFailsOver(t *testing.T) {
 	think := `{"choices":[{"index":0,"delta":{"reasoning_content":"let me think"},"finish_reason":null}]}`
 	stop := `{"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}`
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: sse(think, stop, "[DONE]")}
-	rt := setup(t, a)
+	b := &fake{id: "b", model: "m2", quality: 0.5, handler: sse(think, chunk("from b"), stop, "[DONE]")}
+	rt := setup(t, a, b)
 	w := do(t, rt, helloStream)
-	// The client gets an error, not a clean end, so an agent run continues.
-	if body := w.Body.String(); strings.Contains(body, "[DONE]") || !strings.Contains(body, "upstream_stream_error") {
-		t.Fatalf("reasoning-only answer ended cleanly:\n%s", body)
+	body := w.Body.String()
+	if w.Code != 200 || !strings.Contains(body, "from b") || strings.Contains(body, "upstream_stream_error") {
+		t.Fatalf("the next model should answer:\n%s", body)
+	}
+	if strings.Count(body, "let me think") != 1 {
+		t.Fatalf("only the answering model's reasoning goes out:\n%s", body)
 	}
 	for _, s := range rt.Health.Snapshot() {
 		if s.Target == "a/m1" && (s.LastOut != "no_answer" || s.OK != 0) {
 			t.Fatalf("reasoning alone counted as an answer: %+v", s)
 		}
 	}
-	// Reasoning followed by words is a normal answer.
-	b := &fake{id: "b", model: "m2", quality: 0.9, handler: sse(think, chunk("done"), stop, "[DONE]")}
-	rt = setup(t, b)
-	do(t, rt, helloStream)
-	if s := rt.Health.Snapshot(); len(s) != 1 || s[0].LastOut != "ok" {
-		t.Fatalf("got %+v", s)
+	// Thinking, then a pause longer than StreamIdle before the words: waited out.
+	pause := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		f := w.(http.Flusher)
+		fmt.Fprintf(w, "data: %s\n\n", think)
+		f.Flush()
+		time.Sleep(400 * time.Millisecond)
+		fmt.Fprintf(w, "data: %s\n\ndata: %s\n\ndata: [DONE]\n\n", chunk("after a pause"), stop)
+		f.Flush()
+	}
+	rt = setup(t, &fake{id: "c", model: "m3", quality: 0.9, handler: pause})
+	rt.StreamIdle, rt.StreamStall = 150*time.Millisecond, 2*time.Second
+	if w := do(t, rt, helloStream); !strings.Contains(w.Body.String(), "after a pause") {
+		t.Fatalf("a pause after thinking was cut: %d %s", w.Code, w.Body)
+	}
+	// With no other model, the client gets an error, not a clean end.
+	rt = setup(t, &fake{id: "a", model: "m1", quality: 0.9, handler: sse(think, stop, "[DONE]")})
+	if w := do(t, rt, helloStream); w.Code == 200 || strings.Contains(w.Body.String(), "[DONE]") {
+		t.Fatalf("reasoning-only answer ended cleanly: %d %s", w.Code, w.Body)
 	}
 }
 

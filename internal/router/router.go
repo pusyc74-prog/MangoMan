@@ -351,7 +351,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		case "key_rejected":
 			// This key is bad, not the provider: a teammate's key still works.
 			unreachable["key:"+c.keyName()] = true
-		case "timeout", "garbled", "model_gone", "model_not_found", "model_forbidden":
+		case "timeout", "garbled", "no_answer", "model_gone", "model_not_found", "model_forbidden":
 			// About the model, not the key: a teammate's key gets the same
 			// silent or retired model (seen 15 Oct: DeepSeek tried on three
 			// keys, 30 s each). Go to another model.
