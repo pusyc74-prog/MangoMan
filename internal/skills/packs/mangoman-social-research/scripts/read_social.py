@@ -3,7 +3,7 @@
 Usage:
   python3 read_social.py instagram <username> [<username> ...] [--posts 12] [--out social]
   python3 read_social.py videos <YouTube channel or TikTok profile link> [...] [--posts 12] [--out social]
-  python3 read_social.py page <link or shortcut> [...] [--out social]
+  python3 read_social.py page <link, shortcut or saved page file> [...] [--out social]
 
 Page shortcuts (country or region code after @, default IN):
   meta-ads:<name>[@IN]      ads running now on Facebook and Instagram (Meta Ad Library)
@@ -21,6 +21,7 @@ import hashlib
 import itertools
 import json
 import os
+import pathlib
 import re
 import sys
 import time
@@ -234,6 +235,8 @@ def videos(url, n):
 def page_url(target):
     if target.startswith(("http://", "https://", "file://")):
         return target
+    if os.path.isfile(target):  # a page saved on this computer
+        return pathlib.Path(os.path.abspath(target)).as_uri()
     kind, _, rest = target.partition(":")
     kind, _, region = kind.partition("@")  # tiktok-trends@IN
     q, _, r2 = rest.partition("@")  # meta-ads:Kesari Foods@IN
