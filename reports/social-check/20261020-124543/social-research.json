@@ -1,0 +1,178 @@
+{
+ "accounts": [
+  {
+   "platform": "youtube",
+   "account": "nike",
+   "url": "https://www.youtube.com/@nike/shorts",
+   "read_at": "2026-10-20",
+   "name": "Nike",
+   "followers": 2280000,
+   "posts_read": 12,
+   "newest": "",
+   "oldest": "",
+   "posts_per_week": null,
+   "formats": {
+    "short": 12
+   },
+   "median_likes": null,
+   "median_comments": null,
+   "median_views": 16500,
+   "median_engagement": null,
+   "engagement_rate_pct": null,
+   "top_posts": [
+    {
+     "url": "https://www.youtube.com/shorts/hjET71wrVe4",
+     "date": "",
+     "type": "short",
+     "first_line": "Go behind the design of the Caitlin 1",
+     "likes": null,
+     "comments": null,
+     "views": 316000
+    },
+    {
+     "url": "https://www.youtube.com/shorts/jx3yiH1M0lc",
+     "date": "",
+     "type": "short",
+     "first_line": "Sabrina vs. The Rider | Nike",
+     "likes": null,
+     "comments": null,
+     "views": 76000
+    },
+    {
+     "url": "https://www.youtube.com/shorts/w7tLunzO74Q",
+     "date": "",
+     "type": "short",
+     "first_line": "Sabrina vs. Sabrina | Nike",
+     "likes": null,
+     "comments": null,
+     "views": 67000
+    }
+   ],
+   "top_hashtags": [],
+   "days": {},
+   "bio": "",
+   "note": "12 of 12 videos: only the list could be read, so titles and views (rounded as the list shows them) but no date, likes or comments; the site refused their own pages"
+  },
+  {
+   "platform": "youtube",
+   "account": "zomato",
+   "url": "https://www.youtube.com/@zomato/shorts",
+   "read_at": "2026-10-20",
+   "name": "Zomato",
+   "followers": 581000,
+   "posts_read": 12,
+   "newest": "",
+   "oldest": "",
+   "posts_per_week": null,
+   "formats": {
+    "short": 12
+   },
+   "median_likes": null,
+   "median_comments": null,
+   "median_views": 45000,
+   "median_engagement": null,
+   "engagement_rate_pct": null,
+   "top_posts": [
+    {
+     "url": "https://www.youtube.com/shorts/Qf6zTe12OU4",
+     "date": "",
+     "type": "short",
+     "first_line": "Six hitting challenge - straight outta the gully",
+     "likes": null,
+     "comments": null,
+     "views": 3400000
+    },
+    {
+     "url": "https://www.youtube.com/shorts/AyudVP4sy-o",
+     "date": "",
+     "type": "short",
+     "first_line": "Marcus Stoinis - straight outta the gully",
+     "likes": null,
+     "comments": null,
+     "views": 2000000
+    },
+    {
+     "url": "https://www.youtube.com/shorts/OrbQ_mSyGeY",
+     "date": "",
+     "type": "short",
+     "first_line": "Tim David - straight outta the gully",
+     "likes": null,
+     "comments": null,
+     "views": 2000000
+    }
+   ],
+   "top_hashtags": [],
+   "days": {},
+   "bio": "",
+   "note": "12 of 12 videos: only the list could be read, so titles and views (rounded as the list shows them) but no date, likes or comments; the site refused their own pages"
+  }
+ ],
+ "pages": [
+  {
+   "page": "google-ads:zomato.com@IN",
+   "url": "https://adstransparency.google.com/?region=IN&domain=zomato.com",
+   "read_at": "2026-10-20",
+   "file": "page-google-ads-zomato-com-in.json",
+   "screenshot": "google-ads-zomato-com-in.png",
+   "text_chars": 1454
+  },
+  {
+   "page": "meta-ads:Zomato@IN",
+   "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=IN&q=Zomato&search_type=keyword_unordered&media_type=all",
+   "read_at": "2026-10-20",
+   "file": "page-meta-ads-zomato-in.json",
+   "screenshot": "meta-ads-zomato-in.png",
+   "text_chars": 11700
+  },
+  {
+   "page": "tiktok-trends@US",
+   "url": "https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/pc/en?period=7&region=US",
+   "read_at": "2026-10-20",
+   "file": "page-tiktok-trends-us.json",
+   "screenshot": "tiktok-trends-us.png",
+   "text_chars": 954
+  }
+ ],
+ "not_read": [
+  {
+   "platform": "instagram",
+   "account": "amul_india",
+   "url": "https://www.instagram.com/amul_india/",
+   "why": "Instagram showed a login wall for this account; add links to its posts or screenshots by hand",
+   "file": "instagram-amul-india.json",
+   "screenshot": ""
+  },
+  {
+   "platform": "instagram",
+   "account": "nike",
+   "url": "https://www.instagram.com/nike/",
+   "why": "Instagram showed a login wall for this account; add links to its posts or screenshots by hand",
+   "file": "instagram-nike.json",
+   "screenshot": ""
+  },
+  {
+   "platform": "instagram",
+   "account": "zomato",
+   "url": "https://www.instagram.com/zomato/",
+   "why": "Instagram showed a login wall for this account; add links to its posts or screenshots by hand",
+   "file": "instagram-zomato.json",
+   "screenshot": ""
+  },
+  {
+   "platform": "page",
+   "account": "linkedin-ads:Zomato",
+   "url": "https://www.linkedin.com/ad-library/search?accountOwner=Zomato",
+   "why": "the site blocked the visit with a security check; see the screenshot, or open the page yourself",
+   "file": "page-linkedin-ads-zomato.json",
+   "screenshot": "linkedin-ads-zomato.png"
+  },
+  {
+   "platform": "tiktok",
+   "account": "nike",
+   "url": "https://www.tiktok.com/@nike",
+   "why": "the site sent a page the reader could not use, often a bot check; add links to its videos by hand",
+   "file": "video-https-www-tiktok-com-nike.json",
+   "screenshot": ""
+  }
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "platform": "page",
+ "account": "linkedin-ads:Zomato",
+ "url": "https://www.linkedin.com/ad-library/search?accountOwner=Zomato",
+ "read_at": "2026-10-20T12:45:09+00:00",
+ "ok": false,
+ "why": "the site blocked the visit with a security check; see the screenshot, or open the page yourself",
+ "profile": {},
+ "posts": [],
+ "text": "Sorry, you have been blocked\nYou are unable to access linkedin.com\nWhy have I been blocked?\nThis website is using a security service to protect itself from online attacks. The action you just performed triggered the security solution. There are several actions that could trigger this block including submitting a certain word or phrase, a SQL command or malformed data.\nWhat can I do to resolve this?\nYou can email the site owner to let them know you were blocked. Please include what you were doing when this page came up and the Cloudflare Ray ID found at the bottom of this page.\nCloudflare Ray ID: a4d81e3d1fa47e62 • Your IP: Click to reveal • Performance & security by Cloudflare",
+ "screenshot": "linkedin-ads-zomato.png"
+}
