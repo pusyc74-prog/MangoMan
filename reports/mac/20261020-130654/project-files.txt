@@ -1,0 +1,41 @@
+agency-logo.png
+campaign.json
+emails
+hello.txt
+logo.png
+main.jpg
+photo.jpg
+resume-letter.html
+resume-letter.pdf
+resume.html
+resume.json
+resume.pdf
+resume.png
+sales.csv
+
+/Users/runner/my project/emails:
+assets
+campaign.spec.json
+last-call.html
+last-call.txt
+pick-your-box.html
+pick-your-box.txt
+preorders-open.html
+preorders-open.txt
+preview
+sequence.md
+
+/Users/runner/my project/emails/assets:
+img-01.jpg
+logo.png
+
+/Users/runner/my project/emails/preview:
+last-call-desktop.png
+last-call-mobile.png
+last-call.html
+pick-your-box-desktop.png
+pick-your-box-mobile.png
+pick-your-box.html
+preorders-open-desktop.png
+preorders-open-mobile.png
+preorders-open.html

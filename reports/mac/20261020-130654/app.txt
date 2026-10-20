@@ -1,0 +1,5 @@
+routers running after two opens: 1
+{
+  "stopping": true
+}
+stopped from the page

@@ -1,0 +1,12 @@
+mangoman 2026/10/20 13:02:18 listening on http://127.0.0.1:4141/v1  (0 cloud providers connected, catalogue seed-2026-10-20.1)
+mangoman 2026/10/20 13:02:18 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/20 13:02:18 no provider keys yet: run `mangoman keys add groq`
+mangoman 2026/10/20 13:02:34 stopped
+mangoman 2026/10/20 13:02:55 listening on http://127.0.0.1:4141/v1  (0 cloud providers connected, catalogue seed-2026-10-20.1)
+mangoman 2026/10/20 13:02:55 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/20 13:02:55 no provider keys yet: run `mangoman keys add groq`
+mangoman 2026/10/20 13:02:59 req=c511ef758be2 attempt=1 ollama/fake -> ok (200) first word after 0.0s longest pause 0.0s 
+mangoman 2026/10/20 13:03:00 req=c4e5a549e0c1 attempt=1 ollama/fake -> ok (200) first word after 0.0s longest pause 0.0s 
+mangoman 2026/10/20 13:03:00 req=cf591bde31e6 attempt=1 ollama/fake -> ok (200) first word after 0.0s longest pause 0.0s 
+mangoman 2026/10/20 13:03:46 req=f8ec8e64df16 attempt=1 ollama/fake -> ok (200) first word after 0.0s longest pause 0.0s 
+mangoman 2026/10/20 13:03:46 stopped
