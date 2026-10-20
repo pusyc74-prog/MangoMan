@@ -54,6 +54,14 @@ jobs:
           $env:MANGOMAN_SITE = 'http://127.0.0.1:8800'
           $env:MANGOMAN_NO_START = '1'
           powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=3072; irm http://127.0.0.1:8800/install.ps1 | iex" *>&1 | Tee-Object out/install.txt
+          # The same line against the published GitHub release, which serves
+          # SHA256SUMS.txt as binary (a local server sends text and hid that).
+          $env:MANGOMAN_SITE = ''
+          Remove-Item "$env:LOCALAPPDATA\MangoMan\mangoman.exe"
+          powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=3072; irm https://github.com/${{ github.repository }}/releases/download/latest/install.ps1 | iex" *>&1 | Tee-Object -Append out/install.txt
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path "$env:LOCALAPPDATA\MangoMan\mangoman.exe")) { 'INSTALL FROM THE RELEASE FAILED' | Tee-Object -Append out/install.txt; exit 1 }
+          $env:MANGOMAN_SITE = 'http://127.0.0.1:8800'
+          powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=3072; irm http://127.0.0.1:8800/install.ps1 | iex" *>&1 | Tee-Object -Append out/install.txt
           $exe = "$env:LOCALAPPDATA\MangoMan\mangoman.exe"
           $link = Join-Path ([Environment]::GetFolderPath('Programs')) 'MangoMan.lnk'
           & $exe version *>&1 | Tee-Object -Append out/install.txt

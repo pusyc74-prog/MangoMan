@@ -21,7 +21,11 @@
 
     Write-Host 'Downloading MangoMan for Windows (about 10 MB)...'
     Invoke-WebRequest -UseBasicParsing "$site/$file" -OutFile $new
-    $sums = [string](Invoke-WebRequest -UseBasicParsing "$site/SHA256SUMS.txt").Content
+    # Saved to a file, not read from .Content: GitHub serves it as binary, and
+    # PowerShell then gives bytes, not text (owner's install, 20 Oct).
+    Invoke-WebRequest -UseBasicParsing "$site/SHA256SUMS.txt" -OutFile "$new.sums"
+    $sums = Get-Content -Raw "$new.sums"
+    Remove-Item "$new.sums"
     $want = ''
     foreach ($line in $sums -split "`n") {
         $f = $line.Trim() -split '\s+'
