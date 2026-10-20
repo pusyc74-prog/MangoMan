@@ -3,13 +3,14 @@
 # MangoMan for each system and SHA256SUMS.txt. Drop the folder on Netlify
 # (Sites, Add new site, Deploy manually) or upload it anywhere static.
 #   scripts/make-site.sh [site address]   (default https://getmangoman.netlify.app)
+# OUT=<folder> builds elsewhere (ci also builds one for the GitHub release).
 set -eu
 site="${1:-https://getmangoman.netlify.app}"
 site="${site%/}"
 ver="${VERSION:-$(git rev-parse --short HEAD)}"
 # Mango Arch (shared learning): its address and public key. Empty = off.
 arch=github.com/pusyc74-prog/mangoman/internal/arch
-out=dist/site
+out="${OUT:-dist/site}"
 rm -rf "$out"
 mkdir -p "$out"
 for t in darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64; do

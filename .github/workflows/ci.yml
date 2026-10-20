@@ -91,6 +91,8 @@ jobs:
     # to drop on Netlify.
     if: github.event_name != 'push' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # only to publish the release "latest"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -105,3 +107,16 @@ jobs:
         with:
           name: mangoman
           path: dist/site/
+      # The same build as the GitHub release "latest", so there are direct
+      # download links without a manual upload: the install lines fetch
+      # from the release.
+      - name: Publish the release "latest"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCH_URL: ${{ vars.ARCH_URL }}
+          ARCH_KEY: ${{ vars.ARCH_KEY }}
+        run: |
+          OUT=dist/release scripts/make-site.sh "https://github.com/${{ github.repository }}/releases/download/latest"
+          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
+          gh release create latest dist/release/* --prerelease --target "$GITHUB_SHA" --title "MangoMan (latest build)" \
+            --notes "Built from $(git rev-parse --short HEAD). Windows: [Net.ServicePointManager]::SecurityProtocol=3072; irm https://github.com/${{ github.repository }}/releases/download/latest/install.ps1 | iex  Mac or Linux: curl -fsSL https://github.com/${{ github.repository }}/releases/download/latest/install.sh | sh"
