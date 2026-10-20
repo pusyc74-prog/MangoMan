@@ -201,19 +201,19 @@ func TestTeamKeysOnTheDashboard(t *testing.T) {
 	st := mem{}
 	h, s := dashServer(t, st)
 	// Bad names and bad keys are refused before anything is saved.
-	if w := call(h, "POST", "/mangoman/keys", "127.0.0.1:4141", authz, `{"provider":"zen","key":"k","team":"Ravi Kumar!"}`); w.Code != 400 {
+	if w := call(h, "POST", "/mangoman/keys", "127.0.0.1:4141", authz, `{"provider":"groq","key":"k","team":"Ravi Kumar!"}`); w.Code != 400 {
 		t.Fatalf("bad name: %d %s", w.Code, w.Body)
 	}
-	if w := call(h, "POST", "/mangoman/keys", "127.0.0.1:4141", authz, `{"provider":"zen","key":"bad","team":"ravi"}`); w.Code != 422 || len(s.Cfg.GetTeamKeys("zen")) != 0 {
-		t.Fatalf("rejected key must not be listed: %d %v", w.Code, s.Cfg.GetTeamKeys("zen"))
+	if w := call(h, "POST", "/mangoman/keys", "127.0.0.1:4141", authz, `{"provider":"groq","key":"bad","team":"ravi"}`); w.Code != 422 || len(s.Cfg.GetTeamKeys("groq")) != 0 {
+		t.Fatalf("rejected key must not be listed: %d %v", w.Code, s.Cfg.GetTeamKeys("groq"))
 	}
 	// A teammate's key alone connects the provider.
-	w := call(h, "POST", "/mangoman/keys", "127.0.0.1:4141", authz, `{"provider":"zen","key":"zen-ravi","team":"Ravi"}`)
+	w := call(h, "POST", "/mangoman/keys", "127.0.0.1:4141", authz, `{"provider":"groq","key":"groq-ravi","team":"Ravi"}`)
 	var p DashProvider
 	if err := json.Unmarshal(w.Body.Bytes(), &p); err != nil || w.Code != 200 {
 		t.Fatalf("%d %s", w.Code, w.Body)
 	}
-	if st["zen#ravi"] != "zen-ravi" || p.Status != PSConnected || p.KeySource != "team" ||
+	if st["groq#ravi"] != "groq-ravi" || p.Status != PSConnected || p.KeySource != "team" ||
 		len(p.TeamKeys) != 1 || p.TeamKeys[0].Name != "ravi" || p.TeamKeys[0].Status != TKWorking {
 		t.Fatalf("team key not shown as connected: %+v store=%v", p, st)
 	}
@@ -223,17 +223,17 @@ func TestTeamKeysOnTheDashboard(t *testing.T) {
 		t.Fatal("the dashboard needs the team key notice")
 	}
 	// Your own key turned down: still connected through the team, and it says so.
-	s.Router.Keys.Disable("zen")
-	zen, _ := s.Router.Cat.Provider("zen")
-	if p := s.providerStatus(zen, 0); p.Status != PSConnected || p.KeySource != "team" || !p.OwnRejected {
+	s.Router.Keys.Disable("groq")
+	groq, _ := s.Router.Cat.Provider("groq")
+	if p := s.providerStatus(groq, 0); p.Status != PSConnected || p.KeySource != "team" || !p.OwnRejected {
 		t.Fatalf("own key rejected with team keys working: %+v", p)
 	}
 	// Removing it takes it out of the store and the list.
 	// Without the team key, the rejected own key shows again.
-	w = call(h, "DELETE", "/mangoman/keys/zen/team/ravi", "127.0.0.1:4141", authz, "")
+	w = call(h, "DELETE", "/mangoman/keys/groq/team/ravi", "127.0.0.1:4141", authz, "")
 	p = DashProvider{}
 	_ = json.Unmarshal(w.Body.Bytes(), &p)
-	if _, ok := st["zen#ravi"]; ok || len(s.Cfg.GetTeamKeys("zen")) != 0 || p.Status != PSKeyRejected || len(p.TeamKeys) != 0 {
+	if _, ok := st["groq#ravi"]; ok || len(s.Cfg.GetTeamKeys("groq")) != 0 || p.Status != PSKeyRejected || len(p.TeamKeys) != 0 {
 		t.Fatalf("team key not removed: %d %+v store=%v", w.Code, p, st)
 	}
 }

@@ -49,7 +49,7 @@ type Stats struct {
 // Brain makes typed decisions. Safe for concurrent use.
 type Brain struct {
 	Call    Caller
-	Model   string        // e.g. "free/fast", "strict/jev-1.13-free", "ollama/qwen3:4b"
+	Model   string        // e.g. "free/fast", "ollama/qwen3:4b"
 	Budget  time.Duration // per decision; default 1.5 s
 	MinConf float64       // below this the answer is ignored; default 0.6
 

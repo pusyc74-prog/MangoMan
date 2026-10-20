@@ -1,8 +1,8 @@
 name: doctor
 
 # Live check of every provider with a key in this repo's secrets.
-# Add any of GROQ_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY, NVIDIA_API_KEY,
-# OPENCODE_ZEN_API_KEY (one is enough)
+# Add any of GROQ_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY, NVIDIA_API_KEY
+# (one is enough)
 # under Settings > Secrets and variables > Actions, then run this workflow
 # from the Actions tab. The summary appears on the run page; the JSON report
 # (no keys, no model answers) is attached as an artifact.
@@ -50,7 +50,6 @@ jobs:
       CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
-      OPENCODE_ZEN_API_KEY: ${{ secrets.OPENCODE_ZEN_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -62,7 +61,7 @@ jobs:
       - name: Check keys
         run: |
           n=0
-          for v in GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY NVIDIA_API_KEY OPENCODE_ZEN_API_KEY; do
+          for v in GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY NVIDIA_API_KEY; do
             if [ -n "${!v}" ]; then echo "found $v"; n=$((n+1)); fi
           done
           if [ "$n" -eq 0 ]; then

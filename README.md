@@ -123,7 +123,7 @@ When a team works from one computer, each person can add their own key for any p
 
 ```sh
 mangoman keys add nvidia --team ravi       # Ravi's NVIDIA key
-mangoman keys add zen --team asha          # works for every provider
+mangoman keys add groq --team asha         # works for every provider
 mangoman keys list                         # team keys are listed under each provider
 mangoman keys rm nvidia --team ravi
 ```
@@ -332,7 +332,7 @@ mangoman brain set strict/ollama/qwen3:4b    # a local engine; default free/fast
 mangoman brain test "Is this a coding question: how do I sort a list?"
 ```
 
-The dashboard shows the same, with an on/off switch. Jev can be the engine once added from the new-models list (OpenCode Zen key needed); whether it follows the JSON answer format has to be checked with a real key.
+The dashboard shows the same, with an on/off switch.
 
 ## Skill packs
 

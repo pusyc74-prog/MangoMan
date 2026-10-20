@@ -700,6 +700,30 @@ func TestForbiddenModelDoesNotDisableKey(t *testing.T) {
 	}
 }
 
+func TestKeyRefusedOnEveryModelIsRejected(t *testing.T) {
+	// NVIDIA, 19 Oct: an account without API access answers 403 on every model.
+	a := &fake{id: "a", model: "m1", quality: 0.9, handler: status(403, nil)}
+	b := &fake{id: "b", model: "m9", quality: 0.3, handler: okJSON("from b")}
+	rt := setup(t, a, b)
+	ms := []catalogue.Model{rt.Cat.AllModels()[0]}
+	for _, name := range []string{"m2", "m3", "m4"} {
+		m := ms[0]
+		m.Canonical, m.Upstream = name, name+"-up"
+		ms = append(ms, m)
+	}
+	rt.Cat.ReplaceProviderModels("a", ms)
+	if w := do(t, rt, hello); w.Code != 200 || !strings.Contains(w.Body.String(), "from b") {
+		t.Fatalf("b should answer: %d %s", w.Code, w.Body)
+	}
+	if n := a.calls.Load(); n != keys.LockedAfter || !rt.Keys.Rejected("a") {
+		t.Fatalf("key should be rejected after %d refused models: %d calls, rejected %v", keys.LockedAfter, n, rt.Keys.Rejected("a"))
+	}
+	do(t, rt, hello)
+	if n := a.calls.Load(); n != keys.LockedAfter {
+		t.Fatalf("a rejected key must not be tried again: %d calls", n)
+	}
+}
+
 func TestMyListFirstThenFallsThrough(t *testing.T) {
 	// The router alone would pick a (best quality). My list says c, then b.
 	a := &fake{id: "a", model: "m1", quality: 0.9, handler: okJSON("from a")}

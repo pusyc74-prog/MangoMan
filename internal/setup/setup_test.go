@@ -58,10 +58,10 @@ func wizard(t *testing.T, store mem, answers string, secrets []string) (*Wizard,
 }
 
 func TestWizardConnectsSkipsAndRetries(t *testing.T) {
-	store := mem{"zen": "already"}
+	store := mem{"cerebras": "already"}
 	// nvidia: Enter, bad key then good key. groq: skip. openrouter: Enter
-	// then empty key (skip). zen: already connected. cerebras: quit.
-	w, out, opened := wizard(t, store, "\ns\n\nq\n", []string{"bad-key", "nvapi-good", ""})
+	// then empty key (skip). cerebras: already connected.
+	w, out, opened := wizard(t, store, "\ns\n\n", []string{"bad-key", "nvapi-good", ""})
 	res := w.Run(context.Background())
 
 	if store["nvidia"] != "nvapi-good" {
@@ -77,7 +77,7 @@ func TestWizardConnectsSkipsAndRetries(t *testing.T) {
 		t.Fatalf("opened %v", *opened)
 	}
 	text := out.String()
-	for _, want := range []string{"failed: rejected the key", "ok, connected", "Connected (store)", "2 of 5 cloud providers connected, plus 2 local Ollama models", "mangoman dashboard"} {
+	for _, want := range []string{"failed: rejected the key", "ok, connected", "Connected (store)", "2 of 4 cloud providers connected, plus 2 local Ollama models", "mangoman dashboard"} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("output missing %q:\n%s", want, text)
 		}
@@ -95,7 +95,7 @@ func TestWizardOffersOllamaModel(t *testing.T) {
 	if pulled != "" || res.Ollama != 0 {
 		t.Fatalf("download should not be offered after quit")
 	}
-	w2, out2, _ := wizard(t, mem{}, "s\ns\ns\ns\ns\ny\n", nil)
+	w2, out2, _ := wizard(t, mem{}, "s\ns\ns\ns\ny\n", nil)
 	w2.Ollama = func(context.Context) (bool, int) { return true, 0 }
 	w2.Pull = func(m string) error { pulled = m; return nil }
 	res = w2.Run(context.Background())

@@ -44,7 +44,7 @@ MangoMan turns free AI into finished, checked work on the user's own computer. A
 
 | Part | What it does | Who it is for |
 | --- | --- | --- |
-| Router | Pools free models (Groq, Cerebras, NVIDIA, OpenRouter free models, OpenCode Zen, and Ollama on the computer), learns their limits, and switches when one is busy, slow or out of quota. One local address for any AI tool. | Everyone; builders using Claude Code, Codex, Cursor or OpenCode |
+| Router | Pools free models (Groq, Cerebras, NVIDIA, OpenRouter free models, and Ollama on the computer), learns their limits, and switches when one is busy, slow or out of quota. One local address for any AI tool. | Everyone; builders using Claude Code, Codex, Cursor or OpenCode |
 | Super Agents | Agents that do a senior person's whole job from one brief: Social Media Manager, Marketing Strategist, SEO Strategist; plus task agents such as Data Analyst and Website Builder. | Owners, marketers, freelancers |
 | Skills library | 26 skills: 18 that build and check files, 5 of expert know-how, 3 agent playbooks. Read any, copy one to improve it, write a new one, or build a new agent from them. | Everyone; power users |
 | Coding screen | OpenCode, run by MangoMan: chat, Plan or Build, Changes, Terminal and Preview. Agents do their work here. | Everyone, through the agents; builders |
@@ -99,7 +99,7 @@ flowchart LR
     local["Local models<br/>Ollama"]
   end
   subgraph free["Free AI providers"]
-    prov["Groq, Cerebras, NVIDIA,<br/>OpenRouter, OpenCode Zen"]
+    prov["Groq, Cerebras, NVIDIA,<br/>OpenRouter"]
   end
   subgraph apps["The user's apps"]
     conn["Shopify, Meta ads,<br/>Google Sheets"]
@@ -395,7 +395,7 @@ Model routing is proven and valuable: Stripe agreed in August 2026 to buy OpenRo
 | Cloudflare AI Gateway | Gateway add-on to Cloudflare | Mature platform feature | Hosted; no free-tier pooling; no local option |
 | Vercel AI Gateway | Gateway add-on to Vercel | Mature platform feature | Hosted; paid-model focus |
 
-Our position is the one nobody holds: **local, free-first, across everyone, OpenRouter and Zen included as supply sources.**
+Our position is the one nobody holds: **local, free-first, across everyone, OpenRouter included as a supply source.**
 
 How we answer the common questions:
 
@@ -657,7 +657,6 @@ flowchart TB
     cerebras[Cerebras]
     nvidia[NVIDIA]
     openrouter[OpenRouter]
-    zen[OpenCode Zen]
   end
   subgraph cloud["Our cloud: publishes data, receives counts"]
     catalogue["Signed catalogue<br/>Free models, real limits, data policy<br/>Data only, never code"]
@@ -947,6 +946,7 @@ Phase 1 milestones M1 to M4, decision brain v1, all 17 skill packs (waves 1 to 5
 
 | Date | Item | What changed |
 | --- | --- | --- |
+| 2026-10-20 | A key refused on every model is set aside; OpenCode Zen leaves the router | Phase 1 of the Agent Framework, step 1. Owner's Windows run (19 Oct): NVIDIA answered 403 "Authorization failed" on every model (an account without API access), and the router treated each 403 as one model's problem, so every request spent a try on each NVIDIA model. Now a key that has never answered and is refused (HTTP 403) on 3 different models counts as rejected: its other models are skipped in that request, the dashboard shows the key as rejected, and adding the key again starts over. A key that answered once is never set aside this way, so model-only refusals (OpenRouter's "only available on agentic harnesses") still skip just that model. OpenCode Zen is out of the router (decided 20 Oct): its free models are now free on OpenCode only. Removed from the catalogue (the provider and its 8 models; seed-2026-10-20.1), the setup wizard, the dashboard, the CI workflows, the README and PRIVACY.md. A review by a separate agent found that the first design could switch off a working OpenRouter key and never reset after a key was added again; both fixed before commit. |
 | 2026-10-20 | Agent Framework PRD; results are the bar | Owner (19 and 20 Oct): a separate PRD for the agent framework ("MangoMan Agent Framework: PRD", Claude Docs) with the architecture, run flow and Agent Architect diagrams, a comparison with the leading agents of the big labs, phases and 18 open items. Owner (20 Oct): a Social Media Manager that cannot grow an account is of no use; Super Agents are judged on results. The bar is now real growth: 2 or 3 fresh test pages run by the agent for 60 to 90 days must clearly grow against a target the team sets. The Instagram and Facebook connection, the daily growth loop (study, plan, create, post, measure, learn) and image creation move into phase 2. Decided with the owner: Social Media Manager first; paid model cost shown and approved before each test round; quick or thorough set by plan; approvals fixed per agent, with auto-approve per action; OpenCode Zen dropped from the router. Nothing built yet. |
 | 2026-10-19 | PRD: the agent platform and what makes our agents better | Owner (19 Oct): the flow must not be tied to one agent; MangoMan is a universal agent platform, and its agents must be clearly better than those on the market. Added: a diagram of the platform every agent runs on (brief and files in; a runtime that plans, does, checks and fixes each stage; skills, brain, tools and memory shared; checked work and approved changes out; a learning loop), a table of the building blocks with what is built, a proposed bar every new agent must pass before listing (brief, playbook, checker, test set, score shown on its card), a comparison of MangoMan agents with common agents today, and six proposed next steps (scorecards, a second-model review, memory of past runs, scheduled runs, acting in apps with approval, proof by measurement). The Super Agent flow now says it is shared by all three built-in agents, with a table of what each does at each stage. |
 | 2026-10-19 | PRD: MangoMan today, contents and screens | Owner (19 Oct): the PRD should show the USPs, the architecture, what makes MangoMan different, the screens and what each part does, with diagrams, and a clickable contents list at the top. Added after the lead: Contents (links to every section), MangoMan today (each part and what it does), the USPs, a comparison with chat apps and single-purpose tools, an architecture diagram, the Super Agent flow, 16 screenshots of the current build with what each screen does (made-up sample data; also a clickable tour artifact), and a status table (built and tested, built but not proven, not live, decided, proposed). |

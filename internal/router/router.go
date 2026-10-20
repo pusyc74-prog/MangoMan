@@ -197,16 +197,17 @@ const maxRetries = 2
 
 // attemptResult says what happened on one candidate.
 type attemptResult struct {
-	done     bool          // response written to the client
-	firstOut time.Duration // streams: time to first output; 0 = use total time
-	outcome  string
-	status   int
-	errMsg   string
-	badBody  []byte // a complete answer that failed the guard, kept as last resort
-	badWhy   string
-	clientIn bool          // upstream rejected the request itself (4xx client error)
-	tokens   int           // tokens counted against quota
-	pause    time.Duration // streams: the longest silence once bytes started coming
+	done      bool          // response written to the client
+	firstOut  time.Duration // streams: time to first output; 0 = use total time
+	outcome   string
+	status    int
+	errMsg    string
+	badBody   []byte // a complete answer that failed the guard, kept as last resort
+	badWhy    string
+	clientIn  bool          // upstream rejected the request itself (4xx client error)
+	keyLocked bool          // the key is refused on every model (see keys.Refused)
+	tokens    int           // tokens counted against quota
+	pause     time.Duration // streams: the longest silence once bytes started coming
 }
 
 // Handle serves one Chat Completions request end to end.
@@ -334,6 +335,7 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 		rt.Logf("req=%s attempt=%d %s -> %s (%d)%s %s", id, attempts, who, res.outcome, res.status, first, res.errMsg)
 		if res.done {
 			if strings.HasPrefix(res.outcome, "ok") {
+				rt.Keys.Answered(c.keyName())
 				rt.answered(req, c, class)
 			}
 			return
@@ -354,6 +356,9 @@ func (rt *Router) Handle(w http.ResponseWriter, r *http.Request, req *core.Reque
 			// silent or retired model (seen 15 Oct: DeepSeek tried on three
 			// keys, 30 s each). Go to another model.
 			modelDown[c.Target()] = true
+		}
+		if res.keyLocked {
+			unreachable["key:"+c.keyName()] = true
 		}
 		if res.badBody != nil && fallbackBody == nil {
 			fallbackBody, fallbackWhy, fallbackCand = res.badBody, res.badWhy, c
@@ -572,8 +577,11 @@ func (rt *Router) upstreamError(resp *http.Response, c Candidate) attemptResult 
 	case s == http.StatusForbidden:
 		// A 403 is usually about this one model (OpenRouter: "only available
 		// on agentic harnesses", region or tier locks), not the key. Avoid
-		// the model; the provider's other models stay in use.
+		// the model; the provider's other models stay in use. A key that
+		// has never answered and is refused on several models is locked out
+		// as a whole: skip its other models too.
 		res.outcome = "model_forbidden"
+		res.keyLocked = rt.Keys.Refused(c.keyName(), c.Target())
 	case s == http.StatusGone:
 		// Retired for good (NVIDIA retired Kimi K3 on 15 Oct and answers 410).
 		res.outcome = "model_gone"

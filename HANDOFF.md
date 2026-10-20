@@ -155,7 +155,7 @@ owner to try it on their own computer (**Windows**, answered 9 Oct).
 | Mango Arch: lessons verified automatically, the owner gets a daily report; sharing covered by the privacy policy, accepted once; universal, not India-first; start on a free tier (owner, 14 and 15 Oct) | Phase 1 only learns what can be checked by machine (model health by per-network quorum). Knowledge lessons (facts) need multi-source checking and are designed, not built. The privacy policy text needs a lawyer; until it exists, consent is the Settings checkbox. |
 | Left menu: + New task, Super Agents, Chargesheets, Templates, My Files, History; bottom: Connections, Usage, Settings (owner, 15 Oct) | Owner: "like Claude's sidebar". "Chargesheets" is the owner's name for the data dashboards (built 16 Oct; decisions: a feature not an agent, upload or Google link, Ask answers from queries code runs, packs added one at a time). |
 | The coding screen stays in its own tab, not inside the app page (15 Oct) | The pages refuse to be framed (frame-ancestors 'none', X-Frame-Options DENY) against clickjacking; kept. |
-| **Cerebras stays out** | Its free trial asks for a credit card. Setup order is NVIDIA, Groq, OpenRouter, OpenCode Zen, Cerebras last (`internal/setup` `Order`, `app.js` `ORDER`). |
+| **Cerebras stays out** | Its free trial asks for a credit card. Setup order is NVIDIA, Groq, OpenRouter, Cerebras last (`internal/setup` `Order`, `app.js` `ORDER`). |
 | NVIDIA carries pack work | Groq's free per-minute token limits (6,000 to 8,000) are smaller than one request of a skill task (about 14,500 tokens). OpenRouter allows 50 requests a day per account. |
 | GLM 5.3 on NVIDIA removed from the catalogue (`seed-2026-10-01.6`) and from the radar | Its answers came out as noise with chat-template tokens (`<|close|>`). |
 | Qwen 3.8 27B on OpenRouter removed (`seed-2026-10-01.7`) | OpenRouter no longer serves it free. |
@@ -215,7 +215,7 @@ while a run goes. The owner asked whether quality and "0 bugs" still hold
   a signing key. `scripts/mask-keys.py` blanks keys in published reports.
 - **Secrets set in the repo (seen working in runs):** `NVIDIA_API_KEY`,
   `OPENROUTER_API_KEY`, `GROQ_API_KEY`. Not set: `CEREBRAS_API_KEY` (out),
-  `OPENCODE_ZEN_API_KEY`, `MARKETPLACE_KEY`.
+  `MARKETPLACE_KEY`. OpenCode Zen left the router on 20 Oct, so no Zen key is needed.
 - **Workflows now (cut for a private repo on 8 Oct):**
 
 | Workflow | When | What |
@@ -431,7 +431,6 @@ Touch files in the control dir to change the next coding request:
 | Release, next steps | Automatic Netlify deploy from ci (token); the owner's domain; Windows in the background like the Mac (the Mac app runs in the background since 19 Oct: `mangoman app`, Stop MangoMan on Settings; Windows still opens a black window); Windows Smart App Control (new Windows 11 installs) may block the unsigned app whatever the install route. Code signing is the owner's cost decision. |
 | A Windows test failed once (19 Oct) | ci run 39213185632: other-systems (windows-latest) failed in Test, then passed on a rerun of the same commit. The log could not be read from the session (log storage blocked), so the test is not known. If it fails again, read the log on github.com. |
 | mac-check (19 Oct) | Run 39212621552 passed every step: install, the app in the background (opened twice, one MangoMan, stopped from the page), Get ready, OpenCode in zsh, every pack sample. The 13 Oct hangs are not seen since; the app had never run the real program before 19 Oct (the launcher overwrote it, a Mac ignores case in names). |
-| `OPENCODE_ZEN_API_KEY` secret | So the doctor also checks Zen. |
 | Guardian real run | Needs a Telegram bot from @BotFather and a real app. |
 | Payments, revenue share | Razorpay or Stripe; owner decision. |
 | Guardian page: known limits (15 Oct review) | Checks and first-aid commands run in MangoMan's own folder, not the config's (relative scripts in a hand-written guardian.json break when connected from the page). A Mac app opened from Finder has a short PATH, so npx or docker may not be found. A terminal `guardian run` and the page watching the same app both work on its incidents (no lock between processes). Likely-cause lookups use the configured port, not a `serve --port` override. Netlify dev deploys may need a build step first. |
@@ -450,7 +449,7 @@ Touch files in the control dir to change the next coding request:
 | Which computer to test on | **Answered 9 Oct: Windows.** Make the easy setup work on Windows first (the `python3.exe` shim, Chrome and Edge paths, the console window). |
 | Code signing (paid) | **Answered 9 Oct: stay unsigned for now.** |
 | Try the easy setup on Windows | Asked 9 Oct. |
-| OPENCODE_ZEN_API_KEY, MARKETPLACE_KEY | Open. |
+| MARKETPLACE_KEY | Open. |
 | Telegram bot, a real app for Guardian, a Windows tester, first beta users | Open. |
 | Mango Arch server | Open: Cloudflare account and deploy (`server/arch/README.md`). |
 
@@ -491,7 +490,7 @@ Mac (macOS 15 and later): `chmod +x mangoman` once (the artifact zip drops the p
 ## 14. What MangoMan is (one paragraph)
 
 A free, local-first AI router in Go. It pools every free model the user can
-reach (NVIDIA, Groq, OpenRouter, OpenCode Zen, Ollama; Cerebras optional),
+reach (NVIDIA, Groq, OpenRouter, Ollama; Cerebras optional),
 switches automatically when one runs out or fails, and never sees prompts or
 keys. On top: 18 skill packs, advanced agents with a signed creator
 marketplace, OpenCode as the coding engine (`mangoman code`, and the

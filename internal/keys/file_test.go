@@ -135,3 +135,26 @@ func TestFileStoreSeesOtherWriters(t *testing.T) {
 		}
 	}
 }
+
+func TestRefusedOnEveryModelLocksOnlyAKeyThatNeverAnswered(t *testing.T) {
+	r := NewResolver(nil, nil)
+	// OpenRouter style: the key works, then several models are locked.
+	r.Answered("openrouter")
+	for _, m := range []string{"a", "b", "c", "d"} {
+		if r.Refused("openrouter", m) {
+			t.Fatal("a key that answered must not be locked by model refusals")
+		}
+	}
+	// NVIDIA style: refused on every model from the start.
+	if r.Refused("nvidia", "a") || r.Refused("nvidia", "a") || r.Refused("nvidia", "b") {
+		t.Fatal("locked too early: the same model twice counts once")
+	}
+	if !r.Refused("nvidia", "c") || !r.Rejected("nvidia") {
+		t.Fatal("refused on three models without an answer: locked")
+	}
+	// Adding the key again starts over.
+	r.Forget("nvidia")
+	if r.Rejected("nvidia") || r.Refused("nvidia", "a") {
+		t.Fatal("a re-added key starts with no refusals")
+	}
+}

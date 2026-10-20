@@ -61,7 +61,7 @@ func ConnectKey(ctx context.Context, cat *catalogue.Catalogue, store keys.Store,
 // Order is the recommended connection order: the one that carries real work
 // first (NVIDIA: strongest free models, no daily cap found), then the rest.
 // Cerebras is last: its free trial asks for a credit card.
-var Order = []string{"nvidia", "groq", "openrouter", "zen", "cerebras"}
+var Order = []string{"nvidia", "groq", "openrouter", "cerebras"}
 
 // Wizard runs the interactive setup. Every side effect is a field, so tests
 // can script it.

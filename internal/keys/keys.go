@@ -116,11 +116,14 @@ type Resolver struct {
 	mu       sync.Mutex
 	cache    map[string]string
 	rejected map[string]bool
+	refused  map[string]map[string]bool // key -> models refused (HTTP 403) before it ever answered
+	answered map[string]bool            // keys that answered since added
 }
 
 // NewResolver builds a resolver. env maps provider id to its env var name.
 func NewResolver(s Store, env map[string]string) *Resolver {
-	return &Resolver{store: s, env: env, cache: map[string]string{}, rejected: map[string]bool{}}
+	return &Resolver{store: s, env: env, cache: map[string]string{}, rejected: map[string]bool{},
+		refused: map[string]map[string]bool{}, answered: map[string]bool{}}
 }
 
 // Get returns the key for a provider and where it came from.
@@ -166,6 +169,44 @@ func (r *Resolver) Disable(provider string) {
 	r.rejected[provider] = true
 }
 
+// LockedAfter is how many models must refuse a key that never answered
+// before the key itself counts as rejected.
+const LockedAfter = 3
+
+// Refused records that a provider refused this key on one model (HTTP 403)
+// and reports whether the key is locked out as a whole. A 403 is usually
+// about one model (OpenRouter: "only available on agentic harnesses"), but
+// NVIDIA answers "Authorization failed" on every model when the account has
+// no API access (owner's Windows run, 19 Oct), and every request then spent
+// a try on each model. A key that answered once is never locked this way.
+func (r *Resolver) Refused(name, model string) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.answered[name] {
+		return false
+	}
+	if r.refused[name] == nil {
+		r.refused[name] = map[string]bool{}
+	}
+	r.refused[name][model] = true
+	if len(r.refused[name]) < LockedAfter {
+		return false
+	}
+	r.cache[name] = ""
+	r.rejected[name] = true
+	return true
+}
+
+// Answered records that a key worked, so later refusals are about models.
+func (r *Resolver) Answered(name string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if !r.answered[name] {
+		r.answered[name] = true
+		delete(r.refused, name)
+	}
+}
+
 // Rejected reports whether the provider refused this key since it was added.
 func (r *Resolver) Rejected(provider string) bool {
 	r.mu.Lock()
@@ -180,6 +221,8 @@ func (r *Resolver) Forget(provider string) {
 	defer r.mu.Unlock()
 	delete(r.cache, provider)
 	delete(r.rejected, provider)
+	delete(r.refused, provider)
+	delete(r.answered, provider)
 }
 
 // Store returns the underlying key store.

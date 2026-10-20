@@ -23,11 +23,11 @@ receive your prompts, answers, files or keys.
 
 When you ask something, MangoMan sends your request straight from your
 computer to one of the AI providers you connected (for example Groq,
-Cerebras, NVIDIA, OpenRouter or OpenCode Zen). That provider's own terms and
+Cerebras, NVIDIA or OpenRouter). That provider's own terms and
 privacy policy apply to what you send.
 
 **Free models come at a cost: some providers use what you send them to
-train their AI models.** This includes most free models on OpenCode Zen and
+train their AI models.** This includes many free models on
 OpenRouter, and may change at any time. Do not send passwords, ID numbers,
 bank details, health records or other private information through free
 models. To avoid a provider, turn it off in the dashboard or remove its key.

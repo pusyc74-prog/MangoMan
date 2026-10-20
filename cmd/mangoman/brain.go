@@ -22,7 +22,7 @@ const brainUsage = `Usage:
 The brain makes small, fast decisions where the router's rules are unsure:
 which kind of task a request is, and whether a short reply is a refusal that
 another model should retry. Engines: free/fast (default), a local model such as
-strict/ollama/qwen3:4b, or Jev once added from the new-models list.
+strict/ollama/qwen3:4b.
 `
 
 func cmdBrain(args []string) error {
