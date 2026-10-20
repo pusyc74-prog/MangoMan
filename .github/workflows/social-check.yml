@@ -1,0 +1,77 @@
+name: social-check
+
+# Tries the competitor research readers (mangoman-social-research) on real
+# public accounts and ad pages, logged out, and publishes what they read to
+# the eval-reports branch under reports/social-check/. A GitHub runner is a
+# cloud server, which sites refuse more often than a home connection, so a
+# refusal here does not prove MangoMan users are refused. Run it by hand,
+# never on a schedule: it asks real sites. A session starts it with
+# POST /repos/<owner>/<repo>/dispatches, event_type social-check.
+
+on:
+  workflow_dispatch:
+    inputs:
+      instagram:
+        description: "Instagram usernames, space-separated"
+        default: "amul_india zomato nike"
+      videos:
+        description: "YouTube channel and TikTok profile links, space-separated"
+        default: "https://www.youtube.com/@zomato https://www.youtube.com/@nike https://www.tiktok.com/@nike"
+      pages:
+        description: "Page links or shortcuts, space-separated (use %20 for spaces in names)"
+        default: "meta-ads:Zomato@IN google-ads:zomato.com@IN linkedin-ads:Zomato tiktok-trends@US"
+  repository_dispatch:
+    types: [social-check]
+
+permissions:
+  contents: write # only to publish the result to the eval-reports branch
+
+concurrency:
+  group: social-check
+  cancel-in-progress: false
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      IG: ${{ inputs.instagram || 'amul_india zomato nike' }}
+      VIDEOS: ${{ inputs.videos || 'https://www.youtube.com/@zomato https://www.youtube.com/@nike https://www.tiktok.com/@nike' }}
+      PAGES: ${{ inputs.pages || 'meta-ads:Zomato@IN google-ads:zomato.com@IN linkedin-ads:Zomato tiktok-trends@US' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          pip install -q instaloader yt-dlp playwright
+          python -m playwright install --with-deps chromium
+          pip show instaloader yt-dlp | grep -E "^(Name|Version)"
+      - name: Read
+        run: |
+          S=internal/skills/packs/mangoman-social-research/scripts
+          cp internal/skills/packs/shared/*.py "$S/"
+          # shellcheck disable=SC2086
+          python $S/read_social.py instagram $IG --out social || true
+          python $S/read_social.py videos $VIDEOS --out social || true
+          python $S/read_social.py page $PAGES --out social || true
+          python $S/summarise_social.py social --out social || true
+          python $S/check_social.py social || true
+          { echo '```'; cat social/social-research.md; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Publish to the eval-reports branch
+        if: always()
+        run: |
+          [ -d social ] || exit 0
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports
+          git worktree add ../reports origin/eval-reports
+          cd ../reports
+          git switch -C eval-reports
+          mkdir -p "reports/social-check/$stamp"
+          cp -r "$GITHUB_WORKSPACE"/social/* "reports/social-check/$stamp/"
+          git add -A
+          git commit -q -m "social check $stamp (run ${{ github.run_id }})" || exit 0
+          git push origin eval-reports

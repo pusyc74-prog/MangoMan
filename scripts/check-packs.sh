@@ -26,6 +26,8 @@ run deck      "python3 $P/mangoman-ceo-deck/scripts/build_deck.py analysis.py --
 run resume    "python3 $P/mangoman-resume/scripts/build.py resume.json --template modern --out resume" "python3 $P/mangoman-resume/scripts/check.py resume.json resume.pdf --pages 1"
 run social    "python3 $P/mangoman-social-posts/scripts/build_posts.py posts.json --out posts"       "python3 $P/mangoman-social-posts/scripts/check_posts.py posts.json posts"
 run reels     "python3 $P/mangoman-reel-scripts/scripts/build_reels.py reels.json --out reels"       "python3 $P/mangoman-reel-scripts/scripts/check_reels.py reels.json reels"
+S="$P/mangoman-social-research"
+run social-research "python3 selftest.py $S/scripts && python3 $S/scripts/read_social.py page file://\$PWD/ad-page.html --out . && python3 $S/scripts/summarise_social.py . --out ." "python3 $S/scripts/check_social.py ."
 run landing   "python3 $P/mangoman-landing-page/scripts/build_page.py page.json --out site"           "python3 $P/mangoman-landing-page/scripts/check_page.py page.json site"
 run proposal  "python3 $P/mangoman-proposal/scripts/build_proposal.py proposal.json --out proposal"  "python3 $P/mangoman-proposal/scripts/check_proposal.py proposal.json proposal"
 run email     "python3 $P/mangoman-email-campaign/scripts/build_emails.py campaign.json --out emails" "python3 $P/mangoman-email-campaign/scripts/check_emails.py campaign.json emails"

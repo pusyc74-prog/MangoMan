@@ -1,0 +1,97 @@
+{
+ "platform": "instagram",
+ "account": "kesarifoods",
+ "url": "https://www.instagram.com/kesarifoods/",
+ "read_at": "2026-10-20T10:00:00+00:00",
+ "ok": true,
+ "why": "",
+ "profile": {
+  "name": "Kesari Foods",
+  "followers": 12400,
+  "following": 310,
+  "posts": 412,
+  "bio": "Ratnagiri Alphonso, orchard to door",
+  "link": "https://kesarifoods.in"
+ },
+ "posts": [
+  {
+   "url": "https://www.instagram.com/p/A1/",
+   "date": "2026-10-18",
+   "type": "reel",
+   "caption": "Your fridge is ruining your mangoes.\nKeep them at room temperature.",
+   "likes": 640,
+   "comments": 52,
+   "views": 18200,
+   "hashtags": [
+    "mangoes",
+    "alphonso"
+   ],
+   "sound": ""
+  },
+  {
+   "url": "https://www.instagram.com/p/A2/",
+   "date": "2026-10-16",
+   "type": "carousel",
+   "caption": "5 ways to tell a naturally ripened mango",
+   "likes": 410,
+   "comments": 33,
+   "views": null,
+   "hashtags": [
+    "mangoes",
+    "foodsafety"
+   ],
+   "sound": ""
+  },
+  {
+   "url": "https://www.instagram.com/p/A3/",
+   "date": "2026-10-14",
+   "type": "image",
+   "caption": "Pre-orders open for the season.",
+   "likes": 190,
+   "comments": 12,
+   "views": null,
+   "hashtags": [
+    "alphonso"
+   ],
+   "sound": ""
+  },
+  {
+   "url": "https://www.instagram.com/p/A4/",
+   "date": "2026-10-11",
+   "type": "reel",
+   "caption": "Packing day in the orchard",
+   "likes": 880,
+   "comments": 71,
+   "views": 25400,
+   "hashtags": [
+    "alphonso",
+    "ratnagiri"
+   ],
+   "sound": ""
+  },
+  {
+   "url": "https://www.instagram.com/p/A5/",
+   "date": "2026-10-09",
+   "type": "image",
+   "caption": "Thank you for 12,000 followers",
+   "likes": 150,
+   "comments": 40,
+   "views": null,
+   "hashtags": [],
+   "sound": ""
+  },
+  {
+   "url": "https://www.instagram.com/p/A6/",
+   "date": "2026-10-07",
+   "type": "reel",
+   "caption": "How we pick a mango at the right day",
+   "likes": 520,
+   "comments": 29,
+   "views": 15100,
+   "hashtags": [
+    "mangoes"
+   ],
+   "sound": ""
+  }
+ ]
+}

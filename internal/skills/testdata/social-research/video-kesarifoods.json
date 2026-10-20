@@ -1,0 +1,43 @@
+{
+ "platform": "youtube",
+ "account": "kesarifoods",
+ "url": "https://www.youtube.com/@kesarifoods/shorts",
+ "read_at": "2026-10-20T10:01:00+00:00",
+ "ok": true,
+ "why": "",
+ "profile": {
+  "name": "Kesari Foods",
+  "followers": 2100,
+  "posts": null,
+  "bio": "",
+  "link": ""
+ },
+ "posts": [
+  {
+   "url": "https://www.youtube.com/shorts/x1",
+   "date": "2026-10-17",
+   "type": "short",
+   "caption": "Fridge mistake #mangoes",
+   "likes": 120,
+   "comments": 8,
+   "views": 4300,
+   "hashtags": [
+    "mangoes"
+   ],
+   "sound": "",
+   "title": "Stop ripening mangoes in the fridge"
+  },
+  {
+   "url": "https://www.youtube.com/shorts/x2",
+   "date": "2026-10-10",
+   "type": "short",
+   "caption": "Orchard morning",
+   "likes": 95,
+   "comments": 4,
+   "views": 2900,
+   "hashtags": [],
+   "sound": "",
+   "title": "A morning in the Ratnagiri orchard"
+  }
+ ]
+}

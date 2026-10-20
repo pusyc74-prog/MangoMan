@@ -5,7 +5,7 @@
       "title": "Social Media Manager",
       "super": true,
       "summary": "Does the whole job of an experienced social media manager: researches you, your competitors and your audience, sets the strategy and your voice, plans the calendar, then makes the posts and reel scripts.",
-      "gets": ["Research of you, 3 to 5 competitors and your audience, with sources", "Strategy: goals, positioning, brand and content voice, content pillars", "A dated content calendar and a posting routine", "The first weeks of posts: images, captions, hashtags", "Ready-to-shoot reel scripts: three hooks each, shot list, caption, keywords", "A designed strategy report (web page and PDF)"],
+      "gets": ["Research of you, 3 to 5 competitors and your audience, with sources", "What competitors post and advertise right now: their latest posts, reels and running ads, with numbers", "Strategy: goals, positioning, brand and content voice, content pillars", "A dated content calendar and a posting routine", "The first weeks of posts: images, captions, hashtags", "Ready-to-shoot reel scripts: three hooks each, shot list, caption, keywords", "A designed strategy report (web page and PDF)"],
       "needs": ["Your business, once (kept for every agent)", "Your goal, platforms and time per week", "Real facts: prices, offers, dates, follower counts"],
       "stages": ["Research", "Strategy and voice", "Content plan", "Report", "Posts", "Reel scripts", "Check and deliver"],
       "brief": [
@@ -16,8 +16,8 @@
         {"id": "dates", "label": "Launches, offers, events or dates coming up", "kind": "long", "hint": "For example: summer sale 1 to 15 June, 20% off; new branch opens 3 July"},
         {"id": "notes", "label": "Anything else the manager should know", "kind": "long", "hint": "What has worked or not before, topics to avoid, people who can appear on camera"}
       ],
-      "packs": ["mangoman-social-media-manager", "mangoman-market-research", "mangoman-brand-strategy", "mangoman-content-strategy", "mangoman-copywriting", "mangoman-strategy-report", "mangoman-social-posts", "mangoman-reel-scripts"],
-      "prompt": "Be my Social Media Manager. Use the mangoman-social-media-manager skill, with mangoman-market-research, mangoman-brand-strategy, mangoman-content-strategy, mangoman-copywriting, mangoman-strategy-report, mangoman-social-posts and mangoman-reel-scripts at their stages. My brief is in {folder}/brief.json: work in that folder and start."
+      "packs": ["mangoman-social-media-manager", "mangoman-market-research", "mangoman-social-research", "mangoman-brand-strategy", "mangoman-content-strategy", "mangoman-copywriting", "mangoman-strategy-report", "mangoman-social-posts", "mangoman-reel-scripts"],
+      "prompt": "Be my Social Media Manager. Use the mangoman-social-media-manager skill, with mangoman-market-research, mangoman-social-research, mangoman-brand-strategy, mangoman-content-strategy, mangoman-copywriting, mangoman-strategy-report, mangoman-social-posts and mangoman-reel-scripts at their stages. My brief is in {folder}/brief.json: work in that folder and start."
     },
     {
       "id": "marketing-strategist",
@@ -264,6 +264,12 @@
       "title": "Social posts",
       "summary": "Post images and captions for each platform.",
       "prompt": "Use the mangoman-social-posts skill to make my posts. First ask me what you need."
+    },
+    {
+      "pack": "mangoman-social-research",
+      "title": "Competitor social research",
+      "summary": "What competitors post and advertise right now, with numbers.",
+      "prompt": "Use the mangoman-social-research skill to research my competitors on social media. First ask me what you need."
     },
     {
       "pack": "mangoman-web-app",
