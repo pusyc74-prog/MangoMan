@@ -1,0 +1,84 @@
+{
+ "accounts": [
+  {
+   "platform": "youtube",
+   "account": "zomato",
+   "url": "https://www.youtube.com/@zomato/shorts",
+   "read_at": "2026-10-20",
+   "name": "Zomato",
+   "followers": 581000,
+   "posts_read": 12,
+   "newest": "2026-05-22",
+   "oldest": "2026-04-05",
+   "posts_per_week": 1.6,
+   "formats": {
+    "short": 12
+   },
+   "median_likes": null,
+   "median_comments": null,
+   "median_views": 45000,
+   "median_engagement": null,
+   "engagement_rate_pct": null,
+   "top_posts": [
+    {
+     "url": "https://www.youtube.com/shorts/Qf6zTe12OU4",
+     "date": "2026-05-22",
+     "type": "short",
+     "first_line": "Six hitting challenge - straight outta the gully",
+     "likes": null,
+     "comments": null,
+     "views": 3400000
+    },
+    {
+     "url": "https://www.youtube.com/shorts/AyudVP4sy-o",
+     "date": "2026-05-22",
+     "type": "short",
+     "first_line": "Marcus Stoinis - straight outta the gully",
+     "likes": null,
+     "comments": null,
+     "views": 2000000
+    },
+    {
+     "url": "https://www.youtube.com/shorts/OrbQ_mSyGeY",
+     "date": "2026-04-28",
+     "type": "short",
+     "first_line": "Tim David - straight outta the gully",
+     "likes": null,
+     "comments": null,
+     "views": 2000000
+    }
+   ],
+   "top_hashtags": [],
+   "days": {
+    "Tue": 5,
+    "Mon": 2,
+    "Fri": 2,
+    "Sun": 1,
+    "Wed": 1,
+    "Sat": 1
+   },
+   "bio": "",
+   "note": "12 of 12 videos: only the list could be read, so titles and views (rounded as the list shows them) but no likes or comments; the site refused their own pages; dates from the channel's public feed, which lists its latest 15 uploads"
+  }
+ ],
+ "pages": [
+  {
+   "page": "meta-ads:Amul@IN",
+   "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=IN&q=Amul&search_type=keyword_unordered&media_type=all",
+   "read_at": "2026-10-20",
+   "file": "page-meta-ads-amul-in.json",
+   "screenshot": "meta-ads-amul-in.png",
+   "text_chars": 11818
+  }
+ ],
+ "not_read": [
+  {
+   "platform": "instagram",
+   "account": "nike",
+   "url": "https://www.instagram.com/nike/",
+   "why": "Instagram showed a login wall for this account; add links to its posts or screenshots by hand",
+   "file": "instagram-nike.json",
+   "screenshot": ""
+  }
+ ]
+}
