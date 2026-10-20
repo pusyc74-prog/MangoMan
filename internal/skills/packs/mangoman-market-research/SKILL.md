@@ -52,13 +52,11 @@ from the brief. Nothing here assumes one country.
 3. **Audience.** Where the user's buyers talk without a filter: reviews of
    the user and competitors (the 2 to 4 star ones say the most), forums and
    community groups, marketplace questions, comments under competitor posts,
-   the platform's search suggestions. Capture triggers (what makes someone
-   start looking) and the alternatives they consider, and build the audience
-   map: up to 10 of each, in their own words, only from what you found:
-   problems, frustrations, desired outcomes, questions they ask again and
-   again, common mistakes, objections, limiting beliefs, the emotions behind
-   the problems, and exact phrases they use. Build 2 or 3 audience profiles
-   from the same findings; tag each with its sources.
+   the platform's search suggestions. Capture verbatim phrases, triggers
+   (what makes someone start looking), desired outcomes, objections and
+   alternatives they consider. Build 2 or 3 audience profiles only from what
+   you found; tag each with its sources. When social or content work follows
+   (posts, reels, a content calendar), also build the audience map below.
 4. **Timing.** Seasons, holidays, festivals, paydays and local events in the
    user's market during the plan's period. Look them up for that country and
    year; never assume another country's calendar.
@@ -90,8 +88,12 @@ Then write a short synthesis for each part:
 - **Openings:** 3 to 5 opportunities the research shows, each tied to the
   finding that supports it.
 
-Save the audience map as `audience.json` in the task folder, so content,
-posts and reel scripts start from it:
+**Audience map** (for social and content work): up to 10 of each, in the
+audience's own words, only from what you found: problems, frustrations,
+desired outcomes, questions they ask again and again, common mistakes,
+objections, limiting beliefs, the emotions behind the problems, and exact
+phrases they use. Save it as `audience.json` in the task folder, so posts
+and reel scripts start from it:
 
 ```json
 {"problems": ["..."], "frustrations": ["..."], "outcomes": ["..."], "questions": ["..."],

@@ -17,7 +17,7 @@ import build_reels as B  # noqa: E402
 import checks as C  # noqa: E402
 
 # A second call to action before the end splits the viewer's attention.
-EARLY_CTA = re.compile(r"\b(follow (?:us|me|for)|save this|share this|send this to|comment below|link in (?:the )?bio|dm (?:us|me))\b", re.I)
+EARLY_CTA = re.compile(r"\b(follow (?:us|me|for)|(?:save|share) this (?:reel|video|post)|save (?:this|it) for later|send this to|comment below|link in (?:the )?bio|dm (?:us|me))\b", re.I)
 
 
 def norm(s):
@@ -76,6 +76,8 @@ def main():
         said = " ".join(s.get(k, "") for s in hs[:1] + r["beats"] for k in ("say", "text"))
         if r.get("keywords") and not any(norm(k) in norm(said) for k in r["keywords"]):
             soft.append("%s: no keyword is said or shown on screen; platforms read both for search" % n)
+        if re.search(r"(?<![\w&])#\w", r["caption"]):
+            tags.append("%s: hashtags are in the caption; list them in hashtags only (the build adds them)" % n)
         ht = r.get("hashtags", [])
         tags += ["%s: hashtag %r must be one word" % (n, h) for h in ht if re.search(r"\s", h.strip())]
         if not 3 <= len(ht) <= 8:
@@ -88,7 +90,7 @@ def main():
     rep.check(cta, "one call to action per reel, at the end, serving its goal", "calls to action")
     rep.check(length, "every reel fits its target length", "too long")
     rep.check(seo, "search keywords are in every caption", "search keywords")
-    rep.check(tags, "hashtags are single words", "hashtags")
+    rep.check(tags, "hashtags are single words, listed once", "hashtags")
     rep.check(soft, "hooks, captions and hashtags read well", "to improve", "WARN")
     pool = C.fact_pool(spec.get("facts", {}))
     rep.check(sorted({u for t in texts for u in C.untraced(t, pool)}), "every number comes from the facts the user gave",

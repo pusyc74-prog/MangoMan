@@ -82,13 +82,15 @@ reel answers one item from these lists (its `angle`), copied word for word.
 - **Search:** 2 to 4 `keywords` people type into the platform's search; put
   at least one in the caption and one in the spoken lines or on-screen text.
 - **Caption:** the point in the first line (about 125 characters show), then
-  the useful detail, then the same action. 3 to 8 one-word hashtags.
+  the useful detail, then the same action. 3 to 8 one-word hashtags in
+  `hashtags`, not in the caption (the build adds them).
 - **Cover text:** what the reel is about in a few words, for the profile grid.
 - **Sound:** say the kind of sound (calm, upbeat, a trending audio in the
   niche) and tell the user to pick one trending this week from the
   platform's audio list. Never name a song as trending unless you saw it.
 - **Never invent facts.** Every number, price, result or quote comes from the
-  user; put them in `facts`. The checker fails any other number.
+  user; put them in `facts`, with any date or time you mention in the script
+  or caption. The checker fails any other number.
 - Write the way the brand's best person talks to one customer. No "it's not
   X, it's Y", no "game-changer", no engagement bait, no em dashes.
 
@@ -97,7 +99,6 @@ Write `reels.json`:
 ```json
 {
   "brand": "Kesari Foods",
-  "language": "en",
   "facts": {"price": "₹749 for a box of 6"},
   "audience": {
     "mistakes": ["ripening mangoes in the fridge"],
@@ -108,11 +109,13 @@ Write `reels.json`:
     {"id": "fridge-mistake", "title": "Stop ripening mangoes in the fridge", "goal": "saves",
      "angle": {"from": "mistakes", "text": "ripening mangoes in the fridge"},
      "platforms": ["instagram", "youtube"], "length": 25, "date": "2026-11-02", "time": "19:00",
-     "hooks": [{"say": "Your fridge is ruining your mangoes.", "text": "Fridge = flavourless mangoes?", "show": "Hand pulls a hard mango out of the fridge"}],
+     "hooks": [{"say": "Your fridge is ruining your mangoes.", "text": "The fridge mistake", "show": "Hand pulls a hard mango out of the fridge"},
+               {"say": "Cold mangoes never ripen. Here is why.", "text": "Why cold mangoes stay sour", "show": "A cut mango with a pale centre"},
+               {"say": "Stop putting raw mangoes in the fridge.", "text": "Raw mango? Not the fridge", "show": "A mango box opened on a counter"}],
      "beats": [{"part": "value", "say": "...", "text": "...", "show": "..."},
                {"part": "solution", "say": "...", "text": "...", "show": "..."}],
      "cta": {"action": "save", "say": "Save this for your next box.", "text": "Save for mango season", "show": "Ripe mango sliced"},
-     "caption": "Ripening mangoes in the fridge? Here is why they taste flat...", "cover": "Fridge mistake",
+     "caption": "Ripening mangoes in the fridge keeps them sour.\n...\nSave this for your next box.", "cover": "Fridge mistake",
      "keywords": ["ripening mangoes"], "hashtags": ["Mangoes", "Alphonso", "KitchenTips"],
      "sound": "Calm acoustic; pick one trending this week in the Reels audio list"}
   ]

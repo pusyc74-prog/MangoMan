@@ -41,6 +41,8 @@ def shot_ok(s):
 
 
 def validate(spec):
+    if not isinstance(spec, dict):
+        return ["reels.json must be an object with brand, facts, audience and reels"]
     p = []
     if not spec.get("brand"):
         p.append("brand is required")
@@ -61,14 +63,17 @@ def validate(spec):
         if not isinstance(r, dict):
             p.append("%s must be an object" % tag)
             continue
-        for k in ("id", "title", "goal", "angle", "length", "hooks", "beats", "cta", "caption"):
+        for k in ("id", "title", "goal", "angle", "length", "hooks", "beats", "cta", "caption", "platforms"):
             if not r.get(k):
                 p.append("%s: needs %s" % (tag, k))
-        if r.get("id") in ids:
+        for k in ("id", "title", "goal", "caption", "cover", "sound", "date", "time"):
+            if not isinstance(r.get(k, ""), str):
+                p.append("%s: %s must be text" % (tag, k))
+        if isinstance(r.get("id"), str) and r["id"] in ids:
             p.append("%s: id is used twice" % tag)
-        ids.add(r.get("id"))
-        if r.get("goal") and r["goal"] not in GOALS:
-            p.append("%s: goal must be one of %s" % (tag, ", ".join(GOALS)))
+        ids.add(str(r.get("id")))
+        if isinstance(r.get("goal"), str) and r["goal"] and r["goal"] not in GOALS:
+            p.append("%s: goal must be one of %s (one per reel)" % (tag, ", ".join(GOALS)))
         a = r.get("angle")
         if a and not (isinstance(a, dict) and a.get("from") in ANGLES and isinstance(a.get("text"), str) and a["text"]):
             p.append('%s: angle is {"from": one of %s, "text": the item from the audience list}' % (tag, ", ".join(ANGLES)))
@@ -84,14 +89,11 @@ def validate(spec):
         if c and not (isinstance(c, dict) and c.get("action") in sum(GOALS.values(), ()) and c.get("say") and shot_ok(c)):
             p.append('%s: cta is {"action": one of %s, "say", "text", "show"}' % (tag, ", ".join(sum(GOALS.values(), ()))))
         for k in ("platforms", "keywords", "hashtags"):
-            if not (isinstance(r.get(k, []), list) and all(isinstance(x, str) and x for x in r.get(k, []))):
+            if not (isinstance(r.get(k, []), list) and all(isinstance(x, str) and x.strip("# ") for x in r.get(k, []))):
                 p.append("%s: %s must be a list of text" % (tag, k))
         bad = [x for x in r.get("platforms", []) if x not in PLATFORMS] if isinstance(r.get("platforms"), list) else []
         if bad:
             p.append("%s: platforms must be from %s" % (tag, ", ".join(PLATFORMS)))
-        for k in ("title", "caption", "cover", "sound", "date", "time"):
-            if not isinstance(r.get(k, ""), str):
-                p.append("%s: %s must be text" % (tag, k))
     return p
 
 
@@ -115,7 +117,7 @@ def reel_md(n, r):
     when = " ".join(x for x in (r.get("date", ""), r.get("time", "")) if x)
     out = ["## %d. %s" % (n, r["title"]), "",
            "Goal: %s. Platforms: %s. Target length: %d s (spoken: about %d s).%s" % (
-               r["goal"], ", ".join(r.get("platforms") or ["instagram"]), r["length"], total, " Post: %s." % when if when else ""),
+               r["goal"], ", ".join(r["platforms"]), r["length"], total, " Post: %s." % when if when else ""),
            "", "Audience %s: \"%s\"" % (r["angle"]["from"].rstrip("s"), r["angle"]["text"]), "",
            "### Hook options (first 3 seconds; the script uses option 1)", ""]
     for i, h in enumerate(r["hooks"], 1):
@@ -151,7 +153,7 @@ def main():
     rows = []
     for r in spec["reels"]:
         tags = " ".join("#" + h.lstrip("#") for h in r.get("hashtags", []))
-        for p in r.get("platforms") or ["instagram"]:
+        for p in r["platforms"]:
             rows.append({"date": r.get("date", ""), "time": r.get("time", ""), "platform": p, "id": r["id"], "title": r["title"],
                          "goal": r["goal"], "hook": r["hooks"][0]["say"], "cover": r.get("cover", ""),
                          "caption": (r["caption"] + ("\n\n" + tags if tags else "")), "seconds": timeline(r)[-1][1]})
