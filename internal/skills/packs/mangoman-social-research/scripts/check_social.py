@@ -35,7 +35,7 @@ def main():
             continue
         if today - dt.datetime.fromisoformat(r["read_at"]) > dt.timedelta(days=7):
             soft.append("%s was read on %s; read it again for current posts" % (r["account"], r["read_at"][:10]))
-        dates = [p["date"] for p in r["posts"] if p.get("date")]
+        dates = [p["date"] for p in r.get("posts") or [] if p.get("date")]
         if r["ok"] and dates and today.date() - dt.date.fromisoformat(max(dates)) > dt.timedelta(days=60):
             soft.append("%s has not posted since %s; it may be inactive" % (r["account"], max(dates)))
     rep.check(bad, "every account and page file is complete", "files")
@@ -48,8 +48,11 @@ def main():
         rep.add("FAIL", "%s.json does not match the files (edited by hand, or files changed since): run summarise_social.py again" % S.OUT)
     else:
         rep.add("PASS", "the summary's numbers are computed from the files")
-    if not os.path.exists(os.path.join(folder, S.OUT + ".md")):
+    md = os.path.join(folder, S.OUT + ".md")
+    if not os.path.exists(md):
         rep.add("FAIL", "%s.md not built" % S.OUT)
+    elif not bad and open(md, encoding="utf-8").read() != S.markdown(S.summary(recs)):
+        rep.add("FAIL", "%s.md does not match the files (edited by hand): run summarise_social.py again" % S.OUT)
     if not any(r.get("ok") for r in recs):
         soft.append("nothing could be read; ask the owner for links and screenshots of competitors' posts and ads")
     rep.check(soft, "reads are recent and accounts are active", "note", "WARN")

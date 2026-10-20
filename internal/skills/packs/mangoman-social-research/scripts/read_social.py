@@ -17,6 +17,7 @@ per account or page into --out; a page also gets a screenshot. When a site
 refuses, the file says why, so the research can say what it could not read.
 """
 import datetime as dt
+import hashlib
 import itertools
 import json
 import os
@@ -43,7 +44,10 @@ def now():
 
 
 def slug(s):
-    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:60] or "page"
+    """A file name for a target: readable, plus a short code of the whole
+    target, so two names that read alike never share a file."""
+    words = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:40].strip("-") or "page"
+    return "%s-%s" % (words, hashlib.sha1(s.strip().encode("utf-8")).hexdigest()[:6])
 
 
 def record(platform, account, url):
@@ -124,11 +128,20 @@ def instagram(name, n):
 # YouTube Shorts and TikTok, through yt-dlp (Unlicense), logged out.
 
 def video_url(url):
-    """A YouTube channel link reads its Shorts unless a tab is named."""
-    u = url.strip().rstrip("/")
-    if re.match(r"https?://(www\.)?youtube\.com/(@[^/]+|channel/[^/]+|c/[^/]+)$", u):
-        return u + "/shorts"
-    return u
+    """A YouTube channel link reads its Shorts unless the Videos tab is named;
+    share-link extras (?si=...) are dropped."""
+    u = url.strip()
+    parts = urllib.parse.urlsplit(u)
+    m = re.match(r"(/(?:@[^/]+|channel/[^/]+|c/[^/]+|user/[^/]+))(?:/(\w+))?/?$", parts.path)
+    if parts.netloc.lower().endswith("youtube.com") and m:
+        tab = m.group(2) if m.group(2) in ("videos", "shorts", "streams") else "shorts"
+        return "https://www.youtube.com%s/%s" % (m.group(1), tab)
+    return u.split("?")[0].rstrip("/") if "tiktok.com/@" in u else u
+
+
+def is_video(url):
+    """A link to one video, not to a channel's tab."""
+    return bool(re.search(r"/shorts/|watch\?v=|/video/", url or ""))
 
 
 def vid_post(v, platform):
@@ -151,13 +164,19 @@ FEED = "https://www.youtube.com/feeds/videos.xml?channel_id="
 def feed_dates(channel_id):
     """Upload dates from a YouTube channel's public feed (its latest 15
     uploads), for when each video's own page refuses a visitor."""
+    import ssl
     import urllib.request
     import xml.etree.ElementTree as ET
+    try:  # Python on a Mac may not see the system's certificates; requests brings certifi's
+        import certifi
+        ctx = ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        ctx = None
     ns = {"a": "http://www.w3.org/2005/Atom", "yt": "http://www.youtube.com/xml/schemas/2015"}
     if not channel_id:
         return {}
     try:
-        with urllib.request.urlopen(FEED + urllib.parse.quote(channel_id), timeout=20) as r:
+        with urllib.request.urlopen(FEED + urllib.parse.quote(channel_id), timeout=20, context=ctx) as r:
             root = ET.fromstring(r.read())
     except Exception:
         return {}
@@ -187,7 +206,7 @@ def videos(url, n):
             rec["profile"] = {"name": info.get("channel") or info.get("uploader") or info.get("title") or "",
                               "followers": number(info.get("channel_follower_count")), "posts": None, "bio": "", "link": ""}
             refused = 0
-            for e in list(info.get("entries") or [])[:n]:
+            for e in [e for e in info.get("entries") or [] if is_video(e.get("url") or e.get("webpage_url"))][:n]:
                 full = e
                 try:  # the list gives little; each video's page gives the date and the counts
                     full = y.extract_info(e.get("url") or e.get("webpage_url"), download=False) or e
@@ -196,14 +215,14 @@ def videos(url, n):
                 rec["posts"].append(vid_post(full, platform))
             if refused:
                 rec["note"] = ("%d of %d videos: only the list could be read, so titles and views (rounded as the list shows "
-                               "them) but no likes or comments; the site refused their own pages" % (refused, len(rec["posts"])))
+                               "them) but no date, likes or comments; the site refused their own pages" % (refused, len(rec["posts"])))
                 dates = feed_dates(info.get("channel_id") or "") if platform == "youtube" else {}
                 for p in rec["posts"]:
                     vid = p["url"].rstrip("/").split("/")[-1].split("=")[-1]
                     if not p["date"] and dates.get(vid):
                         p["date"] = dates[vid]
                 if dates:
-                    rec["note"] += "; dates from the channel's public feed, which lists its latest 15 uploads"
+                    rec["note"] += "; dates added from the channel's public feed, which lists its latest 15 uploads"
     except yt_dlp.utils.DownloadError as e:
         return failed(rec, video_why(e))
     return rec
@@ -249,7 +268,7 @@ def page(target, out):
             pg.screenshot(path=os.path.join(out, shot), full_page=False)
             browser.close()
     except Exception as e:
-        return failed(rec, "the page did not open (%s)" % str(e).splitlines()[0][:160])
+        return failed(rec, "the page did not open (%s)" % (str(e).splitlines() or [type(e).__name__])[0][:160])
     text = re.sub(r"\n\s*\n+", "\n", text).strip()
     rec.update(text=text[:30000], screenshot=shot)
     blocked = re.search(r"you have been blocked|access denied|verify you are human|are you a robot|unusual traffic", text, re.I)
@@ -266,7 +285,7 @@ def fresh(path):
         with open(path, encoding="utf-8") as f:
             r = json.load(f)
         return r.get("ok") and now() - dt.datetime.fromisoformat(r["read_at"]) < dt.timedelta(hours=FRESH_HOURS)
-    except (OSError, ValueError, KeyError, TypeError):
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
         return False
 
 
@@ -274,8 +293,13 @@ def main():
     a = sys.argv[1:]
     if len(a) < 2 or a[0] not in ("instagram", "videos", "page"):
         sys.exit(__doc__)
-    out = a[a.index("--out") + 1] if "--out" in a else "social"
-    n = min(int(a[a.index("--posts") + 1]), MAX_POSTS) if "--posts" in a else 12
+    try:
+        out = a[a.index("--out") + 1] if "--out" in a else "social"
+        n = int(a[a.index("--posts") + 1]) if "--posts" in a else 12
+    except (IndexError, ValueError):
+        sys.exit("--out needs a folder and --posts a number from 1 to %d" % MAX_POSTS)
+    if not 1 <= n <= MAX_POSTS:
+        sys.exit("--posts must be a number from 1 to %d" % MAX_POSTS)
     skip = {i + 1 for i, x in enumerate(a) if x in ("--out", "--posts")}
     targets = [x for i, x in enumerate(a[1:], 1) if not x.startswith("--") and i not in skip]
     kind = a[0]
@@ -291,7 +315,12 @@ def main():
             continue
         if i:
             time.sleep(PAUSE)
-        rec = instagram(t, n) if kind == "instagram" else videos(t, n) if kind == "videos" else page(t, out)
+        try:
+            rec = instagram(t, n) if kind == "instagram" else videos(t, n) if kind == "videos" else page(t, out)
+        except Exception as e:  # a site's new answer must not stop the other accounts
+            where = {"instagram": "instagram", "page": "page"}.get(kind, "tiktok" if "tiktok.com" in t else "youtube")
+            rec = failed(record(where, t, t), "the reader stopped on an answer it did not expect (%s: %s)"
+                         % (type(e).__name__, (str(e).splitlines() or [""])[0][:140]))
         with open(path, "w", encoding="utf-8") as f:
             json.dump(rec, f, ensure_ascii=False, indent=1)
         print("%s %s: %s" % ("read" if rec["ok"] else "could not read", t,

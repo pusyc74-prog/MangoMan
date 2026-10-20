@@ -36,11 +36,12 @@ def load_records(folder):
 def problems(r, folder):
     """What is wrong with one saved file, in words; empty when it can be used."""
     f = r["file"]
-    miss = [k for k in ("platform", "account", "url", "read_at", "ok", "why", "posts") if k not in r]
+    miss = [k for k in ("platform", "account", "url", "read_at", "ok", "why") if k not in r]
     if miss:
         return ["%s: missing %s" % (f, ", ".join(miss))]
     try:
-        dt.datetime.fromisoformat(r["read_at"])
+        if dt.datetime.fromisoformat(r["read_at"]).tzinfo is None:
+            return ["%s: read_at needs its time zone, for example 2026-10-20T10:00:00+00:00" % f]
     except (TypeError, ValueError):
         return ["%s: read_at is not a date and time" % f]
     if not r["ok"]:
@@ -48,9 +49,26 @@ def problems(r, folder):
     if r["platform"] == "page":
         ok = r.get("text") and os.path.exists(os.path.join(folder, r.get("screenshot") or ""))
         return [] if ok else ["%s: a read page needs its text and its screenshot file" % f]
-    if not r["posts"] or [p for p in r["posts"] if not isinstance(p, dict) or p.get("date") and not _iso(p["date"])]:
-        return ["%s: read, but no posts, or a date not written as YYYY-MM-DD" % f]
-    return []
+    profile = r.get("profile") or {}
+    if not isinstance(profile, dict) or not isinstance(profile.get("followers", 0) or 0, int):
+        return ["%s: profile must be an object, with followers a whole number or null" % f]
+    if not isinstance(r.get("posts"), list) or not r["posts"]:
+        return ["%s: read, but no posts" % f]
+    return ["%s: post %d: %s" % (f, i, w) for i, p in enumerate(r["posts"], 1) for w in post_problems(p)][:5]
+
+
+def post_problems(p):
+    if not isinstance(p, dict):
+        return ["not an object"]
+    out = [k for k in ("url", "type") if not isinstance(p.get(k), str) or not p[k]]
+    out = ["needs %s" % ", ".join(out)] if out else []
+    if p.get("date") and not _iso(p["date"]):
+        out.append("date must be written as YYYY-MM-DD")
+    out += ["%s must be a whole number or null" % k for k in ("likes", "comments", "views")
+            if p.get(k) is not None and (not isinstance(p[k], int) or isinstance(p[k], bool))]
+    if not isinstance(p.get("hashtags", []), list) or not isinstance(p.get("caption", ""), str):
+        out.append("hashtags must be a list and caption text")
+    return out
 
 
 def _iso(s):
@@ -73,26 +91,27 @@ def first_line(text):
 def stats(r):
     posts = r["posts"]
     dates = sorted(dt.date.fromisoformat(p["date"]) for p in posts if p.get("date"))
+    profile = r.get("profile") or {}
     span = (dates[-1] - dates[0]).days if len(dates) > 1 else 0
     eng = [(p.get("likes") or 0) + (p.get("comments") or 0) for p in posts if p.get("likes") is not None]
-    followers = r.get("profile", {}).get("followers")
+    followers = profile.get("followers")
     typical = median(eng)
     top = sorted(posts, key=lambda p: (p.get("views") or 0, (p.get("likes") or 0) + (p.get("comments") or 0)), reverse=True)[:3]
-    tags = collections.Counter(h.lower() for p in posts for h in p.get("hashtags", []))
+    tags = collections.Counter(h.lower() for p in posts for h in p.get("hashtags") or [] if isinstance(h, str))
     return {
         "platform": r["platform"], "account": r["account"], "url": r["url"], "read_at": r["read_at"][:10],
-        "name": r.get("profile", {}).get("name", ""), "followers": followers, "posts_read": len(posts),
+        "name": profile.get("name", ""), "followers": followers, "posts_read": len(posts),
         "newest": dates[-1].isoformat() if dates else "", "oldest": dates[0].isoformat() if dates else "",
         "posts_per_week": round((len(dates) - 1) * 7 / span, 1) if span else None,
         "formats": dict(collections.Counter(p["type"] for p in posts).most_common()),
         "median_likes": median([p.get("likes") for p in posts]), "median_comments": median([p.get("comments") for p in posts]),
         "median_views": median([p.get("views") for p in posts]), "median_engagement": typical,
         "engagement_rate_pct": round(typical * 100 / followers, 2) if typical is not None and followers else None,
-        "top_posts": [{"url": p["url"], "date": p["date"], "type": p["type"], "first_line": first_line(p.get("title") or p.get("caption")),
+        "top_posts": [{"url": p["url"], "date": p.get("date") or "", "type": p["type"], "first_line": first_line(p.get("title") or p.get("caption")),
                        "likes": p.get("likes"), "comments": p.get("comments"), "views": p.get("views")} for p in top],
         "top_hashtags": [h for h, _ in tags.most_common(10)],
         "days": dict(collections.Counter(DAYS[d.weekday()] for d in dates).most_common()),
-        "bio": r.get("profile", {}).get("bio", ""), "note": r.get("note", ""),
+        "bio": profile.get("bio", ""), "note": r.get("note", ""),
     }
 
 

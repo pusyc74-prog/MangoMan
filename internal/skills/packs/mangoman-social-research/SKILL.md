@@ -1,6 +1,6 @@
 ---
 name: mangoman-social-research
-description: Read what competitors are doing on social media right now - their latest Instagram posts and reels, YouTube Shorts and TikTok videos with likes, comments and views, the ads they are running on Meta, Google and LinkedIn, and this week's TikTok trends - from public pages without logging in, then turn it into numbers the strategy can cite (posting rate, formats, typical engagement, top posts and their hooks, hashtags). Use for competitor research, a social media audit, what is working in a niche, or before planning content.
+description: Read what competitors are doing on social media right now (their latest Instagram posts and reels, YouTube Shorts and TikTok videos with likes, comments and views, the ads they are running on Meta, Google and LinkedIn, and this week's TikTok trends) from public pages without logging in, then turn it into numbers the strategy can cite (posting rate, formats, typical engagement, top posts and their hooks, hashtags). Use for competitor research, a social media audit, what is working in a niche, or before planning content.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

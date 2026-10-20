@@ -38,6 +38,8 @@ class Profile:
             raise ProfileNotExistsException("no profile")
         if name == "busy":
             raise TooManyRequestsException("429 Too Many Requests")
+        if name == "boom":  # Instagram changed its answer: an error Instaloader does not wrap
+            raise KeyError("edge_owner_to_timeline_media")
         if name == "walled":  # what a cloud server got on 20 Oct (social-check)
             raise InstaloaderException("302 Found when accessing https://www.instagram.com/walled/")
         return cls()
@@ -85,7 +87,8 @@ class YoutubeDL:
             raise DownloadError("ERROR: Sign in to confirm you're not a bot")
         if url.endswith("/shorts"):
             return {"channel": "Test Brand", "channel_follower_count": 500, "channel_id": "UC1",
-                    "entries": [{"url": "https://www.youtube.com/shorts/v1"}, {"url": "https://www.youtube.com/shorts/v2"}]}
+                    "entries": [{"url": "https://www.youtube.com/shorts/v1"}, {"url": "https://www.youtube.com/shorts/v2"},
+                                {"url": "https://www.youtube.com/@testbrand/videos", "title": "Test Brand - Videos"}, {}]}
         if url.endswith("v2"):
             raise DownloadError("ERROR: video unavailable")
         return {"webpage_url": url, "title": "Short one", "description": "Watch this #tips", "upload_date": "20261012",
@@ -128,6 +131,19 @@ expect(R.page_url("meta-ads:Kesari Foods@US") == R.PAGES["meta-ads"].format(q="K
 expect("region=IN" in R.page_url("tiktok-trends") and "region=AE" in R.page_url("tiktok-trends@ae"), "trends shortcut and region")
 expect(R.page_url("https://example.com/x") == "https://example.com/x", "links pass through")
 expect(R.video_url("https://www.youtube.com/@brand/videos") == "https://www.youtube.com/@brand/videos", "a named tab stays")
+expect(R.video_url("https://youtube.com/@brand?si=abc") == "https://www.youtube.com/@brand/shorts", "a share link reads the Shorts")
+expect(R.video_url("https://m.youtube.com/user/brand/featured") == "https://www.youtube.com/user/brand/shorts", "mobile and featured links read the Shorts")
+expect(R.video_url("https://www.tiktok.com/@brand?lang=en") == "https://www.tiktok.com/@brand", "a TikTok link loses its extras")
+expect(len(v["posts"]) == 2, "channel tabs and empty entries are not posts")
+expect(R.slug("kesari.foods") != R.slug("kesari_foods") and R.slug(R.PAGES["meta-ads"].format(q="A", region="IN")) != R.slug(R.PAGES["meta-ads"].format(q="B", region="IN")), "names that read alike get their own files")
+
+with tempfile.TemporaryDirectory() as d:
+    sys.argv = ["read_social.py", "instagram", "boom", "testbrand", "--out", d]
+    R.PAUSE = 0
+    R.main()
+    files = sorted(os.listdir(d))
+    boom = json.load(open(os.path.join(d, files[0])))
+    expect(len(files) == 2 and not boom["ok"] and "did not expect" in boom["why"], "one account's surprise does not stop the others")
 
 with tempfile.TemporaryDirectory() as d:
     f = os.path.join(d, "x.json")
