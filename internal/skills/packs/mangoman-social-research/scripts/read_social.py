@@ -145,6 +145,25 @@ def vid_post(v, platform):
             "title": v.get("title") or ""}
 
 
+FEED = "https://www.youtube.com/feeds/videos.xml?channel_id="
+
+
+def feed_dates(channel_id):
+    """Upload dates from a YouTube channel's public feed (its latest 15
+    uploads), for when each video's own page refuses a visitor."""
+    import urllib.request
+    import xml.etree.ElementTree as ET
+    ns = {"a": "http://www.w3.org/2005/Atom", "yt": "http://www.youtube.com/xml/schemas/2015"}
+    if not channel_id:
+        return {}
+    try:
+        with urllib.request.urlopen(FEED + urllib.parse.quote(channel_id), timeout=20) as r:
+            root = ET.fromstring(r.read())
+    except Exception:
+        return {}
+    return {e.findtext("yt:videoId", "", ns): e.findtext("a:published", "", ns)[:10] for e in root.findall("a:entry", ns)}
+
+
 def video_why(e):
     s = str(e)
     if "not a bot" in s or "Sign in" in s or "login" in s.lower():
@@ -177,7 +196,14 @@ def videos(url, n):
                 rec["posts"].append(vid_post(full, platform))
             if refused:
                 rec["note"] = ("%d of %d videos: only the list could be read, so titles and views (rounded as the list shows "
-                               "them) but no date, likes or comments; the site refused their own pages" % (refused, len(rec["posts"])))
+                               "them) but no likes or comments; the site refused their own pages" % (refused, len(rec["posts"])))
+                dates = feed_dates(info.get("channel_id") or "") if platform == "youtube" else {}
+                for p in rec["posts"]:
+                    vid = p["url"].rstrip("/").split("/")[-1].split("=")[-1]
+                    if not p["date"] and dates.get(vid):
+                        p["date"] = dates[vid]
+                if dates:
+                    rec["note"] += "; dates from the channel's public feed, which lists its latest 15 uploads"
     except yt_dlp.utils.DownloadError as e:
         return failed(rec, video_why(e))
     return rec

@@ -84,7 +84,7 @@ class YoutubeDL:
         if "blocked" in url:
             raise DownloadError("ERROR: Sign in to confirm you're not a bot")
         if url.endswith("/shorts"):
-            return {"channel": "Test Brand", "channel_follower_count": 500,
+            return {"channel": "Test Brand", "channel_follower_count": 500, "channel_id": "UC1",
                     "entries": [{"url": "https://www.youtube.com/shorts/v1"}, {"url": "https://www.youtube.com/shorts/v2"}]}
         if url.endswith("v2"):
             raise DownloadError("ERROR: video unavailable")
@@ -115,11 +115,13 @@ expect(R.instagram("https://www.instagram.com/missing/", 12)["why"] == "no publi
 expect("slow down" in R.instagram("busy", 12)["why"], "rate limit in plain words")
 expect("login wall" in R.instagram("walled", 12)["why"], "a redirect to the login page in plain words")
 
+R.feed_dates = lambda cid: {"v2": "2026-10-01"} if cid == "UC1" else {}
 v = R.videos("https://www.youtube.com/@testbrand", 12)
 expect(v["ok"] and v["platform"] == "youtube" and v["account"] == "testbrand" and v["url"].endswith("/shorts"), "youtube channel reads its shorts")
 expect(v["posts"][0]["date"] == "2026-10-12" and v["posts"][0]["views"] == 3000 and v["posts"][0]["sound"] == "Band - Song", "short details")
 expect(v["posts"][1]["url"].endswith("v2") and v["posts"][1]["views"] is None, "a video page that refuses keeps the list entry")
-expect(v.get("note", "").startswith("1 of 2 videos"), "a partial read says so")
+expect(v.get("note", "").startswith("1 of 2 videos") and "public feed" in v["note"], "a partial read says so")
+expect(v["posts"][1]["date"] == "2026-10-01", "the feed gives the refused video its date")
 expect("sign in" in R.videos("https://www.tiktok.com/@blocked", 12)["why"], "bot check in plain words")
 
 expect(R.page_url("meta-ads:Kesari Foods@US") == R.PAGES["meta-ads"].format(q="Kesari%20Foods", region="US"), "meta ads shortcut")
