@@ -394,8 +394,9 @@ Touch files in the control dir to change the next coding request:
   mvanhorn/last30days-skill; X needs a paid key, so the agent uses web
   search for x.com links only) and `audit_site.py` with `check_audit.py` in
   mangoman-seo-research (after AgriciDaniel/claude-seo), used by the SEO
-  Strategist's audit stage. Reddit and Hacker News are not reachable from
-  this session; the social-check workflow tries them from a runner.
+  Strategist's audit stage. Live from a GitHub runner (22 Oct): Hacker
+  News reads (stories kept only when the title or link names the words);
+  Reddit refused the runner with 403, not yet tried from a home connection.
 - **20 skill packs** with builders and checkers (scripts render and check;
   the model writes content); test sets for 7 (ad copy, listing, email,
   resume, SEO, social posts, website copy); ad copy pack 1.2.

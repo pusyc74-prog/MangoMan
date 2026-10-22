@@ -152,8 +152,9 @@ def markdown(s):
                "Typical post: %s likes, %s comments." % (fmt(a["median_likes"]), fmt(a["median_comments"])) if talk else
                "Typical post: %s likes, %s comments, %s views. Engagement against followers: %s." % (
                    fmt(a["median_likes"]), fmt(a["median_comments"]), fmt(a["median_views"]), fmt(a["engagement_rate_pct"], "%")),
-               "Where: %s." % (", ".join("%s %d" % kv for kv in a["communities"].items()) or "not shown") if talk else
-               "Top hashtags: %s." % (", ".join("#" + h for h in a["top_hashtags"]) or "none")]
+               "Where: %s." % ", ".join("%s %d" % kv for kv in a["communities"].items()) if a["communities"] else
+               "" if talk else "Top hashtags: %s." % (", ".join("#" + h for h in a["top_hashtags"]) or "none")]
+        md = md[:-1] if not md[-1] else md
         md += ["Note: " + a["note"] + "."] if a["note"] else []
         md += ["", "Top posts:", ""]
         md += ["- %s %s: \"%s\" (%s likes, %s comments%s) %s" % (p["date"] or "undated", p["type"], p["first_line"], fmt(p["likes"]),

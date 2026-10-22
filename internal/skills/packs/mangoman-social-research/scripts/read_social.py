@@ -318,12 +318,19 @@ def reddit(words, n):
     return rec if posts else nothing(rec, "Reddit")
 
 
+def about(hit, words):
+    """A story is about the words when its title or link names them all; the
+    search also matches story text, which brings in unrelated stories."""
+    seen = re.sub(r"[^a-z0-9]+", " ", ("%s %s" % (hit.get("title") or "", hit.get("url") or "")).lower())
+    return all(w in seen.split() or w in seen.replace(" ", "") for w in re.findall(r"[a-z0-9]+", words.lower()))
+
+
 def hackernews(words, n):
     since = int((now() - dt.timedelta(days=30)).timestamp())
     rec = record("hackernews", words, "https://hn.algolia.com/?" + urllib.parse.urlencode({"q": words, "dateRange": "pastMonth"}))
     rec["profile"] = {"name": "Hacker News search: " + words}
     rec["note"] = "likes are points"
-    q = urllib.parse.urlencode({"query": words, "tags": "story", "numericFilters": "created_at_i>%d" % since, "hitsPerPage": n})
+    q = urllib.parse.urlencode({"query": words, "tags": "story", "numericFilters": "created_at_i>%d" % since, "hitsPerPage": 100})
     try:
         hits = json.loads(fetch(HN + q))["hits"]
     except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError) as e:
@@ -331,7 +338,7 @@ def hackernews(words, n):
     rec["posts"] = [{"url": "https://news.ycombinator.com/item?id=%s" % h["objectID"], "date": (h.get("created_at") or "")[:10],
                      "type": "story", "caption": h.get("title") or "", "title": h.get("title") or "",
                      "likes": number(h.get("points")), "comments": number(h.get("num_comments")), "views": None,
-                     "hashtags": [], "sound": "", "link": h.get("url") or ""} for h in hits if h.get("objectID")][:n]
+                     "hashtags": [], "sound": "", "link": h.get("url") or ""} for h in hits if h.get("objectID") and about(h, words)][:n]
     return rec if rec["posts"] else nothing(rec, "Hacker News")
 
 

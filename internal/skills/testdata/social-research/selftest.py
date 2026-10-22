@@ -159,7 +159,9 @@ def site(url):
     assert "created_at_i" in url and "tags=story" in url
     return json.dumps({"hits": [] if "quiet" in url else [
         {"objectID": "41", "title": "Show HN: Kesari", "url": "https://kesari.example", "points": 12, "num_comments": 3,
-         "created_at": "2026-10-18T08:00:00.000Z"}, {"title": "no id"}]})
+         "created_at": "2026-10-18T08:00:00.000Z"}, {"title": "no id"},
+        {"objectID": "42", "title": "Context Language Models", "url": "https://x.example", "points": 6, "created_at": "2026-10-18T08:00:00.000Z"},
+        {"objectID": "43", "title": "A new launch", "url": "https://kesari.example/blog", "points": 2, "created_at": "2026-10-17T08:00:00.000Z"}]})
 
 
 R.fetch = site
@@ -173,7 +175,11 @@ expect("refused" in R.reddit("closed", 12)["why"] and "slow down" in R.hackernew
 hn = R.hackernews("Kesari", 12)
 expect(hn["ok"] and hn["posts"] == [{"url": "https://news.ycombinator.com/item?id=41", "date": "2026-10-18", "type": "story",
                                      "caption": "Show HN: Kesari", "title": "Show HN: Kesari", "likes": 12, "comments": 3,
-                                     "views": None, "hashtags": [], "sound": "", "link": "https://kesari.example"}], "hacker news stories")
+                                     "views": None, "hashtags": [], "sound": "", "link": "https://kesari.example"},
+                                    {"url": "https://news.ycombinator.com/item?id=43", "date": "2026-10-17", "type": "story",
+                                     "caption": "A new launch", "title": "A new launch", "likes": 2, "comments": None,
+                                     "views": None, "hashtags": [], "sound": "", "link": "https://kesari.example/blog"}],
+       "hacker news stories about the words, by title or link; stories that only mention them in their text are left out")
 q = R.hackernews("quiet", 12)
 expect(q["ok"] and q["posts"] == [] and "nothing on Hacker News" in q["note"], "a search with no posts is read, and says so")
 lone = '<search-telemetry-tracker data-faceplate-tracking-context="%s"></search-telemetry-tracker>' % R.html.escape(
