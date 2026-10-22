@@ -1,7 +1,9 @@
 package ingress
 
 import (
+	"encoding/json"
 	"errors"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -32,6 +34,50 @@ func (s *Server) libraryRoutes(mux *http.ServeMux) {
 	mux.Handle("PUT /mangoman/skills/{name}", s.auth(http.HandlerFunc(s.skillPut)))
 	mux.Handle("DELETE /mangoman/skills/{name}", s.auth(http.HandlerFunc(s.skillDelete)))
 	mux.Handle("POST /mangoman/skills/{name}/copy", s.auth(http.HandlerFunc(s.skillCopy)))
+	mux.Handle("GET /mangoman/my-agents", s.auth(http.HandlerFunc(s.myAgentsGet)))
+	mux.Handle("PUT /mangoman/my-agents", s.auth(http.HandlerFunc(s.myAgentsPut)))
+}
+
+// starterIDs are the ids of the pre-made agents (starters.json).
+func starterIDs() map[string]bool {
+	var d struct {
+		Agents []struct{ ID string } `json:"agents"`
+	}
+	raw, _ := fs.ReadFile(uiFiles, "ui/starters.json")
+	_ = json.Unmarshal(raw, &d)
+	ids := map[string]bool{}
+	for _, a := range d.Agents {
+		ids[a.ID] = true
+	}
+	return ids
+}
+
+func (s *Server) myAgentsGet(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, map[string][]string{"agents": nonNil(s.Cfg.GetMyAgents())})
+}
+
+// myAgentsPut replaces the pre-made agents in the user's team.
+func (s *Server) myAgentsPut(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Agents []string `json:"agents"`
+	}
+	if err := readJSON(r, &in); err != nil {
+		core.WriteError(w, http.StatusBadRequest, "bad_request", "send {\"agents\": [\"social-media-manager\", ...]}")
+		return
+	}
+	known := starterIDs()
+	for _, id := range in.Agents {
+		if !known[id] {
+			core.WriteError(w, http.StatusUnprocessableEntity, "unknown_agent", "no pre-made agent called "+id)
+			return
+		}
+	}
+	s.Cfg.SetMyAgents(in.Agents)
+	if err := s.save(); err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "config_not_saved", err.Error())
+		return
+	}
+	s.myAgentsGet(w, r)
 }
 
 func ownDir() (string, error) {
@@ -172,12 +218,14 @@ func (s *Server) skillDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 // skillCopy makes one of MangoMan's skills the user's own, under a new
-// name, to change as they like.
+// name, to change as they like. BasedOn names the pre-made agent a copied
+// agent playbook belongs to, so the copy starts from that agent's brief.
 func (s *Server) skillCopy(w http.ResponseWriter, r *http.Request) {
 	var in struct {
-		As string `json:"as"`
+		As      string `json:"as"`
+		BasedOn string `json:"based_on"`
 	}
-	if err := readJSON(r, &in); err != nil {
+	if err := readJSON(r, &in); err != nil || (in.BasedOn != "" && !starterIDs()[in.BasedOn]) {
 		core.WriteError(w, http.StatusBadRequest, "bad_request", "could not read the request")
 		return
 	}
@@ -194,6 +242,19 @@ func (s *Server) skillCopy(w http.ResponseWriter, r *http.Request) {
 		os.RemoveAll(p)
 		core.WriteError(w, http.StatusNotFound, "not_copied", err.Error())
 		return
+	}
+	if in.BasedOn != "" {
+		f := filepath.Join(p, "SKILL.md")
+		raw, err := os.ReadFile(f)
+		if err == nil && strings.Contains(string(raw), "\nmetadata:\n") {
+			raw = []byte(strings.Replace(string(raw), "\nmetadata:\n", "\nmetadata:\n  based_on: "+in.BasedOn+"\n", 1))
+			err = os.WriteFile(f, raw, 0o644)
+		}
+		if err != nil {
+			os.RemoveAll(p)
+			core.WriteError(w, http.StatusInternalServerError, "not_copied", "the copy could not be marked as based on "+in.BasedOn)
+			return
+		}
 	}
 	writeJSON(w, map[string]string{"name": in.As, "path": p})
 }

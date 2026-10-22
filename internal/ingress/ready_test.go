@@ -128,10 +128,11 @@ func TestStartersMatchPacks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	have, tools := map[string]bool{}, map[string]bool{}
+	have, tools, kind := map[string]bool{}, map[string]bool{}, map[string]string{}
 	for _, p := range packs {
 		have[p.Name] = true
 		tools[p.Name] = p.Kind == "pack"
+		kind[p.Name] = p.Kind
 	}
 	for _, a := range d.Agents {
 		if a.ID == "" || a.Title == "" || a.Summary == "" || len(a.Gets) == 0 || len(a.Needs) == 0 || len(a.Packs) == 0 {
@@ -145,6 +146,10 @@ func TestStartersMatchPacks(t *testing.T) {
 		// A super agent starts from its brief: the form's questions are
 		// well formed and its first message names the brief's folder.
 		if a.Super {
+			// My Agents copies a Super Agent's first skill as its playbook.
+			if kind[a.Packs[0]] != "agent" {
+				t.Errorf("super agent %q: its first skill must be its playbook (kind agent)", a.Title)
+			}
 			ids := map[string]bool{}
 			for _, q := range a.Brief {
 				choice := q.Kind == "choice" || q.Kind == "multi"

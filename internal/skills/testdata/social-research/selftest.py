@@ -137,6 +137,45 @@ expect(R.video_url("https://www.tiktok.com/@brand?lang=en") == "https://www.tikt
 expect(len(v["posts"]) == 2, "channel tabs and empty entries are not posts")
 expect(R.slug("kesari.foods") != R.slug("kesari_foods") and R.slug(R.PAGES["meta-ads"].format(q="A", region="IN")) != R.slug(R.PAGES["meta-ads"].format(q="B", region="IN")), "names that read alike get their own files")
 
+# Reddit and Hacker News: saved pages stand in for the sites. The two Reddit
+# pages come from last30days (MIT): a real search page and a bot check.
+here = os.path.dirname(os.path.abspath(__file__))
+saved = lambda f: open(os.path.join(here, f), encoding="utf-8").read()
+
+
+class Refused(R.urllib.error.HTTPError):
+    def __init__(self, code):
+        super().__init__("https://x", code, "no", {}, None)
+
+
+def site(url):
+    if "busy" in url:
+        raise Refused(429)
+    if "closed" in url:
+        raise Refused(403)
+    if "reddit.com" in url:
+        assert "t=month" in url
+        return saved("reddit-challenge.html") if "check" in url else saved("reddit-search.html")
+    assert "created_at_i" in url and "tags=story" in url
+    return json.dumps({"hits": [] if "quiet" in url else [
+        {"objectID": "41", "title": "Show HN: Kesari", "url": "https://kesari.example", "points": 12, "num_comments": 3,
+         "created_at": "2026-10-18T08:00:00.000Z"}, {"title": "no id"}]})
+
+
+R.fetch = site
+rd = R.reddit("Tubi", 12)
+expect(rd["ok"] and len(rd["posts"]) == 2 and rd["posts"][0]["likes"] == 9 and rd["posts"][0]["comments"] == 5, "reddit threads with upvotes and comments")
+expect(rd["posts"][0]["date"] == "2026-09-29" and rd["posts"][0]["url"] == "https://www.reddit.com/r/TubiTV/comments/1wtoesn/", "reddit thread date and link")
+expect(rd["posts"][0]["community"] == "r/TubiTV" and rd["posts"][0]["title"].startswith("Just finished"), "reddit thread community and title")
+expect(len(R.reddit("Tubi", 1)["posts"]) == 1, "--posts caps the threads")
+expect("bot check" in R.reddit("check", 12)["why"], "a reddit bot check in plain words")
+expect("refused" in R.reddit("closed", 12)["why"] and "slow down" in R.hackernews("busy", 12)["why"], "refusals in plain words")
+hn = R.hackernews("Kesari", 12)
+expect(hn["ok"] and hn["posts"] == [{"url": "https://news.ycombinator.com/item?id=41", "date": "2026-10-18", "type": "story",
+                                     "caption": "Show HN: Kesari", "title": "Show HN: Kesari", "likes": 12, "comments": 3,
+                                     "views": None, "hashtags": [], "sound": "", "link": "https://kesari.example"}], "hacker news stories")
+expect(not R.hackernews("quiet", 12)["ok"] and "nothing on Hacker News" in R.hackernews("quiet", 12)["why"], "no talk is said plainly")
+
 with tempfile.TemporaryDirectory() as d:
     sys.argv = ["read_social.py", "instagram", "boom", "testbrand", "--out", d]
     R.PAUSE = 0

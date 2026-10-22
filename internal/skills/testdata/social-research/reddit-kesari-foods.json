@@ -1,0 +1,15 @@
+{
+ "platform": "reddit",
+ "account": "Kesari Foods",
+ "url": "https://www.reddit.com/search/?q=Kesari+Foods&type=posts&t=month&sort=relevance",
+ "read_at": "2026-10-20T09:30:00+00:00",
+ "ok": true,
+ "why": "",
+ "profile": {"name": "Reddit search: Kesari Foods"},
+ "note": "likes are upvotes",
+ "posts": [
+  {"url": "https://www.reddit.com/r/IndianFood/comments/abc101/", "date": "2026-10-18", "type": "thread", "caption": "Kesari mango pickle worth it?", "title": "Kesari mango pickle worth it?", "likes": 48, "comments": 21, "views": null, "hashtags": [], "sound": "", "community": "r/IndianFood"},
+  {"url": "https://www.reddit.com/r/mumbai/comments/abc102/", "date": "2026-10-09", "type": "thread", "caption": "Where to buy Kesari pickles in Andheri", "title": "Where to buy Kesari pickles in Andheri", "likes": 12, "comments": 9, "views": null, "hashtags": [], "sound": "", "community": "r/mumbai"},
+  {"url": "https://www.reddit.com/r/IndianFood/comments/abc103/", "date": "2026-09-28", "type": "thread", "caption": "Kesari vs homemade aam ka achaar", "title": "Kesari vs homemade aam ka achaar", "likes": 30, "comments": 40, "views": null, "hashtags": [], "sound": "", "community": "r/IndianFood"}
+ ]
+}

@@ -34,6 +34,9 @@ type Config struct {
 	// router's own ranking. An entry is a model name ("gpt-oss-120b", any
 	// provider) or provider/model ("groq/gpt-oss-120b", that provider only).
 	Favorites []string `json:"favorites,omitempty"`
+	// MyAgents are the pre-made agents the user added to their team (My
+	// Agents), by id, in the order added. Their own agents are always in it.
+	MyAgents []string `json:"my_agents,omitempty"`
 	// CustomModels are new models the user added from the radar; they are
 	// not in the catalogue yet.
 	CustomModels []CustomModel `json:"custom_models,omitempty"`
@@ -188,6 +191,29 @@ var (
 	mu     sync.RWMutex // guards fields changed live from the dashboard
 	saveMu sync.Mutex   // one Save at a time
 )
+
+// GetMyAgents returns the pre-made agents in the user's team.
+func (c *Config) GetMyAgents() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return append([]string(nil), c.MyAgents...)
+}
+
+// SetMyAgents replaces the team's pre-made agents, keeping the first of
+// any repeated id.
+func (c *Config) SetMyAgents(ids []string) {
+	seen := map[string]bool{}
+	var out []string
+	for _, id := range ids {
+		if !seen[id] {
+			seen[id] = true
+			out = append(out, id)
+		}
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	c.MyAgents = out
+}
 
 // GetFavorites returns a copy of My list.
 func (c *Config) GetFavorites() []string {

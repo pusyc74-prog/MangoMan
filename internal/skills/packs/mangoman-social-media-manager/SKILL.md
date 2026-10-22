@@ -5,7 +5,7 @@ license: Proprietary. Free to use inside MangoMan only; no copying, changing or 
 metadata:
   pack: mangoman
   kind: agent
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Social Media Manager
@@ -47,7 +47,9 @@ topics and offers that get the most response now; list the accounts that
 could not be read, so the owner can send links or screenshots; the audience in
 their own words, saved as the audience map `audience.json` (problems,
 frustrations, outcomes, repeated questions, mistakes, objections, limiting
-beliefs, emotions, phrases); seasons, holidays and events in the plan's
+beliefs, emotions, phrases), taken from reviews and from what people said
+about the brand, its competitors and the problem on Reddit in the last 30
+days (`read_social.py reddit`); seasons, holidays and events in the plan's
 period for this country. Keep every source with the link, the date and
 what you saw. Say which profiles you could not read.
 

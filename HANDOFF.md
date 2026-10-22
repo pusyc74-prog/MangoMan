@@ -382,6 +382,20 @@ Touch files in the control dir to change the next coding request:
   (`kind: method` and `kind: agent` in SKILL.md metadata); the Skills
   library and agent builder (`internal/ingress/library.go`), with the
   user's own skills in `<config>/opencode/skills` (no marker file).
+- **My Agents (22 Oct):** a menu item under Super Agents with the user's
+  team (pre-made agents added with "Add to my team", ids in config
+  `my_agents`, GET and PUT `/mangoman/my-agents`), own agents (Make it mine
+  copies a Super Agent's playbook with `based_on`, so the copy starts from
+  that agent's brief; Create an agent), Work together (a lead follows its
+  helpers' playbooks for their parts), Share (download the SKILL.md) and
+  Import. The Skills library moved here from Super Agents.
+- **Borrowed research (22 Oct, both MIT, credited in the packs):**
+  `read_social.py reddit` and `hackernews` (last 30 days, after
+  mvanhorn/last30days-skill; X needs a paid key, so the agent uses web
+  search for x.com links only) and `audit_site.py` with `check_audit.py` in
+  mangoman-seo-research (after AgriciDaniel/claude-seo), used by the SEO
+  Strategist's audit stage. Reddit and Hacker News are not reachable from
+  this session; the social-check workflow tries them from a runner.
 - **20 skill packs** with builders and checkers (scripts render and check;
   the model writes content); test sets for 7 (ad copy, listing, email,
   resume, SEO, social posts, website copy); ad copy pack 1.2.

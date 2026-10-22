@@ -102,3 +102,42 @@ func TestSkillsLibrary(t *testing.T) {
 		t.Fatal("still listed")
 	}
 }
+
+// My Agents: the pre-made agents in the user's team, and a pre-made agent's
+// playbook copied as the user's own, marked with the agent it came from.
+func TestMyAgents(t *testing.T) {
+	t.Setenv("MANGOMAN_HOME", t.TempDir())
+	h, s := dashServer(t, mem{})
+	host := "127.0.0.1:4141"
+	if w := call(h, "GET", "/mangoman/my-agents", host, authz, ""); w.Code != 200 || !strings.Contains(w.Body.String(), `"agents": []`) {
+		t.Fatalf("empty team: %d %s", w.Code, w.Body)
+	}
+	w := call(h, "PUT", "/mangoman/my-agents", host, authz, `{"agents":["seo-strategist","data-analyst","seo-strategist"]}`)
+	if got := s.Cfg.GetMyAgents(); w.Code != 200 || len(got) != 2 || got[0] != "seo-strategist" {
+		t.Fatalf("team: %d %v", w.Code, got)
+	}
+	if w := call(h, "PUT", "/mangoman/my-agents", host, authz, `{"agents":["no-such-agent"]}`); w.Code != 422 || len(s.Cfg.GetMyAgents()) != 2 {
+		t.Fatalf("unknown agent: %d", w.Code)
+	}
+	w = call(h, "POST", "/mangoman/skills/mangoman-social-media-manager/copy", host, authz, `{"as":"my-social","based_on":"social-media-manager"}`)
+	if w.Code != 200 {
+		t.Fatalf("copy: %d %s", w.Code, w.Body)
+	}
+	own, _ := ownDir()
+	raw, _ := os.ReadFile(filepath.Join(own, "my-social", "SKILL.md"))
+	if !strings.Contains(string(raw), "\nmetadata:\n  based_on: social-media-manager\n") {
+		t.Fatalf("copy not marked: %.400s", raw)
+	}
+	var got struct{ Skills []librarySkill }
+	_ = json.Unmarshal(call(h, "GET", "/mangoman/skills", host, authz, "").Body.Bytes(), &got)
+	found := false
+	for _, k := range got.Skills {
+		found = found || (k.Name == "my-social" && k.Own && k.Kind == "agent" && k.BasedOn == "social-media-manager")
+	}
+	if !found {
+		t.Fatal("the copy is not listed as an agent based on the Social Media Manager")
+	}
+	if w := call(h, "POST", "/mangoman/skills/mangoman-social-media-manager/copy", host, authz, `{"as":"my-other","based_on":"nope"}`); w.Code != 400 {
+		t.Fatalf("unknown based_on: %d", w.Code)
+	}
+}

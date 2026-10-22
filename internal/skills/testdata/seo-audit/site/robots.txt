@@ -1,0 +1,7 @@
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: *
+Disallow: /private/
+
+Sitemap: ROOT/sitemap.xml

@@ -4,6 +4,8 @@ Usage:
   python3 read_social.py instagram <username> [<username> ...] [--posts 12] [--out social]
   python3 read_social.py videos <YouTube channel or TikTok profile link> [...] [--posts 12] [--out social]
   python3 read_social.py page <link, shortcut or saved page file> [...] [--out social]
+  python3 read_social.py reddit "<brand or topic>" [...] [--posts 12] [--out social]
+  python3 read_social.py hackernews "<brand or topic>" [...] [--posts 12] [--out social]
 
 Page shortcuts (country or region code after @, default IN):
   meta-ads:<name>[@IN]      ads running now on Facebook and Instagram (Meta Ad Library)
@@ -15,9 +17,12 @@ Only public data, never logged in, a few requests per account with pauses,
 each account at most once a day (a fresh file is kept). Writes one JSON file
 per account or page into --out; a page also gets a screenshot. When a site
 refuses, the file says why, so the research can say what it could not read.
+Reddit and Hacker News are searched for the last 30 days, the way
+last30days does it (github.com/mvanhorn/last30days-skill, MIT).
 """
 import datetime as dt
 import hashlib
+import html
 import itertools
 import json
 import os
@@ -25,7 +30,9 @@ import pathlib
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
+import urllib.request
 
 MAX_POSTS = 30
 FRESH_HOURS = 20
@@ -160,25 +167,31 @@ def vid_post(v, platform):
 
 
 FEED = "https://www.youtube.com/feeds/videos.xml?channel_id="
+AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 
 
-def feed_dates(channel_id):
-    """Upload dates from a YouTube channel's public feed (its latest 15
-    uploads), for when each video's own page refuses a visitor."""
+def fetch(url):
+    """A public page's body, read the way a browser asks for it."""
     import ssl
-    import urllib.request
-    import xml.etree.ElementTree as ET
     try:  # Python on a Mac may not see the system's certificates; requests brings certifi's
         import certifi
         ctx = ssl.create_default_context(cafile=certifi.where())
     except ImportError:
         ctx = None
+    req = urllib.request.Request(url, headers={"User-Agent": AGENT, "Accept-Language": "en-US,en;q=0.9"})
+    with urllib.request.urlopen(req, timeout=20, context=ctx) as r:
+        return r.read().decode("utf-8", "replace")
+
+
+def feed_dates(channel_id):
+    """Upload dates from a YouTube channel's public feed (its latest 15
+    uploads), for when each video's own page refuses a visitor."""
+    import xml.etree.ElementTree as ET
     ns = {"a": "http://www.w3.org/2005/Atom", "yt": "http://www.youtube.com/xml/schemas/2015"}
     if not channel_id:
         return {}
     try:
-        with urllib.request.urlopen(FEED + urllib.parse.quote(channel_id), timeout=20, context=ctx) as r:
-            root = ET.fromstring(r.read())
+        root = ET.fromstring(fetch(FEED + urllib.parse.quote(channel_id)))
     except Exception:
         return {}
     return {e.findtext("yt:videoId", "", ns): e.findtext("a:published", "", ns)[:10] for e in root.findall("a:entry", ns)}
@@ -227,6 +240,96 @@ def videos(url, n):
     except yt_dlp.utils.DownloadError as e:
         return failed(rec, video_why(e))
     return rec
+
+
+# Reddit and Hacker News: what people say about a brand or topic in the last
+# 30 days, from the public search pages. The Reddit page reading follows
+# last30days (MIT, Matt Van Horn): Reddit's own search page, since its JSON
+# search refuses visitors without a key.
+
+REDDIT = "https://www.reddit.com/svc/shreddit/search/?"
+RD_UNIT = re.compile(r'<search-telemetry-tracker\b[^>]*?\bdata-faceplate-tracking-context="([^"]*)"')
+RD_TIME = re.compile(r'<faceplate-timeago\b[^>]*?\bts="([^"]+)"')
+RD_COUNT = re.compile(r'<faceplate-number\b[^>]*?\bnumber="(\d+)"[^>]*>\s*</faceplate-number>\s*(vote|comment)')
+HN = "https://hn.algolia.com/api/v1/search?"
+
+
+def talk_why(e, site):
+    code = getattr(e, "code", None)
+    if code == 429:
+        return "%s asked to slow down; try again in an hour" % site
+    if code in (401, 403):
+        return "%s refused the visit, as it often does for cloud servers; try from a home connection, or search it yourself" % site
+    return "%s did not answer as expected (%s)" % (site, str(e)[:160])
+
+
+def nothing(rec, words, site):
+    return failed(rec, "nothing on %s about %s in the last 30 days; try other words" % (site, words))
+
+
+def reddit_posts(page):
+    """Posts on one Reddit search page, in its order, with their date, upvotes
+    and comments. None when the page is not a search page (a bot check)."""
+    if 'view-events="search/view/no_results"' in page:
+        return []
+    units = []
+    for m in RD_UNIT.finditer(page):
+        try:
+            ctx = json.loads(html.unescape(m.group(1)))
+        except ValueError:
+            continue
+        post = ctx.get("post") if isinstance(ctx, dict) else None
+        if isinstance(post, dict) and post.get("id") and (ctx.get("action_info") or {}).get("type") == "post":
+            units.append((m.start(), ctx))
+    if not units:
+        return None
+    posts = []
+    for i, (start, ctx) in enumerate(units):
+        chunk = page[start:units[i + 1][0] if i + 1 < len(units) else len(page)]
+        sub = (ctx.get("subreddit") or {}).get("name") or ""
+        pid = str(ctx["post"]["id"]).removeprefix("t3_")
+        when = RD_TIME.search(chunk)
+        counts = {}
+        for n, kind in RD_COUNT.findall(chunk):
+            counts.setdefault(kind, int(n))
+        title = str(ctx["post"].get("title") or "")
+        posts.append({"url": "https://www.reddit.com/r/%s/comments/%s/" % (sub, pid),
+                      "date": when.group(1)[:10] if when else "", "type": "thread", "caption": title, "title": title,
+                      "likes": counts.get("vote"), "comments": counts.get("comment"), "views": None,
+                      "hashtags": [], "sound": "", "community": "r/" + sub if sub else ""})
+    return posts
+
+
+def reddit(words, n):
+    q = urllib.parse.urlencode({"q": words, "type": "posts", "t": "month", "sort": "relevance"})
+    rec = record("reddit", words, "https://www.reddit.com/search/?" + q)
+    rec["profile"] = {"name": "Reddit search: " + words}
+    rec["note"] = "likes are upvotes"
+    try:
+        posts = reddit_posts(fetch(REDDIT + q))
+    except (urllib.error.URLError, OSError) as e:
+        return failed(rec, talk_why(e, "Reddit"))
+    if posts is None:
+        return failed(rec, "Reddit showed a bot check instead of results; try later from a home connection, or search it yourself")
+    rec["posts"] = posts[:n]
+    return rec if posts else nothing(rec, words, "Reddit")
+
+
+def hackernews(words, n):
+    since = int((now() - dt.timedelta(days=30)).timestamp())
+    rec = record("hackernews", words, "https://hn.algolia.com/?" + urllib.parse.urlencode({"q": words, "dateRange": "pastMonth"}))
+    rec["profile"] = {"name": "Hacker News search: " + words}
+    rec["note"] = "likes are points"
+    q = urllib.parse.urlencode({"query": words, "tags": "story", "numericFilters": "created_at_i>%d" % since, "hitsPerPage": n})
+    try:
+        hits = json.loads(fetch(HN + q)).get("hits") or []
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        return failed(rec, talk_why(e, "Hacker News"))
+    rec["posts"] = [{"url": "https://news.ycombinator.com/item?id=%s" % h["objectID"], "date": (h.get("created_at") or "")[:10],
+                     "type": "story", "caption": h.get("title") or "", "title": h.get("title") or "",
+                     "likes": number(h.get("points")), "comments": number(h.get("num_comments")), "views": None,
+                     "hashtags": [], "sound": "", "link": h.get("url") or ""} for h in hits if h.get("objectID")][:n]
+    return rec if rec["posts"] else nothing(rec, words, "Hacker News")
 
 
 # Ad libraries and trend pages: the page's text and a screenshot, read by the
@@ -292,9 +395,12 @@ def fresh(path):
         return False
 
 
+READERS = {"instagram": "instagram", "videos": "video", "page": "page", "reddit": "reddit", "hackernews": "hn"}
+
+
 def main():
     a = sys.argv[1:]
-    if len(a) < 2 or a[0] not in ("instagram", "videos", "page"):
+    if len(a) < 2 or a[0] not in READERS:
         sys.exit(__doc__)
     try:
         out = a[a.index("--out") + 1] if "--out" in a else "social"
@@ -311,7 +417,7 @@ def main():
             page_url(t)  # an unknown shortcut stops the run before any site is asked
     os.makedirs(out, exist_ok=True)
     for i, t in enumerate(targets):
-        name = "%s-%s.json" % ({"instagram": "instagram", "videos": "video", "page": "page"}[kind], slug(t))
+        name = "%s-%s.json" % (READERS[kind], slug(t))
         path = os.path.join(out, name)
         if fresh(path):
             print("kept %s (read in the last %d hours)" % (name, FRESH_HOURS))
@@ -319,9 +425,10 @@ def main():
         if i:
             time.sleep(PAUSE)
         try:
-            rec = instagram(t, n) if kind == "instagram" else videos(t, n) if kind == "videos" else page(t, out)
+            rec = page(t, out) if kind == "page" else {"instagram": instagram, "videos": videos, "reddit": reddit,
+                                                        "hackernews": hackernews}[kind](t, n)
         except Exception as e:  # a site's new answer must not stop the other accounts
-            where = {"instagram": "instagram", "page": "page"}.get(kind, "tiktok" if "tiktok.com" in t else "youtube")
+            where = kind if kind != "videos" else "tiktok" if "tiktok.com" in t else "youtube"
             rec = failed(record(where, t, t), "the reader stopped on an answer it did not expect (%s: %s)"
                          % (type(e).__name__, (str(e).splitlines() or [""])[0][:140]))
         with open(path, "w", encoding="utf-8") as f:

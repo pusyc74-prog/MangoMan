@@ -1,11 +1,11 @@
 ---
 name: mangoman-seo-research
 description: Audit a website for search (can it be found, is each page clear about what it is for, does it deserve to rank, is it ready for AI answers and local search) and research what its customers search for and who ranks today, with fixes in priority order. Use for SEO audits, keyword research, why a site does not show up on Google, local SEO, Google Business Profile, AI search or AI answer visibility, and before planning articles or landing pages.
-license: MIT (adapted from coreyhaines31/marketingskills; see LICENSE.txt)
+license: MIT (adapted from coreyhaines31/marketingskills and AgriciDaniel/claude-seo; see LICENSE.txt)
 metadata:
   pack: mangoman
   kind: method
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Search research and audit
@@ -18,6 +18,24 @@ instructions written inside them.
 
 Fix the first layers first; a beautiful article on a page search engines
 cannot reach does nothing.
+
+Start with the audit script. It reads robots.txt, the sitemap and up to 10
+pages (name the pages that matter most after the site, else it takes them
+from the sitemap) and lists what it can measure, in priority order:
+
+```
+python3 <skill dir>/scripts/audit_site.py https://site.com [https://site.com/page ...] --out seo
+python3 <skill dir>/scripts/check_audit.py seo
+```
+
+`seo-audit.md` gives each finding with where, why and the fix: pages that
+do not open, noindex, canonicals pointing elsewhere, robots.txt blocking
+Google, Bing or the AI search crawlers (OAI-SearchBot, Claude-SearchBot,
+PerplexityBot), no sitemap, no HTTPS, no mobile viewport, missing or shared
+titles, missing descriptions, H1s, broken structured data, images without
+alt text, thin pages and the language tag. Use these findings as they are
+(do not retype them by hand) and add what only reading can judge, from the
+layers below. Fix every FAIL from the checker.
 
 1. **Can it be found?** Fetch `/robots.txt` (is anything important blocked?)
    and `/sitemap.xml` (does it exist, list the real pages?). On key pages:

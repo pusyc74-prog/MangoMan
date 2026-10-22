@@ -5,7 +5,7 @@
 
 const ORDER = ["nvidia", "groq", "openrouter", "ollama", "cerebras"];
 const NUM = new Intl.NumberFormat();
-const state = { token: "", overview: null, activity: null, radar: null, filter: "used", open: new Set(), openTeam: new Set(), drawer: false };
+const state = { token: "", overview: null, activity: null, radar: null, filter: "used", open: new Set(), openTeam: new Set(), drawer: false, starters: null, team: [] };
 
 function $(id) { return document.getElementById(id); }
 
@@ -969,7 +969,7 @@ async function setWeaker(mode) {
 
 // ---------- the menu ----------
 
-const VIEWS = ["agents", "healing", "chargesheets", "templates", "files", "history", "connections", "usage", "settings"];
+const VIEWS = ["agents", "my-agents", "healing", "chargesheets", "templates", "files", "history", "connections", "usage", "settings"];
 
 function showView() {
   const want = location.hash.slice(1);
@@ -1022,11 +1022,10 @@ function openCoding(prompt, opened) {
 // agent its exact place, so the agent never asks for a path.
 function fileStart(a) {
   let picked = null;
-  const id = `file-${a.id}`;
   const msg = el("p", { class: "msg", role: "status" });
   const start = el("button", { type: "button", class: "primary start", onclick: () =>
     openCoding(picked ? a.file_prompt.replace("{file}", picked.path).replace("{folder}", picked.folder) : a.prompt) }, "Start");
-  const input = el("input", { type: "file", id, accept: a.accept, class: "sr", onchange: async (e) => {
+  const input = el("input", { type: "file", accept: a.accept, class: "sr", onchange: async (e) => {
     const f = e.target.files[0];
     if (!f) return;
     picked = null; start.disabled = true; msg.className = "msg"; msg.textContent = `Adding ${f.name}\u2026`;
@@ -1041,7 +1040,7 @@ function fileStart(a) {
     start.disabled = false;
   } });
   return el("div", { class: "file-start" },
-    input, el("label", { for: id, class: "ghost" }, `Choose ${a.file.toLowerCase()}`), start, msg);
+    el("label", { class: "ghost" }, input, `Choose ${a.file.toLowerCase()}`), start, msg);
 }
 
 // The business part of every brief, kept in MangoMan Projects/Brand.
@@ -1186,16 +1185,7 @@ async function loadLibrary() {
 }
 
 function renderLibrary() {
-  const mine = lib.skills.filter((k) => k.own && k.kind === "agent" && !k.error);
-  $("own-agents-wrap").hidden = mine.length === 0;
-  $("own-agents").replaceChildren(...mine.map((k) => {
-    const a = { id: k.name, title: pretty(k.name), brief: OWN_BRIEF,
-      prompt: `Be my ${pretty(k.name)}. Read your playbook in ${lib.dir}/${k.name}/SKILL.md and follow it, with the skills it names at their stages. My brief is in {folder}/brief.json: work in that folder and save every file there.` };
-    return el("li", { class: "card" },
-      el("div", { class: "card-top" }, el("span", { class: "tile", "aria-hidden": "true" }, a.title[0]), el("h3", {}, a.title)),
-      el("p", {}, k.description),
-      el("button", { type: "button", class: "primary start", onclick: () => openBrief(a) }, "Start"));
-  }));
+  renderTeam();
   const counts = { all: lib.skills.length, own: lib.skills.filter((k) => k.own).length };
   for (const k of Object.keys(KINDS)) counts[k] = lib.skills.filter((x) => x.kind === k).length;
   const labels = { all: "All", agent: "Agents", method: "Know-how", pack: "Builds files", own: "Yours" };
@@ -1263,10 +1253,10 @@ function improveSkill(name) {
 }
 
 // skillFile writes a SKILL.md from a form's answers.
-function skillFile(name, kind, title, what, body) {
+function skillFile(name, kind, title, what, body, basedOn) {
   const desc = `${title}: ${what}`.replace(/\s+/g, " ").slice(0, 900); // the limit is 1,024 characters, quotes escaped
   return `---\nname: ${name}\ndescription: ${JSON.stringify(desc)}\nlicense: Your own ${kind === "agent" ? "agent" : "skill"}, for use inside MangoMan.\n` +
-    `metadata:\n  pack: mine\n  kind: ${kind}\n  version: "1.0"\n---\n\n# ${title}\n\n${body.trim()}\n`;
+    `metadata:\n${basedOn ? `  based_on: ${basedOn}\n` : ""}  pack: mine\n  kind: ${kind}\n  version: "1.0"\n---\n\n# ${title}\n\n${body.trim()}\n`;
 }
 
 // slugOf makes a skill's folder name from its title; a title in another
@@ -1317,7 +1307,7 @@ function newAgent() {
     field("ag-rules", "Rules it always keeps (optional)", "long", false, "For example: never promise delivery times")];
   for (const b of q[2].node.querySelectorAll(".opt")) b.textContent = b.textContent.replace(/^mangoman-/, "");
   q[3].node.querySelector("textarea").rows = 6;
-  modal("Build an agent", async () => {
+  modal("Create an agent", async () => {
     const [title, what, used, stages, rules] = q.map((x) => x.value());
     if (!title || !what || !used.length || !stages) { msg.className = "msg err"; msg.textContent = "Please fill in the name, the job, the skills and the stages."; return; }
     const names = used.map((u) => usable.includes(u) ? u : usable.includes("mangoman-" + u) ? "mangoman-" + u : u);
@@ -1343,25 +1333,210 @@ function newAgent() {
     el("div", { class: "brief-foot" }, el("button", { type: "submit", class: "primary" }, "Save the agent"), msg));
 }
 
+// ---------- My Agents ----------
+
+function myMsg(text, kind) {
+  const m = $("my-msg");
+  m.className = "msg" + (kind ? " " + kind : "");
+  m.textContent = text;
+}
+
+// noAsk drops the closing "First ask me ..." of a pre-made agent's first
+// message, where a brief or a playbook already says what to ask.
+const noAsk = (prompt) => prompt.replace(/\s*First ask me[^.]*\.$/, "");
+
+// Team changes go one at a time, each from the team as last saved. Only the
+// buttons change on Super Agents, so a file picked on a card stays picked.
+let teamQueue = Promise.resolve();
+function toggleTeam(id) {
+  teamQueue = teamQueue.then(async () => {
+    if (!state.teamLoaded) { say("Could not read your team. Reload the page and try again.", "err"); return; }
+    const next = state.team.includes(id) ? state.team.filter((x) => x !== id) : [...state.team, id];
+    try { state.team = (await api("/mangoman/my-agents", { method: "PUT", body: JSON.stringify({ agents: next }) })).agents; }
+    catch (err) { say(err.message, "err"); return; }
+    for (const b of document.querySelectorAll("[data-team]")) {
+      b.textContent = teamLabel(b.dataset.team);
+      b.setAttribute("aria-label", `${b.textContent}: ${state.starters.find((x) => x.id === b.dataset.team).title}`);
+    }
+    renderTeam();
+  });
+}
+
+const teamLabel = (id) => state.team.includes(id) ? "In my team" : "Add to my team";
+
+// ownAgent is how one of the user's own agents starts: from the brief of the
+// pre-made agent it was made from, else from a short one.
+function ownAgent(k) {
+  const base = state.starters.find((s) => s.id === k.based_on);
+  return { id: k.name, title: pretty(k.name), own: true, brief: (base && base.brief) || OWN_BRIEF, stages: base && base.stages,
+    ref: `its playbook ${lib.dir}/${k.name}/SKILL.md`,
+    prompt: `Be my ${pretty(k.name)}. Read your playbook in ${lib.dir}/${k.name}/SKILL.md and follow it, with the skills it names at their stages. My brief is in {folder}/brief.json: work in that folder and save every file there.` };
+}
+
+// members are the agents in the user's team: the pre-made ones added, then their own.
+function members() {
+  const pre = state.team.map((id) => state.starters.find((s) => s.id === id)).filter(Boolean);
+  const own = lib.skills.filter((k) => k.own && k.kind === "agent" && !k.error);
+  return [...pre.map((a) => ({ a, own: null })), ...own.map((k) => ({ a: ownAgent(k), own: k }))];
+}
+
+const teamStarts = new Map();
+
+function renderTeam() {
+  if (!state.starters) return;
+  const list = members();
+  $("my-empty").hidden = list.length > 0;
+  $("my-agent-cards").replaceChildren(...list.map(({ a, own }) => {
+    const base = own && state.starters.find((s) => s.id === own.based_on);
+    return el("li", { class: "card" }, cardTop(a.title),
+      el("p", { class: "fine" }, own ? (base ? `Yours, made from the ${base.title}` : "Yours") : "Pre-made"),
+      el("p", {}, own ? (base ? base.summary : own.description) : a.summary),
+      own ? el("button", { type: "button", class: "primary start", onclick: () => openBrief(a) }, "Start") : keptStart(a),
+      el("div", { class: "acts" }, own ? [
+        el("button", { type: "button", class: "ghost", "aria-label": `Edit: ${a.title}`, onclick: () => openSkill(own.name) }, "Edit"),
+        el("button", { type: "button", class: "ghost", "aria-label": `Share: ${a.title}`, onclick: () => shareAgent(own.name) }, "Share"),
+      ] : [
+        el("button", { type: "button", class: "ghost", "aria-label": `Make it mine: ${a.title}`, onclick: () => makeMine(a) }, "Make it mine"),
+        el("button", { type: "button", class: "ghost", "aria-label": `Remove from team: ${a.title}`, onclick: () => toggleTeam(a.id) }, "Remove from team"),
+      ]));
+  }));
+}
+
+function keptStart(a) {
+  if (!teamStarts.has(a.id)) teamStarts.set(a.id, startFor(a));
+  return teamStarts.get(a.id);
+}
+
+// makeMine copies a pre-made agent as the user's own, to change as they like:
+// a Super Agent's playbook as it is, any other agent written as a playbook
+// from its card. The copy starts from the same brief.
+function makeMine(a) {
+  const msg = el("p", { class: "msg", role: "status" });
+  const as = el("input", { type: "text", id: "mine-as", maxlength: 64 });
+  as.value = "my-" + a.id;
+  // A Super Agent's first skill is its playbook.
+  const playbook = a.super ? a.packs[0] : null;
+  modal(`Make the ${a.title} yours`, async () => {
+    const name = as.value.trim();
+    if (taken(name)) { msg.className = "msg err"; msg.textContent = taken(name); return; }
+    try {
+      if (playbook) {
+        await api(`/mangoman/skills/${playbook}/copy`, { method: "POST", body: JSON.stringify({ as: name, based_on: a.id }) });
+      } else {
+        const body = `You are the ${a.title} for this business. ${a.summary}\n\nUse these skills: ` +
+          a.packs.map((p) => "`" + p + "`").join(", ") + ".\n\n## How you work\n\n" + noAsk(a.prompt) +
+          "\n\nAsk only what you cannot work without, once, in one message. When a skill has a checker, run it and fix every FAIL before you deliver.";
+        await api(`/mangoman/skills/${name}`, { method: "PUT", body: JSON.stringify({ text: skillFile(name, "agent", a.title, a.summary, body, a.id) }) });
+      }
+      $("modal").close();
+      await loadLibrary();
+      location.hash = "my-agents";
+      openSkill(name);
+    } catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+  },
+    el("p", { class: "sub" }, "You get your own copy of this agent's playbook: change what it does, how it works and the rules it keeps. It joins My Agents and starts from the same brief. MangoMan's updates never change your copy."),
+    el("div", { class: "brief-foot" }, el("label", { for: "mine-as" }, "Name for your agent"), as,
+      el("button", { type: "submit", class: "primary" }, "Make it mine"), msg));
+}
+
+// workTogether runs one job with a team: a lead agent that follows its
+// teammates' playbooks for the parts they do best.
+function workTogether() {
+  if (!state.starters) { myMsg("The agents did not load. Reload the page.", "err"); return; }
+  const list = members().map((m) => m.a);
+  if (list.length < 2) { myMsg("Add at least two agents to your team first.", "err"); return; }
+  const titles = list.map((a) => a.title);
+  const msg = el("p", { class: "msg", role: "status" });
+  const q = [field("tj-lead", "Who leads this job?", "choice", true, null, titles),
+    field("tj-mates", "Who helps?", "multi", true, null, titles)];
+  for (const x of q) for (const n of x.node.querySelectorAll("input, label.sr")) n.remove(); // only agents in the team can be picked
+  modal("Work together", () => {
+    const [leadTitle, mateTitles] = q.map((x) => x.value());
+    const lead = list.find((a) => a.title === leadTitle);
+    const mates = list.filter((a) => mateTitles.includes(a.title) && a !== lead);
+    if (!lead || !mates.length) { msg.className = "msg err"; msg.textContent = "Pick a lead and at least one other agent to help."; return; }
+    const ref = (a) => a.ref || (a.packs ? `skills ${a.packs.join(", ")}` : "");
+    const base = lead.brief ? lead.prompt : `${noAsk(lead.prompt)} My brief is in {folder}/brief.json: work in that folder and save every file there. Ask only what you cannot work without, once, in one message.`;
+    const title = `${lead.title} with ${mates.map((m) => m.title).join(", ")}`;
+    $("modal").close();
+    openBrief({ ...lead, title: title.length <= 80 ? title : `${lead.title} with ${mates.length} teammates`, brief: lead.brief || OWN_BRIEF,
+      prompt: base + ` This is a team job and you lead it. Your teammates: ${mates.map((m) => `${m.title} (${ref(m)})`).join("; ")}. ` +
+        "Keep your own stages. Where a teammate's work fits a part better, do that part the teammate's way: open the teammate's playbook or skills and follow them for that part, in the same task folder. " +
+        "In your plan, mark which teammate's way each part follows, and at the end say what each teammate's part produced." });
+  },
+    el("p", { class: "sub" }, "One job, several agents. The lead runs it and hands each part to the teammate whose work it is, for example the Social Media Manager with the Website Builder for a launch."),
+    q.map((x) => x.node),
+    el("div", { class: "brief-foot" }, el("button", { type: "submit", class: "primary" }, "Next: the brief"), msg));
+}
+
+// shareAgent saves the user's own agent as a file a colleague can import.
+async function shareAgent(name) {
+  try {
+    const k = await api(`/mangoman/skills/${name}`);
+    const a = el("a", { href: URL.createObjectURL(new Blob([k.text], { type: "text/markdown" })), download: `${name}.md` });
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    myMsg(`Saved ${name}.md to your downloads. Send it to a colleague; they choose Import an agent in My Agents. Only the playbook travels: files it made stay with you.`, "ok");
+  } catch (err) { myMsg(err.message, "err"); }
+}
+
+// importAgent adds an agent (or skill) a colleague shared.
+async function importAgent(e) {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  const text = await f.text();
+  const m = text.match(/^name:\s*"?([a-z0-9-]+)"?\s*$/m);
+  if (!m) { myMsg(`${f.name} is not an agent file: it has no name line.`, "err"); return; }
+  const name = m[1];
+  if (lib.skills.some((k) => k.name === name && !k.own)) { myMsg(`${name} is one of MangoMan's own; it is already here.`, "err"); return; }
+  if (lib.skills.some((k) => k.name === name && k.own) && !confirm(`You already have ${name}. Replace it with the one in ${f.name}?`)) return;
+  try {
+    const k = await api(`/mangoman/skills/${name}`, { method: "PUT", body: JSON.stringify({ text }) });
+    await loadLibrary();
+    myMsg(k.kind === "agent" ? `Imported ${pretty(name)}. It is in your team below.`
+      : `Imported ${name}. It is a skill, not an agent, so it is in the Skills library below.`, "ok");
+  } catch (err) { myMsg(`Could not import ${f.name}: ${err.message}`, "err"); }
+}
+
 function startButton(prompt) {
   return el("button", { type: "button", class: "primary start", onclick: () => openCoding(prompt) }, "Start");
+}
+
+const cardTop = (title) => el("div", { class: "card-top" }, el("span", { class: "tile", "aria-hidden": "true" }, title[0]), el("h3", {}, title));
+
+// startFor is a pre-made agent's way to start: its brief, a file, or a first message.
+function startFor(a) {
+  return a.super ? el("button", { type: "button", class: "primary start", onclick: () => openBrief(a) }, "Start")
+    : a.file ? fileStart(a) : startButton(a.prompt);
+}
+
+function renderStarters() {
+  $("agent-cards").replaceChildren(...state.starters.map((a) => el("li", { class: "card" },
+    cardTop(a.title), el("p", {}, a.summary),
+    el("p", { class: "label" }, "You get"), el("ul", { class: "chips" }, a.gets.map((t) => el("li", {}, t))),
+    a.stages ? el("p", { class: "label" }, "How it works") : null,
+    a.stages ? el("ol", { class: "stages" }, a.stages.map((t) => el("li", {}, t))) : null,
+    el("p", { class: "needs" }, "Have ready: " + a.needs.join("; ")),
+    startFor(a),
+    el("div", { class: "acts" },
+      el("button", { type: "button", class: "ghost", "data-team": a.id, "aria-label": `${teamLabel(a.id)}: ${a.title}`,
+        onclick: () => toggleTeam(a.id) }, teamLabel(a.id)),
+      el("button", { type: "button", class: "ghost", "aria-label": `Make it mine: ${a.title}`, onclick: () => makeMine(a) }, "Make it mine")))));
 }
 
 async function loadStarters() {
   let d;
   try { d = await (await fetch("starters.json")).json(); }
   catch (err) { say(`Could not load the agents: ${err.message}`, "err"); return; }
-  const top = (title) => el("div", { class: "card-top" }, el("span", { class: "tile", "aria-hidden": "true" }, title[0]), el("h3", {}, title));
-  $("agent-cards").replaceChildren(...d.agents.map((a) => el("li", { class: "card" },
-    top(a.title), el("p", {}, a.summary),
-    el("p", { class: "label" }, "You get"), el("ul", { class: "chips" }, a.gets.map((t) => el("li", {}, t))),
-    a.stages ? el("p", { class: "label" }, "How it works") : null,
-    a.stages ? el("ol", { class: "stages" }, a.stages.map((t) => el("li", {}, t))) : null,
-    el("p", { class: "needs" }, "Have ready: " + a.needs.join("; ")),
-    a.super ? el("button", { type: "button", class: "primary start", onclick: () => openBrief(a) }, "Start")
-      : a.file ? fileStart(a) : startButton(a.prompt))));
+  state.starters = d.agents;
+  try { state.team = (await api("/mangoman/my-agents")).agents; state.teamLoaded = true; } catch (err) { say(err.message, "err"); }
+  renderStarters();
+  renderTeam();
   $("later-cards").replaceChildren(...d.later.map((a) => el("li", { class: "card" },
-    top(a.title), el("p", {}, a.summary), el("p", { class: "needs" }, a.why))));
+    cardTop(a.title), el("p", {}, a.summary), el("p", { class: "needs" }, a.why))));
   $("template-cards").replaceChildren(...d.templates.map((t) => el("li", { class: "card" },
     el("h3", {}, t.title), el("p", {}, t.summary), t.prompt ? startButton(t.prompt) : el("p", {}, t.dev))));
 }
@@ -1439,6 +1614,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   $("lib-new").addEventListener("click", newSkill);
   $("lib-agent").addEventListener("click", newAgent);
+  $("my-together").addEventListener("click", workTogether);
+  $("my-import").addEventListener("change", importAgent);
   $("mylist-add").addEventListener("submit", (e) => {
     e.preventDefault();
     const v = $("mylist-pick").value;

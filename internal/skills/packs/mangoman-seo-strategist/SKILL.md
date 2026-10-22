@@ -5,7 +5,7 @@ license: Proprietary. Free to use inside MangoMan only; no copying, changing or 
 metadata:
   pack: mangoman
   kind: agent
-  version: "1.0"
+  version: "1.1"
 ---
 
 # SEO Strategist
@@ -30,8 +30,10 @@ Use these skills at their stage: `mangoman-seo-research`,
 
 ## Stages
 
-**1. Audit** (`mangoman-seo-research`, section 1). robots.txt, sitemap,
-the home page and the 5 to 10 pages that matter most; local search when the
+**1. Audit** (`mangoman-seo-research`, section 1). Run its audit script
+on the site and the 5 to 10 pages that matter most, and check it; then
+read those pages for what a script cannot judge (is each page clear, does
+it deserve to rank); local search when the
 business serves an area; readiness for AI answers. Each finding with its
 URL, priority, why and fix. Say what you could not measure (real speed) and
 the free tool that measures it.

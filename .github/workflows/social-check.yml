@@ -20,6 +20,9 @@ on:
       pages:
         description: "Page links or shortcuts, space-separated (use %20 for spaces in names)"
         default: "meta-ads:Zomato@IN google-ads:zomato.com@IN linkedin-ads:Zomato tiktok-trends@US"
+      talk:
+        description: "Brands or topics to search on Reddit and Hacker News, comma-separated"
+        default: "Zomato,Notion"
   repository_dispatch:
     types: [social-check]
 
@@ -38,6 +41,7 @@ jobs:
       IG: ${{ inputs.instagram || 'amul_india zomato nike' }}
       VIDEOS: ${{ inputs.videos || 'https://www.youtube.com/@zomato https://www.youtube.com/@nike https://www.tiktok.com/@nike' }}
       PAGES: ${{ inputs.pages || 'meta-ads:Zomato@IN google-ads:zomato.com@IN linkedin-ads:Zomato tiktok-trends@US' }}
+      TALK: ${{ inputs.talk || 'Zomato,Notion' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -56,6 +60,9 @@ jobs:
           python $S/read_social.py instagram $IG --out social || true
           python $S/read_social.py videos $VIDEOS --out social || true
           python $S/read_social.py page $PAGES --out social || true
+          IFS=, read -ra T <<< "$TALK"
+          python $S/read_social.py reddit "${T[@]}" --out social || true
+          python $S/read_social.py hackernews "${T[@]}" --out social || true
           python $S/summarise_social.py social --out social || true
           python $S/check_social.py social || true
           { echo '```'; cat social/social-research.md; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true

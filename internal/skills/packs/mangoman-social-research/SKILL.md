@@ -1,10 +1,10 @@
 ---
 name: mangoman-social-research
-description: Read what competitors are doing on social media right now (their latest Instagram posts and reels, YouTube Shorts and TikTok videos with likes, comments and views, the ads they are running on Meta, Google and LinkedIn, and this week's TikTok trends) from public pages without logging in, then turn it into numbers the strategy can cite (posting rate, formats, typical engagement, top posts and their hooks, hashtags). Use for competitor research, a social media audit, what is working in a niche, or before planning content.
+description: Read what competitors are doing on social media right now (their latest Instagram posts and reels, YouTube Shorts and TikTok videos with likes, comments and views, the ads they are running on Meta, Google and LinkedIn, this week's TikTok trends, and what people say about a brand or topic on Reddit and Hacker News in the last 30 days) from public pages without logging in, then turn it into numbers the strategy can cite (posting rate, formats, typical engagement, top posts and their hooks, hashtags). Use for competitor research, a social media audit, what is working in a niche, or before planning content.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Social research
@@ -28,6 +28,8 @@ first. Read at most about 8 accounts in one run.
 python3 <skill dir>/scripts/read_social.py instagram <username> <username> --out social
 python3 <skill dir>/scripts/read_social.py videos https://www.youtube.com/@brand https://www.tiktok.com/@brand --out social
 python3 <skill dir>/scripts/read_social.py page "meta-ads:Brand Name@IN" "google-ads:brand.com@IN" "tiktok-trends@IN" --out social
+python3 <skill dir>/scripts/read_social.py reddit "Brand Name" "mango pickle" --out social
+python3 <skill dir>/scripts/read_social.py hackernews "Brand Name" --out social
 ```
 
 - `instagram` reads the latest 12 posts (`--posts` up to 30): type (reel,
@@ -42,6 +44,14 @@ python3 <skill dir>/scripts/read_social.py page "meta-ads:Brand Name@IN" "google
   hashtags). Put the country code after `@` (default IN). Read the text and
   look at the screenshot yourself: which ads run, since when, the offer, the
   message, the format.
+- `reddit` and `hackernews` search what people posted in the last 30 days
+  about each brand or topic: thread titles, dates, upvotes (or points),
+  comments and, on Reddit, the community. Search the brand, its competitors
+  and the problem the product solves. Hacker News suits tech, software and
+  startups; skip it for other niches.
+- X (Twitter) cannot be read without a paid key. Use your web search for
+  `site:x.com "Brand Name"` and cite the posts you find by link, with no
+  counts.
 
 Sites sometimes refuse a visitor (a login wall, "slow down", a bot check).
 The file then says why, in plain words. Do not retry in a loop: a file read
@@ -73,5 +83,8 @@ not type numbers in by hand. Fix every FAIL.
   ads have run (long-running ads usually work).
 - Say plainly what could not be read and ask the owner for links or
   screenshots of those accounts' recent posts and ads.
+- From Reddit and Hacker News, take the words real people use, their
+  complaints, questions and praise, and the communities where they talk.
+  These feed hooks, content ideas and the FAQ. Quote a thread by its link.
 - Never copy a competitor's post or ad; learn the pattern and make it the
   brand's own.

@@ -36,6 +36,9 @@ type Pack struct {
 	Description string `json:"description"`
 	Version     string `json:"version"`
 	Kind        string `json:"kind"`
+	// BasedOn is the pre-made agent a user's own agent was copied from, so
+	// it starts from that agent's brief.
+	BasedOn string `json:"based_on,omitempty"`
 }
 
 // Kinds a pack can be.
@@ -103,6 +106,8 @@ func ParseSkill(data []byte) (Pack, error) {
 			p.Version = v
 		case "  kind":
 			p.Kind = v
+		case "  based_on":
+			p.BasedOn = v
 		}
 	}
 	if p.Kind == "" {

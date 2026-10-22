@@ -20,13 +20,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import checks as C  # noqa: E402
 
 OUT = "social-research"
+TALK = ("reddit", "hackernews")  # searches of what people say, not accounts
 DAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 
 def load_records(folder):
     recs = []
     for f in sorted(os.listdir(folder)):
-        if f.endswith(".json") and f.split("-")[0] in ("instagram", "video", "page"):
+        if f.endswith(".json") and f.split("-")[0] in ("instagram", "video", "page", "reddit", "hn"):
             r = C.load_json(os.path.join(folder, f))
             r["file"] = f
             recs.append(r)
@@ -112,6 +113,7 @@ def stats(r):
         "top_hashtags": [h for h, _ in tags.most_common(10)],
         "days": dict(collections.Counter(DAYS[d.weekday()] for d in dates).most_common()),
         "bio": profile.get("bio", ""), "note": r.get("note", ""),
+        "communities": dict(collections.Counter(p["community"] for p in posts if p.get("community")).most_common(5)),
     }
 
 
@@ -136,19 +138,22 @@ def fmt(v, unit=""):
 def markdown(s):
     md = ["# Social research", "", "Numbers computed from the public pages on the dates shown; \"not shown\" means the site hid it.", ""]
     for a in s["accounts"]:
+        talk = a["platform"] in TALK
         md += ["## %s on %s (%s)" % (a["name"] or a["account"], a["platform"], a["url"]), "",
-               "Read %s. Followers: %s. Posts read: %d, %s." % (
-                   a["read_at"], fmt(a["followers"]), a["posts_read"],
+               "Read %s.%s Posts read: %d, %s." % (
+                   a["read_at"], "" if talk else " Followers: %s." % fmt(a["followers"]), a["posts_read"],
                    "from %s to %s, about %s posts a week" % (a["oldest"], a["newest"], fmt(a["posts_per_week"])) if a["newest"] else "dates not shown"),
                "Formats: %s. Posting days: %s." % (", ".join("%s %d" % kv for kv in a["formats"].items()) or "none",
                                                      ", ".join("%s %d" % kv for kv in a["days"].items()) or "not shown"),
+               "Typical post: %s likes, %s comments." % (fmt(a["median_likes"]), fmt(a["median_comments"])) if talk else
                "Typical post: %s likes, %s comments, %s views. Engagement against followers: %s." % (
                    fmt(a["median_likes"]), fmt(a["median_comments"]), fmt(a["median_views"]), fmt(a["engagement_rate_pct"], "%")),
+               "Where: %s." % (", ".join("%s %d" % kv for kv in a["communities"].items()) or "not shown") if talk else
                "Top hashtags: %s." % (", ".join("#" + h for h in a["top_hashtags"]) or "none")]
         md += ["Note: " + a["note"] + "."] if a["note"] else []
         md += ["", "Top posts:", ""]
-        md += ["- %s %s: \"%s\" (%s likes, %s comments, %s views) %s" % (p["date"] or "undated", p["type"], p["first_line"], fmt(p["likes"]),
-               fmt(p["comments"]), fmt(p["views"]), p["url"]) for p in a["top_posts"]] + [""]
+        md += ["- %s %s: \"%s\" (%s likes, %s comments%s) %s" % (p["date"] or "undated", p["type"], p["first_line"], fmt(p["likes"]),
+               fmt(p["comments"]), "" if talk else ", %s views" % fmt(p["views"]), p["url"]) for p in a["top_posts"]] + [""]
     if s["pages"]:
         md += ["## Pages read", ""] + ["- %s: %s (text in %s, screenshot %s), read %s" % (p["page"], p["url"], p["file"], p["screenshot"], p["read_at"])
                                        for p in s["pages"]] + [""]
