@@ -1,0 +1,186 @@
+{
+ "accounts": [
+  {
+   "platform": "hackernews",
+   "account": "Notion",
+   "url": "https://hn.algolia.com/?q=Notion&dateRange=pastMonth",
+   "read_at": "2026-10-22",
+   "name": "Hacker News search: Notion",
+   "followers": null,
+   "posts_read": 12,
+   "newest": "2026-10-20",
+   "oldest": "2026-09-24",
+   "posts_per_week": 3.0,
+   "formats": {
+    "story": 12
+   },
+   "median_likes": 2,
+   "median_comments": 0,
+   "median_views": null,
+   "median_engagement": 2,
+   "engagement_rate_pct": null,
+   "top_posts": [
+    {
+     "url": "https://news.ycombinator.com/item?id=49826221",
+     "date": "2026-09-24",
+     "type": "story",
+     "first_line": "Contrastive Language Models",
+     "likes": 177,
+     "comments": 59,
+     "views": null
+    },
+    {
+     "url": "https://news.ycombinator.com/item?id=49892723",
+     "date": "2026-09-29",
+     "type": "story",
+     "first_line": "Show HN: Publish a Notion database as a Next.js blog",
+     "likes": 4,
+     "comments": 1,
+     "views": null
+    },
+    {
+     "url": "https://news.ycombinator.com/item?id=49845403",
+     "date": "2026-09-25",
+     "type": "story",
+     "first_line": "Notion Mail Is Shutting Down",
+     "likes": 3,
+     "comments": 1,
+     "views": null
+    }
+   ],
+   "top_hashtags": [],
+   "days": {
+    "Thu": 3,
+    "Fri": 2,
+    "Mon": 2,
+    "Tue": 2,
+    "Wed": 2,
+    "Sun": 1
+   },
+   "bio": "",
+   "note": "likes are points",
+   "communities": {}
+  },
+  {
+   "platform": "hackernews",
+   "account": "Zomato",
+   "url": "https://hn.algolia.com/?q=Zomato&dateRange=pastMonth",
+   "read_at": "2026-10-22",
+   "name": "Hacker News search: Zomato",
+   "followers": null,
+   "posts_read": 0,
+   "newest": "",
+   "oldest": "",
+   "posts_per_week": null,
+   "formats": {},
+   "median_likes": null,
+   "median_comments": null,
+   "median_views": null,
+   "median_engagement": null,
+   "engagement_rate_pct": null,
+   "top_posts": [],
+   "top_hashtags": [],
+   "days": {},
+   "bio": "",
+   "note": "likes are points; nothing on Hacker News in the last 30 days, try other words",
+   "communities": {}
+  },
+  {
+   "platform": "youtube",
+   "account": "zomato",
+   "url": "https://www.youtube.com/@zomato/shorts",
+   "read_at": "2026-10-22",
+   "name": "Zomato",
+   "followers": 581000,
+   "posts_read": 12,
+   "newest": "2026-05-22",
+   "oldest": "2026-04-05",
+   "posts_per_week": 1.6,
+   "formats": {
+    "short": 12
+   },
+   "median_likes": null,
+   "median_comments": null,
+   "median_views": 45000,
+   "median_engagement": null,
+   "engagement_rate_pct": null,
+   "top_posts": [
+    {
+     "url": "https://www.youtube.com/shorts/Qf6zTe12OU4",
+     "date": "2026-05-22",
+     "type": "short",
+     "first_line": "Six hitting challenge - straight outta the gully",
+     "likes": null,
+     "comments": null,
+     "views": 3400000
+    },
+    {
+     "url": "https://www.youtube.com/shorts/AyudVP4sy-o",
+     "date": "2026-05-22",
+     "type": "short",
+     "first_line": "Marcus Stoinis - straight outta the gully",
+     "likes": null,
+     "comments": null,
+     "views": 2000000
+    },
+    {
+     "url": "https://www.youtube.com/shorts/OrbQ_mSyGeY",
+     "date": "2026-04-28",
+     "type": "short",
+     "first_line": "Tim David - straight outta the gully",
+     "likes": null,
+     "comments": null,
+     "views": 2000000
+    }
+   ],
+   "top_hashtags": [],
+   "days": {
+    "Tue": 5,
+    "Mon": 2,
+    "Fri": 2,
+    "Sun": 1,
+    "Wed": 1,
+    "Sat": 1
+   },
+   "bio": "",
+   "note": "12 of 12 videos: only the list could be read, so titles and views (rounded as the list shows them) but no date, likes or comments; the site refused their own pages; dates added from the channel's public feed, which lists its latest 15 uploads",
+   "communities": {}
+  }
+ ],
+ "pages": [
+  {
+   "page": "tiktok-trends@US",
+   "url": "https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/pc/en?period=7&region=US",
+   "read_at": "2026-10-22",
+   "file": "page-tiktok-trends-us-aa4370.json",
+   "screenshot": "tiktok-trends-us-aa4370.png",
+   "text_chars": 954
+  }
+ ],
+ "not_read": [
+  {
+   "platform": "instagram",
+   "account": "nike",
+   "url": "https://www.instagram.com/nike/",
+   "why": "Instagram showed a login wall for this account; add links to its posts or screenshots by hand",
+   "file": "instagram-nike-d44bda.json",
+   "screenshot": ""
+  },
+  {
+   "platform": "reddit",
+   "account": "Notion",
+   "url": "https://www.reddit.com/search/?q=Notion&type=posts&t=month&sort=relevance",
+   "why": "Reddit refused the visit, as it often does for cloud servers; try from a home connection, or search it yourself",
+   "file": "reddit-notion-486af5.json",
+   "screenshot": ""
+  },
+  {
+   "platform": "reddit",
+   "account": "Zomato",
+   "url": "https://www.reddit.com/search/?q=Zomato&type=posts&t=month&sort=relevance",
+   "why": "Reddit refused the visit, as it often does for cloud servers; try from a home connection, or search it yourself",
+   "file": "reddit-zomato-10667b.json",
+   "screenshot": ""
+  }
+ ]
+}

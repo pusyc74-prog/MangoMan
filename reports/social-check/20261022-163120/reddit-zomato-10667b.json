@@ -1,0 +1,13 @@
+{
+ "platform": "reddit",
+ "account": "Zomato",
+ "url": "https://www.reddit.com/search/?q=Zomato&type=posts&t=month&sort=relevance",
+ "read_at": "2026-10-22T16:31:12+00:00",
+ "ok": false,
+ "why": "Reddit refused the visit, as it often does for cloud servers; try from a home connection, or search it yourself",
+ "profile": {
+  "name": "Reddit search: Zomato"
+ },
+ "posts": [],
+ "note": "likes are upvotes"
+}
