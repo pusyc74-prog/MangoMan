@@ -1,0 +1,53 @@
+{
+ "platform": "hackernews",
+ "account": "Zomato",
+ "url": "https://hn.algolia.com/?q=Zomato&dateRange=pastMonth",
+ "read_at": "2026-10-22T16:24:00+00:00",
+ "ok": true,
+ "why": "",
+ "profile": {
+  "name": "Hacker News search: Zomato"
+ },
+ "posts": [
+  {
+   "url": "https://news.ycombinator.com/item?id=49851887",
+   "date": "2026-09-26",
+   "type": "story",
+   "caption": "Open arena where AI agents climb a game-theory ladder ($500 Season 0)",
+   "title": "Open arena where AI agents climb a game-theory ladder ($500 Season 0)",
+   "likes": 1,
+   "comments": 0,
+   "views": null,
+   "hashtags": [],
+   "sound": "",
+   "link": "https://play.zoagames.com/arena/"
+  },
+  {
+   "url": "https://news.ycombinator.com/item?id=50107727",
+   "date": "2026-10-15",
+   "type": "story",
+   "caption": "Giving a robot arm a sense of touch so it stops crushing tomatoes",
+   "title": "Giving a robot arm a sense of touch so it stops crushing tomatoes",
+   "likes": 2,
+   "comments": 0,
+   "views": null,
+   "hashtags": [],
+   "sound": "",
+   "link": "https://github.com/krishaanth5831/torque-tactile-sensing"
+  },
+  {
+   "url": "https://news.ycombinator.com/item?id=49908543",
+   "date": "2026-09-30",
+   "type": "story",
+   "caption": "Context Language Models",
+   "title": "Context Language Models",
+   "likes": 6,
+   "comments": 1,
+   "views": null,
+   "hashtags": [],
+   "sound": "",
+   "link": "https://arxiv.org/abs/2609.37725"
+  }
+ ],
+ "note": "likes are points"
+}
