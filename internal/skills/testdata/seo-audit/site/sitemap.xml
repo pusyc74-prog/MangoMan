@@ -4,5 +4,7 @@
  <url><loc>ROOT/about.html</loc></url>
  <url><loc>ROOT/products.html</loc></url>
  <url><loc>ROOT/missing.html</loc></url>
+ <url><loc>ROOT/private/offer.html</loc></url>
+ <url><loc>ROOT/menu.pdf</loc></url>
  <url><loc>https://elsewhere.example/page</loc></url>
 </urlset>

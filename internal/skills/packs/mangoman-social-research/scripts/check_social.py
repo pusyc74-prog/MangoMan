@@ -36,7 +36,7 @@ def main():
         if today - dt.datetime.fromisoformat(r["read_at"]) > dt.timedelta(days=7):
             soft.append("%s was read on %s; read it again for current posts" % (r["account"], r["read_at"][:10]))
         dates = [p["date"] for p in r.get("posts") or [] if p.get("date")]
-        if r["ok"] and dates and today.date() - dt.date.fromisoformat(max(dates)) > dt.timedelta(days=60):
+        if r["ok"] and dates and r["platform"] not in S.TALK and today.date() - dt.date.fromisoformat(max(dates)) > dt.timedelta(days=60):
             soft.append("%s has not posted since %s; it may be inactive" % (r["account"], max(dates)))
     rep.check(bad, "every account and page file is complete", "files")
     path = os.path.join(folder, S.OUT + ".json")

@@ -31,7 +31,10 @@ def main():
         rep.add("FAIL", "%s.json not found: run audit_site.py first" % A.OUT)
         rep.finish()
     a = C.load_json(path)
-    bad = ["missing %s" % k for k in ("site", "read_at", "robots", "sitemap", "pages", "findings") if k not in a]
+    bad = ["missing %s" % k for k in ("site", "read_at", "robots", "sitemap", "pages", "skipped", "findings") if k not in a]
+    if not bad:
+        bad = ["robots: missing %s" % k for k in ("found", "status", "why", "blocked", "text") if k not in a["robots"]]
+        bad += ["sitemap: missing %s" % k for k in ("found", "count") if k not in a["sitemap"]]
     if not bad:
         bad = ["page %d: missing %s" % (i, ", ".join(k for k in PAGE + (READ if p.get("ok") else ()) if k not in p))
                for i, p in enumerate(a["pages"], 1) if any(k not in p for k in PAGE + (READ if p.get("ok") else ()))]

@@ -48,8 +48,8 @@ sys.argv = ["audit_site.py", root, "--out", out]
 A.main()
 a = json.load(open(os.path.join(out, A.OUT + ".json")))
 found = {(f["priority"], f["what"], f["where"].replace(root, "/")) for f in a["findings"]}
-expect(a["sitemap"]["found"] and a["sitemap"]["count"] == 5, "the sitemap named in robots.txt is read")
-expect([p["url"].replace(root, "/") for p in a["pages"]] == ["/", "/about.html", "/products.html", "/missing.html"],
+expect(a["sitemap"]["found"] and a["sitemap"]["count"] == 7, "the sitemap named in robots.txt is read")
+expect([p["url"].replace(root, "/") for p in a["pages"]] == ["/", "/about.html", "/products.html", "/missing.html", "/private/offer.html"],
        "pages come from the sitemap, on this site only: %s" % [p["url"] for p in a["pages"]])
 expect(a["robots"]["blocked"] == {"Googlebot": False, "Bingbot": False, "OAI-SearchBot": True, "Claude-SearchBot": False, "PerplexityBot": False},
        "robots.txt rules per crawler")
@@ -66,11 +66,14 @@ want = {("medium", "robots.txt blocks OAI-SearchBot from the site", "/robots.txt
         ("low", "No language on the page", "/products.html"),
         ("low", "Thin page: 13 words", "/about.html"),
         ("low", "Title is 12 characters", "/about.html"),
-        ("medium", "2 pages share one title", "/about.html, /products.html")}
+        ("medium", "2 pages share one title", "/about.html, /products.html"),
+        ("high", "robots.txt blocks Googlebot from this page", "/private/offer.html"),
+        ("high", "robots.txt blocks Bingbot from this page", "/private/offer.html")}
 expect(want <= found, "expected findings: missing %s" % sorted(want - found))
 expect(not {f for f in found if f[2] == "/" and f[1] != "The site is not on HTTPS"}, "the good home page has no other findings: %s"
        % sorted(f for f in found if f[2] == "/"))
 expect([f["priority"] for f in a["findings"]] == sorted((f["priority"] for f in a["findings"]), key=A.ORDER.get), "high first")
+expect(a["pages"][1]["schema"] == ["AboutPage"] and a["pages"][2]["title"] == "Kesari Foods", "structured data in @graph; an icon's title is not the page's")
 home = a["pages"][0]
 expect(home["schema"] == ["Organization"] and home["og_image"] and home["words"] > 5 and len(home["internal_links"]) == 2, "home page facts")
 
@@ -79,6 +82,8 @@ with tempfile.TemporaryDirectory() as d:  # a site saved in a folder, and an add
     A.main()
     b = json.load(open(os.path.join(d, A.OUT + ".json")))
     expect([p["ok"] for p in b["pages"]] == [True, True] and not b["sitemap"]["found"], "a saved site is read from its folder")
+    expect(not [f for f in b["findings"] if f["what"].startswith(("robots.txt could not", "No sitemap", "Canonical", "The site is not"))],
+           "a saved site gets no address, sitemap or canonical findings: %s" % [f["what"] for f in b["findings"]])
     sys.argv = ["audit_site.py", "http://127.0.0.1:9/", "--out", d]
     A.main()
     c = json.load(open(os.path.join(d, A.OUT + ".json")))

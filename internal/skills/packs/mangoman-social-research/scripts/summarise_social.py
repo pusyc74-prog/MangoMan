@@ -53,7 +53,7 @@ def problems(r, folder):
     profile = r.get("profile") or {}
     if not isinstance(profile, dict) or not isinstance(profile.get("followers", 0) or 0, int):
         return ["%s: profile must be an object, with followers a whole number or null" % f]
-    if not isinstance(r.get("posts"), list) or not r["posts"]:
+    if not isinstance(r.get("posts"), list) or not (r["posts"] or r["platform"] in TALK):
         return ["%s: read, but no posts" % f]
     return ["%s: post %d: %s" % (f, i, w) for i, p in enumerate(r["posts"], 1) for w in post_problems(p)][:5]
 
@@ -139,6 +139,10 @@ def markdown(s):
     md = ["# Social research", "", "Numbers computed from the public pages on the dates shown; \"not shown\" means the site hid it.", ""]
     for a in s["accounts"]:
         talk = a["platform"] in TALK
+        if talk and not a["posts_read"]:
+            md += ["## %s on %s (%s)" % (a["name"] or a["account"], a["platform"], a["url"]), "",
+                   "Read %s. Nothing posted about it in the last 30 days." % a["read_at"], ""]
+            continue
         md += ["## %s on %s (%s)" % (a["name"] or a["account"], a["platform"], a["url"]), "",
                "Read %s.%s Posts read: %d, %s." % (
                    a["read_at"], "" if talk else " Followers: %s." % fmt(a["followers"]), a["posts_read"],

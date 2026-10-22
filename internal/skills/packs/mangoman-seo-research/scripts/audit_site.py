@@ -13,6 +13,7 @@ public pages, a pause between pages, never logged in. Real speed cannot be
 measured by reading a page: use PageSpeed Insights for that.
 """
 import datetime as dt
+import gzip
 import json
 import os
 import pathlib
@@ -33,6 +34,8 @@ MAX_PAGES = 30
 # left out: blocking them does not hide a site from search or AI answers.
 SEARCH_BOTS = ("Googlebot", "Bingbot", "OAI-SearchBot", "Claude-SearchBot", "PerplexityBot")
 ORDER = {"high": 0, "medium": 1, "low": 2}
+NOT_PAGE = re.compile(r"\.(pdf|jpe?g|png|gif|webp|svg|ico|zip|mp4|mp3|xml|txt|css|js)$", re.I)
+LOC = re.compile(rb"<(?:\w+:)?loc>\s*(?:<!\[CDATA\[)?\s*([^<\s\]]+)")
 
 
 def now():
@@ -70,13 +73,25 @@ def fetch(url):
         return None, url, {}, b"", time.monotonic() - start, "did not open (%s)" % str(getattr(e, "reason", e))[:120]
 
 
-def read_robots(root):
-    status, _, _, body, _, why = fetch(root + "robots.txt")
-    text = body.decode("utf-8", "replace") if status == 200 else ""
+def html_like(body):
+    return bool(re.search(rb"<(!doctype|html|head|body)\b", body[:1000], re.I))
+
+
+def robots_parser(text):
     rp = urllib.robotparser.RobotFileParser()
     rp.parse(text.splitlines())
-    return {"found": status == 200, "why": why, "sitemaps": re.findall(r"(?im)^\s*sitemap:\s*(\S+)", text),
-            "blocked": {b: not rp.can_fetch(b, root) for b in SEARCH_BOTS}, "text": text[:5000]}
+    return rp
+
+
+def read_robots(root):
+    status, _, _, body, _, why = fetch(root + "robots.txt")
+    found = status == 200 and not html_like(body)
+    if status == 200 and not found:
+        why = "the address answered with a web page, not a robots.txt"
+    text = body.decode("utf-8", "replace")[:50000] if found else ""
+    rp = robots_parser(text)
+    return {"found": found, "status": status, "why": why, "sitemaps": re.findall(r"(?im)^\s*sitemap:\s*(\S+)", text),
+            "blocked": {b: not rp.can_fetch(b, root) for b in SEARCH_BOTS}, "text": text}
 
 
 def read_sitemap(root, listed):
@@ -89,11 +104,15 @@ def read_sitemap(root, listed):
             continue
         seen.add(u)
         status, _, _, body, _, _ = fetch(u)
-        if status != 200:
-            continue
+        if body[:2] == b"\x1f\x8b":  # sitemap.xml.gz
+            try:
+                body = gzip.decompress(body)[:50 << 20]
+            except (OSError, EOFError):
+                continue
+        if status != 200 or not re.search(rb"<(\w+:)?(urlset|sitemapindex)\b", body[:5000]):
+            continue  # a missing sitemap, or a web page answering every address
         read.append(u)
-        locs = re.findall(rb"<loc>\s*([^<\s]+)\s*</loc>", body)
-        locs = [x.decode("utf-8", "replace").replace("&amp;", "&") for x in locs]
+        locs = [x.decode("utf-8", "replace").replace("&amp;", "&") for x in LOC.findall(body)]
         if b"<sitemapindex" in body:
             todo += locs
         else:
@@ -101,11 +120,25 @@ def read_sitemap(root, listed):
     return {"found": bool(read), "read": read, "urls": urls[:500], "count": len(urls)}
 
 
+def ld_types(x):
+    """Every @type in a JSON-LD value, through lists and @graph."""
+    if isinstance(x, list):
+        return [t for v in x for t in ld_types(v)]
+    if not isinstance(x, dict):
+        return []
+    t = x.get("@type")
+    return ([str(v) for v in t] if isinstance(t, list) else [str(t)] if t else []) + ld_types(x.get("@graph"))
+
+
 def page_facts(url, status, final, headers, body, secs, why, root):
     p = {"url": url, "ok": status == 200 and bool(body), "status": status, "why": why,
          "final_url": final if final != url else "", "seconds": round(secs, 2), "kb": round(len(body) / 1024)}
     if not p["ok"]:
         p["why"] = why or "the page was empty"
+        return p
+    kind = (headers.get("Content-Type") or "").lower()
+    if kind and "html" not in kind:
+        p.update(ok=False, why="not a web page (%s)" % kind.split(";")[0])
         return p
     import lxml.html
     try:
@@ -122,21 +155,20 @@ def page_facts(url, status, final, headers, body, secs, why, root):
         except ValueError:
             broken += 1
             continue
-        for d in data if isinstance(data, list) else data.get("@graph", [data]) if isinstance(data, dict) else []:
-            t = d.get("@type") if isinstance(d, dict) else None
-            schema += t if isinstance(t, list) else [t] if t else []
+        schema += ld_types(data)
     for bad in doc.xpath("//script|//style|//noscript|//template"):
         bad.drop_tree()
     body_el = doc.find("body")
     words = len(re.findall(r"\w+", body_el.text_content() if body_el is not None else ""))
     host = urllib.parse.urlsplit(root).netloc
     hrefs = [urllib.parse.urljoin(final, a.get("href", "")) for a in doc.iter("a") if a.get("href")]
-    internal = sorted({h.split("#")[0] for h in hrefs if urllib.parse.urlsplit(h).netloc == host and h.startswith(root)})
-    title = doc.findtext(".//title")
+    internal = list(dict.fromkeys(h.split("#")[0] for h in hrefs if urllib.parse.urlsplit(h).netloc == host
+                                  and h.startswith(root) and "?" not in h and not NOT_PAGE.search(h)))
+    title = next((t.text_content() for t in doc.xpath("//title[not(ancestor::svg)]")), None)
     p.update(title=(title or "").strip() or None, description=meta("description"), robots=(meta("robots") or "").lower(),
              x_robots=(headers.get("X-Robots-Tag") or "").lower(), canonical=link("canonical"), viewport=meta("viewport") is not None,
              lang=doc.get("lang") or "", h1=[h.text_content().strip() for h in doc.iter("h1")],
-             h2=[h.text_content().strip() for h in doc.iter("h2")][:20], schema=sorted(set(map(str, schema))), schema_broken=broken,
+             h2=[h.text_content().strip() for h in doc.iter("h2")][:20], schema=sorted(set(schema)), schema_broken=broken,
              images=len(list(doc.iter("img"))), no_alt=sum(1 for i in doc.iter("img") if i.get("alt") is None),
              og_image=any((m.get("property") or "") == "og:image" for m in doc.iter("meta")), words=words, internal_links=internal[:200])
     return p
@@ -147,31 +179,41 @@ def findings(a):
     out = []
     add = lambda pr, what, where, why, fix: out.append({"priority": pr, "what": what, "where": where, "why": why, "fix": fix})
     root, robots, sitemap = a["site"], a["robots"], a["sitemap"]
-    if not robots["found"]:
-        add("low", "No robots.txt", root + "robots.txt", "Crawlers find the sitemap and the rules there.", "Add a robots.txt that names the sitemap.")
+    saved = root.startswith("file:")  # a copy on disk has no robots.txt, sitemap or real address
+    if (robots["status"] or 0) >= 500:
+        add("high", "robots.txt answered %d" % robots["status"], root + "robots.txt",
+            "Google stops crawling a site while its robots.txt fails with a server error.", "Make robots.txt answer normally.")
+    elif not robots["found"] and not saved:
+        add("low", "robots.txt could not be read: %s" % (robots["why"] or "not found"), root + "robots.txt",
+            "Crawlers find the sitemap and the rules there.", "Publish a plain-text robots.txt that names the sitemap.")
     for b in [b for b, blocked in robots["blocked"].items() if blocked]:
         search = b in ("Googlebot", "Bingbot")
         add("high" if search else "medium", "robots.txt blocks %s from the site" % b, root + "robots.txt",
             "The site cannot show in %s." % ("search results" if search else "the AI answers that crawler feeds"),
             "Remove the Disallow rule for %s, unless hiding the site is intended." % b)
-    if not sitemap["found"]:
+    if not sitemap["found"] and not saved:
         add("medium", "No sitemap found", root + "sitemap.xml", "A sitemap tells search engines which pages exist.",
             "Publish sitemap.xml listing every page that should rank, and name it in robots.txt.")
     pages = [p for p in a["pages"] if p["ok"]]
+    home = a["pages"][0] if a["pages"] and a["pages"][0]["ok"] else None
+    rp = robots_parser(robots["text"])
     for p in a["pages"]:
-        if not p["ok"]:
+        if not p["ok"] and p["status"] != 200:  # a file such as a PDF opened fine and is not a page
             add("high", "Page did not open: %s" % p["why"], p["url"], "Search engines and visitors cannot see it.", "Fix the page or remove links to it.")
-    if pages and not pages[0]["url"].startswith("https") and not (pages[0]["final_url"] or "").startswith("https"):
-        if pages[0]["url"].startswith("http"):
-            add("high", "The site is not on HTTPS", pages[0]["url"], "Browsers mark it not secure and search engines prefer HTTPS.",
-                "Turn on HTTPS and redirect every http address to it.")
+    if home and not (home["final_url"] or home["url"]).startswith("https") and not saved:
+        add("high", "The site is not on HTTPS", home["url"], "Browsers mark it not secure and search engines prefer HTTPS.",
+            "Turn on HTTPS and redirect every http address to it.")
     titles = {}
     for p in pages:
         u = p["url"]
+        for b in ("Googlebot", "Bingbot"):
+            if not robots["blocked"][b] and not rp.can_fetch(b, u):
+                add("high", "robots.txt blocks %s from this page" % b, u, "The page cannot show in search results.",
+                    "Remove the Disallow rule that covers it, unless hiding it is intended.")
         titles.setdefault((p["title"] or "").lower(), []).append(u)
         if "noindex" in p["robots"] or "noindex" in p["x_robots"]:
             add("high", "The page asks not to be indexed (noindex)", u, "It will not show in search.", "Remove noindex if this page should rank.")
-        if p["canonical"] and urllib.parse.urljoin(u, p["canonical"]).rstrip("/") not in (u.rstrip("/"), (p["final_url"] or u).rstrip("/")):
+        if p["canonical"] and not saved and urllib.parse.urljoin(u, p["canonical"]).rstrip("/") not in (u.rstrip("/"), (p["final_url"] or u).rstrip("/")):
             add("medium", "Canonical points to another page: %s" % p["canonical"], u, "Search engines rank the other page instead.",
                 "Point the canonical to the page itself, unless it is a copy.")
         if not p["viewport"]:
@@ -197,15 +239,15 @@ def findings(a):
                 "Add short alt text that says what each image shows.")
         if p["kb"] > 2048:
             add("medium", "The page's HTML is %d KB" % p["kb"], u, "Heavy pages load slowly on phones.", "Move scripts and inline data out of the HTML.")
-        if p["words"] < 250 and p is not pages[0]:
+        if p["words"] < 250 and p is not home:
             add("low", "Thin page: %d words" % p["words"], u, "Short pages rarely answer a search fully.", "Add what a customer needs to decide, or merge it with a related page.")
         if not p["lang"]:
             add("low", "No language on the page", u, "The lang attribute tells search engines which searchers it suits.", 'Add lang to the html tag, for example lang="en".')
-    if pages and not pages[0]["schema"]:
-        add("medium", "No structured data on the home page", pages[0]["url"], "Structured data (Organization, LocalBusiness) helps search engines and AI answers know the business.",
+    if home and not home["schema"]:
+        add("medium", "No structured data on the home page", home["url"], "Structured data (Organization, LocalBusiness) helps search engines and AI answers know the business.",
             "Add JSON-LD for the business: name, logo, address, phone, opening hours, social profiles.")
-    if pages and not pages[0]["og_image"]:
-        add("low", "No share image (og:image) on the home page", pages[0]["url"], "Links shared on social media show no picture.", "Add an og:image of 1200 by 630 pixels.")
+    if home and not home["og_image"]:
+        add("low", "No share image (og:image) on the home page", home["url"], "Links shared on social media show no picture.", "Add an og:image of 1200 by 630 pixels.")
     for title, urls in titles.items():
         if title and len(urls) > 1:
             add("medium", "%d pages share one title" % len(urls), ", ".join(urls), "Search engines cannot tell them apart.", "Give each page its own title.")
@@ -222,7 +264,21 @@ def markdown(a):
     for p in a["pages"]:
         md += ["- %s: %s" % (p["url"], "could not read: " + p["why"] if not p["ok"] else "title \"%s\", %d words, H1 %s, structured data %s" % (
             p["title"] or "", p["words"], " / ".join(p["h1"]) or "none", ", ".join(p["schema"]) or "none"))]
+    if a["skipped"]:
+        md += ["", "Not read, because they are on another site: " + ", ".join(a["skipped"])]
     return "\n".join(md) + "\n"
+
+
+def local(u, root):
+    """u as an address on this site (the same host with or without www, on
+    the site's scheme), or None when it is on another site."""
+    if root.startswith("file:"):
+        return u if u.startswith(root) else None
+    r, x = urllib.parse.urlsplit(root), urllib.parse.urlsplit(u)
+    bare = lambda h: h.lower().removeprefix("www.")
+    if x.scheme not in ("http", "https") or bare(x.netloc) != bare(r.netloc):
+        return None
+    return urllib.parse.urlunsplit((r.scheme, r.netloc, x.path.rstrip("/") or "/", x.query, ""))
 
 
 def main():
@@ -239,26 +295,32 @@ def main():
     skip = {i + 1 for i, x in enumerate(a) if x in ("--out", "--pages")}
     named = [x for i, x in enumerate(a) if not x.startswith("--") and i not in skip]
     root = root_of(named[0])
-    home = named[0] if named[0].startswith("http") else root if os.path.isdir(named[0]) else "https://" + named[0]
-    if home == root and root.startswith("file:"):
-        home = root + "index.html"
+    home = named[0] if named[0].startswith("http") else root + "index.html" if os.path.isdir(named[0]) else "https://" + named[0]
     got = fetch(home)
-    if got[1].startswith("http") and root_of(got[1]) != root:  # example.com that moves to www.example.com
+    if got[0] is None and not named[0].startswith(("http", "/", ".")) and not os.path.isdir(named[0]):
+        home = "http://" + named[0]  # a bare address whose HTTPS does not answer
+        got = fetch(home)
+        root = root_of(home)
+    if got[1].startswith("http") and root_of(got[1]) != root:  # example.com that moves to https://www.example.com
         root = root_of(got[1])
     pages = [page_facts(home, *got, root)]
     robots = read_robots(root)
     sitemap = read_sitemap(root, robots["sitemaps"])
-    todo = [urllib.parse.urljoin(root, x) for x in named[1:]] or sitemap["urls"] or pages[0].get("internal_links", [])
-    seen = {home.rstrip("/")}
+    named_urls = [urllib.parse.urljoin(root, x) for x in named[1:]]
+    skipped = [u for u in named_urls if local(u, root) is None]
+    todo = [local(u, root) for u in named_urls if local(u, root)]
+    todo = todo or [x for x in (local(u, root) for u in sitemap["urls"]) if x] or [x for x in (local(u, root) for u in pages[0].get("internal_links", [])) if x]
+    seen = {local(home, root), local(got[1], root)}
     for u in todo:
         if len(pages) >= n:
             break
-        if u.rstrip("/") in seen or not u.startswith(root):
+        if u in seen or NOT_PAGE.search(urllib.parse.urlsplit(u).path):
             continue
-        seen.add(u.rstrip("/"))
+        seen.add(u)
         time.sleep(PAUSE)
         pages.append(page_facts(u, *fetch(u), root))
-    audit = {"site": root, "read_at": now().isoformat(timespec="seconds"), "robots": robots, "sitemap": sitemap, "pages": pages}
+    audit = {"site": root, "read_at": now().isoformat(timespec="seconds"), "robots": robots, "sitemap": sitemap,
+             "pages": pages, "skipped": skipped}
     audit["findings"] = findings(audit)
     os.makedirs(out, exist_ok=True)
     with open(os.path.join(out, OUT + ".json"), "w", encoding="utf-8") as f:

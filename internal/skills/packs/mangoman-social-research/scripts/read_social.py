@@ -250,7 +250,7 @@ def videos(url, n):
 REDDIT = "https://www.reddit.com/svc/shreddit/search/?"
 RD_UNIT = re.compile(r'<search-telemetry-tracker\b[^>]*?\bdata-faceplate-tracking-context="([^"]*)"')
 RD_TIME = re.compile(r'<faceplate-timeago\b[^>]*?\bts="([^"]+)"')
-RD_COUNT = re.compile(r'<faceplate-number\b[^>]*?\bnumber="(\d+)"[^>]*>\s*</faceplate-number>\s*(vote|comment)')
+RD_COUNT = re.compile(r'<faceplate-number\b[^>]*?\bnumber="(\d+)"[^>]*>[^<]*</faceplate-number>\s*(vote|comment)')
 HN = "https://hn.algolia.com/api/v1/search?"
 
 
@@ -263,8 +263,10 @@ def talk_why(e, site):
     return "%s did not answer as expected (%s)" % (site, str(e)[:160])
 
 
-def nothing(rec, words, site):
-    return failed(rec, "nothing on %s about %s in the last 30 days; try other words" % (site, words))
+def nothing(rec, site):
+    """A search that found nothing still read fine: no one posted about it."""
+    rec["note"] += "; nothing on %s in the last 30 days, try other words" % site
+    return rec
 
 
 def reddit_posts(page):
@@ -286,14 +288,15 @@ def reddit_posts(page):
     posts = []
     for i, (start, ctx) in enumerate(units):
         chunk = page[start:units[i + 1][0] if i + 1 < len(units) else len(page)]
-        sub = (ctx.get("subreddit") or {}).get("name") or ""
+        sub = ctx.get("subreddit")
+        sub = str(sub.get("name") or "") if isinstance(sub, dict) else ""
         pid = str(ctx["post"]["id"]).removeprefix("t3_")
         when = RD_TIME.search(chunk)
         counts = {}
         for n, kind in RD_COUNT.findall(chunk):
             counts.setdefault(kind, int(n))
         title = str(ctx["post"].get("title") or "")
-        posts.append({"url": "https://www.reddit.com/r/%s/comments/%s/" % (sub, pid),
+        posts.append({"url": "https://www.reddit.com/%scomments/%s/" % ("r/%s/" % sub if sub else "", pid),
                       "date": when.group(1)[:10] if when else "", "type": "thread", "caption": title, "title": title,
                       "likes": counts.get("vote"), "comments": counts.get("comment"), "views": None,
                       "hashtags": [], "sound": "", "community": "r/" + sub if sub else ""})
@@ -312,7 +315,7 @@ def reddit(words, n):
     if posts is None:
         return failed(rec, "Reddit showed a bot check instead of results; try later from a home connection, or search it yourself")
     rec["posts"] = posts[:n]
-    return rec if posts else nothing(rec, words, "Reddit")
+    return rec if posts else nothing(rec, "Reddit")
 
 
 def hackernews(words, n):
@@ -322,14 +325,14 @@ def hackernews(words, n):
     rec["note"] = "likes are points"
     q = urllib.parse.urlencode({"query": words, "tags": "story", "numericFilters": "created_at_i>%d" % since, "hitsPerPage": n})
     try:
-        hits = json.loads(fetch(HN + q)).get("hits") or []
-    except (urllib.error.URLError, OSError, ValueError) as e:
+        hits = json.loads(fetch(HN + q))["hits"]
+    except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError) as e:
         return failed(rec, talk_why(e, "Hacker News"))
     rec["posts"] = [{"url": "https://news.ycombinator.com/item?id=%s" % h["objectID"], "date": (h.get("created_at") or "")[:10],
                      "type": "story", "caption": h.get("title") or "", "title": h.get("title") or "",
                      "likes": number(h.get("points")), "comments": number(h.get("num_comments")), "views": None,
                      "hashtags": [], "sound": "", "link": h.get("url") or ""} for h in hits if h.get("objectID")][:n]
-    return rec if rec["posts"] else nothing(rec, words, "Hacker News")
+    return rec if rec["posts"] else nothing(rec, "Hacker News")
 
 
 # Ad libraries and trend pages: the page's text and a screenshot, read by the
@@ -410,7 +413,7 @@ def main():
     if not 1 <= n <= MAX_POSTS:
         sys.exit("--posts must be a number from 1 to %d" % MAX_POSTS)
     skip = {i + 1 for i, x in enumerate(a) if x in ("--out", "--posts")}
-    targets = [x for i, x in enumerate(a[1:], 1) if not x.startswith("--") and i not in skip]
+    targets = [x.strip() for i, x in enumerate(a[1:], 1) if not x.startswith("--") and i not in skip and x.strip()]
     kind = a[0]
     if kind == "page":
         for t in targets:

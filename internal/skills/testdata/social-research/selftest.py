@@ -174,7 +174,12 @@ hn = R.hackernews("Kesari", 12)
 expect(hn["ok"] and hn["posts"] == [{"url": "https://news.ycombinator.com/item?id=41", "date": "2026-10-18", "type": "story",
                                      "caption": "Show HN: Kesari", "title": "Show HN: Kesari", "likes": 12, "comments": 3,
                                      "views": None, "hashtags": [], "sound": "", "link": "https://kesari.example"}], "hacker news stories")
-expect(not R.hackernews("quiet", 12)["ok"] and "nothing on Hacker News" in R.hackernews("quiet", 12)["why"], "no talk is said plainly")
+q = R.hackernews("quiet", 12)
+expect(q["ok"] and q["posts"] == [] and "nothing on Hacker News" in q["note"], "a search with no posts is read, and says so")
+lone = '<search-telemetry-tracker data-faceplate-tracking-context="%s"></search-telemetry-tracker>' % R.html.escape(
+    json.dumps({"action_info": {"type": "post"}, "post": {"id": "t3_zz9", "title": "No community"}, "subreddit": "odd"}))
+expect(R.reddit_posts(lone)[0]["url"] == "https://www.reddit.com/comments/zz9/" and R.reddit_posts(lone)[0]["likes"] is None,
+       "a thread without its community keeps a working link, and unknown counts stay unknown")
 
 with tempfile.TemporaryDirectory() as d:
     sys.argv = ["read_social.py", "instagram", "boom", "testbrand", "--out", d]
