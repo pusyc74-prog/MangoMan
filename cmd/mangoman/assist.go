@@ -352,7 +352,9 @@ func cmdCode(args []string) error {
 		fmt.Printf("Started MangoMan for this session (log: %s).\n", logPath)
 	}
 
-	env := append(os.Environ(), "MANGOMAN_TOKEN="+token)
+	// Skill scripts that ask models themselves (the Council) reach the
+	// router with the session's own token.
+	env := append(os.Environ(), "MANGOMAN_TOKEN="+token, fmt.Sprintf("MANGOMAN_URL=http://127.0.0.1:%d/v1", cfg.Port))
 	if os.Getenv("OPENCODE_CONFIG_DIR") == "" {
 		if oc, err := codeSkillsDir(); err == nil {
 			env = append(env, "OPENCODE_CONFIG_DIR="+oc)

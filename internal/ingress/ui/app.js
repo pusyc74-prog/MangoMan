@@ -1114,7 +1114,9 @@ async function openBrief(a) {
   try { biz = await api("/mangoman/business"); } catch (err) { say(err.message, "err"); return; }
   const f = biz.fields || {};
   if (!f.timezone) f.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-  const bizFields = BUSINESS.map(([id, label, kind, req, hint]) => field(id, label, kind, req, hint, null, f[id]));
+  // An agent whose job is not about the business (the Council) asks for it only optionally.
+  const optional = a.business === "optional";
+  const bizFields = BUSINESS.map(([id, label, kind, req, hint]) => field(id, label, kind, req && !optional, hint, null, f[id]));
   // Job ids get their own prefix: a job may ask again for a business field (the
   // SEO agent's website), prefilled from it.
   const jobFields = a.brief.map((q) => ({ ...field("job-" + q.id, q.label, q.kind, q.required, q.hint, q.options, f[q.id]), id: q.id }));
@@ -1156,7 +1158,8 @@ async function openBrief(a) {
     el("p", { class: "sub" }, "Answer once here. The agent reads these answers and does not ask again in the chat."),
     a.stages ? el("ol", { class: "stages" }, a.stages.map((s) => el("li", {}, s))) : null,
     el("details", { class: "bf-biz", open: needed > 0 },
-      el("summary", {}, "Your business", el("span", { class: "fine" }, needed ? ` (${needed} answers needed)` : " (saved; kept for every agent)")),
+      el("summary", {}, "Your business", el("span", { class: "fine" }, needed ? ` (${needed} answers needed)`
+        : optional && !f.name ? " (optional: helps when the question is about it)" : " (saved; kept for every agent)")),
       bizFields.map((q) => q.node),
       el("div", { class: "bf" }, el("p", { class: "bf-h" }, "Logo"),
         el("div", { class: "opts" }, logo, el("label", { for: "brief-logo", class: "ghost" }, "Choose a PNG or JPG"), logoMsg))),
@@ -1368,7 +1371,7 @@ const teamLabel = (id) => state.team.includes(id) ? "In my team" : "Add to my te
 // pre-made agent it was made from, else from a short one.
 function ownAgent(k) {
   const base = state.starters.find((s) => s.id === k.based_on);
-  return { id: k.name, title: pretty(k.name), own: true, brief: (base && base.brief) || OWN_BRIEF, stages: base && base.stages,
+  return { id: k.name, title: pretty(k.name), own: true, brief: (base && base.brief) || OWN_BRIEF, stages: base && base.stages, business: base && base.business,
     ref: `its playbook ${lib.dir}/${k.name}/SKILL.md`,
     prompt: `Be my ${pretty(k.name)}. Read your playbook in ${lib.dir}/${k.name}/SKILL.md and follow it, with the skills it names at their stages. My brief is in {folder}/brief.json: work in that folder and save every file there.` };
 }

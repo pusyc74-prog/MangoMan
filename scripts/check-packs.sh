@@ -29,6 +29,7 @@ run reels     "python3 $P/mangoman-reel-scripts/scripts/build_reels.py reels.jso
 S="$P/mangoman-social-research"
 run social-research "python3 selftest.py $S/scripts && python3 $S/scripts/read_social.py page ad-page.html blocked.html --out . && python3 $S/scripts/summarise_social.py . --out ." "python3 $S/scripts/check_social.py ."
 run seo-audit "python3 selftest.py $P/mangoman-seo-research/scripts ." "python3 $P/mangoman-seo-research/scripts/check_audit.py ."
+run council   "python3 selftest.py $P/mangoman-council/scripts" "python3 $P/mangoman-council/scripts/check_council.py ."
 run landing   "python3 $P/mangoman-landing-page/scripts/build_page.py page.json --out site"           "python3 $P/mangoman-landing-page/scripts/check_page.py page.json site"
 run proposal  "python3 $P/mangoman-proposal/scripts/build_proposal.py proposal.json --out proposal"  "python3 $P/mangoman-proposal/scripts/check_proposal.py proposal.json proposal"
 run email     "python3 $P/mangoman-email-campaign/scripts/build_emails.py campaign.json --out emails" "python3 $P/mangoman-email-campaign/scripts/check_emails.py campaign.json emails"

@@ -56,6 +56,25 @@
       "prompt": "Be my SEO Strategist. Use the mangoman-seo-strategist skill, with mangoman-seo-research, mangoman-market-research, mangoman-copywriting, mangoman-strategy-report and mangoman-seo-article at their stages. My brief is in {folder}/brief.json: work in that folder and start."
     },
     {
+      "id": "council",
+      "title": "Council",
+      "super": true,
+      "business": "optional",
+      "summary": "A council for your hard questions: AI models from different makers argue it in set roles and answer each other, then a chair decides with reasons, the strongest dissent, risks and next steps.",
+      "gets": ["The question framed, with the facts and their sources", "Three to five voices from different AI makers, in two rounds", "A decision with its confidence, reasons and the dissent", "Risks, what would change the decision, and next steps"],
+      "needs": ["Your question and the options you see", "Any facts you have: numbers, quotes, files"],
+      "stages": ["Frame", "Facts", "Council", "Weigh", "Decide", "Check and deliver"],
+      "brief": [
+        {"id": "question", "label": "What do you need to decide or work out?", "kind": "long", "hint": "For example: should we launch a smaller trial pack this Diwali?", "required": true},
+        {"id": "options", "label": "The options you see", "kind": "long", "hint": "One per line. Leave empty and the council finds them"},
+        {"id": "facts", "label": "Facts the council should use", "kind": "long", "hint": "Numbers, prices, results, quotes, and where each comes from"},
+        {"id": "matters", "label": "What matters most?", "kind": "multi", "options": ["Cost", "Speed", "Quality", "Low risk", "Growth", "Customers"]},
+        {"id": "by", "label": "Decide by", "kind": "text", "hint": "A date, if there is one"}
+      ],
+      "packs": ["mangoman-council", "mangoman-market-research"],
+      "prompt": "Be my Council. Use the mangoman-council skill, with mangoman-market-research when the question needs facts from the web. My brief is in {folder}/brief.json: work in that folder and start."
+    },
+    {
       "id": "data-analyst",
       "title": "Data Analyst",
       "summary": "Give it a spreadsheet. You get a dashboard with checked numbers and a written report of what they mean.",
