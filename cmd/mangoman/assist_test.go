@@ -37,7 +37,7 @@ func TestCodeRules(t *testing.T) {
 		t.Fatal("MangoMan Projects not told apart from another folder")
 	}
 	base := codeRules(false, false)
-	if !strings.Contains(base, "skill's folder") || strings.Contains(base, "MangoMan Projects") || strings.Contains(base, "PowerShell") {
+	if !strings.Contains(base, "skill's folder") || !strings.Contains(base, "When you write or change code") || strings.Contains(base, "MangoMan Projects") || strings.Contains(base, "PowerShell") {
 		t.Fatalf("a project folder on Mac or Linux gets only the skill folder rule:\n%s", base)
 	}
 	all := codeRules(true, true)

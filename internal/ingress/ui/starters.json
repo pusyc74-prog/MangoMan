@@ -75,6 +75,25 @@
       "prompt": "Be my Council. Use the mangoman-council skill, with mangoman-market-research when the question needs facts from the web. My brief is in {folder}/brief.json: work in that folder and start."
     },
     {
+      "id": "software-engineer",
+      "title": "Software Engineer",
+      "super": true,
+      "business": "optional",
+      "summary": "A senior engineer for your app or tool: agrees what to build, plans it in small working steps, writes tests first, checks security, reviews its own code, and tells you plainly how to run and publish it.",
+      "gets": ["A spec you approve before any code", "Working software, built and tested step by step", "A security check and a review of its own code", "A handover: how to run it, publish it and what it costs"],
+      "needs": ["What it must do and who uses it", "Any rules, rates or data it must follow", "For changes: the folder your code is in"],
+      "stages": ["Understand", "Design", "Plan", "Build", "Verify", "Review", "Hand over"],
+      "brief": [
+        {"id": "build", "label": "What should it build or change?", "kind": "long", "hint": "For example: an order tracker where my staff add orders and I see today's total with GST", "required": true},
+        {"id": "kind", "label": "Is this new, or a change to code you have?", "kind": "choice", "options": ["New", "A change to my code"]},
+        {"id": "users", "label": "Who uses it, and on what?", "kind": "long", "hint": "For example: me and 3 staff, on phones"},
+        {"id": "runs", "label": "Where should it run?", "kind": "choice", "options": ["Just in my browser", "On my computer", "Online for others", "Not sure"]},
+        {"id": "rules", "label": "Rules, rates or data it must follow", "kind": "long", "hint": "Prices, tax rates, steps, a sample file"}
+      ],
+      "packs": ["mangoman-software-engineer", "mangoman-engineering", "mangoman-web-app", "mangoman-landing-page", "mangoman-code-review"],
+      "prompt": "Be my Software Engineer. Use the mangoman-software-engineer skill, with mangoman-engineering throughout and mangoman-web-app, mangoman-landing-page and mangoman-code-review at their stages. My brief is in {folder}/brief.json: work in that folder and start."
+    },
+    {
       "id": "data-analyst",
       "title": "Data Analyst",
       "summary": "Give it a spreadsheet. You get a dashboard with checked numbers and a written report of what they mean.",

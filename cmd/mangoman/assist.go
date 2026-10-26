@@ -97,7 +97,11 @@ var projectsAsk = []string{
 func codeRules(projects, powershell bool) string {
 	r := []string{"Run a skill's scripts by their full path. Never change into a skill's folder or write files in it: skill folders belong to MangoMan.",
 		// Seen 15 Oct on Windows: python, where python, whereis python, dir C:\Python* before trying python3.
-		"Python is python3: MangoMan installs it with every package the skills need. Do not look for another Python or install packages."}
+		"Python is python3: MangoMan installs it with every package the skills need. Do not look for another Python or install packages.",
+		// The four rules from andrej-karpathy-skills (MIT), cut to one line:
+		// they apply only when code is written, so other tasks are unchanged.
+		"When you write or change code: say your assumptions and ask when the request is unclear; write the simplest thing that works; change only what the task needs, in the existing style; run the tests or the app to prove it works before saying it does.",
+		"Ask before anything that deletes files, rewrites git history, deploys, publishes or costs money."}
 	if projects {
 		r = append(r,
 			"This is the user's MangoMan Projects folder. For each new task, make a folder named after it in plain words (for example diwali-sale-posts), keep all of that task's files in it, and run that task's commands from inside it. For changes to an earlier task, use its folder.",
