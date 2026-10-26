@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/pusyc74-prog/mangoman/internal/skills"
 )
 
 const testManifest = `{
@@ -312,6 +314,16 @@ func TestInHouseAgentsAreValid(t *testing.T) {
 	}
 	for _, d := range dirs {
 		if _, err := Load(d); err != nil {
+			t.Errorf("%s: %v", d, err)
+		}
+		// Installed agents sit next to the packs in OpenCode's skills folder,
+		// so their description rides on every request too.
+		raw, _ := os.ReadFile(filepath.Join(d, "SKILL.md"))
+		p, err := skills.ParseSkill(raw)
+		if err == nil {
+			err = skills.CheckDescription(p.Description)
+		}
+		if err != nil {
 			t.Errorf("%s: %v", d, err)
 		}
 	}

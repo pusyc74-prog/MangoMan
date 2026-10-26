@@ -66,7 +66,7 @@ func cmdSkills(args []string) error {
 		fmt.Fprintln(tw, "SKILL PACK\tVERSION\tWHAT IT DOES")
 		for _, p := range packs {
 			d := p.Description
-			if i := strings.Index(d, ". Use when"); i > 0 {
+			if i := strings.Index(d, ". Use "); i > 0 {
 				d = d[:i+1]
 			}
 			fmt.Fprintf(tw, "%s\t%s\t%s\n", p.Name, p.Version, d)

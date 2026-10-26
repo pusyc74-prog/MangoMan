@@ -148,9 +148,11 @@ func inProjects(dir string) bool {
 // mode is how OpenCode is shown and rules the file from writeCodeRules ("" for
 // none). Measured on 8 Oct: switching off tools nobody used saved almost no
 // tokens per request, so OpenCode keeps its own tools and prompts. Pruning
-// (off in OpenCode by default) clears the output of old tool calls once a
-// turn ends, keeping the newest 40,000 tokens of it and every loaded skill,
-// so a long session stops resending files it read many steps ago.
+// (off in OpenCode by default) clears, from what is sent to the model, the
+// output of tool calls older than the last two user turns, once a turn ends
+// and only when that frees over 20,000 tokens; the newest 40,000 tokens of
+// output and every loaded skill stay. A long session then stops resending
+// files it read many steps ago; the coding screen still shows them all.
 func openCodeConfig(cfg *config.Config, model string, mode int, rules string, projects bool) string {
 	models := map[string]any{
 		"free/coder": map[string]any{"name": "Free coder", "limit": map[string]int{"context": 65536, "output": 8192}},

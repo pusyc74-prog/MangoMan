@@ -32,6 +32,18 @@ const Marker = ".mangoman-pack"
 // OpenCode puts every installed skill's description into every request.
 const MaxDescription = 240
 
+var useLine = regexp.MustCompile(`\. Use [a-z]`)
+
+// CheckDescription holds a skill MangoMan ships to MaxDescription characters
+// and a closing "Use for/when/with ..." sentence that says when to load it:
+// it is all the model sees of a skill until the skill is loaded.
+func CheckDescription(d string) error {
+	if n := utf8.RuneCountInString(d); n > MaxDescription || !useLine.MatchString(d) {
+		return fmt.Errorf("description has %d characters (at most %d) or no closing \". Use ...\" sentence", n, MaxDescription)
+	}
+	return nil
+}
+
 // Pack describes one skill pack. Kind is what it is for: "pack" builds and
 // checks files (the default), "method" is expert know-how an agent follows,
 // "agent" is a super agent's whole playbook.

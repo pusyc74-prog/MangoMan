@@ -1,6 +1,6 @@
 ---
 name: mangoman-seo-research
-description: A site audit script (robots.txt, sitemap, pages, findings by priority) plus research on what customers search and who ranks, local and AI search. Use for SEO audits, keyword research, Google Business Profile.
+description: SEO method - an audit script (robots.txt, sitemap, pages) then judging clarity and rank-worthiness, keyword research, who ranks, local and AI search. Use for SEO audits, why a site is not on Google, keywords, before articles.
 license: MIT (adapted from coreyhaines31/marketingskills and AgriciDaniel/claude-seo; see LICENSE.txt)
 metadata:
   pack: mangoman

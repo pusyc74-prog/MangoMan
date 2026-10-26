@@ -1,6 +1,6 @@
 ---
 name: mangoman-email-campaign
-description: Branded HTML email campaigns and sequences (welcome, launch, offer, newsletter, cart, win-back) with plain text, merge tags and a schedule. Use for marketing emails, newsletters, drips, Mailchimp, Klaviyo, Brevo.
+description: Branded HTML email campaigns and sequences (welcome, launch, offer, newsletter, cart, win-back) with plain text, merge tags, a schedule. Use for marketing emails, newsletters, drips, Mailchimp, Klaviyo, Brevo, MailerLite.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

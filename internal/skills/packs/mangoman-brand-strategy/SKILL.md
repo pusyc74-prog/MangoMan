@@ -1,6 +1,6 @@
 ---
 name: mangoman-brand-strategy
-description: Positioning, message and voice from evidence - who it is for, what it beats, why it wins, proof, example lines. Use for brand strategy, positioning, messaging, taglines, tone of voice.
+description: Positioning, message and voice from evidence - who it is for, what it beats, why it wins, proof, example lines. Use for brand strategy, positioning, messaging, taglines, tone of voice, and before any campaign or website copy.
 license: MIT (adapted from coreyhaines31/marketingskills; see LICENSE.txt)
 metadata:
   pack: mangoman

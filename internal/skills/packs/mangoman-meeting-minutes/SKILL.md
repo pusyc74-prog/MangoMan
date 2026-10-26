@@ -1,6 +1,6 @@
 ---
 name: mangoman-meeting-minutes
-description: Minutes from a transcript or notes - summary, decisions, actions with owners and dates, open questions, as PDF and text, nothing invented. Use for meeting minutes, MoM, action items, follow-up email.
+description: Minutes from a transcript or notes - summary, decisions, actions with owners and dates, open questions, as PDF and text, nothing invented. Use for meeting minutes, MoM, meeting notes, action items, a follow-up email.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

@@ -1,6 +1,6 @@
 ---
 name: mangoman-social-research
-description: Reads competitors' public Instagram, YouTube Shorts, TikTok, running Meta, Google and LinkedIn ads, TikTok trends and 30 days of Reddit and Hacker News talk, logged out, into citable numbers. Use for competitor research.
+description: Reads competitors' public Instagram, Shorts, TikTok, running Meta, Google and LinkedIn ads, TikTok trends and 30 days of Reddit and Hacker News talk into citable numbers. Use for competitor research, a social audit, what works in a niche.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

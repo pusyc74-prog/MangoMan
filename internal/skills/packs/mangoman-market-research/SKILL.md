@@ -1,6 +1,6 @@
 ---
 name: mangoman-market-research
-description: Web research on a business's market - its presence, competitors, audience in their own words, trends and key dates, every finding sourced and dated. Use before any strategy or plan, or for market or competitor research.
+description: Web research on a business's market - presence, competitors, audience in their own words, trends, key dates, every finding sourced. Use before any strategy or plan, or for market, competitor, audience research or a social or search audit.
 license: MIT (adapted from coreyhaines31/marketingskills; see LICENSE.txt)
 metadata:
   pack: mangoman

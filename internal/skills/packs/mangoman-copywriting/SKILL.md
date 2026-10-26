@@ -1,6 +1,6 @@
 ---
 name: mangoman-copywriting
-description: Marketing copy that sells and does not sound generated - specific, in the customer's words, claims backed, any language. Use for captions, headlines, ads, emails, web copy, or fixing copy that sounds like AI.
+description: Marketing copy that sells and does not sound generated, in the customer's words, claims backed, any language. Use whenever writing or editing posts, ads, emails, web pages, listings, captions, headlines, or copy that sounds like AI.
 license: MIT (adapted from coreyhaines31/marketingskills; see LICENSE.txt)
 metadata:
   pack: mangoman

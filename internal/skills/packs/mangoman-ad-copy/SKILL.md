@@ -1,6 +1,6 @@
 ---
 name: mangoman-ad-copy
-description: Google search ads (headlines, descriptions, keywords, negatives) and Meta ads, checked against limits and policies, exported for Ads Editor. Use for ad copy, Google Ads, search ads, Facebook, Instagram or Meta ads.
+description: Google search ads (headlines, descriptions, keywords, negatives) and Meta ads, checked against limits and policies, for Ads Editor. Use for ad copy, ad headlines, campaign keywords, Google, Facebook, Instagram or Meta ads.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman
