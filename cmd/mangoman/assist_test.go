@@ -36,11 +36,20 @@ func TestCodeRules(t *testing.T) {
 	if !inProjects(projects) || inProjects(home) {
 		t.Fatal("MangoMan Projects not told apart from another folder")
 	}
-	base := codeRules(false, false)
-	if !strings.Contains(base, "skill's folder") || !strings.Contains(base, "When you write or change code") || strings.Contains(base, "MangoMan Projects") || strings.Contains(base, "PowerShell") {
-		t.Fatalf("a project folder on Mac or Linux gets only the skill folder rule:\n%s", base)
+	base := codeRules(false, false, modeUI)
+	if !strings.Contains(base, "skill's folder") || !strings.Contains(base, "When you write or change code") || strings.Contains(base, "MangoMan Projects") ||
+		strings.Contains(base, "PowerShell") || strings.Contains(base, "Ask before deleting") {
+		t.Fatalf("a project folder on Mac or Linux in the coding screen gets the skill folder and code rules only:\n%s", base)
 	}
-	all := codeRules(true, true)
+	// Nobody can answer in an unattended run, and only OpenCode's own
+	// terminal screen runs commands without asking first.
+	if run := codeRules(false, false, modeRun); strings.Contains(run, "ask") || strings.Contains(run, "Ask") {
+		t.Fatalf("an unattended run is told to ask:\n%s", run)
+	}
+	if !strings.Contains(codeRules(false, false, modeTUI), "Ask before deleting") {
+		t.Fatal("the terminal screen, which asks before nothing, lacks the ask-before rule")
+	}
+	all := codeRules(true, true, modeUI)
 	for _, want := range []string{"skill's folder", "folder named after it", "agent or bot", `"2>$null"`} {
 		if !strings.Contains(all, want) {
 			t.Errorf("rules in MangoMan Projects on Windows lack %q:\n%s", want, all)
@@ -55,7 +64,7 @@ func TestCodeRules(t *testing.T) {
 			t.Errorf("psShell(%q, %q) should be %v", c.goos, c.shell, c.ps)
 		}
 	}
-	path, err := writeCodeRules(home, true)
+	path, err := writeCodeRules(home, true, modeUI)
 	if b, _ := os.ReadFile(path); err != nil || !strings.Contains(string(b), "folder named after it") {
 		t.Fatalf("rules file %s: %v", path, err)
 	}

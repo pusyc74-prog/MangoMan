@@ -1,29 +1,35 @@
 """Ask several AI models from different makers the same question, then let
 each answer the others, so the chair can decide with the disagreement in view.
 
-Usage: python3 council.py question.md [--voices 3] [--rounds 2] [--models a,b,c] [--out council]
+Usage: python3 council.py question.md [--voices 3] [--rounds 2] [--models a,b,c] [--out council] [--plan]
 question.md holds the question, the options and the facts. Each voice gets a
 role (advocate, critic, fact-checker, risk officer, the people affected) and
 answers in a fixed shape: position, confidence, reasons, risks, what would
 change its mind. In round 2 each voice reads the others' answers (by letter,
 not by model) and keeps or changes its position. Models come from MangoMan's
 router (MANGOMAN_URL and MANGOMAN_TOKEN, set in every MangoMan session), one
-per maker, so they do not share the same blind spots. Writes council.json and
-council.md. Prints the number of AI requests before asking.
+per maker, so they do not share the same blind spots; a model that cannot
+answer is replaced by the next maker's. --plan only prints the voices and the
+number of AI requests. Progress is saved after every round, so a run that was
+stopped picks up where it ended. Writes council.json and council.md.
 """
 import concurrent.futures
 import datetime as dt
+import hashlib
 import json
 import os
 import re
 import sys
+import threading
+import time
 import urllib.error
 import urllib.request
 
 OUT = "council"
-MAX_QUESTION = 24000  # characters: every voice reads it every round
+MAX_QUESTION = 12000  # characters: every voice reads it every round, and small free models allow few tokens a minute
 MAX_VOICES = 5
-TIMEOUT = 180
+TIMEOUT = 200  # seconds: just over the router's own 180 s for a whole answer, so its retries can finish
+WAIT_MAX = 90  # seconds to wait once when the router says free capacity returns soon
 ROLES = [
     ("Advocate", "Make the strongest honest case for the option you think is best."),
     ("Critic", "Find the weaknesses in the obvious answer and the options others favour."),
@@ -51,7 +57,11 @@ MAKERS = [
     (r"^(glm|chatglm)", "Zhipu"), (r"^kimi", "Moonshot"), (r"^grok", "xAI"), (r"^(command|aya)", "Cohere"),
     (r"^phi", "Microsoft"), (r"^minimax", "MiniMax"), (r"^ernie", "Baidu"),
 ]
-SMALL = re.compile(r"(mini|nano|tiny|lightning|-xs\b|xs-)", re.I)
+SMALL = re.compile(r"(^|[-_.:])(mini|nano|tiny|lightning|xs|small)([-_.:]|$)", re.I)
+HEADS = {"POSITION": "position", "CONFIDENCE": "confidence", "REASONS": "reasons", "RISKS": "risks",
+         "WOULD CHANGE MY MIND": "change_mind"}
+HEAD = re.compile(r"^[\s#*_>\d.)-]*(POSITION|CONFIDENCE|REASONS|RISKS|WOULD CHANGE MY MIND)\b[*_\s]*(:[*_\s]*(.*))?$", re.I)
+BULLET = re.compile(r"^([-*+•]|\d+[.)])\s+")
 
 
 def maker(model):
@@ -59,25 +69,27 @@ def maker(model):
     for rx, who in MAKERS:
         if re.search(rx, name):
             return who
-    return re.split(r"[-_.\d]", name, maxsplit=1)[0] or name
+    return re.split(r"[-_.:\d]", name, maxsplit=1)[0] or name
 
 
 def strength(model):
-    """A rough order within one maker: bigger models first, small ones last."""
-    if SMALL.search(model):
+    """A rough order: bigger models first, small ones last, unsized in between."""
+    if SMALL.search(model.lower().split("/")[-1]):
         return 0
     sizes = [float(x) for x in re.findall(r"(\d+(?:\.\d+)?)b\b", model.lower())]
-    return max(sizes) if sizes else 100
+    return max(sizes) if sizes else 50
 
 
-def pick(models, n):
-    """The strongest model of each maker, strongest makers first, n at most."""
+def ranked(models):
+    """Every model, the strongest of each maker first (makers by their best),
+    then the rest, so a model that cannot answer can be swapped for the next."""
     best = {}
     for m in models:
         k = maker(m)
-        if k not in best or strength(m) > strength(best[k]):
+        if k not in best or (strength(m), m) > (strength(best[k]), best[k]):
             best[k] = m
-    return sorted(best.values(), key=lambda m: (-strength(m), m))[:n]
+    first = sorted(best.values(), key=lambda m: (-strength(m), m))
+    return first + sorted((m for m in models if m not in first), key=lambda m: (-strength(m), m))
 
 
 def router():
@@ -95,7 +107,7 @@ def call(url, token, path, body=None):
 
 
 def available(url, token):
-    """Models the router can reach now (not its virtual names or groups)."""
+    """Models the router has a key for (not its virtual names or groups)."""
     data = call(url, token, "/models").get("data") or []
     return sorted(m["id"] for m in data if isinstance(m, dict) and m.get("providers"))
 
@@ -107,42 +119,70 @@ def why(e):
         except Exception:
             msg = ""
         return "the model answered %d%s" % (e.code, ": " + msg[:160] if msg else "")
-    return "no answer (%s)" % str(getattr(e, "reason", e))[:160]
+    return "no answer (%s: %s)" % (type(e).__name__, str(getattr(e, "reason", e))[:160])
+
+
+def clean(text):
+    """The answer without a model's private thinking, with plain line ends."""
+    text = re.sub(r"(?is)<think>.*?</think>", "", text.replace("\r\n", "\n").replace("\r", "\n"))
+    return text.strip()
 
 
 def ask(url, token, model, messages):
-    """(text, tokens, error)."""
-    try:
-        r = call(url, token, "/chat/completions", {"model": "strict/" + model, "messages": messages, "temperature": 0.4})
-        text = (((r.get("choices") or [{}])[0].get("message") or {}).get("content") or "").strip()
-        used = (r.get("usage") or {}).get("total_tokens") or 0
-        return (text, used, "") if text else ("", used, "the model gave an empty answer")
-    except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError, IndexError) as e:
-        return "", 0, why(e)
+    """(text, tokens, error); waits once when the router says capacity returns soon."""
+    for attempt in (0, 1):
+        try:
+            r = call(url, token, "/chat/completions", {"model": "strict/" + model, "messages": messages, "temperature": 0.4})
+            text = clean(((r.get("choices") or [{}])[0].get("message") or {}).get("content") or "")
+            used = (r.get("usage") or {}).get("total_tokens") or 0
+            return (text, used, "") if text else ("", used, "the model gave an empty answer")
+        except urllib.error.HTTPError as e:
+            wait = e.headers.get("Retry-After") if e.headers else None
+            if attempt == 0 and e.code == 429 and wait and wait.isdigit() and int(wait) <= WAIT_MAX:
+                time.sleep(int(wait))
+                continue
+            return "", 0, why(e)
+        except Exception as e:  # a cut-off or odd answer must not lose the other voices
+            return "", 0, why(e)
+    return "", 0, "no answer"
+
+
+def confidence(rest):
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(/\s*10\b|%)?", rest)
+    if not m:
+        return None
+    n = float(m.group(1))
+    if m.group(2) and m.group(2).replace(" ", "") == "/10":
+        n *= 10
+    elif "." in m.group(1) and n <= 1:
+        n *= 100
+    return int(min(100, round(n)))
 
 
 def parse(text):
-    """The fixed-shape answer as fields; missing parts stay empty."""
+    """The fixed-shape answer as fields; missing parts stay empty. A head
+    without a colon counts only when it stands alone on its line."""
     out = {"position": "", "confidence": None, "reasons": [], "risks": [], "change_mind": []}
     key = None
-    heads = {"REASONS": "reasons", "RISKS": "risks", "WOULD CHANGE MY MIND": "change_mind"}
     for line in text.splitlines():
         s = line.strip()
-        m = re.match(r"[*_#\s]*(POSITION|CONFIDENCE|REASONS|RISKS|WOULD CHANGE MY MIND)[*_\s]*:[*_\s]*(.*)$", s, re.I)
-        if m:
-            head, rest = m.group(1).upper(), m.group(2).strip().strip("*").strip()
-            if head == "POSITION":
-                out["position"], key = rest, None
-            elif head == "CONFIDENCE":
-                n = re.search(r"\d{1,3}", rest)
-                out["confidence"] = min(100, int(n.group(0))) if n else None
-                key = None
-            else:
-                key = heads[head]
-                if rest:
-                    out[key].append(rest)
-        elif key and re.match(r"([-*•]|\d+[.)])\s", s):
-            out[key].append(re.sub(r"^([-*•]|\d+[.)])\s*", "", s))
+        m = HEAD.match(s)
+        if m and (m.group(2) is not None or s.strip("#*_ :").upper() == m.group(1).upper()):
+            key = HEADS[m.group(1).upper()]
+            rest = (m.group(3) or "").strip().strip("*_").strip()
+            if key == "position":
+                out["position"] = out["position"] or rest
+            elif key == "confidence":
+                out["confidence"] = confidence(rest) if rest else None
+            elif rest:
+                out[key].append(rest)
+            continue
+        if key == "position" and s and not out["position"]:
+            out["position"] = s.strip("*_ ")
+        elif key == "confidence" and s and out["confidence"] is None:
+            out["confidence"] = confidence(s)
+        elif key in ("reasons", "risks", "change_mind") and BULLET.match(s):
+            out[key].append(BULLET.sub("", s))
     return out
 
 
@@ -151,13 +191,31 @@ def brief(question, role, mission):
             {"role": "user", "content": question}]
 
 
-def others_text(voices, me, rnd):
-    parts = []
-    for v in voices:
-        if v is me or not v["rounds"][rnd]["text"]:
-            continue
-        parts.append("Voice %s (%s):\n%s" % (v["label"], v["role"], v["rounds"][rnd]["text"]))
-    return "\n\n".join(parts)
+def others_text(voices, me):
+    return "\n\n".join("Voice %s (%s):\n%s" % (v["label"], v["role"], v["rounds"][0]["text"])
+                       for v in voices if v is not me and v["rounds"] and v["rounds"][0]["ok"])
+
+
+def answer(text, tokens, err):
+    return {"text": text, "ok": not err, "why": err, "tokens": tokens, **parse(text)}
+
+
+def save(out, record):
+    os.makedirs(out, exist_ok=True)
+    with open(os.path.join(out, OUT + ".json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump(record, f, ensure_ascii=False, indent=1)
+    with open(os.path.join(out, OUT + ".md"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(markdown(record))
+
+
+def resumable(out, digest, rounds):
+    """A saved council for the same question that is not finished yet."""
+    try:
+        with open(os.path.join(out, OUT + ".json"), encoding="utf-8") as f:
+            r = json.load(f)
+        return r if r.get("question_sha") == digest and r.get("rounds") == rounds and r.get("done", 0) < rounds else None
+    except (OSError, ValueError, AttributeError):
+        return None
 
 
 def main():
@@ -166,72 +224,86 @@ def main():
         sys.exit(__doc__)
     try:
         opt = {k: a[a.index(k) + 1] for k in ("--voices", "--rounds", "--models", "--out") if k in a}
-        n, rounds = int(opt.get("--voices", 3)), int(opt.get("--rounds", 2))
+        named = [m.strip() for m in opt["--models"].split(",") if m.strip()] if "--models" in opt else []
+        n, rounds = int(opt.get("--voices", len(named) or 3)), int(opt.get("--rounds", 2))
     except (IndexError, ValueError):
         sys.exit("--voices and --rounds need whole numbers, --models a list and --out a folder")
     if not 2 <= n <= MAX_VOICES or rounds not in (1, 2):
         sys.exit("--voices must be 2 to %d and --rounds 1 or 2" % MAX_VOICES)
-    question = open(a[0], encoding="utf-8").read().strip()
+    with open(a[0], encoding="utf-8") as f:
+        question = f.read().strip()
     if not question:
         sys.exit("%s is empty: write the question, the options and the facts first" % a[0])
     if len(question) > MAX_QUESTION:
         sys.exit("%s has %d characters; every voice reads it every round, so keep it under %d: summarise the facts"
                  % (a[0], len(question), MAX_QUESTION))
     out = opt.get("--out", OUT)
+    digest = hashlib.sha1(question.encode("utf-8")).hexdigest()
     url, token = router()
-    try:
-        models = [m.strip() for m in opt["--models"].split(",") if m.strip()] if "--models" in opt else pick(available(url, token), n)
-    except (urllib.error.URLError, OSError, ValueError) as e:
-        sys.exit("could not read the models from MangoMan (%s); is MangoMan running?" % why(e))
-    if len(models) < 2:
-        sys.exit("only %d model can be reached now; a council needs at least 2. Add another free provider in Connections." % len(models))
-    voices = [{"label": chr(65 + i), "model": m, "maker": maker(m), "role": ROLES[i][0], "mission": ROLES[i][1], "rounds": []}
-              for i, m in enumerate(models[:n])]
-    print("Council: %d voices (%s), %d round(s), %d AI requests." % (
-        len(voices), ", ".join("%s %s" % (v["label"], v["maker"]) for v in voices), rounds, len(voices) * rounds))
-    used = 0
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(voices)) as pool:
-        for rnd in range(rounds):
-            jobs = {}
-            for v in voices:
-                msgs = brief(question, v["role"], v["mission"])
+    record = resumable(out, digest, rounds)
+    if record:
+        voices = record["voices"]
+        print("Picking up the council saved in %s after round %d." % (out, record["done"]))
+    else:
+        try:
+            pool = named or ranked(available(url, token))
+        except (urllib.error.URLError, OSError, ValueError) as e:
+            sys.exit("could not read the models from MangoMan (%s); is MangoMan running?" % why(e))
+        if len(pool) < 2:
+            sys.exit("only %d model can be reached now; a council needs at least 2. Add another free provider in Connections." % len(pool))
+        makers = len({maker(m) for m in pool})
+        voices = [{"label": chr(65 + i), "model": m, "maker": maker(m), "role": ROLES[i][0], "rounds": []}
+                  for i, m in enumerate(pool[:n])]
+        record = {"question_file": os.path.basename(a[0]), "question_sha": digest, "rounds": rounds, "done": 0, "tokens": 0,
+                  "spare": pool[n:], "voices": voices}
+        print("Council: %d voices (%s), %d round(s), about %d AI requests%s." % (
+            len(voices), ", ".join("%s %s" % (v["label"], v["maker"]) for v in voices), rounds, len(voices) * rounds,
+            "" if makers >= len(voices) else "; only %d makers can be reached, so some share a maker" % makers))
+        if "--plan" in a:
+            return
+    mission, lock = dict(ROLES), threading.Lock()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(voices)) as ex:
+        for rnd in range(record["done"], rounds):
+            def job(v):
+                msgs = brief(question, v["role"], mission[v["role"]])
                 if rnd == 1:
-                    if not v["rounds"][0]["text"]:
-                        v["rounds"].append({"text": "", "ok": False, "why": "no first answer", **parse("")})
-                        continue
+                    if not v["rounds"][0]["ok"]:
+                        return "", 0, "no first answer"
                     msgs += [{"role": "assistant", "content": v["rounds"][0]["text"]},
                              {"role": "user", "content": "The other voices answered:\n\n%s\n\nReply in the same shape. Keep or change your position; "
-                                                         "in REASONS say which voice's point moved you or why it did not." % others_text(voices, v, 0)}]
-                jobs[pool.submit(ask, url, token, v["model"], msgs)] = v
-            for f in concurrent.futures.as_completed(jobs):
-                v = jobs[f]
-                text, tokens, err = f.result()
-                used += tokens
-                v["rounds"].append({"text": text, "ok": not err, "why": err, **parse(text)})
-            for v in voices:  # as_completed may finish in any order; rounds stay in order per voice
-                assert len(v["rounds"]) == rnd + 1
-            answered = [v for v in voices if v["rounds"][rnd]["ok"]]
-            if rnd == 0 and len(answered) < 2:
+                                                         "in REASONS say which voice's point moved you or why it did not." % others_text(voices, v)}]
+                got = ask(url, token, v["model"], msgs)
+                # Round 1: a model that cannot answer is swapped for a spare one.
+                while rnd == 0 and got[2]:
+                    with lock:
+                        if not record["spare"]:
+                            break
+                        v["model"] = record["spare"].pop(0)
+                    v["maker"] = maker(v["model"])
+                    got = ask(url, token, v["model"], msgs)
+                return got
+            for v, got in zip(voices, ex.map(job, voices)):
+                v["rounds"].append(answer(*got))
+                record["tokens"] += got[1]
+            record["done"] = rnd + 1
+            record["asked_at"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+            save(out, record)
+            if rnd == 0 and sum(v["rounds"][0]["ok"] for v in voices) < 2:
                 sys.exit("only %d voice answered (%s); try again in a few minutes"
-                         % (len(answered), "; ".join("%s: %s" % (v["model"], v["rounds"][0]["why"]) for v in voices if not v["rounds"][0]["ok"])))
-    record = {"question_file": os.path.basename(a[0]), "asked_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-              "rounds": rounds, "tokens": used, "voices": [{k: v[k] for k in ("label", "model", "maker", "role", "rounds")} for v in voices]}
-    os.makedirs(out, exist_ok=True)
-    with open(os.path.join(out, OUT + ".json"), "w", encoding="utf-8") as f:
-        json.dump(record, f, ensure_ascii=False, indent=1)
-    with open(os.path.join(out, OUT + ".md"), "w", encoding="utf-8") as f:
-        f.write(markdown(record))
-    print("wrote %s.json and %s.md: %d of %d voices answered, %s tokens" % (
-        OUT, OUT, sum(v["rounds"][-1]["ok"] for v in voices), len(voices), "{:,}".format(used)))
+                         % (sum(v["rounds"][0]["ok"] for v in voices),
+                            "; ".join("%s: %s" % (v["model"], v["rounds"][0]["why"]) for v in voices if not v["rounds"][0]["ok"])))
+    print("wrote %s and %s: %d of %d voices answered, %s tokens" % (
+        os.path.join(out, OUT + ".json"), os.path.join(out, OUT + ".md"), sum(v["rounds"][-1]["ok"] for v in voices),
+        len(voices), "{:,}".format(record["tokens"])))
 
 
 def markdown(r):
-    md = ["# Council", "", "Asked %s. %d voices, %d round(s)." % (r["asked_at"][:10], len(r["voices"]), r["rounds"]), ""]
+    md = ["# Council", "", "Asked %s. %d voices, %d of %d round(s) done." % (
+        (r.get("asked_at") or "")[:10], len(r["voices"]), r.get("done", 0), r["rounds"]), ""]
     for v in r["voices"]:
         md += ["## Voice %s: %s (%s, %s)" % (v["label"], v["role"], v["model"], v["maker"]), ""]
         for i, x in enumerate(v["rounds"], 1):
-            md += ["### Round %d" % i, ""]
-            md += [x["text"] if x["ok"] else "No answer: %s" % x["why"], ""]
+            md += ["### Round %d" % i, "", x["text"] if x["ok"] else "No answer: %s" % x["why"], ""]
     return "\n".join(md)
 
 

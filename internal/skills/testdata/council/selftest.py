@@ -18,6 +18,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 MODELS = ["deepseek-v4.1-flash", "gpt-oss-120b", "gpt-oss-20b", "nemotron-3-ultra-550b", "nemotron-3.5-lightning",
           "qwen3.8-27b", "laguna-xs-2.1"]
 seen = []  # (model, number of messages) for each chat request
+busy = []
 ANSWER = {
     "nemotron-3-ultra-550b": "POSITION: Launch the 200 g trial jar at 149 rupees.\nCONFIDENCE: 72\nREASONS:\n- 62% of reviews come from first-time buyers.\nRISKS:\n- Regular buyers may trade down.\nWOULD CHANGE MY MIND:\n- 500 g sales falling.",
     "deepseek-v4.1-flash": "**POSITION:** Keep only the 500 g jar.\n**CONFIDENCE:** 55\nREASONS:\n1. Margin is 38% on the 500 g jar.\nRISKS:\n* Fewer new buyers.\nWOULD CHANGE MY MIND:\n- Evidence of trade-down being small.",
@@ -44,8 +45,15 @@ class Router(http.server.BaseHTTPRequestHandler):
         model = body["model"].removeprefix("strict/")
         seen.append((model, len(body["messages"])))
         if model == "broken-model":
-            return self.reply(429, {"error": {"message": "all free capacity used", "type": "exhausted"}})
-        text = ANSWER.get(model, "")
+            return self.reply(503, {"error": {"message": "the model is paused after errors", "type": "unavailable"}})
+        if model == "busy-model" and not busy:
+            busy.append(1)  # the first try finds the minute's quota used, with when it returns
+            raw = json.dumps({"error": {"message": "free capacity used", "type": "free_capacity_exhausted"}}).encode()
+            self.send_response(429)
+            self.send_header("Retry-After", "1")
+            self.end_headers()
+            return self.wfile.write(raw)
+        text = ANSWER.get(model, "POSITION: Launch it.\r\nCONFIDENCE: 7/10\r\n")
         if len(body["messages"]) > 2:  # round 2: it has read the others
             assert "Voice" in body["messages"][-1]["content"]
             text = text.replace("** 55", "** 60")
@@ -70,13 +78,18 @@ def expect(cond, what):
 
 expect(K.maker("gpt-oss-120b") == "OpenAI" and K.maker("gemma-4-31b") == "Google" and K.maker("laguna-s-2.1") == "laguna",
        "makers come from model names; an unknown name is its own maker")
-picked = K.pick(MODELS, 3)
+picked = K.ranked(MODELS)[:3]
 expect(picked == ["nemotron-3-ultra-550b", "gpt-oss-120b", "deepseek-v4.1-flash"],
        "one model per maker, the strongest of each, strongest first: %s" % picked)
 p = K.parse(ANSWER["deepseek-v4.1-flash"])
 expect(p["position"] == "Keep only the 500 g jar." and p["confidence"] == 55 and p["reasons"] == ["Margin is 38% on the 500 g jar."]
        and p["risks"] == ["Fewer new buyers."], "answers in bold or numbered lists are read: %s" % p)
 expect(K.parse("no shape at all")["position"] == "", "an answer out of shape keeps its text but no fields")
+q = K.parse("1. **POSITION:** Launch\n## Confidence\n7/10\n## Reasons\n+ cheaper first try\nReasons I gave above are not a head\n")
+expect(q["position"] == "Launch" and q["confidence"] == 70 and q["reasons"] == ["cheaper first try"], "heads without a colon, 7/10 and + bullets: %s" % q)
+expect(K.parse("CONFIDENCE: 0.7")["confidence"] == 70 and K.parse("CONFIDENCE: 85%")["confidence"] == 85, "0.7 and 85% read as percent")
+expect(K.clean("<think>draft</think>\r\nPOSITION: x") == "POSITION: x", "private thinking and Windows line ends are dropped")
+expect(K.strength("gemini-3-pro") > 0 and K.strength("minimax-m2") > 0 and K.strength("gpt-4o-mini") == 0, "gemini and minimax are not small models")
 
 sys.argv = ["council.py", os.path.join(here, "question.md"), "--out", os.path.join(out, K.OUT)]
 K.main()
@@ -93,8 +106,37 @@ with tempfile.TemporaryDirectory() as d:  # a model that fails: the council goes
                 "--rounds", "1", "--out", d]
     K.main()
     b = json.load(open(os.path.join(d, K.OUT + ".json")))
-    expect([x["rounds"][0]["ok"] for x in b["voices"]] == [True, False, True] and "429" in b["voices"][1]["rounds"][0]["why"],
+    expect([x["rounds"][0]["ok"] for x in b["voices"]] == [True, False, True] and "503" in b["voices"][1]["rounds"][0]["why"],
            "a failed voice says why and the rest go on")
+    sys.argv = ["council.py", os.path.join(here, "question.md"), "--models", "gpt-oss-120b,broken-model,deepseek-v4.1-flash",
+                "--voices", "2", "--rounds", "1", "--out", os.path.join(d, "swap")]
+    K.main()
+    b = json.load(open(os.path.join(d, "swap", K.OUT + ".json")))
+    expect([x["model"] for x in b["voices"]] == ["gpt-oss-120b", "deepseek-v4.1-flash"] and all(x["rounds"][0]["ok"] for x in b["voices"]),
+           "a model that cannot answer is swapped for a spare one: %s" % [x["model"] for x in b["voices"]])
+    sys.argv = ["council.py", os.path.join(here, "question.md"), "--models", "gpt-oss-120b,busy-model", "--rounds", "1", "--out", os.path.join(d, "busy")]
+    K.main()
+    b = json.load(open(os.path.join(d, "busy", K.OUT + ".json")))
+    expect(b["voices"][1]["rounds"][0]["ok"] and b["voices"][1]["rounds"][0]["confidence"] == 70, "a busy model is asked again after the wait it gives")
+    # A run stopped after round 1 picks up there: only round 2 is asked.
+    stopped = os.path.join(d, "stopped")
+    sys.argv = ["council.py", os.path.join(here, "question.md"), "--out", stopped]
+    K.main()
+    path = os.path.join(stopped, K.OUT + ".json")
+    r2 = json.load(open(path))
+    r2["done"] = 1
+    for v in r2["voices"]:
+        v["rounds"] = v["rounds"][:1]
+    json.dump(r2, open(path, "w"))
+    before = len(seen)
+    K.main()
+    r3 = json.load(open(path))
+    expect(len(seen) - before == 3 and r3["done"] == 2 and all(len(v["rounds"]) == 2 for v in r3["voices"]),
+           "a stopped council picks up after its last round (%d requests)" % (len(seen) - before))
+    before = len(seen)
+    sys.argv = ["council.py", os.path.join(here, "question.md"), "--plan", "--out", os.path.join(d, "plan")]
+    K.main()
+    expect(len(seen) == before and not os.path.exists(os.path.join(d, "plan")), "--plan asks no model and writes nothing")
     try:  # only one voice can answer: stop with a plain message
         sys.argv = ["council.py", os.path.join(here, "question.md"), "--models", "gpt-oss-120b,broken-model", "--out", d]
         K.main()

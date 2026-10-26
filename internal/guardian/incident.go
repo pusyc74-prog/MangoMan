@@ -183,12 +183,14 @@ func workPrompt(inc Incident) string {
 		if inc.Cause != "" {
 			p += "First guess at the cause: " + inc.Cause + "\n"
 		}
-		p += "First reproduce it, then find the root cause in the code and make the smallest change that fixes it.\n"
+		p += "Reproduce it in this copy first, with a test or a local run; never send requests to the live app or run its checks, deploy or rollback. " +
+			"If you cannot reproduce it here, say so in GUARDIAN_FIX.md. Then find the root cause in the code and make the smallest change that fixes it.\n"
 	}
 	if inc.QA != "" {
 		p += "Your last attempt failed QA. The QA report:\n" + cut(inc.QA, 6000) + "\n"
 	}
 	return p + `Touch only the lines the work needs: do not reformat, rename or refactor other code.
+Delete any scratch files you made along the way; leave only the change itself.
 Do not touch secrets, deployment settings or unrelated code.
 Then write GUARDIAN_FIX.md in the project root, in plain short sentences: the root cause (for a fix), what you changed, the risk, and how to undo it.`
 }

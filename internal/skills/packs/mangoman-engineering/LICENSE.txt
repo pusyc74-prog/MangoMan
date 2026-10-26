@@ -38,7 +38,10 @@ SOFTWARE.
 
 MIT License
 
-Copyright (c) Forrest Chang (forrestchang)
+Copyright (c) forrestchang (https://github.com/forrestchang)
+
+The project states the MIT License in its README and ships no license file;
+this is the standard MIT text.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

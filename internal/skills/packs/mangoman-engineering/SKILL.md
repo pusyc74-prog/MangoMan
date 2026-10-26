@@ -35,7 +35,9 @@ Look before you ask: read the project, the brief and any files first. Then
 play the job back in a few lines: who uses it, what they do, what must be
 remembered, the rules and numbers it must follow, and what is not included.
 Size it: if it is too big to finish well in one go, say so and pick the first
-useful part. Save it as `spec.md` and get a yes before building.
+useful part. Save it as `spec.md` and get a yes before building. When nobody
+can answer (an unattended run), write your assumptions into `spec.md` and go
+on.
 
 ## 2. Plan in thin slices
 
@@ -59,7 +61,9 @@ and shows one thing), not all the data first and all the screens later. In
 5. Tidy only your own new code, then the next test.
 
 No framework yet? Use the language's own (Python unittest, Node's built-in
-test runner, Go's testing) and a one-command way to run them all.
+test runner, Go's testing) and a one-command way to run them all. A page or
+one-file app built with a MangoMan skill (web app, landing page) needs no
+unit tests: that skill's checker, with your scenarios, is the test.
 
 ## 4. Debug from the root cause
 
@@ -83,9 +87,11 @@ Before you say anything works, is fixed or passes:
 3. Read the whole output and the exit code; count failures.
 4. Say what the output shows, with the evidence. If it fails, say so.
 
-"Should work" and "looks right" are not evidence. For web pages and apps, open
-them in a real browser (the Preview tab, or the web app skill's checker) and
-use them as a person would.
+"Should work" and "looks right" are not evidence. Check web pages and apps
+the way a person uses them: a one-file app with the web app skill's checker;
+a server app by starting it and requesting its pages and forms as a browser
+does (a short script with MangoMan's Python, which has Playwright), checking
+each answer. Then ask the owner to try it in the Preview tab.
 
 ## 6. Security check
 
@@ -98,23 +104,28 @@ personal data:
 | SQL or shell commands built from user text | Parameterised queries; argument lists, never a shell string |
 | User text put into HTML as markup | Insert as text, or escape it |
 | Fetching any address a user gives | Allow only known addresses |
-| Plain-text passwords | A slow password hash (bcrypt, argon2) |
+| Plain-text passwords | A slow password hash (Python's `hashlib.scrypt`, or bcrypt or argon2 where the project has them) |
 | A page or action with no login check | Check the user on every request that needs it |
 | Errors that show internals to users | A plain message to users, details in the log |
 
 ## 7. No silent failures
 
 Never swallow an error: no empty catch blocks, no `catch: return []`, no
-default value that hides a failure. Every network, file and database call
-has a timeout and a clear error. A failure the user can fix gets a message
+default value that hides a failure. Every network and database call has a
+timeout, and every failure a clear error. A failure the user can fix gets a message
 that says how.
 
 ## 8. Safety
 
-- Work only inside the project folder.
-- Ask before anything that deletes, overwrites history or reaches outside:
-  `rm -rf`, `git push --force`, `git reset --hard`, dropping a table,
-  publishing a package, deploying, paying or signing up for a service.
+- Work only in the folders this task is about.
+- Ask before anything that deletes what you did not make, overwrites history
+  or reaches outside: deleting folders, discarding uncommitted changes,
+  force-pushing or hard-resetting git, dropping a table, publishing a
+  package, deploying, paying or signing up for a service.
+- Use what the language already has before installing anything; install
+  packages only when the owner agrees.
+- In an unattended run nobody can answer: skip such a step and report it
+  instead.
 - Before changing many files, make sure the work is saved (a git commit or a
   copy) so it can be undone.
 

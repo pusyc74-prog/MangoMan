@@ -46,19 +46,29 @@ Use `mangoman-market-research` when the question needs facts from the web.
 <budget, time, people, rules>
 ```
 
-Keep it under 24,000 characters: every voice reads it in every round. Say
-which facts are assumptions.
+Keep it under 12,000 characters: every voice reads it in every round. Say
+which facts are assumptions. Leave out personal details, passwords and
+private customer data: the question goes to several AI providers.
 
 **2. Facts.** Fill the gaps that would change the answer: the owner's files,
 and web research with sources (`mangoman-market-research`). Add each fact to
 `question.md` with its source. Never add a number you cannot source.
 
-**3. Council.** Tell the owner how many AI requests it takes (the script
-prints it), then run:
+**3. Council.** First see who will sit on it and what it costs:
+
+```
+python3 <skill dir>/scripts/council.py question.md --plan
+```
+
+Tell the owner the voices and the number of AI requests, then run it. It
+takes several minutes, so give the shell command a timeout of 900000 ms:
 
 ```
 python3 <skill dir>/scripts/council.py question.md --out council
 ```
+
+If it is stopped part way, run the same command again: it picks up after the
+last finished round. A model that cannot answer is swapped for another.
 
 Three voices by default, each from a different maker, in two rounds: first
 each answers alone in its role (advocate, critic, fact-checker), then each
@@ -92,7 +102,8 @@ Confidence: high | medium | low
 ```
 
 Cite every voice that answered at least once. Only use numbers from
-`question.md` or from the voices' answers.
+`question.md` or from the voices' answers; for a number you work out, show
+the working, like `(149 - 61) / 149 = 59%`. Dates and durations are fine.
 
 **6. Check and deliver.**
 

@@ -86,6 +86,7 @@
       "brief": [
         {"id": "build", "label": "What should it build or change?", "kind": "long", "hint": "For example: an order tracker where my staff add orders and I see today's total with GST", "required": true},
         {"id": "kind", "label": "Is this new, or a change to code you have?", "kind": "choice", "options": ["New", "A change to my code"]},
+        {"id": "folder", "label": "For a change: your code's folder", "kind": "text", "hint": "For example: C:\\Users\\me\\projects\\shop"},
         {"id": "users", "label": "Who uses it, and on what?", "kind": "long", "hint": "For example: me and 3 staff, on phones"},
         {"id": "runs", "label": "Where should it run?", "kind": "choice", "options": ["Just in my browser", "On my computer", "Online for others", "Not sure"]},
         {"id": "rules", "label": "Rules, rates or data it must follow", "kind": "long", "hint": "Prices, tax rates, steps, a sample file"}

@@ -93,15 +93,23 @@ var projectsAsk = []string{
 // folder and wrote there, left every task's files loose in MangoMan Projects,
 // used 2>/dev/null in PowerShell, and called a planner page "a social media
 // agent". projects is a session in the MangoMan Projects folder; powershell
-// is a session whose commands run in PowerShell (see psShell).
-func codeRules(projects, powershell bool) string {
+// is a session whose commands run in PowerShell (see psShell); mode is how
+// OpenCode runs (modeRun: nobody is there to answer a question).
+func codeRules(projects, powershell bool, mode int) string {
 	r := []string{"Run a skill's scripts by their full path. Never change into a skill's folder or write files in it: skill folders belong to MangoMan.",
 		// Seen 15 Oct on Windows: python, where python, whereis python, dir C:\Python* before trying python3.
-		"Python is python3: MangoMan installs it with every package the skills need. Do not look for another Python or install packages.",
-		// The four rules from andrej-karpathy-skills (MIT), cut to one line:
-		// they apply only when code is written, so other tasks are unchanged.
-		"When you write or change code: say your assumptions and ask when the request is unclear; write the simplest thing that works; change only what the task needs, in the existing style; run the tests or the app to prove it works before saying it does.",
-		"Ask before anything that deletes files, rewrites git history, deploys, publishes or costs money."}
+		"Python is python3: MangoMan installs it with every package the skills need. Do not look for another Python or install packages."}
+	// The four rules of andrej-karpathy-skills (MIT) in one line, for code
+	// only. Not in unattended runs (Guardian, tests, pack runs): there a
+	// question ends the run with nothing done.
+	if mode != modeRun {
+		r = append(r, "When you write or change code: say your assumptions and ask when the request is unclear; write the simplest thing that works; change only what the task needs, in the existing style; run the tests or the app to prove it works before saying it does.")
+	}
+	// The coding screen already asks before such commands; OpenCode's own
+	// terminal screen runs every command without asking.
+	if mode == modeTUI {
+		r = append(r, "Ask before deleting files you did not make in this task, rewriting git history, deploying, publishing or paying for anything.")
+	}
 	if projects {
 		r = append(r,
 			"This is the user's MangoMan Projects folder. For each new task, make a folder named after it in plain words (for example diwali-sale-posts), keep all of that task's files in it, and run that task's commands from inside it. For changes to an earlier task, use its folder.",
@@ -117,11 +125,12 @@ func codeRules(projects, powershell bool) string {
 // returns the file's path. One file per kind of session, named by its rules,
 // and written only when it changed: sessions running side by side never
 // rewrite each other's file.
-func writeCodeRules(home string, projects bool) (string, error) {
+func writeCodeRules(home string, projects bool, mode int) (string, error) {
 	ps := psShell(runtime.GOOS, os.Getenv("SHELL"))
-	name := "rules" + map[bool]string{true: "-projects"}[projects] + map[bool]string{true: "-powershell"}[ps] + ".md"
+	name := "rules" + map[bool]string{true: "-projects"}[projects] + map[bool]string{true: "-powershell"}[ps] +
+		[]string{"-terminal", "-run", "-screen"}[mode] + ".md"
 	path := filepath.Join(home, "opencode", name)
-	text := codeRules(projects, ps)
+	text := codeRules(projects, ps, mode)
 	if old, err := os.ReadFile(path); err == nil && string(old) == text {
 		return path, nil
 	}
@@ -377,7 +386,7 @@ func cmdCode(args []string) error {
 	}
 	wd, _ := os.Getwd()
 	projects := inProjects(wd)
-	rules, err := writeCodeRules(home, projects)
+	rules, err := writeCodeRules(home, projects, mode)
 	if err != nil {
 		fmt.Println("Working rules not saved:", err)
 		rules = ""
