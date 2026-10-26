@@ -1,0 +1,262 @@
+mangoman 2026/10/26 18:21:37 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-20.1)
+mangoman 2026/10/26 18:21:37 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/26 18:21:47 req=3bfda496e8c4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 3.6s 
+mangoman 2026/10/26 18:21:49 req=c39e5b54475d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.2s longest pause 0.2s 
+mangoman 2026/10/26 18:22:34 req=707665f05d81 attempt=1 nvidia/nemotron-3.5-lightning -> no_answer (200) first word after 0.3s longest pause 0.6s the model only thought and gave no answer
+mangoman 2026/10/26 18:22:54 req=d9147c0902d6 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.2s longest pause 51.2s 
+mangoman 2026/10/26 18:22:58 req=7081d992a320 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 1.5s 
+mangoman 2026/10/26 18:23:00 req=26f1fd701a85 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 1.2s 
+mangoman 2026/10/26 18:23:17 req=9803dc745c79 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.1s longest pause 13.3s 
+mangoman 2026/10/26 18:23:24 req=37d4f6fb1f56 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.7s longest pause 3.0s 
+mangoman 2026/10/26 18:23:26 req=707665f05d81 attempt=2 openrouter/nemotron-3.5-lightning -> no_answer (200) first word after 0.3s longest pause 0.7s the model only thought and gave no answer
+mangoman 2026/10/26 18:23:31 req=e8a623220eb7 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 4.9s 
+mangoman 2026/10/26 18:23:36 req=592d71e625dd attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 3.5s 
+mangoman 2026/10/26 18:23:45 req=1fead8b8dbb1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 6.5s 
+mangoman 2026/10/26 18:24:04 req=e87a62ad616d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.8s longest pause 9.5s 
+mangoman 2026/10/26 18:24:08 req=6f5b5b5098c1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.9s longest pause 0.8s 
+mangoman 2026/10/26 18:24:11 req=471f37ba6f2d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 1.0s 
+mangoman 2026/10/26 18:24:18 req=cbf80ae5d38f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.2s longest pause 5.5s 
+mangoman 2026/10/26 18:24:20 req=f8a701f4b40d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 1.1s 
+mangoman 2026/10/26 18:24:23 req=b760c41096d4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 1.6s 
+mangoman 2026/10/26 18:24:27 req=9fefcb1c18d4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.8s longest pause 0.4s 
+mangoman 2026/10/26 18:24:34 req=0daa89e0b92b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.9s longest pause 2.5s 
+mangoman 2026/10/26 18:24:46 req=bf2832cd484f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 11.0s longest pause 0.8s 
+mangoman 2026/10/26 18:24:50 req=c53684e53dd3 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.5s longest pause 0.8s 
+mangoman 2026/10/26 18:24:55 req=c1df92bc70c1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 3.1s 
+mangoman 2026/10/26 18:24:57 req=1fdf9b4014d1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.8s longest pause 1.2s 
+mangoman 2026/10/26 18:24:59 req=11b99bd7c9f4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 0.6s 
+mangoman 2026/10/26 18:25:03 req=ac2457b0af12 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 2.7s 
+mangoman 2026/10/26 18:25:20 req=6797597a8455 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 1.5s 
+mangoman 2026/10/26 18:25:20 stopped
+mangoman 2026/10/26 18:25:20 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-20.1)
+mangoman 2026/10/26 18:25:20 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/26 18:25:30 req=6898e11796eb attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.2s longest pause 1.3s 
+mangoman 2026/10/26 18:25:31 req=90fa1b48ff30 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.9s longest pause 0.2s 
+mangoman 2026/10/26 18:25:45 req=ba0d654d09b1 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) first word after 0.3s longest pause 0.2s 
+mangoman 2026/10/26 18:26:41 req=2b19d3134ca0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.1s longest pause 50.1s 
+mangoman 2026/10/26 18:26:44 req=3baf2239b8d6 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 1.3s 
+mangoman 2026/10/26 18:26:47 req=e13b6e1c65c0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 0.4s 
+mangoman 2026/10/26 18:26:50 req=19a6a6955f7e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 0.4s 
+mangoman 2026/10/26 18:27:12 req=d2c75a0de9ae attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.6s longest pause 18.7s 
+mangoman 2026/10/26 18:27:16 req=dcc9690bdd81 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 2.7s 
+mangoman 2026/10/26 18:27:40 req=784db510914f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.9s longest pause 1.9s 
+mangoman 2026/10/26 18:27:50 req=5ce0b5346b2c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 6.4s 
+mangoman 2026/10/26 18:28:03 req=1555cd75ee2e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 7.3s 
+mangoman 2026/10/26 18:28:16 req=2f97ef7c3e74 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 5.9s longest pause 5.3s 
+mangoman 2026/10/26 18:28:27 req=1385cd65102c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 7.6s 
+mangoman 2026/10/26 18:28:30 req=8d4a816e7a0a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 0.9s 
+mangoman 2026/10/26 18:28:37 req=bb555976dc33 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.9s longest pause 2.9s 
+mangoman 2026/10/26 18:28:57 req=e2f6712b723f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 9.0s 
+mangoman 2026/10/26 18:29:04 req=7bf4af376dac attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.0s longest pause 2.9s 
+mangoman 2026/10/26 18:29:09 req=4565713731af attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 4.1s longest pause 0.8s 
+mangoman 2026/10/26 18:29:13 req=e9e69f3634ab attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 0.7s 
+mangoman 2026/10/26 18:29:28 req=334a7ea2cde4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 8.5s longest pause 2.8s 
+mangoman 2026/10/26 18:29:33 req=769398328b91 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 2.8s 
+mangoman 2026/10/26 18:29:39 req=aed5777c4608 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.5s longest pause 1.0s 
+mangoman 2026/10/26 18:29:43 req=448da2e309cc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 2.3s 
+mangoman 2026/10/26 18:29:45 req=48dac2a74af6 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.8s 
+mangoman 2026/10/26 18:29:49 req=336843501bd0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.8s 
+mangoman 2026/10/26 18:29:55 req=95f7f756bbb4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.1s longest pause 3.2s 
+mangoman 2026/10/26 18:30:07 req=141e53a291c5 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 10.6s longest pause 0.7s 
+mangoman 2026/10/26 18:30:11 req=50f189891cd6 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 0.7s 
+mangoman 2026/10/26 18:30:23 req=bd216ee2c628 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 5.9s longest pause 4.2s 
+mangoman 2026/10/26 18:30:26 req=f029db2fb760 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.9s longest pause 2.1s 
+mangoman 2026/10/26 18:30:30 req=67bafcf9128b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.9s longest pause 1.6s 
+mangoman 2026/10/26 18:30:40 req=46fbc38a7a16 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 6.8s 
+mangoman 2026/10/26 18:30:42 req=8f7280e23603 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.9s longest pause 0.8s 
+mangoman 2026/10/26 18:30:47 req=d3e5ae7695af attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.4s longest pause 0.7s 
+mangoman 2026/10/26 18:30:50 req=a7fca5e84caf attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 1.9s 
+mangoman 2026/10/26 18:30:54 req=3106b8e1156e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 1.6s 
+mangoman 2026/10/26 18:30:58 req=0bef8f28a5a1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 0.6s 
+mangoman 2026/10/26 18:31:11 req=e6d40b3622d6 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.8s longest pause 0.6s 
+mangoman 2026/10/26 18:31:15 req=ab1acde8bd42 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 1.2s 
+mangoman 2026/10/26 18:31:26 req=0d5bde24666e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 0.5s 
+mangoman 2026/10/26 18:31:26 stopped
+mangoman 2026/10/26 18:31:28 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-20.1)
+mangoman 2026/10/26 18:31:28 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/26 18:31:41 req=6b77b1b51080 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 3.2s 
+mangoman 2026/10/26 18:31:44 req=7815e941807f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 0.2s 
+mangoman 2026/10/26 18:32:20 req=d15f94c77280 attempt=1 nvidia/nemotron-3.5-lightning -> ok (200) first word after 0.3s longest pause 0.5s 
+mangoman 2026/10/26 18:32:22 req=8a6d351d2940 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 29.6s 
+mangoman 2026/10/26 18:32:24 req=b4604e744d31 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 0.7s 
+mangoman 2026/10/26 18:32:34 req=60895d3f26c2 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 0.7s 
+mangoman 2026/10/26 18:32:40 req=0480ce6ca060 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 0.4s 
+mangoman 2026/10/26 18:32:53 req=46865dd676c6 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 9.6s 
+mangoman 2026/10/26 18:32:58 req=ac9ba8666f95 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 2.6s 
+mangoman 2026/10/26 18:33:09 req=50bb1fe1721e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 2.0s 
+mangoman 2026/10/26 18:33:20 req=ad596cdd00cc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.9s longest pause 1.7s 
+mangoman 2026/10/26 18:33:20 stopped
+mangoman 2026/10/26 18:33:24 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-20.1)
+mangoman 2026/10/26 18:33:24 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/26 18:33:31 req=d191ced34b1d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 0.4s 
+mangoman 2026/10/26 18:33:33 req=1cb00c6b7d0e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.2s 
+mangoman 2026/10/26 18:33:56 req=56b6b2107650 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.7s longest pause 19.3s 
+mangoman 2026/10/26 18:33:59 req=9ee5e2a4c55f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.8s 
+mangoman 2026/10/26 18:34:06 req=daae063000a6 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 1.6s 
+mangoman 2026/10/26 18:34:10 req=d9dad63b29c4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 0.3s 
+mangoman 2026/10/26 18:34:10 req=72ea552ae71d attempt=1 nvidia/nemotron-3.5-lightning -> client_gone (0) longest pause 0.2s 
+mangoman 2026/10/26 18:34:10 stopped
+mangoman 2026/10/26 18:34:13 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-20.1)
+mangoman 2026/10/26 18:34:13 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/26 18:34:46 req=60f3a99e8368 attempt=1 nvidia/deepseek-v4.1-flash -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/26 18:35:02 req=60f3a99e8368 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 6.7s 
+mangoman 2026/10/26 18:35:04 req=4a90c2346023 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 0.3s 
+mangoman 2026/10/26 18:35:05 req=df680db43047 attempt=1 nvidia/nemotron-3.5-lightning -> no_answer (200) first word after 0.3s longest pause 0.3s the model only thought and gave no answer
+mangoman 2026/10/26 18:35:55 req=c43c84898baf attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 40.4s 
+mangoman 2026/10/26 18:35:58 req=9579e2e55402 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 1.3s 
+mangoman 2026/10/26 18:36:07 req=c8f93025c4a0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.9s longest pause 1.4s 
+mangoman 2026/10/26 18:36:14 req=4690ee2a75ad attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 1.1s 
+mangoman 2026/10/26 18:36:22 req=df680db43047 attempt=2 openrouter/nemotron-3.5-lightning -> no_answer (200) first word after 0.5s longest pause 0.7s the model only thought and gave no answer
+mangoman 2026/10/26 18:36:24 req=005dee1bda5e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.0s longest pause 7.1s 
+mangoman 2026/10/26 18:37:42 req=662f59dec775 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 74.8s 
+mangoman 2026/10/26 18:37:47 req=98deabd4c8af attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.6s longest pause 2.0s 
+mangoman 2026/10/26 18:37:58 req=dff69523ac74 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 6.2s longest pause 0.7s 
+mangoman 2026/10/26 18:38:07 req=605e3171f209 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 5.0s 
+mangoman 2026/10/26 18:38:18 req=4f19e002087e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 5.4s longest pause 4.9s 
+mangoman 2026/10/26 18:38:22 req=82a9181c8a25 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.0s longest pause 2.4s 
+mangoman 2026/10/26 18:38:34 req=6411bf243021 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.7s longest pause 7.3s 
+mangoman 2026/10/26 18:38:41 req=309ff4e84faf attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 5.2s 
+mangoman 2026/10/26 18:39:12 req=ecffee28b516 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 25.6s longest pause 3.4s 
+mangoman 2026/10/26 18:39:24 req=c13ddc3cb669 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 9.0s 
+mangoman 2026/10/26 18:39:32 req=7145c7c009c1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 7.0s 
+mangoman 2026/10/26 18:39:35 req=5fc6eea6ae06 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.6s 
+mangoman 2026/10/26 18:39:39 req=4baab1c50bfe attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.8s longest pause 0.9s 
+mangoman 2026/10/26 18:39:50 req=5cfe6d1f2338 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 2.1s 
+mangoman 2026/10/26 18:40:01 req=15dd162adbca attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.2s longest pause 7.3s 
+mangoman 2026/10/26 18:40:07 req=f118c8ef325f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.9s longest pause 4.1s 
+mangoman 2026/10/26 18:40:14 req=a3423156a23d attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.9s longest pause 0.6s 
+mangoman 2026/10/26 18:40:19 req=5ea058da338b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 0.7s 
+mangoman 2026/10/26 18:40:23 req=b9a7771cba85 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.9s longest pause 1.3s 
+mangoman 2026/10/26 18:40:27 req=80bc9181a0b2 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.2s longest pause 0.5s 
+mangoman 2026/10/26 18:40:38 req=a90546485f34 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 7.7s 
+mangoman 2026/10/26 18:40:40 req=05aef29c8e7e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 0.6s 
+mangoman 2026/10/26 18:40:43 req=01e097bc86dc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 1.6s 
+mangoman 2026/10/26 18:40:51 req=d954771f9f55 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 5.8s 
+mangoman 2026/10/26 18:41:02 req=9bac4604eeb3 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 10.7s longest pause 0.7s 
+mangoman 2026/10/26 18:41:04 req=132bde13757b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 0.5s 
+mangoman 2026/10/26 18:41:10 req=7f592c7f9cb0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 3.6s 
+mangoman 2026/10/26 18:41:14 req=2c8039bb45d4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.2s longest pause 1.2s 
+mangoman 2026/10/26 18:41:17 req=78b480e6b476 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.5s longest pause 0.6s 
+mangoman 2026/10/26 18:41:25 req=db4403a7e086 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 6.4s longest pause 0.6s 
+mangoman 2026/10/26 18:41:28 req=5dd259021d24 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.2s longest pause 0.8s 
+mangoman 2026/10/26 18:41:34 req=8473d8e5655a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 4.3s longest pause 0.8s 
+mangoman 2026/10/26 18:41:40 req=39a381dbc0b9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.0s longest pause 1.1s 
+mangoman 2026/10/26 18:42:11 req=e08c58a20e4c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 29.3s longest pause 0.6s 
+mangoman 2026/10/26 18:42:16 req=6b49f19a8189 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 1.7s 
+mangoman 2026/10/26 18:42:21 req=06261e2797ab attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.2s longest pause 2.1s 
+mangoman 2026/10/26 18:42:25 req=7bf71c18dc64 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.0s longest pause 0.9s 
+mangoman 2026/10/26 18:42:51 req=5f03b65fba3c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.2s longest pause 2.0s 
+mangoman 2026/10/26 18:42:57 req=65de84d69d35 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 0.7s 
+mangoman 2026/10/26 18:43:03 req=746a29e9924c attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.4s longest pause 2.4s 
+mangoman 2026/10/26 18:43:12 req=871c31a59c1a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 7.8s longest pause 0.5s 
+mangoman 2026/10/26 18:43:16 req=43d988509617 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.0s longest pause 1.4s 
+mangoman 2026/10/26 18:43:19 req=106de3e6c652 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.9s longest pause 1.5s 
+mangoman 2026/10/26 18:43:49 req=88cbe7e659bb attempt=1 nvidia/nemotron-3-ultra-550b -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/26 18:43:54 req=88cbe7e659bb attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 0.9s 
+mangoman 2026/10/26 18:43:57 req=2ee40141f100 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 0.6s 
+mangoman 2026/10/26 18:44:15 req=3e6f4dd153bb attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 15.7s longest pause 0.4s 
+mangoman 2026/10/26 18:44:41 req=45607988aa17 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 7.6s longest pause 0.4s 
+mangoman 2026/10/26 18:44:51 req=6b566629b1cc attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 5.5s longest pause 0.4s 
+mangoman 2026/10/26 18:44:55 req=9d1a35d57ded attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 0.4s 
+mangoman 2026/10/26 18:44:59 req=37be2b21b059 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 2.3s longest pause 0.4s 
+mangoman 2026/10/26 18:45:16 req=233830fcc688 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 5.8s longest pause 0.4s 
+mangoman 2026/10/26 18:45:25 req=faae05079602 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.2s longest pause 0.4s 
+mangoman 2026/10/26 18:45:29 req=2a751418a0df attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 3.2s longest pause 0.4s 
+mangoman 2026/10/26 18:45:35 req=aa12724138d1 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 2.1s longest pause 0.5s 
+mangoman 2026/10/26 18:45:38 req=55d352671ee3 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 2.3s longest pause 0.4s 
+mangoman 2026/10/26 18:45:42 req=df518c67bd01 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 2.6s longest pause 0.4s 
+mangoman 2026/10/26 18:45:48 req=b83169fc81f3 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 3.7s longest pause 0.4s 
+mangoman 2026/10/26 18:45:48 stopped
+mangoman 2026/10/26 18:45:48 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-20.1)
+mangoman 2026/10/26 18:45:48 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/26 18:45:54 req=e73e72a3a5c0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 0.4s 
+mangoman 2026/10/26 18:46:44 req=790d75a9944a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 46.2s 
+mangoman 2026/10/26 18:46:47 req=da6084fb1d2a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 1.9s 
+mangoman 2026/10/26 18:46:52 req=88df6e71d73e attempt=1 nvidia/nemotron-3.5-lightning -> no_answer (200) first word after 0.3s longest pause 0.5s the model only thought and gave no answer
+mangoman 2026/10/26 18:47:04 req=e4e71f7cf8b1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.8s longest pause 6.4s 
+mangoman 2026/10/26 18:47:12 req=7027c43654d9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 5.0s longest pause 2.5s 
+mangoman 2026/10/26 18:47:17 req=df73c3b64682 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.2s longest pause 3.2s 
+mangoman 2026/10/26 18:47:19 req=a0c12f628d9a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.2s longest pause 0.7s 
+mangoman 2026/10/26 18:47:29 req=88df6e71d73e attempt=2 openrouter/nemotron-3.5-lightning -> ok (200) first word after 0.3s longest pause 0.6s 
+mangoman 2026/10/26 18:47:34 req=45ff2a2181d0 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.1s longest pause 1.3s 
+mangoman 2026/10/26 18:47:41 req=79411216d821 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.5s longest pause 0.4s 
+mangoman 2026/10/26 18:47:41 stopped
+mangoman 2026/10/26 18:47:50 listening on http://127.0.0.1:4199/v1  (3 cloud providers connected, catalogue seed-2026-10-20.1)
+mangoman 2026/10/26 18:47:50 dashboard: run `mangoman dashboard` in another terminal
+mangoman 2026/10/26 18:48:02 req=6dd539db74d3 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 5.3s longest pause 1.0s 
+mangoman 2026/10/26 18:48:06 req=87ac9e73bef8 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.9s longest pause 0.4s 
+mangoman 2026/10/26 18:48:10 req=831638357e62 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.1s longest pause 1.5s 
+mangoman 2026/10/26 18:48:43 req=cd5504caf5d6 attempt=1 nvidia/nemotron-3.5-lightning -> no_answer (200) first word after 0.3s longest pause 0.3s the model only thought and gave no answer
+mangoman 2026/10/26 18:49:30 req=8a817a169cab attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.8s longest pause 77.3s 
+mangoman 2026/10/26 18:49:34 req=791f66a0372e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.0s longest pause 0.8s 
+mangoman 2026/10/26 18:49:42 req=cd5504caf5d6 attempt=2 openrouter/nemotron-3.5-lightning -> no_answer (200) first word after 0.4s longest pause 0.4s the model only thought and gave no answer
+mangoman 2026/10/26 18:50:04 req=c1fd6e453b26 attempt=1 nvidia/nemotron-3-ultra-550b -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/26 18:50:10 req=c1fd6e453b26 attempt=2 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 3.5s longest pause 0.4s 
+mangoman 2026/10/26 18:50:27 req=4ccfa4aaa740 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 16.4s longest pause 0.4s 
+mangoman 2026/10/26 18:50:29 req=71acc506a1e8 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.3s 
+mangoman 2026/10/26 18:50:31 req=aa1bed68ddef attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 0.4s 
+mangoman 2026/10/26 18:50:34 req=7add0e2d0278 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 0.4s 
+mangoman 2026/10/26 18:50:37 req=7393b6877b81 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 0.4s 
+mangoman 2026/10/26 18:50:40 req=0da31b6be81d attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.2s longest pause 0.4s 
+mangoman 2026/10/26 18:50:43 req=7afc82185888 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 0.4s 
+mangoman 2026/10/26 18:50:55 req=8f058e09c049 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.5s 
+mangoman 2026/10/26 18:50:58 req=c40e0e581b36 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 2.8s longest pause 0.4s 
+mangoman 2026/10/26 18:51:01 req=78fa5b8d958f attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 0.4s 
+mangoman 2026/10/26 18:51:05 req=d76649d58a93 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.6s longest pause 0.4s 
+mangoman 2026/10/26 18:51:21 req=419f3127e760 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 10.0s longest pause 0.6s 
+mangoman 2026/10/26 18:51:25 req=6b502f4d9a31 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 0.4s 
+mangoman 2026/10/26 18:51:32 req=85a66f86c783 attempt=1 openrouter/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.4s 
+mangoman 2026/10/26 18:51:32 req=bb6e3870e72e attempt=1 openrouter/nemotron-3-ultra-550b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/26 18:52:02 req=bb6e3870e72e attempt=2 nvidia/deepseek-v4.1-flash -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/26 18:52:02 req=bb6e3870e72e attempt=3 nvidia/nemotron-3-super-120b -> model_not_found (404) {"status":404,"title":"Not Found","detail":"Function 'ac74040f-9fc9-4c5e-ac74-279ba5161d69': Not found for account 'BxghjXOsLVX-qhDwR0DPs8arsqh4XH4NYRibibeQihs'"}
+mangoman 2026/10/26 18:52:02 req=bb6e3870e72e attempt=4 openrouter/nemotron-3-super-120b -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/26 18:52:32 req=bb6e3870e72e attempt=5 nvidia/glm-5.3-flash -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/26 18:52:35 req=bb6e3870e72e attempt=6 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.9s longest pause 0.8s 
+mangoman 2026/10/26 18:52:35 req=b3f694a41fc4 attempt=1 openrouter/laguna-s-2.1 -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/26 18:52:35 req=b3f694a41fc4 attempt=2 nvidia/laguna-xs-2.1 -> stream_error (200) longest pause 0.0s ResourceExhausted: Worker local total request limit reached (125/32)
+mangoman 2026/10/26 18:52:35 req=b3f694a41fc4 attempt=3 openrouter/laguna-xs-2.1 -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/26 18:52:40 req=b3f694a41fc4 attempt=4 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.7s longest pause 1.9s 
+mangoman 2026/10/26 18:52:40 req=401a437dba29 attempt=1 nvidia/nemotron-3-super-120b -> model_not_found (404) {"status":404,"title":"Not Found","detail":"Function 'ac74040f-9fc9-4c5e-ac74-279ba5161d69': Not found for account 'BxghjXOsLVX-qhDwR0DPs8arsqh4XH4NYRibibeQihs'"}
+mangoman 2026/10/26 18:52:41 req=401a437dba29 attempt=2 nvidia/laguna-xs-2.1 -> stream_error (200) longest pause 0.0s ResourceExhausted: Worker local total request limit reached (123/32)
+mangoman 2026/10/26 18:52:41 req=401a437dba29 attempt=3 openrouter/north-mini-code -> rate_limited (429) Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day
+mangoman 2026/10/26 18:52:49 req=401a437dba29 attempt=4 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 6.5s longest pause 1.3s 
+mangoman 2026/10/26 18:52:50 req=25bdc251e804 attempt=1 nvidia/laguna-xs-2.1 -> stream_error (200) longest pause 0.0s ResourceExhausted: Worker local total request limit reached (129/32)
+mangoman 2026/10/26 18:52:54 req=25bdc251e804 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 2.8s 
+mangoman 2026/10/26 18:52:56 req=d9bbbeeb9f6f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.7s 
+mangoman 2026/10/26 18:53:00 req=11ba5a920aa9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 2.4s 
+mangoman 2026/10/26 18:53:04 req=d23f1144bcf4 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 2.0s 
+mangoman 2026/10/26 18:53:08 req=94ef8db75faf attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 1.7s 
+mangoman 2026/10/26 18:53:10 req=8c48e1078b22 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.8s longest pause 0.9s 
+mangoman 2026/10/26 18:53:16 req=ee4f872bc8ab attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 1.8s 
+mangoman 2026/10/26 18:53:21 req=1123738b1ffa attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.3s longest pause 1.3s 
+mangoman 2026/10/26 18:53:23 req=ca188b72e62e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 0.5s 
+mangoman 2026/10/26 18:53:53 req=c13c1dbb92e1 attempt=1 nvidia/laguna-xs-2.1 -> timeout (0) Post "https://integrate.api.nvidia.com/v1/chat/completions": context canceled
+mangoman 2026/10/26 18:53:57 req=c13c1dbb92e1 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 1.5s 
+mangoman 2026/10/26 18:53:57 req=41244f865729 attempt=1 nvidia/nemotron-3-super-120b -> model_not_found (404) {"status":404,"title":"Not Found","detail":"Function 'ac74040f-9fc9-4c5e-ac74-279ba5161d69': Not found for account 'BxghjXOsLVX-qhDwR0DPs8arsqh4XH4NYRibibeQihs'"}
+mangoman 2026/10/26 18:54:18 req=41244f865729 attempt=2 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 16.1s longest pause 1.0s 
+mangoman 2026/10/26 18:54:26 req=4390a9555bef attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.1s longest pause 3.6s 
+mangoman 2026/10/26 18:54:30 req=22acee296d40 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 1.7s 
+mangoman 2026/10/26 18:54:36 req=699372adb9af attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.4s longest pause 0.7s 
+mangoman 2026/10/26 18:54:38 req=fdd11f728535 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 0.3s 
+mangoman 2026/10/26 18:54:41 req=5afda92f462e attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.9s longest pause 0.6s 
+mangoman 2026/10/26 18:54:44 req=3e547dd44f54 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 1.1s 
+mangoman 2026/10/26 18:54:46 req=a77056485395 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 0.5s 
+mangoman 2026/10/26 18:54:50 req=0fd89e413d7f attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.1s longest pause 0.6s 
+mangoman 2026/10/26 18:54:52 req=37a2aa76eaed attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.1s longest pause 0.5s 
+mangoman 2026/10/26 18:54:54 req=dc9430874e22 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 0.6s 
+mangoman 2026/10/26 18:54:57 req=4e1987715e53 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.9s longest pause 1.8s 
+mangoman 2026/10/26 18:55:01 req=c718614ebb1a attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 0.3s 
+mangoman 2026/10/26 18:55:06 req=207967559d29 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.2s longest pause 0.5s 
+mangoman 2026/10/26 18:55:13 req=2875ef150bc9 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.7s longest pause 1.6s 
+mangoman 2026/10/26 18:55:17 req=6c9485b1ba26 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.9s longest pause 1.5s 
+mangoman 2026/10/26 18:55:20 req=e45fceb45471 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.0s longest pause 2.5s 
+mangoman 2026/10/26 18:55:24 req=87609cdde706 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.7s longest pause 0.6s 
+mangoman 2026/10/26 18:55:27 req=8fb548dca493 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.5s longest pause 1.3s 
+mangoman 2026/10/26 18:55:29 req=695d1c600ecc attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 0.8s longest pause 0.3s 
+mangoman 2026/10/26 18:55:32 req=9642b13d0c35 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.3s longest pause 1.3s 
+mangoman 2026/10/26 18:55:36 req=d2b88205cf8b attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 2.9s longest pause 0.5s 
+mangoman 2026/10/26 18:55:38 req=3956285e91be attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.8s longest pause 0.3s 
+mangoman 2026/10/26 18:55:40 req=18b5b3cdf1e1 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 1.4s longest pause 0.4s 
+mangoman 2026/10/26 18:55:46 req=f8425fd976f5 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.8s longest pause 0.8s 
+mangoman 2026/10/26 18:55:55 req=62e3e7fdf664 attempt=1 nvidia/nemotron-3-ultra-550b -> ok (200) first word after 3.2s longest pause 0.5s 
+mangoman 2026/10/26 18:55:55 stopped

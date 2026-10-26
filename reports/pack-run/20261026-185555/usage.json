@@ -1,0 +1,148 @@
+{
+  "since": "2026-10-25T18:55:56.825095401Z",
+  "requests": 220,
+  "served": 216,
+  "failed_over": 10,
+  "brain_calls": 0,
+  "rows": [
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 186,
+      "ok": 184,
+      "rate_limited": 0,
+      "errors": 2,
+      "quality_fail": 0,
+      "tokens": 4985201,
+      "p50_ms": 4541
+    },
+    {
+      "provider": "openrouter",
+      "model": "nemotron-3-ultra-550b",
+      "attempts": 30,
+      "ok": 29,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 1005472,
+      "p50_ms": 4161
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3.5-lightning",
+      "attempts": 7,
+      "ok": 2,
+      "rate_limited": 0,
+      "errors": 4,
+      "quality_fail": 0,
+      "tokens": 29599,
+      "p50_ms": 49920
+    },
+    {
+      "provider": "nvidia",
+      "model": "laguna-xs-2.1",
+      "attempts": 4,
+      "ok": 0,
+      "rate_limited": 0,
+      "errors": 4,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 268
+    },
+    {
+      "provider": "openrouter",
+      "model": "nemotron-3.5-lightning",
+      "attempts": 4,
+      "ok": 1,
+      "rate_limited": 0,
+      "errors": 3,
+      "quality_fail": 0,
+      "tokens": 17690,
+      "p50_ms": 58871
+    },
+    {
+      "provider": "nvidia",
+      "model": "nemotron-3-super-120b",
+      "attempts": 3,
+      "ok": 0,
+      "rate_limited": 0,
+      "errors": 3,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 92
+    },
+    {
+      "provider": "nvidia",
+      "model": "deepseek-v4.1-flash",
+      "attempts": 2,
+      "ok": 0,
+      "rate_limited": 0,
+      "errors": 2,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 30001
+    },
+    {
+      "provider": "nvidia",
+      "model": "glm-5.3-flash",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 0,
+      "errors": 1,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 30000
+    },
+    {
+      "provider": "openrouter",
+      "model": "laguna-s-2.1",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 57
+    },
+    {
+      "provider": "openrouter",
+      "model": "laguna-xs-2.1",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 158
+    },
+    {
+      "provider": "openrouter",
+      "model": "nemotron-3-super-120b",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 73
+    },
+    {
+      "provider": "openrouter",
+      "model": "north-mini-code",
+      "attempts": 1,
+      "ok": 0,
+      "rate_limited": 1,
+      "errors": 0,
+      "quality_fail": 0,
+      "tokens": 0,
+      "p50_ms": 59
+    }
+  ],
+  "parts": {
+    "earlier_answers": 1943119,
+    "instructions": 1140918,
+    "tool_definitions": 1108239,
+    "tool_results": 1660847,
+    "user": 22068
+  }
+}

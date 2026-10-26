@@ -1,0 +1,262 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, brand strategy, ceo deck, client report, code review, content strategy, copywriting, data dashboard, ecommerce listing, email campaign, invoice, landing page, market research, marketing strategist, meeting minutes, proposal, reel scripts, resume, seo article, seo research, seo strategist, social media manager, social posts, social research, strategy report, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead landing.md
+[0m→ [0mRead facts.md
+[0m→ [0mRead search_terms.csv
+[0m→ [0mSkill "mangoman-ad-copy"
+[0m
+[0m← [0mWrite ads.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: A2 Ghee Core: description 1 'Bilona ghee from our 140 Gir cows. Hand churned, wood fire, glass jar. Lab report on QR code.' is 93 characters, cut 3 (90); A2 Ghee Core: description 2 'Own farm near Gondal. Every batch tested. 500ml ₹1,250, 1L ₹2,350. 10% off first order FIRST10.' is 95 characters, cut 5 (90); A2 Ghee Core: description 4 'No wholesale, no franchise. Pure A2 Gir cow ghee made the traditional bilona way for your family.' is 97 characters, cut 7 (90); Bilona Ghee Method: description 1 'Slow made: curd set from A2 milk, hand churned wooden bilona, wood fire heated. Glass jar packed.' is 97 characters, cut 7 (90); Bilona Ghee Method: description 2 'Our 140 Gir cows near Gondal. Every batch lab tested with QR code report. 500ml ₹1,250, 1L ₹2,350.' is 98 characters, cut 8 (90); Bilona Ghee Method: description 4 'No wholesale or franchise. Traditional bilona ghee delivered to homes across India in 3–6 days.' is 95 characters, cut 5 (90)
+WARN  Google ads: Buy A2 Ghee Online: fewer than 2 headlines contain a keyword; ads match searches better when they do
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -44,12 +44,12 @@
+     "Buy A2 Ghee Online",
+     "Authentic Bilona Method"
+   ],
+   "descriptions": [
+-    "Bilona ghee from our 140 Gir cows. Hand churned, wood fire, glass jar. Lab report on QR code.",
+-    "Own farm near Gondal. Every batch tested. 500ml ₹1,250, 1L ₹2,350. 10% off first order FIRST10.",
+-    "Free delivery above ₹1,500. Delivered across India in 3–6 days. Pay by UPI, card or COD.",
+-    "No wholesale, no franchise. Pure A2 Gir cow ghee made the traditional bilona way for your family."
++    "Bilona ghee from 140 Gir cows. Hand churned, wood fire, glass jar. Lab report on QR.",
++    "Own farm near Gondal. Every batch tested. 500ml ₹1,250, 1 litre ₹2,350. 10% off FIRST10.",
++    "Free delivery above ₹1,500. Delivered India in 3–6 days. Pay UPI, card or COD.",
++    "No wholesale, no franchise. Pure A2 Gir cow ghee made traditional bilona way."
+   ]
+ },
+ {
+   "name": "Bilona Ghee Method",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -101,8 +101,10 @@
+ "headlines": [
+   "Buy A2 Ghee Online",
+   "A2 Ghee 500ml ₹1,250",
+   "A2 Ghee 1 Litre ₹2,350",
++  "Buy A2 Gir Cow Ghee",
++  "A2 Ghee Price Online",
+   "First Order 10% Off FIRST10",
+   "Free Delivery Above ₹1,500",
+   "Lab Tested QR Code",
+   "140 Gir Cows Own Farm",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -78,12 +78,12 @@
+     "Buy Bilona Ghee Online",
+     "Pure A2 Gir Cow Ghee"
+   ],
+   "descriptions": [
+-    "Slow made: curd set from A2 milk, hand churned wooden bilona, wood fire heated. Glass jar packed.",
+-    "Our 140 Gir cows near Gondal. Every batch lab tested with QR code report. 500ml ₹1,250, 1L ₹2,350.",
+-    "10% off first order code FIRST10. Free delivery above ₹1,500. UPI, cards, COD accepted.",
+-    "No wholesale or franchise. Traditional bilona ghee delivered to homes across India in 3–6 days."
++    "Slow made: curd from A2 milk, hand churned wooden bilona, wood fire heated. Glass jar.",
++    "Our 140 Gir cows near Gondal. Every batch lab tested QR code. 500ml ₹1,250, 1 litre ₹2,350.",
++    "10% off first order code FIRST10. Free delivery above ₹1,500. UPI, cards, COD.",
++    "No wholesale or franchise. Traditional bilona ghee delivered homes India in 3–6 days."
+   ]
+ },
+ {
+   "name": "Buy A2 Ghee Online",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -114,12 +114,12 @@
+     "Authentic Gir Cow Ghee",
+     "Order Now Pay COD"
+   ],
+   "descriptions": [
+-    "Order pure A2 Gir cow bilona ghee online. 500ml ₹1,250, 1L ₹2,350. Glass jar delivered.",
+-    "10% off first order with code FIRST10. Free delivery above ₹1,500. 3–6 days across India.",
+-    "Our 140 Gir cows on own farm near Gondal. Every batch lab tested with QR code report.",
+-    "Pay by UPI, card or cash on delivery. No wholesale, no franchise. Made for families."
++    "Order pure A2 Gir cow bilona ghee online. 500ml ₹1,250, 1 litre ₹2,350. Glass jar.",
++    "10% off first order code FIRST10. Free delivery above ₹1,500. 3–6 days India.",
++    "Our 140 Gir cows own farm near Gondal. Every batch lab tested QR code report.",
++    "Pay UPI, card or COD. No wholesale, no franchise. Made for families."
+   ]
+ },
+ {
+   "name": "1 Litre Ghee",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -137,8 +137,10 @@
+ "headlines": [
+   "Gir Cow Ghee 1 Litre ₹2,350",
+   "A2 Ghee 1 Litre Glass Jar",
+   "Bilona Ghee 1 Litre",
++  "Gir Cow Ghee 1 Litre Price",
++  "A2 Ghee 1 Litre Online",
+   "First Order 10% Off FIRST10",
+   "Free Delivery Above ₹1,500",
+   "Lab Tested QR Code Report",
+   "140 Gir Cows Own Farm",
+
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -150,10 +150,10 @@
+     "Authentic A2 Gir Ghee",
+     "Order 1 Litre Online"
+   ],
+   "descriptions": [
+-    "1 litre A2 Gir cow bilona ghee in glass jar ₹2,350. Hand churned, wood fire, lab tested.",
+-    "10% off first order code FIRST10. Free delivery on orders above ₹1,500. 3–6 days India.",
++    "1 litre A2 Gir cow bilona ghee glass jar ₹2,350. Hand churned, wood fire, lab tested.",
++    "10% off first order code FIRST10. Free delivery above ₹1,500. 3–6 days India.",
+     "From our 140 Gir cows near Gondal. Every batch QR code lab report. UPI, card, COD.",
+     "No wholesale or franchise. Pure bilona ghee for your family. Order online today."
+   ]
+ }
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Bilona Ghee Method: description 2 'Our 140 Gir cows near Gondal. Every batch lab tested QR code. 500ml ₹1,250, 1 litre ₹2,350.' is 91 characters, cut 1 (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -79,9 +79,9 @@
+     "Pure A2 Gir Cow Ghee"
+   ],
+   "descriptions": [
+     "Slow made: curd from A2 milk, hand churned wooden bilona, wood fire heated. Glass jar.",
+-    "Our 140 Gir cows near Gondal. Every batch lab tested QR code. 500ml ₹1,250, 1 litre ₹2,350.",
++    "Our 140 Gir cows near Gondal. Every batch lab tested QR code. 500ml ₹1,250, 1L ₹2,350.",
+     "10% off first order code FIRST10. Free delivery above ₹1,500. UPI, cards, COD.",
+     "No wholesale or franchise. Traditional bilona ghee delivered homes India in 3–6 days."
+   ]
+ },
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+FAIL  numbers not in facts (ask the user, or remove them): 1L
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m✱ [0mGrep "1L"[90m in . · 10 matches[0m
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -79,9 +79,9 @@
+     "Pure A2 Gir Cow Ghee"
+   ],
+   "descriptions": [
+     "Slow made: curd from A2 milk, hand churned wooden bilona, wood fire heated. Glass jar.",
+-    "Our 140 Gir cows near Gondal. Every batch lab tested QR code. 500ml ₹1,250, 1L ₹2,350.",
++    "Our 140 Gir cows near Gondal. Every batch lab tested QR code. 500ml ₹1,250, 1 litre ₹2,350.",
+     "10% off first order code FIRST10. Free delivery above ₹1,500. UPI, cards, COD.",
+     "No wholesale or franchise. Traditional bilona ghee delivered homes India in 3–6 days."
+   ]
+ },
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+FAIL  Google ads: Bilona Ghee Method: description 2 'Our 140 Gir cows near Gondal. Every batch lab tested QR code. 500ml ₹1,250, 1 litre ₹2,350.' is 91 characters, cut 1 (90)
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m← [0mEdit ads.json
+Index: /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+===================================================================
+--- /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
++++ /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json
+@@ -79,9 +79,9 @@
+     "Pure A2 Gir Cow Ghee"
+   ],
+   "descriptions": [
+     "Slow made: curd from A2 milk, hand churned wooden bilona, wood fire heated. Glass jar.",
+-    "Our 140 Gir cows near Gondal. Every batch lab tested QR code. 500ml ₹1,250, 1 litre ₹2,350.",
++    "Our 140 Gir cows near Gondal. Every batch lab tested QR code. 500ml ₹1,250, 1 litre ₹2,350",
+     "10% off first order code FIRST10. Free delivery above ₹1,500. UPI, cards, COD.",
+     "No wholesale or franchise. Traditional bilona ghee delivered homes India in 3–6 days."
+   ]
+ },
+
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/build_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json --out /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+built /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads: ads.md, google_ads.csv, google_keywords.csv
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-ad-copy/scripts/check_ads.py /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads.json /tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads
+PASS  spec is valid
+PASS  Google ads follow the limits and editorial rules
+PASS  every number comes from the facts the user gave
+PASS  no risky claims
+PASS  no placeholder text
+[0m
+[0m→ [0mRead ads/ads.md
+Done. Created Google search ads for Gauveda A2 Gir Cow Ghee with 4 ad groups:
+
+1. **A2 Ghee Core** - Core product searches (a2 ghee, a2 gir cow ghee, desi cow ghee)
+2. **Bilona Ghee Method** - Method-focused searches (bilona ghee, hand churned, traditional)
+3. **Buy A2 Ghee Online** - High-intent buying searches (buy online, price, order)
+4. **1 Litre Ghee** - Size-specific searches (1 litre, gir cow ghee 1 litre)
+
+**Files created in `/tmp/tmp.CyHTFKViHF/run/mangoman-ad-copy/a2-ghee/ads/`:**
+- `ads.md` - Review document
+- `google_ads.csv` - Import into Google Ads Editor (Account → Import → From file)
+- `google_keywords.csv` - Keywords with match types and negatives
+
+**All checks pass:** Every headline ≤30 chars, every description ≤90 chars, no exclamation marks, no phone numbers, all numbers from facts, no risky claims. Negative keywords exclude wholesale, franchise, jobs, organic (not certified), recipes, bulk/tin, and informational searches.
