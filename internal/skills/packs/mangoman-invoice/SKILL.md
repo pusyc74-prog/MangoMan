@@ -1,6 +1,6 @@
 ---
 name: mangoman-invoice
-description: Make a GST-compliant tax invoice, proforma invoice or quotation (A4 PDF) with CGST and SGST or IGST worked out from the place of supply, HSN or SAC codes, amount in words and payment details, checked before sending. Use when the user asks for an invoice, bill, GST invoice, tax invoice, proforma, quotation, quote or estimate.
+description: GST tax invoice, proforma or quotation PDF with CGST, SGST or IGST from the place of supply, HSN or SAC, amount in words. Use for an invoice, bill, GST invoice, proforma, quote or estimate.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

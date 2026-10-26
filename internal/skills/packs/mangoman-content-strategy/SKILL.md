@@ -1,6 +1,6 @@
 ---
 name: mangoman-content-strategy
-description: Plan content like an experienced social media and content manager - goals, content pillars with a mix, the role of each platform, posting rhythm the team can keep, formats, hooks, a dated content calendar, an engagement routine and how to measure it. Use for social media strategy, content pillars, content calendars, editorial plans, posting schedules, what to post, growing a following, or planning Reels, carousels, threads and stories.
+description: Content plan - goals, pillars, platform roles, a rhythm the team can keep, formats, hooks, a dated calendar and measures. Use for social media strategy, content pillars, calendars, what to post.
 license: MIT (adapted from coreyhaines31/marketingskills; see LICENSE.txt)
 metadata:
   pack: mangoman

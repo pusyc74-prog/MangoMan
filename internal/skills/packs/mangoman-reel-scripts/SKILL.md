@@ -1,6 +1,6 @@
 ---
 name: mangoman-reel-scripts
-description: Write ready-to-shoot short video scripts (Instagram Reels, YouTube Shorts, Facebook Reels, TikTok) built on the audience's real problems - a goal per reel, three scroll-stopping hook options, value, a clear solution, one call to action that fits the goal, a timed shot list with on-screen text, caption, search keywords, hashtags, cover text and sound - checked before delivery. Use when the user asks for reels, shorts, short videos, video scripts, or reel ideas.
+description: Ready-to-shoot scripts for Reels, Shorts and TikTok - a goal, three hooks, value, one call to action, timed shots, on-screen text, caption, keywords, hashtags. Use for reels, shorts, video scripts or reel ideas.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

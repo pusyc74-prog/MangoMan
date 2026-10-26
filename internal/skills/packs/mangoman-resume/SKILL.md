@@ -1,6 +1,6 @@
 ---
 name: mangoman-resume
-description: Write or redesign a polished resume or CV, and a matching cover letter, delivered as checked PDFs in an ATS-safe or modern design. Use when the user asks for a resume, CV, biodata for a job, a cover letter, to update or improve their resume, or to tailor it to a job description.
+description: A resume or CV and matching cover letter as checked PDFs, ATS-safe or modern. Use for a resume, CV, biodata, cover letter, or tailoring a resume to a job.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

@@ -22,6 +22,11 @@ func TestPacksAreValid(t *testing.T) {
 		if p.Version == "" {
 			t.Errorf("%s: no metadata version", p.Name)
 		}
+		// OpenCode sends every skill's description with every request, so
+		// each extra word is paid on every step of every task.
+		if n := len(p.Description); n > MaxDescription || !strings.Contains(p.Description, "Use ") {
+			t.Errorf("%s: description has %d characters (at most %d) or no \"Use ...\" line", p.Name, n, MaxDescription)
+		}
 	}
 	if len(names) < 8 || !sort.StringsAreSorted(names) || !strings.Contains(strings.Join(names, ","), "mangoman-resume") {
 		t.Fatalf("packs %v", names)

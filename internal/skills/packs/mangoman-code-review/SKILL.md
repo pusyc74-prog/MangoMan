@@ -1,6 +1,6 @@
 ---
 name: mangoman-code-review
-description: Review a code change (uncommitted work, the last commit, or a branch against main) grounded in facts - the real diff, the project's own tests and linters, leaked secrets and leftover debug code; produces a review with a verdict and findings by severity, checked so every finding points at changed code. Use when the user asks for a code review, to review a pull request or branch, to check their changes before committing, or whether code is safe to merge.
+description: Review a code change (uncommitted, last commit or a branch) from the real diff, tests, linters and leaked secrets; findings by severity with a verdict. Use for code review, pull requests, safe to merge.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

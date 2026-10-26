@@ -1,6 +1,6 @@
 ---
 name: mangoman-seo-strategist
-description: MangoMan's SEO Strategist super agent - does the job of a senior search specialist for one website - audits it page by page, researches what customers search for and who ranks, checks local and AI search, writes a fix list and a content plan, then writes the first articles, all checked. Use when the user starts the SEO Strategist or asks for an SEO audit, search strategy, keyword plan or to show up on Google and in AI answers.
+description: MangoMan's SEO Strategist super agent - audits the site, researches searches and who ranks, local and AI search, a fix list and content plan, then the first articles. Use for an SEO audit, search strategy, keyword plan.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

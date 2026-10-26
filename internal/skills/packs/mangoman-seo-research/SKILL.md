@@ -1,6 +1,6 @@
 ---
 name: mangoman-seo-research
-description: Audit a website for search (can it be found, is each page clear about what it is for, does it deserve to rank, is it ready for AI answers and local search) and research what its customers search for and who ranks today, with fixes in priority order. Use for SEO audits, keyword research, why a site does not show up on Google, local SEO, Google Business Profile, AI search or AI answer visibility, and before planning articles or landing pages.
+description: A site audit script (robots.txt, sitemap, pages, findings by priority) plus research on what customers search and who ranks, local and AI search. Use for SEO audits, keyword research, Google Business Profile.
 license: MIT (adapted from coreyhaines31/marketingskills and AgriciDaniel/claude-seo; see LICENSE.txt)
 metadata:
   pack: mangoman

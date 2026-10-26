@@ -19,6 +19,9 @@ func TestOpenCodeConfig(t *testing.T) {
 		if c["tools"] != nil || c["instructions"] != nil || c["model"] != "mangoman/free/coder" {
 			t.Fatalf("mode %d: %v", mode, c)
 		}
+		if p, _ := c["compaction"].(map[string]any); p["prune"] != true {
+			t.Fatalf("mode %d: old tool output is not pruned: %v", mode, c["compaction"])
+		}
 	}
 }
 

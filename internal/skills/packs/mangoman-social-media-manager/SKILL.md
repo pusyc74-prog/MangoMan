@@ -1,6 +1,6 @@
 ---
 name: mangoman-social-media-manager
-description: MangoMan's Social Media Manager super agent - does the whole job of an experienced social media manager for one business - researches its presence, competitors and audience on the web, sets the strategy, brand and content voice and content pillars, plans a dated content calendar, then makes the first weeks of posts with images and captions and ready-to-shoot reel scripts, all checked. Use when the user starts the Social Media Manager or asks for a complete social media strategy and content.
+description: MangoMan's Social Media Manager super agent - research, strategy, voice, pillars, a dated calendar, then the first weeks of posts and reel scripts. Use for a complete social media strategy and content.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

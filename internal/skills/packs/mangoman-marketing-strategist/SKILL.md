@@ -1,6 +1,6 @@
 ---
 name: mangoman-marketing-strategist
-description: MangoMan's Marketing Strategist super agent - does the job of a senior marketing strategist for one business - researches the market, competitors and customers on the web, sets positioning and messages, a SWOT, the channel mix and budget split, a 90-day plan with targets, then makes the first campaign's ads, emails and posts, all checked. Use when the user starts the Marketing Strategist or asks for a marketing strategy, marketing plan, go-to-market or campaign plan with assets.
+description: MangoMan's Marketing Strategist super agent - research, positioning, SWOT, channel mix and budget, a 90-day plan, then the first campaign's ads, emails and posts. Use for a marketing strategy, plan or go-to-market.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

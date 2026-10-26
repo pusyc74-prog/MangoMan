@@ -1,6 +1,6 @@
 ---
 name: mangoman-brand-kit
-description: Create brand guidelines (a PDF covering logo use, colour palette with tested contrast, type and voice) plus colour tokens and CSS for websites and other MangoMan packs, from a logo or brand colours. Use when the user asks for brand guidelines, a brand book, a style guide, a brand kit, brand colours and fonts, or a tone-of-voice guide.
+description: Brand guidelines PDF (logo use, colours with tested contrast, type, voice) plus colour tokens and CSS, from a logo or colours. Use for a brand kit, brand book, style guide, brand colours and fonts.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

@@ -147,7 +147,10 @@ func inProjects(dir string) bool {
 // openCodeConfig is OpenCode's inline config that points it at MangoMan;
 // mode is how OpenCode is shown and rules the file from writeCodeRules ("" for
 // none). Measured on 8 Oct: switching off tools nobody used saved almost no
-// tokens per request, so OpenCode keeps its own tools and prompts.
+// tokens per request, so OpenCode keeps its own tools and prompts. Pruning
+// (off in OpenCode by default) clears the output of old tool calls once a
+// turn ends, keeping the newest 40,000 tokens of it and every loaded skill,
+// so a long session stops resending files it read many steps ago.
 func openCodeConfig(cfg *config.Config, model string, mode int, rules string, projects bool) string {
 	models := map[string]any{
 		"free/coder": map[string]any{"name": "Free coder", "limit": map[string]int{"context": 65536, "output": 8192}},
@@ -174,6 +177,7 @@ func openCodeConfig(cfg *config.Config, model string, mode int, rules string, pr
 		}},
 		"model":       "mangoman/" + model,
 		"small_model": "mangoman/free/fast",
+		"compaction":  map[string]bool{"prune": true},
 	}
 	bash := map[string]string{"*": "allow"}
 	switch {

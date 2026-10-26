@@ -1,6 +1,6 @@
 ---
 name: mangoman-strategy-report
-description: Turn research and a strategy into a designed, checked report (HTML, PDF, Markdown and a calendar CSV) for social media, marketing or search. Use whenever a MangoMan super agent delivers its strategy, or the user asks for a strategy document, marketing plan, social media strategy, SEO audit report or content calendar document.
+description: A designed, checked strategy report (HTML, PDF, Markdown, calendar CSV) for social, marketing or search. Use when a super agent delivers its strategy, or for a strategy document or plan report.
 license: Proprietary. Free to use inside MangoMan only; no copying, changing or reselling (see the MangoMan LICENSE).
 metadata:
   pack: mangoman

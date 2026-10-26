@@ -28,6 +28,10 @@ var packsFS embed.FS
 // touch MangoMan's own folders.
 const Marker = ".mangoman-pack"
 
+// MaxDescription is the longest description MangoMan's own skills carry.
+// OpenCode puts every installed skill's description into every request.
+const MaxDescription = 240
+
 // Pack describes one skill pack. Kind is what it is for: "pack" builds and
 // checks files (the default), "method" is expert know-how an agent follows,
 // "agent" is a super agent's whole playbook.
