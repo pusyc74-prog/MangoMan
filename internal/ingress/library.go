@@ -35,6 +35,8 @@ func (s *Server) libraryRoutes(mux *http.ServeMux) {
 	mux.Handle("DELETE /mangoman/skills/{name}", s.auth(http.HandlerFunc(s.skillDelete)))
 	mux.Handle("POST /mangoman/skills/{name}/copy", s.auth(http.HandlerFunc(s.skillCopy)))
 	mux.Handle("POST /mangoman/skills/scan", s.auth(http.HandlerFunc(s.skillScan)))
+	mux.Handle("GET /mangoman/community-skills", s.auth(http.HandlerFunc(s.communityList)))
+	mux.Handle("POST /mangoman/community-skills/{name}", s.auth(http.HandlerFunc(s.communityAdd)))
 	mux.Handle("GET /mangoman/my-agents", s.auth(http.HandlerFunc(s.myAgentsGet)))
 	mux.Handle("PUT /mangoman/my-agents", s.auth(http.HandlerFunc(s.myAgentsPut)))
 }
@@ -229,6 +231,91 @@ func (s *Server) skillScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, map[string][]skills.Finding{"findings": append([]skills.Finding{}, skills.Scan(in.Text)...)})
+}
+
+// communityList lists community skills matching q (every word, in the
+// name or description) and source, at most limit (default 60), and says
+// which are added already.
+func (s *Server) communityList(w http.ResponseWriter, r *http.Request) {
+	idx, err := skills.Community()
+	dir, derr := ownDir()
+	if err != nil || derr != nil {
+		core.WriteError(w, http.StatusInternalServerError, "no_list", errors.Join(err, derr).Error())
+		return
+	}
+	q := strings.Fields(strings.ToLower(r.URL.Query().Get("q")))
+	src := r.URL.Query().Get("source")
+	type sourceOut struct {
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Repo    string `json:"repo"`
+		License string `json:"license"`
+	}
+	type skillOut struct {
+		Name        string   `json:"name"`
+		Orig        string   `json:"orig"`
+		Source      string   `json:"source"`
+		Description string   `json:"description"`
+		Needs       []string `json:"needs,omitempty"`
+		Tokens      int      `json:"tokens"`
+		Added       bool     `json:"added"`
+	}
+	sources := []sourceOut{}
+	for _, x := range idx.Sources {
+		sources = append(sources, sourceOut{x.ID, x.Name, x.Repo, x.License})
+	}
+	out, total := []skillOut{}, 0
+	for _, k := range idx.Skills {
+		hay := strings.ToLower(k.Name + " " + k.Orig + " " + k.Description)
+		match := src == "" || k.Source == src
+		for _, w := range q {
+			match = match && strings.Contains(hay, w)
+		}
+		if !match {
+			continue
+		}
+		if total++; len(out) < 60 {
+			_, err := os.Stat(filepath.Join(dir, k.Name, "SKILL.md"))
+			out = append(out, skillOut{k.Name, k.Orig, k.Source, k.Description, k.Needs, k.RequestTokens(), err == nil})
+		}
+	}
+	writeJSON(w, map[string]any{"sources": sources, "total": total, "skills": out})
+}
+
+// communityAdd downloads a community skill into the user's own skills, where
+// agents find it (and where its description rides on every request).
+func (s *Server) communityAdd(w http.ResponseWriter, r *http.Request) {
+	idx, err := skills.Community()
+	if err != nil {
+		core.WriteError(w, http.StatusInternalServerError, "no_list", err.Error())
+		return
+	}
+	k, src, ok := idx.Find(r.PathValue("name"))
+	if !ok {
+		core.WriteError(w, http.StatusNotFound, "not_found", "no community skill named "+r.PathValue("name"))
+		return
+	}
+	p, err := ownPath(k.Name)
+	if err != nil {
+		core.WriteError(w, http.StatusBadRequest, "bad_name", err.Error())
+		return
+	}
+	if _, err := os.Stat(p); err == nil {
+		core.WriteError(w, http.StatusConflict, "exists", "You already have a skill named "+k.Name+".")
+		return
+	}
+	if err := skills.InstallCommunity(k, src, p); err != nil {
+		core.WriteError(w, http.StatusBadGateway, "not_added", "Could not add "+k.Name+": "+err.Error())
+		return
+	}
+	raw, _ := os.ReadFile(filepath.Join(p, "SKILL.md"))
+	pk, err := skills.ParseSkill(raw)
+	if err != nil {
+		os.RemoveAll(p)
+		core.WriteError(w, http.StatusBadGateway, "not_added", "Could not add "+k.Name+": "+err.Error())
+		return
+	}
+	writeJSON(w, librarySkill{Pack: pk, Own: true})
 }
 
 // skillCopy makes one of MangoMan's skills the user's own, under a new

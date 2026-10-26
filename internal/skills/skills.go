@@ -55,6 +55,8 @@ type Pack struct {
 	// BasedOn is the pre-made agent a user's own agent was copied from, so
 	// it starts from that agent's brief.
 	BasedOn string `json:"based_on,omitempty"`
+	// Source is the community source a user's skill was added from.
+	Source string `json:"source,omitempty"`
 }
 
 // Kinds a pack can be.
@@ -124,6 +126,8 @@ func ParseSkill(data []byte) (Pack, error) {
 			p.Kind = v
 		case "  based_on":
 			p.BasedOn = v
+		case "  source":
+			p.Source = v
 		}
 	}
 	if p.Kind == "" {

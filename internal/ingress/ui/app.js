@@ -1198,11 +1198,57 @@ function renderLibrary() {
     .sort((a, b) => b.own - a.own); // the user's own first
   $("lib-cards").replaceChildren(...shown.map((k) => el("li", { class: "card lib-card" },
     el("h3", {}, pretty(k.name)),
-    el("span", { class: "kind" + (k.own ? " own" : "") }, (k.own ? "Yours \u00b7 " : "") + (KINDS[k.kind] || "Not valid")),
+    el("span", { class: "kind" + (k.own ? " own" : "") }, (k.source ? `Added from ${(com.sources.find((s) => s.id === k.source) || { name: k.source }).name} \u00b7 `
+      : k.own ? "Yours \u00b7 " : "") + (KINDS[k.kind] || "Not valid")),
     k.error ? el("p", { class: "err" }, k.error) : el("p", { class: "desc" }, k.description),
     el("div", { class: "acts" },
       el("button", { type: "button", class: "ghost", onclick: () => openSkill(k.name) }, k.own ? "Edit" : "Read"),
       k.own ? el("button", { type: "button", class: "ghost", onclick: () => improveSkill(k.name) }, "Improve with AI") : null))));
+}
+
+// ---------- Community skills ----------
+
+const com = { q: "", source: "", sources: [], timer: 0 };
+
+async function loadCommunity() {
+  let d;
+  try { d = await api(`/mangoman/community-skills?q=${encodeURIComponent(com.q)}&source=${encodeURIComponent(com.source)}`); }
+  catch (err) { $("com-count").textContent = err.message; return; }
+  com.sources = d.sources;
+  const name = (id) => (d.sources.find((s) => s.id === id) || { name: id }).name;
+  $("com-sources").replaceChildren(...[{ id: "", name: "All" }, ...d.sources].map((s) => el("button", { type: "button",
+    "aria-pressed": String(com.source === s.id), onclick: () => { com.source = s.id; loadCommunity(); } }, s.name)));
+  $("com-count").textContent = d.total > d.skills.length ? `${d.total} skills match; showing ${d.skills.length}. Search to narrow them.`
+    : `${d.total} skill${d.total === 1 ? "" : "s"}.`;
+  $("com-cards").replaceChildren(...d.skills.map((k) => {
+    const src = d.sources.find((s) => s.id === k.source) || {};
+    return el("li", { class: "card lib-card" },
+      el("h3", {}, pretty(k.orig)),
+      el("span", { class: "kind" + (k.added ? " own" : "") }, `${k.added ? "Added · " : ""}${name(k.source)} · ${src.license || ""}`),
+      el("p", { class: "desc" }, k.description),
+      k.needs && k.needs.length ? el("p", { class: "fine" }, "Needs: " + k.needs.join("; ")) : null,
+      el("p", { class: "fine" }, `Adds about ${k.tokens} tokens to every request once added.`),
+      el("div", { class: "acts" }, k.added
+        ? el("button", { type: "button", class: "ghost", "aria-label": `Remove: ${k.orig}`, onclick: () => removeCommunity(k) }, "Remove")
+        : el("button", { type: "button", class: "ghost", "aria-label": `Add: ${k.orig}`, onclick: (e) => addCommunity(k, e.currentTarget) }, "Add")));
+  }));
+}
+
+async function addCommunity(k, btn) {
+  btn.disabled = true;
+  btn.textContent = "Adding\u2026";
+  try {
+    await api(`/mangoman/community-skills/${k.name}`, { method: "POST" });
+    $("com-count").textContent = `Added ${pretty(k.orig)}. Your agents can use it as ${k.name}.`;
+    await loadLibrary();
+    loadCommunity();
+  } catch (err) { btn.disabled = false; btn.textContent = "Add"; $("com-count").textContent = err.message; }
+}
+
+async function removeCommunity(k) {
+  if (!confirm(`Remove ${pretty(k.orig)} from your skills? You can add it again later.`)) return;
+  try { await api(`/mangoman/skills/${k.name}`, { method: "DELETE" }); await loadLibrary(); loadCommunity(); }
+  catch (err) { $("com-count").textContent = err.message; }
 }
 
 // openSkill shows a skill's SKILL.md: MangoMan's to read and copy, the
@@ -1499,7 +1545,7 @@ async function importAgent(e) {
   try {
     const { findings } = await api("/mangoman/skills/scan", { method: "POST", body: JSON.stringify({ text }) });
     if (findings.length && !confirm(`${f.name} has parts to read before you use it:\n` +
-      findings.slice(0, 6).map((x) => `- line ${x.line}: it ${x.what}`).join("\n") +
+      findings.slice(0, 6).map((x) => `- line ${x.line}: it ${x.what}: "${x.text}"`).join("\n") +
       `${findings.length > 6 ? `\n- and ${findings.length - 6} more` : ""}\n\nImport it anyway?`)) { myMsg(`Not imported: ${f.name}.`); return; }
     const k = await api(`/mangoman/skills/${name}`, { method: "PUT", body: JSON.stringify({ text }) });
     await loadLibrary();
@@ -1623,6 +1669,11 @@ document.addEventListener("DOMContentLoaded", () => {
   $("lib-agent").addEventListener("click", newAgent);
   $("my-together").addEventListener("click", workTogether);
   $("my-import").addEventListener("change", importAgent);
+  $("com-q").addEventListener("input", (e) => {
+    clearTimeout(com.timer);
+    com.timer = setTimeout(() => { com.q = e.target.value; loadCommunity(); }, 250);
+  });
+  loadCommunity();
   $("mylist-add").addEventListener("submit", (e) => {
     e.preventDefault();
     const v = $("mylist-pick").value;

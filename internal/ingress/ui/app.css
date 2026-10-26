@@ -416,6 +416,8 @@ body.app { padding: 0; display: grid; grid-template-columns: 248px minmax(0, 1fr
   background: var(--surface); padding-top: 10px; border-top: 1px solid var(--hair); }
 .lib-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
 .lib-tools .kinds { flex-wrap: wrap; }
+#com-q { flex: 1 1 240px; min-width: 0; padding: 8px 10px; border: 1px solid var(--axis); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--ink); font: inherit; }
 .kinds button { white-space: nowrap; }
 .lib-card .kind { align-self: flex-start; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--sunk); color: var(--ink-2); }
 .lib-card .kind.own { background: var(--mango-wash); color: var(--ink); }

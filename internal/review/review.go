@@ -43,6 +43,17 @@ var rules = []rule{
 
 var depFiles = map[string]bool{"package.json": true, "go.mod": true, "requirements.txt": true, "pyproject.toml": true, "Cargo.toml": true, "Gemfile": true, "composer.json": true}
 
+// Secret names the kind of key or password written in line ("" for none).
+// Skill files someone else wrote are checked with the same patterns.
+func Secret(line string) string {
+	for _, r := range rules {
+		if r.kind == "secret" && r.re.MatchString(line) {
+			return r.detail
+		}
+	}
+	return ""
+}
+
 // Scan checks the added lines of a unified diff (git diff output).
 func Scan(diff string) []Finding {
 	var out []Finding

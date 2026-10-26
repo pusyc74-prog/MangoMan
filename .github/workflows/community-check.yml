@@ -1,0 +1,25 @@
+name: community-check
+
+# Downloads every community skill MangoMan lists (internal/skills/community.json.gz)
+# from GitHub at its pinned commit and checks each file's SHA-256, the way
+# Add does on a user's computer. Run it by hand after the list changes.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Download and check every community skill
+        env:
+          MANGOMAN_LIVE_COMMUNITY: "1"
+        run: go test ./internal/skills/ -run TestCommunityLive -count=1 -v 2>&1 | tail -40

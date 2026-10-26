@@ -158,3 +158,38 @@ func TestSkillScan(t *testing.T) {
 		t.Fatalf("scan without the token: %d", w.Code)
 	}
 }
+
+func TestCommunitySkills(t *testing.T) {
+	t.Setenv("MANGOMAN_HOME", t.TempDir())
+	h, _ := dashServer(t, mem{})
+	host := "127.0.0.1:4141"
+	var got struct {
+		Total   int
+		Sources []struct{ ID string }
+		Skills  []struct {
+			Name, Source string
+			Tokens       int
+			Added        bool
+		}
+	}
+	w := call(h, "GET", "/mangoman/community-skills?q=test+driven&source=superpowers", host, authz, "")
+	if _ = json.Unmarshal(w.Body.Bytes(), &got); w.Code != 200 || got.Total == 0 || len(got.Sources) != 4 {
+		t.Fatalf("search: %d %s", w.Code, w.Body)
+	}
+	for _, k := range got.Skills {
+		if k.Source != "superpowers" || k.Tokens < 40 || k.Added {
+			t.Fatalf("a result outside the search, without its cost, or added already: %+v", k)
+		}
+	}
+	if w := call(h, "GET", "/mangoman/community-skills?q=zzqqxx-no-such", host, authz, ""); !strings.Contains(w.Body.String(), `"total": 0`) {
+		t.Fatalf("no match: %s", w.Body)
+	}
+	if w := call(h, "POST", "/mangoman/community-skills/no-such-skill", host, authz, ""); w.Code != 404 {
+		t.Fatalf("unknown skill: %d", w.Code)
+	}
+	own, _ := ownDir()
+	_ = os.MkdirAll(filepath.Join(own, got.Skills[0].Name), 0o755)
+	if w := call(h, "POST", "/mangoman/community-skills/"+got.Skills[0].Name, host, authz, ""); w.Code != 409 {
+		t.Fatalf("adding over an existing folder: %d", w.Code)
+	}
+}
