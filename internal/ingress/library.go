@@ -34,6 +34,7 @@ func (s *Server) libraryRoutes(mux *http.ServeMux) {
 	mux.Handle("PUT /mangoman/skills/{name}", s.auth(http.HandlerFunc(s.skillPut)))
 	mux.Handle("DELETE /mangoman/skills/{name}", s.auth(http.HandlerFunc(s.skillDelete)))
 	mux.Handle("POST /mangoman/skills/{name}/copy", s.auth(http.HandlerFunc(s.skillCopy)))
+	mux.Handle("POST /mangoman/skills/scan", s.auth(http.HandlerFunc(s.skillScan)))
 	mux.Handle("GET /mangoman/my-agents", s.auth(http.HandlerFunc(s.myAgentsGet)))
 	mux.Handle("PUT /mangoman/my-agents", s.auth(http.HandlerFunc(s.myAgentsPut)))
 }
@@ -215,6 +216,19 @@ func (s *Server) skillDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, map[string]bool{"removed": true})
+}
+
+// skillScan reads a skill file someone else wrote (one being imported) for
+// parts to read before using it; see skills.Scan.
+func (s *Server) skillScan(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Text string `json:"text"`
+	}
+	if err := readJSONUpTo(r, &in, 1<<20); err != nil || len(in.Text) > maxSkill {
+		core.WriteError(w, http.StatusBadRequest, "bad_request", "could not read the skill (at most 64 KB)")
+		return
+	}
+	writeJSON(w, map[string][]skills.Finding{"findings": append([]skills.Finding{}, skills.Scan(in.Text)...)})
 }
 
 // skillCopy makes one of MangoMan's skills the user's own, under a new

@@ -1497,6 +1497,10 @@ async function importAgent(e) {
   if (lib.skills.some((k) => k.name === name && !k.own)) { myMsg(`${name} is one of MangoMan's own; it is already here.`, "err"); return; }
   if (lib.skills.some((k) => k.name === name && k.own) && !confirm(`You already have ${name}. Replace it with the one in ${f.name}?`)) return;
   try {
+    const { findings } = await api("/mangoman/skills/scan", { method: "POST", body: JSON.stringify({ text }) });
+    if (findings.length && !confirm(`${f.name} has parts to read before you use it:\n` +
+      findings.slice(0, 6).map((x) => `- line ${x.line}: it ${x.what}`).join("\n") +
+      `${findings.length > 6 ? `\n- and ${findings.length - 6} more` : ""}\n\nImport it anyway?`)) { myMsg(`Not imported: ${f.name}.`); return; }
     const k = await api(`/mangoman/skills/${name}`, { method: "PUT", body: JSON.stringify({ text }) });
     await loadLibrary();
     myMsg(k.kind === "agent" ? `Imported ${pretty(name)}. It is in your team below.`
