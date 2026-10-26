@@ -1,0 +1,102 @@
+Started MangoMan for this session (log: /home/runner/work/_temp/mangoman/serve.log).
+Opening OpenCode on MangoMan free models (free/coder). Web search off. Skill packs: ad copy, brand kit, brand strategy, ceo deck, client report, code review, content strategy, copywriting, data dashboard, ecommerce listing, email campaign, invoice, landing page, market research, marketing strategist, meeting minutes, proposal, reel scripts, resume, seo article, seo research, seo strategist, social media manager, social posts, social research, strategy report, web app, website copy.
+[0m
+> build · free/coder
+[0m
+[0m→ [0mRead brief.md
+[0m→ [0mRead keywords.csv
+[0m→ [0mRead facts.md
+[0m→ [0mRead sources.md
+[0m→ [0mSkill "mangoman-seo-article"
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (697 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+FAIL  numbers with no fact and no source (cite a source [n] or remove): faq: 15; faq: 90%; section: Implant vs bridge: which is better for a single missing tooth?: 15; section: The dental implant procedure: three visits over 3 to 6 months: 30, 60
+PASS  697 words
+WARN  697 words against a target of 900
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address, description, first 100 words
+PASS  keyword used naturally (0.0% of words)
+WARN  title: aim for 30 to 60 characters: 67 characters
+PASS  description fits Google results (154)
+PASS  sentences are easy to read (average 12 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+WARN  fewer than 2 links to your own pages (helps readers and search engines find related pages): 0
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m→ [0mRead article.json
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (715 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  715 words
+WARN  715 words against a target of 900
+WARN  keyword "dental implant cost in bangalore" missing from: a subheading, address
+PASS  keyword used naturally (0.7% of words)
+PASS  title fits Google results (56)
+WARN  description: aim for 120 to 160 characters: 169 characters
+PASS  sentences are easy to read (average 11 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  2 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m← [0mWrite article.json
+Wrote file successfully.
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/build_article.py /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article.json --out /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article
+built /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article: article.html, article.md, seo.md, preview.png (867 words)
+[0m
+[0m$ [0mpython3 /home/runner/work/_temp/mangoman/opencode/skills/mangoman-seo-article/scripts/check_article.py /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article.json /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article
+PASS  spec is valid
+PASS  every number is from the facts or cites a source
+PASS  867 words
+PASS  keyword "dental implant cost in bangalore" in title, h1, opening, description, a subheading and address
+PASS  keyword used naturally (0.6% of words)
+PASS  title fits Google results (56)
+PASS  description fits Google results (155)
+PASS  sentences are easy to read (average 12 words)
+PASS  paragraphs are short enough for phones
+PASS  no repeated sentences
+PASS  2 links to your own pages
+PASS  every source is cited
+PASS  FAQ answers are short (fit a search snippet)
+PASS  no placeholder text
+PASS  no risky claims
+[0m
+[0m$ [0mls -la /tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article/
+total 612
+drwxr-xr-x 2 runner runner   4096 Oct 26 18:07 .
+drwxr-xr-x 3 runner runner   4096 Oct 26 18:07 ..
+-rw-r--r-- 1 runner runner  11812 Oct 26 18:10 article.html
+-rw-r--r-- 1 runner runner   6453 Oct 26 18:10 article.md
+-rw-r--r-- 1 runner runner 589920 Oct 26 18:10 preview.png
+-rw-r--r-- 1 runner runner    791 Oct 26 18:10 seo.md
+[0m
+All checks pass. The article is built and validated. Let me confirm the output files:
+Done. The SEO article is built and checked in `/tmp/tmp.sAH5Eror9l/run/mangoman-seo-article/dental-implants/article/`:
+
+- **article.md** — ready to paste into WordPress/Shopify/Webflow
+- **article.html** — full page with JSON-LD structured data (Article schema)
+- **seo.md** — meta title, description, and slug for CMS
+- **preview.png** — rendered preview
+
+**Check result:** Every figure sourced or from your facts, keyword in title/h1/opening/description/subheading/address, 867 words, readable on phone, 2 internal links (`/implants`, `/team`, `/book`), all citations valid.
