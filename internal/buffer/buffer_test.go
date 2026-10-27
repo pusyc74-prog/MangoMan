@@ -3,11 +3,11 @@ package buffer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 )
 
 // A stand-in for Buffer's GraphQL API, shaped as its documentation shows.
@@ -55,33 +55,47 @@ func TestDraft(t *testing.T) {
 	var got string
 	fake(t, func(q string) (int, string) {
 		got = q
-		if strings.Contains(q, `"full"`) {
+		switch {
+		case strings.Contains(q, `"full"`):
 			return 200, `{"data":{"createPost":{"message":"Channel queue is full"}}}`
-		}
-		if strings.Contains(q, `"busy"`) {
+		case strings.Contains(q, `"busy"`):
 			return 429, `{"errors":[{"message":"Too many requests from this client.","extensions":{"code":"RATE_LIMIT_EXCEEDED"}}]}`
+		case strings.Contains(q, `"busy200"`): // Buffer's documented form: HTTP 200 with the code
+			return 200, `{"errors":[{"message":"Too many requests","extensions":{"code":"RATE_LIMIT_EXCEEDED"}}]}`
+		case strings.Contains(q, `"nokey"`):
+			return 200, `{"errors":[{"message":"Not authorized","extensions":{"code":"UNAUTHORIZED"}}]}`
+		case strings.Contains(q, `"live"`):
+			return 200, `{"data":{"createPost":{"post":{"id":"p9","status":"scheduled"}}}}`
 		}
-		return 200, `{"data":{"createPost":{"post":{"id":"p1"}}}}`
+		return 200, `{"data":{"createPost":{"post":{"id":"p1","status":"draft"}}}}`
 	})
 	text := "Alphonso season is \"open\".\nOrder now #Mango"
-	due := time.Date(2026, 11, 2, 18, 30, 0, 0, time.FixedZone("IST", 5*3600+1800))
-	id, err := Draft(context.Background(), "good-key", "c1", text, due)
+	id, err := Draft(context.Background(), "good-key", "c1", text)
 	if err != nil || id != "p1" {
 		t.Fatalf("draft: %q %v", id, err)
 	}
 	for _, want := range []string{`text: "Alphonso season is \"open\".\nOrder now #Mango"`, `channelId: "c1"`, "saveToDraft: true",
-		"mode: customScheduled", `dueAt: "2026-11-02T13:00:00.000Z"`, "schedulingType: automatic"} {
+		"mode: addToQueue", "schedulingType: automatic", "post { id status }"} {
 		if !strings.Contains(got, want) {
 			t.Errorf("the request lacks %s:\n%s", want, got)
 		}
 	}
-	if _, err := Draft(context.Background(), "good-key", "c1", "no time", time.Time{}); err != nil || !strings.Contains(got, "mode: addToQueue") || strings.Contains(got, "dueAt") {
-		t.Fatalf("a draft without a time goes to the queue: %v\n%s", err, got)
+	if strings.Contains(got, "dueAt") || strings.Contains(got, "customScheduled") {
+		t.Fatalf("a draft carries a time, a form Buffer does not document for drafts:\n%s", got)
 	}
-	if _, err := Draft(context.Background(), "good-key", "full", "x", time.Time{}); err == nil || !strings.Contains(err.Error(), "queue is full") {
+	if _, err := Draft(context.Background(), "good-key", "full", "x"); err == nil || !strings.Contains(err.Error(), "queue is full") {
 		t.Fatalf("Buffer's own message: %v", err)
 	}
-	if _, err := Draft(context.Background(), "good-key", "busy", "x", time.Time{}); err == nil || !strings.Contains(err.Error(), "120 seconds") {
+	if _, err := Draft(context.Background(), "good-key", "busy", "x"); !errors.Is(err, ErrLimit) || !strings.Contains(err.Error(), "120 seconds") {
 		t.Fatalf("the limit says when to try again: %v", err)
+	}
+	if _, err := Draft(context.Background(), "good-key", "busy200", "x"); !errors.Is(err, ErrLimit) || !strings.Contains(err.Error(), "a few minutes") {
+		t.Fatalf("the limit as Buffer documents it: %v", err)
+	}
+	if _, err := Draft(context.Background(), "good-key", "nokey", "x"); !errors.Is(err, ErrKey) {
+		t.Fatalf("a refused key as Buffer documents it: %v", err)
+	}
+	if id, err := Draft(context.Background(), "good-key", "live", "x"); err == nil || id != "p9" || !strings.Contains(err.Error(), "not as a draft") {
+		t.Fatalf("a post Buffer did not keep as a draft must be flagged: %q %v", id, err)
 	}
 }
