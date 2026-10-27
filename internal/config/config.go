@@ -61,6 +61,32 @@ type Config struct {
 	// ShareLessons sends anonymous counts of how each free model behaved
 	// to Mango Arch once an hour. Off until the owner agrees.
 	ShareLessons bool `json:"share_lessons,omitempty"`
+	// Engine is where agents get their AI: "" or "switch" is MangoMan's own
+	// model switch (the default); "opencode" is OpenCode's own models only.
+	// A developer setting: no screen shows it (mangoman engine sets it).
+	Engine string `json:"engine,omitempty"`
+}
+
+// The engines; anything else reads as EngineSwitch, today's behaviour.
+const (
+	EngineSwitch   = "switch"
+	EngineOpenCode = "opencode"
+)
+
+// GetEngine is the engine in use: MANGOMAN_ENGINE when set (for tests),
+// else the config's. A value it does not know falls back to the switch, so a
+// typo never leaves agents without AI.
+func (c *Config) GetEngine() string {
+	e := os.Getenv("MANGOMAN_ENGINE")
+	if e == "" {
+		mu.RLock()
+		e = c.Engine
+		mu.RUnlock()
+	}
+	if strings.EqualFold(strings.TrimSpace(e), EngineOpenCode) {
+		return EngineOpenCode
+	}
+	return EngineSwitch
 }
 
 // Person returns the name whose local token this is ("" for none).

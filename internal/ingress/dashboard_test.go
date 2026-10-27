@@ -475,3 +475,17 @@ func TestQuit(t *testing.T) {
 		t.Fatal("did not stop")
 	}
 }
+
+// The busy report names the engine, so the coding screen knows whether
+// MangoMan sees the model requests at all.
+func TestBusyEngine(t *testing.T) {
+	t.Setenv("MANGOMAN_ENGINE", "")
+	h, s := dashServer(t, mem{})
+	if w := call(h, "GET", "/mangoman/busy", "127.0.0.1:4141", authz, ""); !strings.Contains(w.Body.String(), `"engine": "switch"`) {
+		t.Fatalf("default: %s", w.Body)
+	}
+	s.Cfg.Engine = config.EngineOpenCode
+	if w := call(h, "GET", "/mangoman/busy", "127.0.0.1:4141", authz, ""); !strings.Contains(w.Body.String(), `"engine": "opencode"`) {
+		t.Fatalf("OpenCode engine: %s", w.Body)
+	}
+}

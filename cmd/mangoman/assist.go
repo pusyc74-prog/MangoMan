@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -180,8 +181,19 @@ func openCodeConfig(cfg *config.Config, model string, mode int, rules string, pr
 		models[model] = map[string]any{"name": model, "limit": map[string]int{"context": 65536, "output": 8192}}
 	}
 	c := map[string]any{
-		"$schema": "https://opencode.ai/config.json",
-		"provider": map[string]any{"mangoman": map[string]any{
+		"$schema":    "https://opencode.ai/config.json",
+		"compaction": map[string]bool{"prune": true},
+	}
+	if cfg.GetEngine() == config.EngineOpenCode {
+		// OpenCode's own models only. OpenCode picks the model (the user's
+		// last choice, else its default free one) unless one of its own was
+		// asked for, so a free model OpenCode drops never breaks a session.
+		c["enabled_providers"] = []string{"opencode"}
+		if strings.HasPrefix(model, "opencode/") {
+			c["model"] = model
+		}
+	} else {
+		c["provider"] = map[string]any{"mangoman": map[string]any{
 			"npm":  "@ai-sdk/openai-compatible",
 			"name": "MangoMan (free models)",
 			"options": map[string]any{
@@ -189,10 +201,9 @@ func openCodeConfig(cfg *config.Config, model string, mode int, rules string, pr
 				"apiKey":  "{env:MANGOMAN_TOKEN}",
 			},
 			"models": models,
-		}},
-		"model":       "mangoman/" + model,
-		"small_model": "mangoman/free/fast",
-		"compaction":  map[string]bool{"prune": true},
+		}}
+		c["model"] = "mangoman/" + model
+		c["small_model"] = "mangoman/free/fast"
 	}
 	bash := map[string]string{"*": "allow"}
 	switch {
@@ -408,6 +419,12 @@ func cmdCode(args []string) error {
 		rules = ""
 	}
 	env = append(env, "OPENCODE_CONFIG_CONTENT="+openCodeConfig(cfg, *model, mode, rules, projects))
+	ocOnly := cfg.GetEngine() == config.EngineOpenCode
+	if ocOnly && mode == modeRun {
+		// OpenCode waits for hours, silently, when its free messages run out;
+		// its error lines are how a run sees that (see freeLimit).
+		env = append(env, "OPENCODE_PRINT_LOGS=1", "OPENCODE_LOG_LEVEL=ERROR")
+	}
 	if !*noWeb {
 		// OpenCode's web search (via Exa) lets it research while it codes.
 		env = append(env, "OPENCODE_ENABLE_EXA=1")
@@ -420,7 +437,11 @@ func cmdCode(args []string) error {
 		}
 		packs = strings.Join(names, ", ")
 	}
-	fmt.Printf("Opening OpenCode on MangoMan free models (%s). Web search %s. Skill packs: %s.\n", *model, map[bool]string{true: "off", false: "on"}[*noWeb], packs)
+	on := "MangoMan free models (" + *model + ")"
+	if ocOnly {
+		on = "OpenCode's own free models"
+	}
+	fmt.Printf("Opening OpenCode on %s. Web search %s. Skill packs: %s.\n", on, map[bool]string{true: "off", false: "on"}[*noWeb], packs)
 	if packs != "none" {
 		// Checked before a pack task can start, so a missing Python is a plain
 		// message here instead of a failed step in the middle of a task.
@@ -481,14 +502,20 @@ func cmdCode(args []string) error {
 			case <-done:
 			}
 		}()
-		var stalled atomic.Bool
-		if mode == modeRun {
+		var stalled, limited atomic.Bool
+		switch {
+		case mode == modeRun && ocOnly:
+			go watchOpenCode(&tail, cmd.Process, done, &stalled, &limited)
+		case mode == modeRun:
 			go watchStall(cfg, cmd.Process, done, &stalled)
 		}
 		err = cmd.Wait()
 		close(done)
 		if errors.Is(err, exec.ErrWaitDelay) {
 			err = nil // OpenCode ended; only something it started still holds the output
+		}
+		if limited.Load() {
+			return freeLimitError(time.Now())
 		}
 		// Measured on real free models: a model that goes quiet in the middle
 		// of an answer is cut off by the router, and OpenCode then ends the
@@ -500,6 +527,10 @@ func cmdCode(args []string) error {
 		}
 		if mode == modeRun && resumes < 2 {
 			switch {
+			case stalled.Load() && ocOnly:
+				fmt.Printf("\nNothing happened for %d minutes; continuing the task.\n", int(openCodeStall.Minutes()))
+				ocArgs = resumeArgs(fs.Args())
+				continue
 			case stalled.Load():
 				fmt.Println("\nNothing happened for a minute; continuing the task.")
 				ocArgs = resumeArgs(fs.Args())
@@ -570,6 +601,66 @@ func watchStall(cfg *config.Config, p *os.Process, done <-chan struct{}, stalled
 	}
 }
 
+// openCodeStall is how long a run on OpenCode's own models may print
+// nothing, with no command running, before it counts as stalled. MangoMan
+// sees none of those requests, so OpenCode's output is the only sign of
+// work; it prints a step when the step ends, which on a slow free model
+// takes minutes.
+const openCodeStall = 5 * time.Minute
+
+// freeLimit is OpenCode's own log line ("timestamp=... level=...") for an
+// error from its own models' service naming the free daily limit. The line
+// carries the error's message only: "Rate limit exceeded. Please try again
+// later." (what OpenCode's service sends a logged-out user at that limit,
+// read in its code), or "Free usage limit reached" / "Free usage exceeded"
+// (seen by users). The model's own words never start a line so.
+var freeLimit = regexp.MustCompile(`(?im)^timestamp=\S+ level=\S+ .*providerID=opencode\b.*(FreeUsageLimitError|free usage (exceeded|limit)|rate limit exceeded)`)
+
+// watchOpenCode is watchStall for a run on OpenCode's own models: it stops
+// OpenCode at once when the free daily limit shows (OpenCode would wait
+// for hours), and when nothing has been printed for openCodeStall with no
+// command running.
+func watchOpenCode(tail *tailWriter, p *os.Process, done <-chan struct{}, stalled, limited *atomic.Bool) {
+	started := time.Now()
+	tick := time.NewTicker(2 * time.Second)
+	defer tick.Stop()
+	for {
+		select {
+		case <-done:
+			return
+		case <-tick.C:
+		}
+		last := tail.Last()
+		if last.Before(started) {
+			last = started // nothing printed yet: quiet since the run began
+		}
+		quiet := time.Since(last)
+		switch {
+		case freeLimit.MatchString(tail.String()):
+			limited.Store(true)
+		case quiet >= openCodeStall && (quiet >= commandCeiling || !commandRunning(p.Pid)):
+			stalled.Store(true)
+		default:
+			continue
+		}
+		_ = p.Signal(os.Interrupt)
+		select {
+		case <-done:
+		case <-time.After(5 * time.Second):
+			_ = p.Kill()
+		}
+		return
+	}
+}
+
+// freeLimitError says OpenCode's free messages are used up and when they
+// come back: OpenCode counts them per internet connection and day, from
+// midnight UTC.
+func freeLimitError(now time.Time) error {
+	reset := now.UTC().Truncate(24 * time.Hour).Add(24 * time.Hour)
+	return fmt.Errorf("today's free AI messages are used up on this internet connection; they come back at %s", reset.Local().Format("3:04 PM"))
+}
+
 // commandRunning reports whether OpenCode is running a command: its bash
 // tool runs each one as a direct child (a shell, or the program itself when
 // the shell hands over to it). Language servers OpenCode keeps running for
@@ -631,18 +722,27 @@ func resumeArgs(args []string) []string {
 // tailWriter keeps the last few kilobytes written to it, from OpenCode's
 // output and error streams at once.
 type tailWriter struct {
-	mu sync.Mutex
-	b  []byte
+	mu   sync.Mutex
+	b    []byte
+	last time.Time // when output last came
 }
 
 func (t *tailWriter) Write(p []byte) (int, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+	t.last = time.Now()
 	t.b = append(t.b, p...)
 	if len(t.b) > 8<<10 {
 		t.b = t.b[len(t.b)-8<<10:]
 	}
 	return len(p), nil
+}
+
+// Last is when output last came (the zero time before any).
+func (t *tailWriter) Last() time.Time {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.last
 }
 
 func (t *tailWriter) String() string {

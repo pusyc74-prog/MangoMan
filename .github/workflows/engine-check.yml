@@ -1,0 +1,102 @@
+name: engine-check
+
+# MangoMan on OpenCode's own free models (the hidden engine setting), against
+# the real service: a small task must finish with no request through
+# MangoMan's switch; then, once the runner's free allowance is used up, the
+# same task must stop at once with MangoMan's own message. Spends only
+# OpenCode's free allowance for the runner's address. Run by hand, or by
+# pushing the branch check-engine; the report goes to eval-reports.
+
+on:
+  push:
+    branches: [check-engine]
+  workflow_dispatch:
+
+permissions:
+  contents: write # only to publish the report to the eval-reports branch
+
+concurrency:
+  group: engine-check
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      MANGOMAN_ENGINE: opencode
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install MangoMan and the OpenCode release it ships
+        run: |
+          v=$(sed -n 's/^const Version = "\(.*\)"/\1/p' internal/opencode/opencode.go)
+          npm install -g "opencode-ai@$v"
+          go build -o "$RUNNER_TEMP/mangoman" ./cmd/mangoman
+          export MANGOMAN_HOME="$RUNNER_TEMP/home"
+          echo "MANGOMAN_HOME=$MANGOMAN_HOME" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/mangoman" init > /dev/null
+          "$RUNNER_TEMP/mangoman" engine
+          nohup "$RUNNER_TEMP/mangoman" serve > "$RUNNER_TEMP/serve.log" 2>&1 &
+          sleep 3
+      - name: Check
+        run: |
+          set +e
+          mm="$RUNNER_TEMP/mangoman"
+          task="Create hello.py that prints Hello from MangoMan. Then run it with python3 to check it."
+          r=engine.md
+          say() { echo "$1" | tee -a "$r"; }
+          say "# MangoMan on OpenCode's own free models"
+          say ""
+          say "$(date -u '+%d %b %H:%M UTC'), OpenCode $(opencode --version), engine $("$mm" engine), no provider keys."
+          say ""
+          say "## 1. A small task"
+          say ""
+          mkdir one && cd one
+          start=$(date +%s)
+          timeout 900 "$mm" code --no-web run --auto "$task" > ../one.log 2>&1
+          code=$? took=$(( $(date +%s) - start ))
+          out=$(python3 hello.py 2>&1)
+          cd ..
+          via=$(grep -c "req=" "$RUNNER_TEMP/serve.log")
+          say "- Exit $code after ${took}s."
+          if [ "$out" = "Hello from MangoMan" ]; then say "- PASS: hello.py made and prints the greeting."; else say "- FAIL: hello.py prints: ${out:0:200}"; fi
+          if [ "$via" = 0 ]; then say "- PASS: no request went through MangoMan's switch."; else say "- FAIL: $via requests went through MangoMan's switch."; fi
+          if grep -q "free AI messages are used up" one.log; then say "- NOTE: the runner's free allowance ran out during the task (its address was already partly used)."; fi
+          say ""
+          say "## 2. The runner's free allowance used up"
+          say ""
+          mkdir zen && (cd zen && python3 ../scripts/zen-limit.py "" 400 4 > ../zen.log 2>&1)
+          say "$(grep -m1 'Messages answered before the limit' zen/report.md)"
+          say ""
+          say "## 3. The same task at the limit"
+          say ""
+          mkdir three && cd three
+          start=$(date +%s)
+          timeout 300 "$mm" code --no-web run --auto "$task" > ../three.log 2>&1
+          code=$? took=$(( $(date +%s) - start ))
+          cd ..
+          say "- Exit $code after ${took}s."
+          if grep -q "free AI messages are used up" three.log && [ "$took" -lt 120 ]; then say "- PASS: stopped quickly with MangoMan's message: $(grep -m1 'free AI messages' three.log)"; else say "- FAIL: no quick stop with MangoMan's message."; fi
+          if grep -qi "subscribe to Go" three.log; then say "- FAIL: OpenCode's Go advert reached the output."; else say "- PASS: no OpenCode Go advert in the output."; fi
+          for f in one three; do say ""; say "<details><summary>Output of task $f (last 40 lines)</summary>"; say ""; say '```'; tail -40 "$f.log" | cut -c1-300 | tee -a "$r" > /dev/null; say '```'; say "</details>"; done
+          exit 0
+      - name: Publish the report to the eval-reports branch
+        if: always()
+        run: |
+          [ -s engine.md ] || exit 0
+          cat engine.md >> "$GITHUB_STEP_SUMMARY"
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports
+          git worktree add ../reports origin/eval-reports
+          cd ../reports
+          git switch -C eval-reports
+          mkdir -p reports/engine-check
+          cp "$GITHUB_WORKSPACE/engine.md" "reports/engine-check/$stamp.md"
+          git add -A
+          git commit -q -m "engine check $stamp (run ${{ github.run_id }})" || exit 0
+          git push origin eval-reports

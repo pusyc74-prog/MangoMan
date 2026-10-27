@@ -17,6 +17,9 @@ const st = {
   waiting: new Set(),  // approvals and questions waiting for you
   restarts: 0,         // stalls restarted since your last message
   restartedAt: 0,      // a send or a restart needs a minute of its own before the next restart
+  engine: "switch",    // "opencode": OpenCode's own models, which MangoMan does not see
+  lastEvent: 0,        // when OpenCode last reported anything about this chat
+  limitShown: false,   // the free limit message, once per message sent
 };
 
 function $(id) { return document.getElementById(id); }
@@ -185,6 +188,7 @@ async function send(text) {
     });
     $("prompt").value = "";
     st.restarts = 0;
+    st.limitShown = false;
     // The router's idle time counts from its last request, which can be long
     // before this message: a minute of nothing is measured from sending.
     st.restartedAt = Date.now();
@@ -216,6 +220,17 @@ async function watch() {
   if (!st.working) return;
   let b;
   try { b = await api("/mangoman/busy"); } catch (_) { return; }
+  st.engine = b.engine || "switch";
+  if (st.engine === "opencode") {
+    // MangoMan sees none of these requests: what OpenCode reports about the
+    // chat is the only sign of work. A free model can take a while to start.
+    const quiet = Date.now() - Math.max(st.lastEvent, st.restartedAt);
+    if (quiet >= 120000 && !st.running.size && !st.waiting.size) {
+      st.restartedAt = Date.now();
+      await restart();
+    }
+    return;
+  }
   const n = b.now;
   if (b.in_flight > 0 && n && !n.answering) {
     const parts = [];
@@ -375,8 +390,18 @@ async function listen() {
   }
 }
 
+// freeLimitNote says OpenCode's free messages are used up and when they
+// come back: OpenCode counts them per internet connection and day, from
+// midnight UTC.
+function freeLimitNote() {
+  const now = new Date();
+  const reset = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  return `Today's free AI messages are used up on this internet connection. They come back at ${reset.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`;
+}
+
 function onEvent(ev) {
   const p = ev.properties || {};
+  if (st.session && p.sessionID === st.session.id) st.lastEvent = Date.now();
   switch (ev.type) {
     case "message.updated": addMessage(p.info); break;
     case "message.part.updated": showPart(p.part); break;
@@ -388,6 +413,13 @@ function onEvent(ev) {
     case "session.status":
       if (p.sessionID !== st.session.id) break;
       if (p.status?.type === "idle") busy(false);
+      else if (p.status?.action?.reason === "free_tier_limit") {
+        // OpenCode would wait until tomorrow and offer its own paid plan.
+        api(`${OC}/session/${p.sessionID}/abort`, { method: "POST" }).catch(() => {});
+        busy(false);
+        if (!st.limitShown) note(freeLimitNote(), true);
+        st.limitShown = true;
+      }
       else if (p.status?.type === "retry") busy(true, `The free model is busy, trying again${p.status.message ? `: ${p.status.message}` : ""}…`);
       else busy(true);
       break;

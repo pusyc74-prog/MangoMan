@@ -122,6 +122,8 @@ func main() {
 		err = cmdCode(os.Args[2:])
 	case "brain":
 		err = cmdBrain(os.Args[2:])
+	case "engine": // for developers only, so not in the help
+		err = cmdEngine(os.Args[2:])
 	case "agents", "agent":
 		err = cmdAgents(os.Args[2:])
 	case "skills", "skill":
@@ -162,6 +164,36 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
+}
+
+// cmdEngine shows or sets where agents get their AI: MangoMan's model
+// switch (the default) or OpenCode's own models.
+func cmdEngine(args []string) error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	if len(args) == 0 {
+		fmt.Println(cfg.GetEngine())
+		return nil
+	}
+	// A running MangoMan saves its own copy of the settings and would undo this.
+	if routerUp(cfg) {
+		return errors.New("stop MangoMan first (Quit on its page), then set the engine")
+	}
+	switch strings.ToLower(args[0]) {
+	case config.EngineSwitch:
+		cfg.Engine = ""
+	case config.EngineOpenCode:
+		cfg.Engine = config.EngineOpenCode
+	default:
+		return fmt.Errorf("the engine is %s or %s", config.EngineSwitch, config.EngineOpenCode)
+	}
+	if err := config.Save(cfg); err != nil {
+		return err
+	}
+	fmt.Println("Engine:", cfg.GetEngine())
+	return nil
 }
 
 func cmdInit() error {

@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/pusyc74-prog/mangoman/internal/config"
 )
@@ -161,5 +163,86 @@ func TestCommandRunning(t *testing.T) {
 		!languageServer("node /x/vscode-json-languageserver --stdio") || !languageServer("node /x/pyright-langserver --stdio") ||
 		languageServer("npm install") || languageServer("python3 scripts/build_ads.py ads.json") {
 		t.Fatal("language server names")
+	}
+}
+
+// On OpenCode's own models: no MangoMan provider, only OpenCode's models,
+// and OpenCode picks the model unless one of its own is asked for. The
+// permissions are the same as on the switch.
+func TestOpenCodeConfigOpenCodeEngine(t *testing.T) {
+	t.Setenv("MANGOMAN_HOME", t.TempDir())
+	cfg := &config.Config{Port: 4141, Engine: config.EngineOpenCode}
+	var c map[string]any
+	_ = json.Unmarshal([]byte(openCodeConfig(cfg, "free/coder", modeRun, "", true)), &c)
+	if c["provider"] != nil || c["model"] != nil || c["small_model"] != nil || c["permission"] == nil {
+		t.Fatalf("OpenCode engine: %v", c)
+	}
+	if p, _ := c["enabled_providers"].([]any); len(p) != 1 || p[0] != "opencode" {
+		t.Fatalf("only OpenCode's own models: %v", c["enabled_providers"])
+	}
+	_ = json.Unmarshal([]byte(openCodeConfig(cfg, "opencode/big-pickle", modeRun, "", true)), &c)
+	if c["model"] != "opencode/big-pickle" {
+		t.Fatalf("an OpenCode model asked for: %v", c["model"])
+	}
+	// A setting MangoMan does not know is the switch, today's behaviour.
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141, Engine: "opencod"}, "free/coder", modeRun, "", true)), &c)
+	if c["model"] != "mangoman/free/coder" || c["provider"] == nil {
+		t.Fatalf("an unknown engine must fall back to the switch: %v", c)
+	}
+}
+
+// The free limit is caught from OpenCode's own log line only, never from
+// words the model writes, and says when it comes back.
+func TestFreeLimit(t *testing.T) {
+	for line, want := range map[string]bool{
+		// As OpenCode 1.18.34 logs it (seen with a stand-in answering as OpenCode's service does).
+		`timestamp=2026-10-27T17:56:53.511Z level=ERROR run=211be3c9 message="stream error" providerID=opencode modelID=big-pickle session.id=ses_e8 small=false agent=build mode=primary error.error="AI_APICallError: Free usage limit reached."`:    true,
+		`timestamp=2026-10-27T17:56:53.511Z level=ERROR run=211be3c9 message="stream error" providerID=opencode modelID=big-pickle error.error="AI_APICallError: Rate limit exceeded. Please try again later."`:                                        true,
+		`timestamp=2026-10-27T17:56:58.968Z level=ERROR run=211be3c9 message="stream error" providerID=opencode modelID=big-pickle small=true agent=title error.error="AI_RetryError: Failed after 3 attempts. Last error: Free usage limit reached."`: true,
+		// Another provider's rate limit is not OpenCode's free limit.
+		`timestamp=2026-10-27T17:56:53.511Z level=ERROR run=211be3c9 message="stream error" providerID=groq modelID=x error.error="AI_APICallError: Rate limit exceeded."`: false,
+		"Our plans: the free usage limit is 3 projects; pick Pro for more.":                                                                                                false,
+		`The error said: "FreeUsageLimitError"`: false,
+		`timestamp=2026-10-28T00:15:02.1Z level=ERROR run=ab12 message="stream error" error="Upstream request failed: Model is unavailable."`: false,
+	} {
+		if got := freeLimit.MatchString("Writing the page...\n" + line + "\n"); got != want {
+			t.Errorf("%q: %v, want %v", line, got, want)
+		}
+	}
+	// 9:00 PM UTC: midnight UTC is 3 hours away.
+	now := time.Date(2026, 10, 27, 21, 0, 0, 0, time.UTC)
+	if err := freeLimitError(now); !strings.Contains(err.Error(), now.Add(3*time.Hour).Local().Format("3:04 PM")) {
+		t.Fatalf("reset time: %v", err)
+	}
+}
+
+// watchOpenCode stops a run as soon as OpenCode logs the free limit, and
+// leaves a run alone that only prints the words.
+func TestWatchOpenCode(t *testing.T) {
+	for name, out := range map[string]string{
+		"limit": `timestamp=2026-10-27T17:56:53.511Z level=ERROR run=211be3c9 message="stream error" providerID=opencode modelID=big-pickle error.error="AI_APICallError: Rate limit exceeded. Please try again later."` + "\n",
+		"words": "The free usage limit on our plan is 3 projects.\n",
+	} {
+		c := exec.Command("sleep", "30")
+		if err := c.Start(); err != nil {
+			t.Skip(err)
+		}
+		var tw tailWriter
+		var stalled, limited atomic.Bool
+		done := make(chan struct{})
+		ended := make(chan struct{})
+		go func() { _ = c.Wait(); close(ended) }()
+		go watchOpenCode(&tw, c.Process, done, &stalled, &limited)
+		_, _ = tw.Write([]byte(out))
+		select {
+		case <-ended:
+		case <-time.After(5 * time.Second):
+		}
+		close(done)
+		_ = c.Process.Kill()
+		<-ended
+		if limited.Load() != (name == "limit") || stalled.Load() {
+			t.Fatalf("%s: limited %v, stalled %v", name, limited.Load(), stalled.Load())
+		}
 	}
 }
