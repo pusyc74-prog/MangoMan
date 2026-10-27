@@ -86,6 +86,15 @@ def main():
     began = dt.datetime.now(IST)
     print("free models: %s\nmeasuring %s, up to %d requests, %d at a time" % (", ".join(models), model, most, par), flush=True)
 
+    # Each other free model once first, so a model that is broken is told
+    # apart from one blocked by the limit later. These count too.
+    before = []
+    for m in models:
+        if m != model:
+            outcome, steps, took, note = ping(m, work)
+            before.append((m, outcome, steps, note))
+            print("before, %s: %s" % (m, outcome), flush=True)
+
     lock = threading.Lock()
     s = {"sent": 0, "ok": 0, "requests": 0, "failed": 0, "limit": None, "secs": [], "fails": []}
 
@@ -116,13 +125,11 @@ def main():
         for f in [ex.submit(worker) for _ in range(par)]:
             f.result()
 
-    others = []
+    after = {}
     if s["limit"]:
-        for m in models:
-            if m != model:
-                outcome, _, took, note = ping(m, work)
-                others.append((m, outcome, took, note))
-                print("after the limit, %s: %s" % (m, outcome), flush=True)
+        for m, *_ in before:
+            after[m] = ping(m, work)
+            print("after the limit, %s: %s" % (m, after[m][0]), flush=True)
 
     ended = dt.datetime.now(IST)
     r = ["# OpenCode free-model allowance", "",
@@ -132,15 +139,18 @@ def main():
          "", "| Measure | Result |", "| --- | --- |",
          "| Model measured | %s |" % model,
          "| Messages answered before the limit | %s |" % (s["ok"] if s["limit"] else "%d (no limit reached within %d)" % (s["ok"], most)),
+         "| Answered by the other models first (same count) | %d |" % sum(o == "ok" for _, o, _, _ in before),
          "| Model requests counted (steps) | %d |" % s["requests"],
          "| Limit reached at | %s |" % (s["limit"]["at"].strftime("%d %b %H:%M:%S IST") if s["limit"] else "not reached"),
          "| What OpenCode said | %s |" % ((s["limit"] or {}).get("note") or "").replace("|", "/"),
          "| Other failures (not the limit) | %d |" % s["failed"],
          "| Typical answer time | %s |" % ("%.1f s (median)" % statistics.median(s["secs"]) if s["secs"] else "none"),
          "", "Free models offered logged out: %s" % ", ".join(models)]
-    if others:
-        r += ["", "## After the limit: the other free models", "", "| Model | Result | Note |", "| --- | --- | --- |"]
-        r += ["| %s | %s | %s |" % (m, o, n.replace("|", "/")) for m, o, _, n in others]
+    if before:
+        r += ["", "## The other free models, before and after the limit", "", "| Model | Before | After | Note |", "| --- | --- | --- | --- |"]
+        for m, o, _, n in before:
+            a = after.get(m)
+            r.append("| %s | %s | %s | %s |" % (m, o, a[0] if a else "not tried", ((a[3] if a else "") or n).replace("|", "/")[:200]))
     if s["fails"]:
         r += ["", "## Sample failures", ""] + ["- " + f.replace("\n", " ") for f in s["fails"]]
     r += ["", "Caveats: GitHub runners share addresses with other users' jobs, so the count may start part used. "

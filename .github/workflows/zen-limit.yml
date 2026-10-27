@@ -11,6 +11,8 @@ name: zen-limit
 on:
   push:
     branches: [measure-zen-limit]
+  schedule:
+    - cron: "15 0 28 10 *" # once, 28 Oct 05:45 IST: just after the 00:00 UTC reset (remove after)
   workflow_dispatch:
     inputs:
       model:
