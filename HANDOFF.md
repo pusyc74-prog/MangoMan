@@ -415,6 +415,18 @@ Touch files in the control dir to change the next coding request:
   screen and are denied in unattended runs); the **Buffer connector**
   (`internal/buffer`, `internal/ingress/buffer.go`, Send to Buffer in My
   Files: drafts only, in Buffer's documented form, no time on the draft).
+- **Hidden OpenCode engine, step A (28 Oct):** `mangoman engine opencode`
+  (unlisted; refused while MangoMan runs) or `MANGOMAN_ENGINE=opencode`
+  puts every OpenCode session on OpenCode's own models only; the switch
+  stays the default, unchanged. The switch as it worked on 27 Oct is the
+  branch `switch-frozen-1` (pushing tags is blocked from sessions). On
+  OpenCode's models the watchdogs watch OpenCode (screen: events, 2 min;
+  runs: output, 5 min), and at OpenCode's free daily limit MangoMan stops at
+  once with its own message (`freeLimit` in cmd/mangoman/assist.go, matched
+  to OpenCode's real wording). Checked against the real service by
+  `engine-check.yml` (push the branch `check-engine`); OpenCode's free
+  allowance is measured by `zen-limit.yml` (push `measure-zen-limit`): 40
+  and 32 messages per address and day.
 - **20 skill packs** with builders and checkers (scripts render and check;
   the model writes content); test sets for 7 (ad copy, listing, email,
   resume, SEO, social posts, website copy); ad copy pack 1.2.
@@ -441,6 +453,7 @@ Touch files in the control dir to change the next coding request:
 
 | Item | Notes |
 |---|---|
+| OpenCode engine step B: before it can be the default (28 Oct) | Owner: OpenCode only, switch kept and hidden. Still on the switch on OpenCode's models: Council's voices (council.py asks the router), Chargesheets' readout and Ask, the decision brain, `mangoman test`, usage stats (OpenCode's requests are not seen); the dashboard (Connections, keys, My list, models, usage) and the setup page still ask for provider keys. Then: new installs on OpenCode, existing users with keys stay on the switch (agreed); the free plan's message offers the subscription once it exists. Known limits: OpenCode's free allowance is about 30 to 40 messages per address per day (one task needs 100 to 160); a run printing nothing for 5 minutes (a slow model writing a big file) is resumed, three times at most; the limit message says all free messages are used up, while a model with its own count could still answer. |
 | Buffer: not yet tried with a real account (27 Oct) | Built and tested with a stand-in that follows Buffer's documentation (developers.buffer.com) and the field names a working client uses (Esturban/bfr: `post { id status }`, `isQueuePaused`). Drafts carry no time because a draft with `dueAt` is undocumented; if a real account shows it works, times could be added back, with a check that the post stays a draft. Pictures: Buffer's API takes only public links, so the owner adds each picture in Buffer. Next: the owner connects a free Buffer account and sends one calendar. SocialClaw stays a later second choice. |
 | Community skills: downloads not yet tried live (27 Oct) | GitHub's raw files cannot be reached from a session. Run the community-check workflow by hand (downloads every listed file and checks each SHA-256). Scripts of added skills ask on a screen and never run in an unattended run, so skills that need their scripts do less in agents' runs; 83 of them say they need packages the user installs. |
 | Competitor social research: what reads (20 Oct) | Pack mangoman-social-research, tried on real pages from a GitHub runner (workflow social-check, results on eval-reports under reports/social-check/). Reads: the Meta Ad Library in full (running ads, start dates, copy), YouTube Shorts lists with views, with dates from the channel's public feed. Partly: Google Ads Transparency (advertisers and ad counts, not the ads), TikTok Creative Center (top 3 hashtags logged out). Refused a cloud server: Instagram profiles (redirect to login), TikTok profiles, each YouTube video's own page, LinkedIn Ad Library (security block). Not yet tried from a home connection, which sites refuse less: ask the owner to run the Social Media Manager once on his computer. |
