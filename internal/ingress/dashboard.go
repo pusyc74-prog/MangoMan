@@ -125,6 +125,7 @@ func (s *Server) dashRoutes(mux *http.ServeMux) {
 	s.readyRoutes(mux)
 	s.briefRoutes(mux)
 	s.libraryRoutes(mux)
+	s.bufferRoutes(mux)
 	mux.Handle("POST /mangoman/quit", s.auth(http.HandlerFunc(s.quit)))
 	s.brainRoutes(mux)
 	s.agentRoutes(mux)

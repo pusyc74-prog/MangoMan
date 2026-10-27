@@ -22,6 +22,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/classify"
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
+	"github.com/pusyc74-prog/mangoman/internal/keys"
 	"github.com/pusyc74-prog/mangoman/internal/pyenv"
 	"github.com/pusyc74-prog/mangoman/internal/radar"
 	"github.com/pusyc74-prog/mangoman/internal/router"
@@ -60,6 +61,8 @@ type Server struct {
 	Ask func(prompt string) (string, error)
 	// Arch is Mango Arch, the shared learning; nil = not live in this build.
 	Arch *arch.Client
+	// Secrets keeps connectors' keys (Buffer); nil = none can be connected.
+	Secrets keys.Store
 	// Sheets is Chargesheets, the user's spreadsheets as dashboards; nil = off.
 	Sheets *sheets.Store
 	// Quit stops MangoMan (Stop MangoMan on the Settings page); nil = no button.

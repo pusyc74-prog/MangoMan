@@ -112,6 +112,8 @@ type ProjectItem struct {
 	Name     string    `json:"name"`
 	Dir      bool      `json:"dir"`
 	Modified time.Time `json:"modified"`
+	// Calendar: the task has a posting calendar it can send to Buffer.
+	Calendar bool `json:"calendar,omitempty"`
 }
 
 // filesList is My Files: what is in the projects folder, newest first.
@@ -131,7 +133,8 @@ func (s *Server) filesList(w http.ResponseWriter, _ *http.Request) {
 		if err != nil || strings.HasPrefix(e.Name(), ".") || e.Name() == "desktop.ini" {
 			continue
 		}
-		items = append(items, ProjectItem{Name: e.Name(), Dir: e.IsDir(), Modified: info.ModTime()})
+		items = append(items, ProjectItem{Name: e.Name(), Dir: e.IsDir(), Modified: info.ModTime(),
+			Calendar: e.IsDir() && calendarIn(filepath.Join(dir, e.Name())) != ""})
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].Modified.After(items[j].Modified) })
 	writeJSON(w, map[string]any{"folder": dir, "items": items})

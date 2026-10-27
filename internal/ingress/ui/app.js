@@ -1605,7 +1605,87 @@ async function loadFiles() {
   $("files-empty").hidden = r.items.length > 0;
   $("files").replaceChildren(...r.items.map((f) => el("li", {},
     el("span", { class: "name" }, f.name), el("span", { class: "when" }, new Date(f.modified).toLocaleString()),
+    f.calendar ? el("button", { type: "button", class: "ghost", "aria-label": `Send to Buffer: ${f.name}`, onclick: () => sendToBuffer(f.name) }, "Send to Buffer") : null,
     el("button", { type: "button", class: "ghost", onclick: () => openEntry(f.name) }, "Open"))));
+}
+
+// ---------- Buffer (optional auto-publish) ----------
+
+// sendToBuffer shows a task's posting calendar and, after the owner ticks
+// and approves, saves the posts as Buffer drafts with their planned times.
+// Buffer takes pictures only as web links, so the owner adds each picture
+// to its draft in Buffer before scheduling it.
+async function sendToBuffer(folder) {
+  const msg = el("p", { class: "msg", role: "status" });
+  let st;
+  try { st = await api("/mangoman/buffer"); } catch (err) { say(err.message, "err"); return; }
+  if (!st.connected || st.error) {
+    const key = el("input", { type: "password", id: "buffer-key", autocomplete: "off", maxlength: 512 });
+    modal("Connect Buffer", async () => {
+      msg.className = "msg"; msg.textContent = "Checking the key with Buffer\u2026";
+      try { await api("/mangoman/buffer", { method: "PUT", body: JSON.stringify({ key: key.value }) }); sendToBuffer(folder); }
+      catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+    },
+      el("p", { class: "sub" }, st.error ? `Buffer did not accept the saved key: ${st.error}` :
+        "Buffer posts to Instagram, Facebook, LinkedIn, X, Threads, TikTok, Pinterest and more. Its free plan allows 3 channels. Make an API key in Buffer (Settings, API) and paste it here. It is kept in this computer's key store."),
+      el("div", { class: "bf" }, el("label", { for: "buffer-key" }, "Buffer API key"), key),
+      el("div", { class: "brief-foot" }, el("button", { type: "submit", class: "primary" }, "Connect"), msg));
+    return;
+  }
+  let plan;
+  try { plan = await api(`/mangoman/buffer/plan?folder=${encodeURIComponent(folder)}`); } catch (err) { say(err.message, "err"); return; }
+  const channels = st.channels || [];
+  const pick = {}; // platform -> channel select
+  [...new Set(plan.rows.map((r) => r.platform))].forEach((p, n) => {
+    const svc = (plan.rows.find((r) => r.platform === p) || {}).service;
+    const fid = `buf-ch-${n}`;
+    const sel = el("select", { id: fid }, el("option", { value: "" }, "Do not send"),
+      ...channels.filter((c) => c.service === svc).map((c) => el("option", { value: c.id }, `${c.name} (${c.service})`)));
+    if (sel.options.length > 1) sel.selectedIndex = 1;
+    pick[p] = el("div", { class: "bf" }, el("label", { for: fid }, `${p} posts go to`), sel,
+      el("span", { class: "fine" }, !svc ? "Buffer cannot post here." : sel.options.length > 1 ? "" : `No ${p} channel in Buffer yet: connect one there first.`));
+  });
+  const ticks = plan.rows.map((r, i) => {
+    const box = el("input", { type: "checkbox", id: `buf-row-${i}`, checked: pick[r.platform].querySelector("select").options.length > 1 });
+    return { r, box, node: el("li", {}, box, el("label", { for: `buf-row-${i}` },
+      el("strong", {}, `${r.date} ${r.time || ""} \u00b7 ${r.platform} \u00b7 ${r.post}`),
+      el("span", { class: "fine" }, ` Picture to add in Buffer: ${r.images || "none"}`),
+      el("span", { class: "cap" }, r.caption))) };
+  });
+  const results = el("ul", { class: "buf-results" });
+  modal(`Send ${folder} to Buffer`, async () => {
+    const chosen = ticks.filter((t) => t.box.checked && pick[t.r.platform].querySelector("select").value);
+    if (!chosen.length) { msg.className = "msg err"; msg.textContent = "Tick at least one post with a channel to send it to."; return; }
+    msg.className = "msg"; msg.textContent = `Saving ${chosen.length} draft${chosen.length > 1 ? "s" : ""} in Buffer\u2026`;
+    // The server takes 60 drafts a call; a posted draft is unticked so it is not sent twice.
+    const lines = [];
+    let ok = 0;
+    try {
+      for (let i = 0; i < chosen.length; i += 60) {
+        const part = chosen.slice(i, i + 60);
+        const r = await api("/mangoman/buffer/drafts", { method: "POST", body: JSON.stringify({ drafts: part.map((t) => ({
+          channel: pick[t.r.platform].querySelector("select").value, text: t.r.caption, due: t.r.due || "" })) }) });
+        r.results.forEach((x, j) => {
+          if (x.ok) { ok++; part[j].box.checked = false; }
+          lines.push(el("li", { class: x.ok ? "ok" : "err" },
+            `${part[j].r.date} ${part[j].r.platform}: ${x.ok ? "saved as a draft" + (x.note ? ` (${x.note})` : "") : x.error}`));
+        });
+      }
+    } catch (err) { lines.push(el("li", { class: "err" }, err.message)); }
+    results.replaceChildren(...lines);
+    msg.className = ok === chosen.length ? "msg ok" : "msg err";
+    msg.textContent = `${ok} of ${chosen.length} saved as drafts.` + (ok ? " Open Buffer, add each picture and schedule it." : "");
+  },
+    el("p", { class: "sub" }, `MangoMan saves the posts you tick as drafts in Buffer, with their planned times (${plan.timezone}). Nothing is published until you add its picture in Buffer and schedule it.`),
+    Object.values(pick),
+    el("ul", { class: "buf-rows" }, ticks.map((t) => t.node)),
+    results,
+    el("div", { class: "brief-foot" }, el("button", { type: "submit", class: "primary" }, "Approve and save as drafts"), msg,
+      el("button", { type: "button", class: "ghost", onclick: async () => {
+        if (!confirm("Disconnect Buffer? The key is removed from this computer.")) return;
+        try { await api("/mangoman/buffer", { method: "DELETE" }); $("modal").close(); say("Buffer disconnected.", "ok"); }
+        catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+      } }, "Disconnect Buffer")));
 }
 
 async function openEntry(name) {
