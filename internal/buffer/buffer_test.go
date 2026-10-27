@@ -64,6 +64,8 @@ func TestDraft(t *testing.T) {
 			return 200, `{"errors":[{"message":"Too many requests","extensions":{"code":"RATE_LIMIT_EXCEEDED"}}]}`
 		case strings.Contains(q, `"nokey"`):
 			return 200, `{"errors":[{"message":"Not authorized","extensions":{"code":"UNAUTHORIZED"}}]}`
+		case strings.Contains(q, `"nostatus"`):
+			return 200, `{"data":{"createPost":{"post":{"id":"p8"}}}}`
 		case strings.Contains(q, `"live"`):
 			return 200, `{"data":{"createPost":{"post":{"id":"p9","status":"scheduled"}}}}`
 		}
@@ -95,7 +97,10 @@ func TestDraft(t *testing.T) {
 	if _, err := Draft(context.Background(), "good-key", "nokey", "x"); !errors.Is(err, ErrKey) {
 		t.Fatalf("a refused key as Buffer documents it: %v", err)
 	}
-	if id, err := Draft(context.Background(), "good-key", "live", "x"); err == nil || id != "p9" || !strings.Contains(err.Error(), "not as a draft") {
+	if id, err := Draft(context.Background(), "good-key", "live", "x"); !errors.Is(err, ErrNotDraft) || id != "p9" {
 		t.Fatalf("a post Buffer did not keep as a draft must be flagged: %q %v", id, err)
+	}
+	if _, err := Draft(context.Background(), "good-key", "nostatus", "x"); !errors.Is(err, ErrNotDraft) {
+		t.Fatalf("a post with no status is not known to be a draft: %v", err)
 	}
 }

@@ -185,7 +185,8 @@ func (s *Server) bufferPlan(w http.ResponseWriter, r *http.Request) {
 }
 
 // bufferDrafts saves the posts the owner approved as Buffer drafts, one
-// request each, and stops at a refused key or a used-up limit.
+// request each, and stops (saying so, so the page sends no more) at a
+// refused key, a used-up limit or a post Buffer did not keep as a draft.
 func (s *Server) bufferDrafts(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Drafts []struct {
@@ -219,7 +220,7 @@ func (s *Server) bufferDrafts(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		id, err := buffer.Draft(r.Context(), key, d.Channel, d.Text)
-		if errors.Is(err, buffer.ErrKey) || errors.Is(err, buffer.ErrLimit) {
+		if errors.Is(err, buffer.ErrKey) || errors.Is(err, buffer.ErrLimit) || errors.Is(err, buffer.ErrNotDraft) {
 			stop = "not sent: " + err.Error()
 		}
 		if err != nil {
@@ -228,5 +229,5 @@ func (s *Server) bufferDrafts(w http.ResponseWriter, r *http.Request) {
 		}
 		out = append(out, result{OK: true, ID: id})
 	}
-	writeJSON(w, map[string]any{"results": out})
+	writeJSON(w, map[string]any{"results": out, "stopped": stop != ""})
 }

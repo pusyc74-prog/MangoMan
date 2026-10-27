@@ -31,9 +31,9 @@ type Source struct {
 	Name        string `json:"name"`
 	Repo        string `json:"repo"` // owner/name on GitHub
 	Commit      string `json:"commit"`
-	Root        string `json:"root,omitempty"`         // folder the skills are under
-	License     string `json:"license"`                // SPDX id
-	LicenseFile string `json:"license_file,omitempty"` // in the repository, copied next to each skill
+	Root        string `json:"root,omitempty"` // folder the skills are under
+	License     string `json:"license"`        // SPDX id
+	LicenseFile string `json:"-"`              // in the repository; the index builder reads it into LicenseText
 	LicenseText string `json:"license_text,omitempty"`
 }
 

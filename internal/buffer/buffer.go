@@ -27,11 +27,13 @@ var URL = "https://api.buffer.com"
 
 var client = &http.Client{Timeout: 30 * time.Second}
 
-// ErrKey and ErrLimit are Buffer refusing the key and the key's request
-// limit being used up; nothing more should be sent after either.
+// ErrKey, ErrLimit and ErrNotDraft are Buffer refusing the key, the key's
+// request limit being used up, and Buffer keeping a post as anything but a
+// draft; nothing more should be sent after any of them.
 var (
-	ErrKey   = errors.New("Buffer refused the key: check it at publish.buffer.com/settings/api")
-	ErrLimit = errors.New("Buffer's request limit for this key is used up")
+	ErrKey      = errors.New("Buffer refused the key: check it at publish.buffer.com/settings/api")
+	ErrLimit    = errors.New("Buffer's request limit for this key is used up")
+	ErrNotDraft = errors.New("Buffer did not keep this post as a draft: open Buffer and check it now")
 )
 
 // Channel is one social account connected in Buffer.
@@ -44,7 +46,8 @@ type Channel struct {
 
 // call runs one GraphQL request and decodes data into out. Buffer answers
 // HTTP 200 with an error code for a bad key or the limit; the HTTP codes
-// are read too.
+// are read too. FORBIDDEN (a good key without that permission) is Buffer's
+// own message, not a refused key.
 func call(ctx context.Context, key, query string, out any) error {
 	body, _ := json.Marshal(map[string]string{"query": query})
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, URL, bytes.NewReader(body))
@@ -77,7 +80,7 @@ func call(ctx context.Context, key, query string, out any) error {
 		code = r.Errors[0].Extensions.Code
 	}
 	switch {
-	case resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden || code == "UNAUTHORIZED" || code == "FORBIDDEN":
+	case resp.StatusCode == http.StatusUnauthorized || code == "UNAUTHORIZED":
 		return ErrKey
 	case resp.StatusCode == http.StatusTooManyRequests || code == "RATE_LIMIT_EXCEEDED":
 		wait := "a few minutes"
@@ -149,8 +152,8 @@ func Draft(ctx context.Context, key, channel, text string) (string, error) {
 			msg = "the draft was not saved"
 		}
 		return "", errors.New("Buffer: " + msg)
-	case p.Status != "" && !strings.EqualFold(p.Status, "draft"):
-		return p.ID, fmt.Errorf("Buffer saved this post as %q, not as a draft: open Buffer and check it now", p.Status)
+	case !strings.EqualFold(p.Status, "draft"):
+		return p.ID, fmt.Errorf("%w (it says %q)", ErrNotDraft, p.Status)
 	}
 	return r.CreatePost.Post.ID, nil
 }

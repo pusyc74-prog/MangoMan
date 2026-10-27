@@ -103,7 +103,8 @@ func TestBuffer(t *testing.T) {
 	}
 	n := len(*seen)
 	w = call(h, "POST", "/mangoman/buffer/drafts", host, authz, `{"drafts":[{"channel":"busy","text":"a"},{"channel":"ig","text":"b"}]}`)
-	if _ = json.Unmarshal(w.Body.Bytes(), &res); len(res.Results) != 2 || res.Results[0].OK || !strings.Contains(res.Results[1].Error, "not sent") || len(*seen) != n+1 {
+	if _ = json.Unmarshal(w.Body.Bytes(), &res); len(res.Results) != 2 || res.Results[0].OK || !strings.Contains(res.Results[1].Error, "not sent") || len(*seen) != n+1 ||
+		!strings.Contains(w.Body.String(), `"stopped": true`) {
 		t.Fatalf("after the limit is used up, nothing more is tried: %s (%d requests)", w.Body, len(*seen)-n)
 	}
 	// A saved key Buffer now refuses asks for a new one; nothing else does.

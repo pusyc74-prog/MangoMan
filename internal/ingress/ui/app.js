@@ -1615,7 +1615,7 @@ async function loadFiles() {
 // ---------- Buffer (optional auto-publish) ----------
 
 // sendToBuffer shows a task's posting calendar and, after the owner ticks
-// and approves, saves the posts as Buffer drafts with their planned times.
+// and approves, saves the posts as Buffer drafts (no time: the owner sets it in Buffer).
 // Buffer takes pictures only as web links, so the owner adds each picture
 // to its draft in Buffer before scheduling it.
 async function sendToBuffer(folder) {
@@ -1672,10 +1672,11 @@ async function sendToBuffer(folder) {
         const part = chosen.slice(i, i + 60);
         const r = await api("/mangoman/buffer/drafts", { method: "POST", body: JSON.stringify({ drafts: part.map((t) => ({
           channel: pick[t.r.platform].querySelector("select").value, text: t.r.caption })) }) });
+        stopped = r.stopped;
         r.results.forEach((x, j) => {
           const t = part[j];
-          if (x.ok) { ok++; t.box.checked = false; }
-          stopped = stopped || (x.error || "").startsWith("not sent");
+          if (x.ok) ok++;
+          if (x.id) t.box.checked = false; // in Buffer already, whatever came back
           lines.push(el("li", { class: x.ok ? "ok" : "err" }, `${t.r.date} ${t.r.platform}: ` +
             (x.ok ? `saved as a draft. Add ${t.r.images || "its picture"} and schedule it for ${t.r.date} ${t.r.time}`.trim() : x.error)));
         });

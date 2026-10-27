@@ -216,14 +216,18 @@ func openCodeConfig(cfg *config.Config, model string, mode int, rules string, pr
 	}
 	// Community skills' scripts were written by other people: the user is
 	// asked before one runs, and an unattended run never runs one. Best
-	// effort, as above.
-	if idx, err := skills.Community(); err == nil {
+	// effort, as above (a command that first changes into the folder is not
+	// seen). The path is the real skills folder (OpenCode reads \ as /), and
+	// "**" sorts these keys before the deny keys above, so a deny still wins.
+	idx, ierr := skills.Community()
+	cd, cerr := config.Dir()
+	if ierr == nil && cerr == nil {
 		rule := "ask"
 		if mode == modeRun {
 			rule = "deny"
 		}
 		for _, src := range idx.Sources {
-			bash["*skills/"+src.ID+"-*"] = rule
+			bash["**"+filepath.Join(cd, "opencode", "skills", src.ID+"-")+"*"] = rule
 		}
 	}
 	c["permission"] = map[string]any{"bash": bash}

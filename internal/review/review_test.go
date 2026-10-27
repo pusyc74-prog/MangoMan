@@ -41,3 +41,17 @@ func TestScan(t *testing.T) {
 		t.Fatal(r)
 	}
 }
+
+// Real token shapes are secrets; names that only start like one are code.
+func TestSecretShapes(t *testing.T) {
+	for line, want := range map[string]bool{
+		"t = github_pat_11ABCDEFG0123456789abc_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456": true,
+		"-----BEGIN ENCRYPTED PRIVATE KEY-----":        true,
+		"github_pat_expiration_reminder_days = 7":      false,
+		"const prefix = \"github_pat_\" // token kind": false,
+	} {
+		if got := Secret(line) != ""; got != want {
+			t.Errorf("%q: secret %v, want %v", line, got, want)
+		}
+	}
+}
