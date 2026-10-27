@@ -273,9 +273,9 @@ func (s *Server) status(w http.ResponseWriter, _ *http.Request) {
 // watches OpenCode instead.
 func (s *Server) busy(w http.ResponseWriter, _ *http.Request) {
 	n, idle := s.Router.Busy()
-	out := map[string]any{"in_flight": n, "idle_s": int(idle.Seconds()), "engine": config.EngineSwitch}
-	if s.Cfg != nil {
-		out["engine"] = s.Cfg.GetEngine()
+	out := map[string]any{"in_flight": n, "idle_s": int(idle.Seconds())}
+	if s.Cfg != nil && s.Cfg.GetEngine() == config.EngineOpenCode {
+		out["engine"] = config.EngineOpenCode // the switch, the default, goes unnamed
 	}
 	if a, ok := s.Router.Trying(); ok {
 		out["now"], out["waiting_s"] = a, int(time.Since(a.Since).Seconds())

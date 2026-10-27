@@ -17,8 +17,7 @@ const st = {
   waiting: new Set(),  // approvals and questions waiting for you
   restarts: 0,         // stalls restarted since your last message
   restartedAt: 0,      // a send or a restart needs a minute of its own before the next restart
-  engine: "switch",    // "opencode": OpenCode's own models, which MangoMan does not see
-  lastEvent: 0,        // when OpenCode last reported anything about this chat
+  lastEvent: 0,        // when OpenCode last reported anything about this chat (on its own models)
   limitShown: false,   // the free limit message, once per message sent
 };
 
@@ -220,14 +219,13 @@ async function watch() {
   if (!st.working) return;
   let b;
   try { b = await api("/mangoman/busy"); } catch (_) { return; }
-  st.engine = b.engine || "switch";
-  if (st.engine === "opencode") {
+  if (b.engine === "opencode") {
     // MangoMan sees none of these requests: what OpenCode reports about the
     // chat is the only sign of work. A free model can take a while to start.
     const quiet = Date.now() - Math.max(st.lastEvent, st.restartedAt);
     if (quiet >= 120000 && !st.running.size && !st.waiting.size) {
       st.restartedAt = Date.now();
-      await restart();
+      await restart("2 minutes");
     }
     return;
   }
@@ -253,16 +251,16 @@ function settle() {
   st.waiting.clear();
 }
 
-async function restart() {
+async function restart(quiet = "a minute") {
   const sid = st.session.id;
   await api(`${OC}/session/${sid}/abort`, { method: "POST" }).catch(() => {});
   if (st.restarts >= 2) {
     busy(false);
-    note("Nothing has happened for a minute again. The free models may be overloaded: try again in a few minutes.", true);
+    note(`Nothing has happened for ${quiet} again. The free models may be overloaded: try again in a few minutes.`, true);
     return;
   }
   st.restarts++;
-  note("Nothing happened for a minute, so MangoMan restarted this step.");
+  note(`Nothing happened for ${quiet}, so MangoMan restarted this step.`);
   try {
     await api(`${OC}/session/${sid}/prompt_async`, {
       method: "POST", body: JSON.stringify({ agent: st.agent, parts: [{ type: "text", text: RESUME, synthetic: true }] }),

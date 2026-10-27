@@ -391,6 +391,11 @@ func cmdCode(args []string) error {
 		}
 		fmt.Printf("Started MangoMan for this session (log: %s).\n", logPath)
 	}
+	// The screens watch the engine MangoMan runs with; a session on another
+	// one would be restarted as stalled.
+	if running := runningEngine(cfg); running != cfg.GetEngine() {
+		return fmt.Errorf("MangoMan is running on the %s engine and this session asks for %s: restart MangoMan with the same setting", running, cfg.GetEngine())
+	}
 
 	// Skill scripts that ask models themselves (the Council) reach the
 	// router with the session's own token.
@@ -514,7 +519,8 @@ func cmdCode(args []string) error {
 		if errors.Is(err, exec.ErrWaitDelay) {
 			err = nil // OpenCode ended; only something it started still holds the output
 		}
-		if limited.Load() {
+		// Also a limit OpenCode logged just before it ended, between checks.
+		if limited.Load() || (ocOnly && mode == modeRun && freeLimit.MatchString(tail.String())) {
 			return freeLimitError(time.Now())
 		}
 		// Measured on real free models: a model that goes quiet in the middle
@@ -601,6 +607,19 @@ func watchStall(cfg *config.Config, p *os.Process, done <-chan struct{}, stalled
 	}
 }
 
+// runningEngine is the engine the running MangoMan uses: its busy report
+// names it only for OpenCode's own models.
+func runningEngine(cfg *config.Config) string {
+	out, err := localSend(cfg, http.MethodGet, "/mangoman/busy", nil)
+	var b struct {
+		Engine string `json:"engine"`
+	}
+	if err != nil || json.Unmarshal(out, &b) != nil || b.Engine != config.EngineOpenCode {
+		return config.EngineSwitch
+	}
+	return config.EngineOpenCode
+}
+
 // openCodeStall is how long a run on OpenCode's own models may print
 // nothing, with no command running, before it counts as stalled. MangoMan
 // sees none of those requests, so OpenCode's output is the only sign of
@@ -609,12 +628,15 @@ func watchStall(cfg *config.Config, p *os.Process, done <-chan struct{}, stalled
 const openCodeStall = 5 * time.Minute
 
 // freeLimit is OpenCode's own log line ("timestamp=... level=...") for an
-// error from its own models' service naming the free daily limit. The line
-// carries the error's message only: "Rate limit exceeded. Please try again
-// later." (what OpenCode's service sends a logged-out user at that limit,
-// read in its code), or "Free usage limit reached" / "Free usage exceeded"
-// (seen by users). The model's own words never start a line so.
-var freeLimit = regexp.MustCompile(`(?im)^timestamp=\S+ level=\S+ .*providerID=opencode\b.*(FreeUsageLimitError|free usage (exceeded|limit)|rate limit exceeded)`)
+// error from its own models' service at the free daily limit. The line
+// carries the error's message only, right after the error's name (also
+// when OpenCode gave up after retries): "Rate limit exceeded. Please try
+// again later." (what the service sends a logged-out user at that limit,
+// read in its code) or "Free usage limit reached" / "Free usage exceeded"
+// (seen by users). A provider's own limit passed on by the service starts
+// "Error from provider" and is not matched; the model's words never start
+// a line so.
+var freeLimit = regexp.MustCompile(`(?im)^timestamp=\S+ level=\S+ .*providerID=opencode\b.*\berror(?:\.error)?="AI_\w+: (?:Failed after \d+ attempts\. Last error: )?(?:Rate limit exceeded\. Please try again later|Free usage (?:limit|exceeded))`)
 
 // watchOpenCode is watchStall for a run on OpenCode's own models: it stops
 // OpenCode at once when the free daily limit shows (OpenCode would wait
