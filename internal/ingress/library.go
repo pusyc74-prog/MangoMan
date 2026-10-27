@@ -129,9 +129,11 @@ func (s *Server) skillsList(w http.ResponseWriter, _ *http.Request) {
 	for _, p := range packs {
 		out = append(out, librarySkill{Pack: p})
 	}
+	idx, _ := skills.Community()
 	entries, _ := os.ReadDir(dir)
 	for _, e := range entries {
-		if !e.IsDir() || strings.HasPrefix(e.Name(), "mangoman-") {
+		// A dot folder is a community skill still downloading (OpenCode skips them too).
+		if !e.IsDir() || strings.HasPrefix(e.Name(), "mangoman-") || strings.HasPrefix(e.Name(), ".") {
 			continue
 		}
 		if _, err := os.Stat(filepath.Join(dir, e.Name(), skills.Marker)); err == nil || fromAgent(dir, e.Name()) {
@@ -146,6 +148,10 @@ func (s *Server) skillsList(w http.ResponseWriter, _ *http.Request) {
 			ls.Name, ls.Error = e.Name(), err.Error()
 		} else if ls.Name != e.Name() {
 			ls.Name, ls.Error = e.Name(), "the name in SKILL.md must match its folder"
+		}
+		// "Added from" is shown only for a skill the community list has by that name and source.
+		if k, _, ok := idx.Find(ls.Name); ls.Source != "" && (!ok || k.Source != ls.Source) {
+			ls.Source = ""
 		}
 		out = append(out, ls)
 	}
@@ -256,6 +262,7 @@ func (s *Server) communityList(w http.ResponseWriter, r *http.Request) {
 		Orig        string   `json:"orig"`
 		Source      string   `json:"source"`
 		Description string   `json:"description"`
+		License     string   `json:"license"`
 		Needs       []string `json:"needs,omitempty"`
 		Tokens      int      `json:"tokens"`
 		Added       bool     `json:"added"`
@@ -276,7 +283,8 @@ func (s *Server) communityList(w http.ResponseWriter, r *http.Request) {
 		}
 		if total++; len(out) < 60 {
 			_, err := os.Stat(filepath.Join(dir, k.Name, "SKILL.md"))
-			out = append(out, skillOut{k.Name, k.Orig, k.Source, k.Description, k.Needs, k.RequestTokens(), err == nil})
+			_, s, _ := idx.Find(k.Name)
+			out = append(out, skillOut{k.Name, k.Orig, k.Source, k.Description, s.License, k.Needs, k.RequestTokens(), err == nil})
 		}
 	}
 	writeJSON(w, map[string]any{"sources": sources, "total": total, "skills": out})

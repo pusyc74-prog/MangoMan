@@ -96,6 +96,15 @@ func TestOpenCodeConfigUIAsksFirst(t *testing.T) {
 	if c.Tools != nil {
 		t.Fatal("the coding screen keeps every tool, including questions")
 	}
+	// Community skills' scripts ask on a screen and never run unattended.
+	if c.Permission.Bash["*skills/ecc-*"] != "ask" {
+		t.Fatalf("community scripts on the coding screen: %v", c.Permission.Bash)
+	}
+	c.Permission.Bash = nil
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141}, "free/coder", modeRun, "", true)), &c)
+	if c.Permission.Bash["*skills/rezvani-*"] != "deny" || c.Permission.Bash["*"] != "allow" {
+		t.Fatalf("community scripts in an unattended run: %v", c.Permission.Bash)
+	}
 }
 
 func TestResumeArgs(t *testing.T) {

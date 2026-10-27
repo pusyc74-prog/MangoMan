@@ -27,6 +27,15 @@ func TestCommunityIndex(t *testing.T) {
 				t.Errorf("%s: bad file %+v", k.Name, f)
 			}
 		}
+		// Every skill is under MIT or Apache-2.0, and ships that license's text
+		// unless it carries its own license file.
+		own := false
+		for _, f := range k.Files {
+			own = own || strings.HasPrefix(strings.ToUpper(filepath.Base(f.Path)), "LICENSE")
+		}
+		if (src.License != "MIT" && src.License != "Apache-2.0") || (!own && !strings.Contains(src.LicenseText, map[string]string{"MIT": "Permission is hereby granted", "Apache-2.0": "Apache License"}[src.License])) {
+			t.Errorf("%s: license %q, own file %v, text %d bytes", k.Name, src.License, own, len(src.LicenseText))
+		}
 		if !ok || !hasSkill || strings.HasPrefix(k.Name, "mangoman-") || !strings.HasPrefix(k.Name, k.Source+"-") {
 			t.Errorf("%s: source %q, SKILL.md %v", k.Name, k.Source, hasSkill)
 			continue
@@ -65,7 +74,7 @@ func TestInstallCommunity(t *testing.T) {
 	}
 	raw, _ := os.ReadFile(filepath.Join(dir, k.Name, "SKILL.md"))
 	p, err := ParseSkill(raw)
-	if err != nil || p.Name != "demo-tidy" || p.Kind != "pack" || p.Source != "demo" || p.Description != "Tidy things: carefully." ||
+	if err != nil || p.Name != "demo-tidy" || p.Kind != "method" || p.Source != "demo" || p.Description != "Tidy things: carefully." ||
 		!strings.HasSuffix(string(raw), "# Tidy\nDo it.\n") {
 		t.Fatalf("installed SKILL.md reads as %+v %v:\n%s", p, err, raw)
 	}
@@ -74,6 +83,28 @@ func TestInstallCommunity(t *testing.T) {
 	}
 	if InstallCommunity(k, src, filepath.Join(dir, k.Name)) == nil {
 		t.Fatal("a second add overwrote the first")
+	}
+	// Two adds at once: one wins, the other is refused, no download folder stays.
+	errs := make(chan error, 2)
+	for range 2 {
+		go func() { errs <- InstallCommunity(k, src, filepath.Join(dir, "twice")) }()
+	}
+	if a, b := <-errs, <-errs; (a == nil) == (b == nil) {
+		t.Fatalf("two adds at once: %v, %v", a, b)
+	}
+	if left, _ := filepath.Glob(filepath.Join(dir, ".adding-*")); len(left) > 0 {
+		t.Fatalf("download folders left: %v", left)
+	}
+	// A skill with its own license file keeps it and gets no other.
+	files["LICENSE"] = "MIT License\n\nCopyright (c) 2026 Someone\n"
+	sum := sha256.Sum256([]byte(files["LICENSE"]))
+	k2 := k
+	k2.Files = append(append([]CommunityFile{}, k.Files...), CommunityFile{Path: "LICENSE", Size: int64(len(files["LICENSE"])), Sum: hex.EncodeToString(sum[:])})
+	if err := InstallCommunity(k2, src, filepath.Join(dir, "own")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "own", "LICENSE-demo.txt")); err == nil {
+		t.Fatal("a skill with its own license also got its source's")
 	}
 	// A changed file upstream is refused, and nothing is left behind.
 	files["scripts/run.py"] = "import os; os.system('rm -rf ~')\n"
@@ -84,6 +115,10 @@ func TestInstallCommunity(t *testing.T) {
 		t.Fatal("a refused skill left a folder")
 	}
 	k.Files[0].Path = "../escape.md"
+	if InstallCommunity(k, src, filepath.Join(dir, "third")) == nil {
+		t.Fatal("a path out of the skill's folder was accepted")
+	}
+	k.Files[0].Path = "/etc/escape.md"
 	if InstallCommunity(k, src, filepath.Join(dir, "third")) == nil {
 		t.Fatal("a path out of the skill's folder was accepted")
 	}

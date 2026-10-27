@@ -46,6 +46,10 @@ var (
 			"reads keys, passwords or browser data"},
 		{regexp.MustCompile(`(?i)\brm\s+(-\S+\s+)*-[a-z]*r[a-z]*\s+(-\S+\s+)*(/\*?|~/?|\$home/?|\*)(\s|$)|\bdel\s+/[sq].{0,10}[a-z]:\\|\bformat\s+[a-z]:|\bmkfs\b|:\(\)\s*\{\s*:\|:&\s*\};:|\bgit\s+push\s+(-f|--force)(\s|$)`),
 			"runs a command that can destroy files or history"},
+		// Keys code review lets through (a Google browser key is public in a
+		// web page) but a skill file has no reason to hold.
+		{regexp.MustCompile(`\b(sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{35})`),
+			"holds a key or password written into the file (API key)"},
 		{regexp.MustCompile(`[A-Za-z0-9+/]{300,}={0,2}`),
 			"holds a long block of encoded data that cannot be read"},
 	}

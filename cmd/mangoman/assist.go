@@ -214,6 +214,18 @@ func openCodeConfig(cfg *config.Config, model string, mode int, rules string, pr
 		// Best effort: the patterns match the command's text.
 		bash["*"+ad+"*"], bash["*mangoman/agents/*"], bash["*agents/*/scripts/*"] = "deny", "deny", "deny"
 	}
+	// Community skills' scripts were written by other people: the user is
+	// asked before one runs, and an unattended run never runs one. Best
+	// effort, as above.
+	if idx, err := skills.Community(); err == nil {
+		rule := "ask"
+		if mode == modeRun {
+			rule = "deny"
+		}
+		for _, src := range idx.Sources {
+			bash["*skills/"+src.ID+"-*"] = rule
+		}
+	}
 	c["permission"] = map[string]any{"bash": bash}
 	if rules != "" {
 		c["instructions"] = []string{rules}

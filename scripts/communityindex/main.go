@@ -34,7 +34,7 @@ import (
 var sources = []skills.Source{
 	{ID: "ecc", Name: "everything-claude-code", Repo: "affaan-m/everything-claude-code", Commit: "25278e7d7b6cf6e6a4e7a6c8e10f14ff22f0eb5b", Root: "skills", License: "MIT", LicenseFile: "LICENSE"},
 	{ID: "superpowers", Name: "superpowers", Repo: "obra/superpowers", Commit: "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b", Root: "skills", License: "MIT", LicenseFile: "LICENSE"},
-	{ID: "anthropic", Name: "Anthropic skills", Repo: "anthropics/skills", Commit: "dbd4588f9e1033efb41dad4bef2f7947c8993d44", Root: "skills", License: "Apache-2.0"},
+	{ID: "anthropic", Name: "Anthropic skills", Repo: "anthropics/skills", Commit: "dbd4588f9e1033efb41dad4bef2f7947c8993d44", Root: "skills"}, // each skill carries its own license file
 	{ID: "rezvani", Name: "claude-skills", Repo: "alirezarezvani/claude-skills", Commit: "5434623a788ec3105d238328cfe554e1e2242ff7", Root: "", License: "MIT", LicenseFile: "LICENSE"},
 }
 
@@ -59,7 +59,7 @@ func main() {
 		}
 		clones[id] = dir
 	}
-	idx := skills.CommunityIndex{}
+	idx := skills.CommunityIndex{Licenses: map[string]string{"Apache-2.0": apacheText(clones["anthropic"])}}
 	why := map[string]int{}
 	for _, src := range sources {
 		dir := clones[src.ID]
@@ -118,7 +118,8 @@ func main() {
 func skill(src skills.Source, repo, dir string) (skills.CommunitySkill, string) {
 	var k skills.CommunitySkill
 	raw, _ := os.ReadFile(filepath.Join(dir, "SKILL.md"))
-	name, desc, ok := frontmatter(string(raw))
+	fm, ok := frontmatter(string(raw))
+	name, desc := fm["name"], fm["description"]
 	if !ok || name == "" || desc == "" || utf8.RuneCountInString(desc) > 1024 {
 		return k, "no clear name or description"
 	}
@@ -133,6 +134,7 @@ func skill(src skills.Source, repo, dir string) (skills.CommunitySkill, string) 
 	}
 	var total int64
 	needs := map[string]bool{}
+	files := map[string]bool{} // the licenses of the skill's own license files ("" when not MIT or Apache)
 	bad := ""
 	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil || bad != "" {
@@ -166,7 +168,10 @@ func skill(src skills.Source, repo, dir string) (skills.CommunitySkill, string) 
 			needs[m+" set"] = true
 		}
 		if installs.Match(b) {
-			needs["installs packages"] = true
+			needs["packages you install yourself (MangoMan's agents do not install any)"] = true
+		}
+		if strings.HasPrefix(strings.ToUpper(d.Name()), "LICENSE") {
+			files[licenseOf(string(b))] = true
 		}
 		total += int64(len(b))
 		sum := sha256.Sum256(b)
@@ -179,8 +184,40 @@ func skill(src skills.Source, repo, dir string) (skills.CommunitySkill, string) 
 		return k, bad
 	case total > maxSkillBytes || len(k.Files) > maxFiles:
 		return k, "too big"
-	case src.ID == "anthropic" && !apache(dir):
-		return k, "not under an open license"
+	}
+	// A license file in a folder above the skill's is not downloaded with it:
+	// the skill is listed only when that file is the repository's own.
+	for up := filepath.Dir(dir); up != repo && strings.HasPrefix(up, repo); up = filepath.Dir(up) {
+		found, _ := filepath.Glob(filepath.Join(up, "[Ll][Ii][Cc][Ee][Nn][Ss][Ee]*"))
+		for _, f := range found {
+			if b, _ := os.ReadFile(f); strings.Join(strings.Fields(string(b)), " ") != strings.Join(strings.Fields(src.LicenseText), " ") {
+				return k, "its license is outside its folder"
+			}
+		}
+	}
+	// The skill's own license (its front matter, its license files) comes
+	// before the repository's. Only MIT and Apache-2.0 are passed on.
+	lic := strings.Trim(fm["license"], `"' `)
+	if lic != "" && !open[lic] && !strings.HasPrefix(lic, "Complete terms in LICENSE") {
+		return k, "not under MIT or Apache-2.0"
+	}
+	if files[""] || len(files) > 1 {
+		return k, "not under MIT or Apache-2.0"
+	}
+	for f := range files {
+		if open[lic] && f != lic {
+			return k, "license unclear"
+		}
+		lic = f
+	}
+	if !open[lic] {
+		lic = src.License // the anthropic source has none: each skill must carry its own
+	}
+	if !open[lic] {
+		return k, "not under MIT or Apache-2.0"
+	}
+	if lic != src.License {
+		k.License = lic
 	}
 	for n := range needs {
 		k.Needs = append(k.Needs, n)
@@ -189,50 +226,106 @@ func skill(src skills.Source, repo, dir string) (skills.CommunitySkill, string) 
 	return k, ""
 }
 
-// apache reports whether an Anthropic skill folder carries the Apache
-// License (its document skills are source-available only).
-func apache(dir string) bool {
-	raw, err := os.ReadFile(filepath.Join(dir, "LICENSE.txt"))
-	return err == nil && bytes.Contains(raw, []byte("Apache License"))
+// apacheText is the Apache License 2.0's terms, from an Anthropic skill's
+// license file, for skills that are under it in a repository that is not.
+func apacheText(clone string) string {
+	raw, err := os.ReadFile(filepath.Join(clone, "skills", "skill-creator", "LICENSE.txt"))
+	t, _, ok := strings.Cut(string(raw), "END OF TERMS AND CONDITIONS")
+	if err != nil || !ok || licenseOf(t) != "Apache-2.0" {
+		fail("no Apache License text in the anthropic clone")
+	}
+	return t + "END OF TERMS AND CONDITIONS\n"
 }
 
-// frontmatter reads name and description, including a description written
-// over several lines (YAML > or |).
-func frontmatter(s string) (name, desc string, ok bool) {
+var open = map[string]bool{"MIT": true, "Apache-2.0": true}
+
+// licenseOf names the license a license file holds: MIT, Apache-2.0, or ""
+// for anything else (source-available terms, share-alike, two layers).
+func licenseOf(t string) string {
+	t = strings.Join(strings.Fields(t), " ")
+	switch {
+	case strings.HasPrefix(t, "MIT License") && strings.Contains(t, "Permission is hereby granted, free of charge"):
+		return "MIT"
+	case strings.HasPrefix(t, "Apache License Version 2.0, January 2004"):
+		return "Apache-2.0"
+	}
+	return ""
+}
+
+// frontmatter reads the top-level keys of a SKILL.md's YAML front matter as
+// YAML does for the forms skills use: plain values (also over several
+// lines), single and double quotes, and > or | blocks. Each value comes
+// back on one line, its spaces collapsed.
+func frontmatter(s string) (map[string]string, bool) {
 	s = strings.TrimPrefix(strings.ReplaceAll(s, "\r\n", "\n"), "\uFEFF")
 	if !strings.HasPrefix(s, "---\n") {
-		return "", "", false
+		return nil, false
 	}
 	end := strings.Index(s[4:], "\n---")
 	if end < 0 {
-		return "", "", false
+		return nil, false
 	}
 	lines := strings.Split(s[4:4+end], "\n")
+	out := map[string]string{}
 	for i := 0; i < len(lines); i++ {
 		k, v, found := strings.Cut(lines[i], ":")
-		if !found || strings.HasPrefix(k, " ") {
+		if !found || k == "" || k[0] == ' ' || k[0] == '#' || strings.ContainsAny(k, " \t") {
 			continue
 		}
 		v = strings.TrimSpace(v)
-		if v == ">" || v == "|" || v == ">-" || v == "|-" || v == "" {
-			var parts []string
-			for i+1 < len(lines) && (strings.HasPrefix(lines[i+1], " ") || strings.TrimSpace(lines[i+1]) == "") {
-				i++
-				if t := strings.TrimSpace(lines[i]); t != "" {
-					parts = append(parts, t)
-				}
-			}
-			v = strings.Join(parts, " ")
+		// The lines that belong to this key: the indented (or blank) ones after it.
+		j := i + 1
+		for j < len(lines) && (strings.HasPrefix(lines[j], " ") || strings.HasPrefix(lines[j], "\t") || strings.TrimSpace(lines[j]) == "") {
+			j++
 		}
-		v = strings.Trim(v, `"'`)
-		switch k {
-		case "name":
-			name = v
-		case "description":
-			desc = v
+		more := lines[i+1 : j]
+		i = j - 1
+		switch {
+		case v == "" || v[0] == '>' || v[0] == '|':
+			v = strings.Join(more, " ")
+		case v[0] == '"' || v[0] == '\'':
+			v = quoted(strings.Join(append([]string{v}, more...), "\n"))
+		default:
+			if c := strings.Index(v, " #"); c >= 0 {
+				v = v[:c]
+			}
+			v = strings.Join(append([]string{v}, more...), " ")
+		}
+		out[k] = strings.Join(strings.Fields(v), " ")
+	}
+	return out, true
+}
+
+// quoted reads a YAML quoted value from its opening quote; what follows the
+// closing quote is ignored. Inside double quotes, a JSON-style escape reads
+// as JSON does.
+func quoted(v string) string {
+	q, b := v[0], strings.Builder{}
+	for i := 1; i < len(v); i++ {
+		c := v[i]
+		switch {
+		case c == q && q == '\'' && i+1 < len(v) && v[i+1] == '\'':
+			b.WriteByte('\'')
+			i++
+		case c == q:
+			return b.String()
+		case c == '\\' && q == '"' && i+1 < len(v):
+			n := 2
+			if v[i+1] == 'u' {
+				n = 6
+			}
+			var r string
+			if i+n <= len(v) && json.Unmarshal([]byte(`"`+v[i:i+n]+`"`), &r) == nil {
+				b.WriteString(r)
+				i += n - 1
+			} else {
+				b.WriteByte(c)
+			}
+		default:
+			b.WriteByte(c)
 		}
 	}
-	return name, desc, true
+	return b.String()
 }
 
 func run(dir string, args ...string) string {

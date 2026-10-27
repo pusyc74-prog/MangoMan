@@ -167,9 +167,9 @@ func TestCommunitySkills(t *testing.T) {
 		Total   int
 		Sources []struct{ ID string }
 		Skills  []struct {
-			Name, Source string
-			Tokens       int
-			Added        bool
+			Name, Source, License string
+			Tokens                int
+			Added                 bool
 		}
 	}
 	w := call(h, "GET", "/mangoman/community-skills?q=test+driven&source=superpowers", host, authz, "")
@@ -177,7 +177,7 @@ func TestCommunitySkills(t *testing.T) {
 		t.Fatalf("search: %d %s", w.Code, w.Body)
 	}
 	for _, k := range got.Skills {
-		if k.Source != "superpowers" || k.Tokens < 40 || k.Added {
+		if k.Source != "superpowers" || k.License != "MIT" || k.Tokens < 40 || k.Added {
 			t.Fatalf("a result outside the search, without its cost, or added already: %+v", k)
 		}
 	}
@@ -191,5 +191,25 @@ func TestCommunitySkills(t *testing.T) {
 	_ = os.MkdirAll(filepath.Join(own, got.Skills[0].Name), 0o755)
 	if w := call(h, "POST", "/mangoman/community-skills/"+got.Skills[0].Name, host, authz, ""); w.Code != 409 {
 		t.Fatalf("adding over an existing folder: %d", w.Code)
+	}
+	// A download in progress is not listed; "Added from" is shown only for a
+	// skill the community list has by that name and source.
+	skill := func(name, source string) {
+		_ = os.MkdirAll(filepath.Join(own, name), 0o755)
+		_ = os.WriteFile(filepath.Join(own, name, "SKILL.md"), []byte("---\nname: "+name+"\ndescription: x\nmetadata:\n  kind: method\n  source: "+source+"\n---\n"), 0o644)
+	}
+	skill(".adding-123", "superpowers")
+	skill("my-copy", "superpowers")
+	skill(got.Skills[0].Name, "superpowers")
+	var list struct{ Skills []librarySkill }
+	_ = json.Unmarshal(call(h, "GET", "/mangoman/skills", host, authz, "").Body.Bytes(), &list)
+	src := map[string]string{}
+	for _, k := range list.Skills {
+		if k.Own {
+			src[k.Name] = k.Source
+		}
+	}
+	if _, ok := src[".adding-123"]; ok || src["my-copy"] != "" || src[got.Skills[0].Name] != "superpowers" {
+		t.Fatalf("own skills: %v", src)
 	}
 }

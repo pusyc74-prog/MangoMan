@@ -1208,23 +1208,26 @@ function renderLibrary() {
 
 // ---------- Community skills ----------
 
-const com = { q: "", source: "", sources: [], timer: 0 };
+const com = { q: "", source: "", sources: [], timer: 0, seq: 0 };
 
 async function loadCommunity() {
+  const seq = ++com.seq; // a slower, older search must not replace a newer one
   let d;
   try { d = await api(`/mangoman/community-skills?q=${encodeURIComponent(com.q)}&source=${encodeURIComponent(com.source)}`); }
-  catch (err) { $("com-count").textContent = err.message; return; }
+  catch (err) { if (seq === com.seq) $("com-count").textContent = err.message; return; }
+  if (seq !== com.seq) return;
+  const first = !com.sources.length;
   com.sources = d.sources;
+  if (first && lib.skills.length) renderLibrary(); // its "Added from" names need the sources
   const name = (id) => (d.sources.find((s) => s.id === id) || { name: id }).name;
   $("com-sources").replaceChildren(...[{ id: "", name: "All" }, ...d.sources].map((s) => el("button", { type: "button",
     "aria-pressed": String(com.source === s.id), onclick: () => { com.source = s.id; loadCommunity(); } }, s.name)));
   $("com-count").textContent = d.total > d.skills.length ? `${d.total} skills match; showing ${d.skills.length}. Search to narrow them.`
     : `${d.total} skill${d.total === 1 ? "" : "s"}.`;
   $("com-cards").replaceChildren(...d.skills.map((k) => {
-    const src = d.sources.find((s) => s.id === k.source) || {};
     return el("li", { class: "card lib-card" },
       el("h3", {}, pretty(k.orig)),
-      el("span", { class: "kind" + (k.added ? " own" : "") }, `${k.added ? "Added · " : ""}${name(k.source)} · ${src.license || ""}`),
+      el("span", { class: "kind" + (k.added ? " own" : "") }, `${k.added ? "Added · " : ""}${name(k.source)} · ${k.license}`),
       el("p", { class: "desc" }, k.description),
       k.needs && k.needs.length ? el("p", { class: "fine" }, "Needs: " + k.needs.join("; ")) : null,
       el("p", { class: "fine" }, `Adds about ${k.tokens} tokens to every request once added.`),
@@ -1246,7 +1249,7 @@ async function addCommunity(k, btn) {
 }
 
 async function removeCommunity(k) {
-  if (!confirm(`Remove ${pretty(k.orig)} from your skills? You can add it again later.`)) return;
+  if (!confirm(`Remove ${pretty(k.orig)} from your skills? Its folder is deleted, with any changes you made to it. You can add it again later.`)) return;
   try { await api(`/mangoman/skills/${k.name}`, { method: "DELETE" }); await loadLibrary(); loadCommunity(); }
   catch (err) { $("com-count").textContent = err.message; }
 }
@@ -1619,14 +1622,15 @@ async function sendToBuffer(folder) {
   const msg = el("p", { class: "msg", role: "status" });
   let st;
   try { st = await api("/mangoman/buffer"); } catch (err) { say(err.message, "err"); return; }
-  if (!st.connected || st.error) {
+  if (st.error && !st.refused) { say(`Buffer did not answer: ${st.error}`, "err"); return; }
+  if (!st.connected || st.refused) {
     const key = el("input", { type: "password", id: "buffer-key", autocomplete: "off", maxlength: 512 });
     modal("Connect Buffer", async () => {
       msg.className = "msg"; msg.textContent = "Checking the key with Buffer\u2026";
       try { await api("/mangoman/buffer", { method: "PUT", body: JSON.stringify({ key: key.value }) }); sendToBuffer(folder); }
       catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
     },
-      el("p", { class: "sub" }, st.error ? `Buffer did not accept the saved key: ${st.error}` :
+      el("p", { class: "sub" }, st.refused ? "Buffer no longer accepts the saved key. Paste a new one." :
         "Buffer posts to Instagram, Facebook, LinkedIn, X, Threads, TikTok, Pinterest and more. Its free plan allows 3 channels. Make an API key in Buffer (Settings, API) and paste it here. It is kept in this computer's key store."),
       el("div", { class: "bf" }, el("label", { for: "buffer-key" }, "Buffer API key"), key),
       el("div", { class: "brief-foot" }, el("button", { type: "submit", class: "primary" }, "Connect"), msg));
@@ -1656,27 +1660,33 @@ async function sendToBuffer(folder) {
   modal(`Send ${folder} to Buffer`, async () => {
     const chosen = ticks.filter((t) => t.box.checked && pick[t.r.platform].querySelector("select").value);
     if (!chosen.length) { msg.className = "msg err"; msg.textContent = "Tick at least one post with a channel to send it to."; return; }
+    const send = $("modal").querySelector("button[type=submit]");
+    send.disabled = true; // a second click while sending would save every draft twice
     msg.className = "msg"; msg.textContent = `Saving ${chosen.length} draft${chosen.length > 1 ? "s" : ""} in Buffer\u2026`;
-    // The server takes 60 drafts a call; a posted draft is unticked so it is not sent twice.
+    // The server takes 60 drafts a call and stops at a refused key or a used-up
+    // limit; a saved draft is unticked so it is not sent twice.
     const lines = [];
-    let ok = 0;
+    let ok = 0, stopped = false;
     try {
-      for (let i = 0; i < chosen.length; i += 60) {
+      for (let i = 0; i < chosen.length && !stopped; i += 60) {
         const part = chosen.slice(i, i + 60);
         const r = await api("/mangoman/buffer/drafts", { method: "POST", body: JSON.stringify({ drafts: part.map((t) => ({
-          channel: pick[t.r.platform].querySelector("select").value, text: t.r.caption, due: t.r.due || "" })) }) });
+          channel: pick[t.r.platform].querySelector("select").value, text: t.r.caption })) }) });
         r.results.forEach((x, j) => {
-          if (x.ok) { ok++; part[j].box.checked = false; }
-          lines.push(el("li", { class: x.ok ? "ok" : "err" },
-            `${part[j].r.date} ${part[j].r.platform}: ${x.ok ? "saved as a draft" + (x.note ? ` (${x.note})` : "") : x.error}`));
+          const t = part[j];
+          if (x.ok) { ok++; t.box.checked = false; }
+          stopped = stopped || (x.error || "").startsWith("not sent");
+          lines.push(el("li", { class: x.ok ? "ok" : "err" }, `${t.r.date} ${t.r.platform}: ` +
+            (x.ok ? `saved as a draft. Add ${t.r.images || "its picture"} and schedule it for ${t.r.date} ${t.r.time}`.trim() : x.error)));
         });
       }
     } catch (err) { lines.push(el("li", { class: "err" }, err.message)); }
+    finally { send.disabled = false; }
     results.replaceChildren(...lines);
     msg.className = ok === chosen.length ? "msg ok" : "msg err";
-    msg.textContent = `${ok} of ${chosen.length} saved as drafts.` + (ok ? " Open Buffer, add each picture and schedule it." : "");
+    msg.textContent = `${ok} of ${chosen.length} saved as drafts.` + (ok ? " Open Buffer to add the pictures and schedule them." : "");
   },
-    el("p", { class: "sub" }, `MangoMan saves the posts you tick as drafts in Buffer, with their planned times (${plan.timezone}). Nothing is published until you add its picture in Buffer and schedule it.`),
+    el("p", { class: "sub" }, "MangoMan saves the posts you tick as drafts in Buffer. Nothing is published: in Buffer you add each picture, set the planned time shown here and schedule it."),
     Object.values(pick),
     el("ul", { class: "buf-rows" }, ticks.map((t) => t.node)),
     results,

@@ -26,9 +26,9 @@ type rule struct {
 }
 
 var rules = []rule{
-	{"secret", "private key", regexp.MustCompile(`-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----`), true},
+	{"secret", "private key", regexp.MustCompile(`-----BEGIN ([A-Z0-9]+ )*PRIVATE KEY`), true},
 	{"secret", "AWS access key", regexp.MustCompile(`\bAKIA[0-9A-Z]{16}\b`), true},
-	{"secret", "GitHub token", regexp.MustCompile(`\bgh[pousr]_[A-Za-z0-9]{36,}\b`), true},
+	{"secret", "GitHub token", regexp.MustCompile(`\bgh[pousr]_[A-Za-z0-9]{30,}\b|\bgithub_pat_[A-Za-z0-9_]{22,}`), true},
 	{"secret", "live payment key (Stripe or Razorpay)", regexp.MustCompile(`\b(sk_live_[A-Za-z0-9]{16,}|rzp_live_[A-Za-z0-9]{10,})`), true},
 	{"secret", "AI provider key", regexp.MustCompile(`\b(sk-[A-Za-z0-9_-]{32,}|gsk_[A-Za-z0-9]{32,}|nvapi-[A-Za-z0-9_-]{32,})`), true},
 	{"secret", "Slack token", regexp.MustCompile(`\bxox[abpr]-[A-Za-z0-9-]{10,}`), true},
