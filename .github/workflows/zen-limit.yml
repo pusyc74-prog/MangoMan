@@ -1,0 +1,64 @@
+name: zen-limit
+
+# Measures OpenCode's free-model allowance from one internet address: tiny
+# "reply OK" messages through the OpenCode release MangoMan ships, logged
+# out, until OpenCode answers FreeUsageLimitError; then which other free
+# models share the count. Spends only OpenCode's free allowance for the
+# runner's address. Run by hand, or by pushing the branch measure-zen-limit
+# (how a session without workflow access starts it); the report goes to
+# eval-reports.
+
+on:
+  push:
+    branches: [measure-zen-limit]
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "Free model to measure (empty: DeepSeek Flash Free)"
+        required: false
+        default: ""
+      max:
+        description: "Stop after this many messages if no limit is hit"
+        required: false
+        default: "3000"
+
+permissions:
+  contents: write # only to publish the report to the eval-reports branch
+
+concurrency:
+  group: zen-limit
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the OpenCode release MangoMan ships
+        run: |
+          v=$(sed -n 's/^const Version = "\(.*\)"/\1/p' internal/opencode/opencode.go)
+          npm install -g "opencode-ai@$v"
+          opencode --version
+      - name: Measure
+        env:
+          MODEL: ${{ inputs.model }}
+          MAX: ${{ inputs.max }}
+        run: python3 scripts/zen-limit.py "$MODEL" "${MAX:-3000}" 4
+      - name: Publish the report to the eval-reports branch
+        if: always()
+        run: |
+          [ -s report.md ] || exit 0
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          git config user.name "mangoman-eval"
+          git config user.email "eval@users.noreply.github.com"
+          git fetch origin +refs/heads/eval-reports:refs/remotes/origin/eval-reports
+          git worktree add ../reports origin/eval-reports
+          cd ../reports
+          git switch -C eval-reports
+          mkdir -p reports/zen-limit
+          cp "$GITHUB_WORKSPACE/report.md" "reports/zen-limit/$stamp.md"
+          git add -A
+          git commit -q -m "zen limit $stamp (run ${{ github.run_id }})" || exit 0
+          git push origin eval-reports
