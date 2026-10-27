@@ -397,6 +397,24 @@ Touch files in the control dir to change the next coding request:
   Strategist's audit stage. Live from a GitHub runner (22 Oct): Hacker
   News reads (stories kept only when the title or link names the words);
   Reddit refused the runner with 403, not yet tried from a home connection.
+- **Owner's build list of 26 Oct (built 26 and 27 Oct, branch tokens-wave1):**
+  fewer tokens by default (every skill description at most 240 characters
+  with a closing "Use ..." sentence, checked by `skills.CheckDescription`;
+  OpenCode's `compaction.prune` on; measured about 20% fewer instruction
+  tokens per request, scores the same or better); the **Council** agent
+  (`mangoman-council`, `scripts/council.py`: several free models from
+  different makers answer, read each other and answer again; spare models
+  swap in, one wait on a busy model, resume; checked by `check_council.py`
+  and a stand-in router selftest); the **Software Engineer** agent and the
+  `mangoman-engineering` method (Karpathy rules, superpowers, ECC; MIT
+  notices in its LICENSE.txt), plus coding rules by mode in `codeRules`;
+  the **import scan** (`internal/skills/scan.go`, run before any import);
+  **community skills** (577 skills, `internal/skills/community.json.gz`,
+  built by `scripts/communityindex` from pinned clones; each skill's own
+  license decides, only MIT and Apache-2.0; added skills' scripts ask on a
+  screen and are denied in unattended runs); the **Buffer connector**
+  (`internal/buffer`, `internal/ingress/buffer.go`, Send to Buffer in My
+  Files: drafts only, in Buffer's documented form, no time on the draft).
 - **20 skill packs** with builders and checkers (scripts render and check;
   the model writes content); test sets for 7 (ad copy, listing, email,
   resume, SEO, social posts, website copy); ad copy pack 1.2.
@@ -423,7 +441,8 @@ Touch files in the control dir to change the next coding request:
 
 | Item | Notes |
 |---|---|
-| Auto-publish connector, Buffer first (owner, 26 Oct) | Optional and off by default. The Social Media Manager prepares the week and publishes only after the user presses Approve. Buffer first (free plan: 3 channels, 10 queued posts each, API on the free plan, per a competitor's article; check Buffer's own page and that it posts through the platforms' official access). SocialClaw (7-day trial, then $15 a month for 3 accounts) as a second choice later. Key in the key store, like Shopify and Meta. |
+| Buffer: not yet tried with a real account (27 Oct) | Built and tested with a stand-in that follows Buffer's documentation (developers.buffer.com) and the field names a working client uses (Esturban/bfr: `post { id status }`, `isQueuePaused`). Drafts carry no time because a draft with `dueAt` is undocumented; if a real account shows it works, times could be added back, with a check that the post stays a draft. Pictures: Buffer's API takes only public links, so the owner adds each picture in Buffer. Next: the owner connects a free Buffer account and sends one calendar. SocialClaw stays a later second choice. |
+| Community skills: downloads not yet tried live (27 Oct) | GitHub's raw files cannot be reached from a session. Run the community-check workflow by hand (downloads every listed file and checks each SHA-256). Scripts of added skills ask on a screen and never run in an unattended run, so skills that need their scripts do less in agents' runs; 83 of them say they need packages the user installs. |
 | Competitor social research: what reads (20 Oct) | Pack mangoman-social-research, tried on real pages from a GitHub runner (workflow social-check, results on eval-reports under reports/social-check/). Reads: the Meta Ad Library in full (running ads, start dates, copy), YouTube Shorts lists with views, with dates from the channel's public feed. Partly: Google Ads Transparency (advertisers and ad counts, not the ads), TikTok Creative Center (top 3 hashtags logged out). Refused a cloud server: Instagram profiles (redirect to login), TikTok profiles, each YouTube video's own page, LinkedIn Ad Library (security block). Not yet tried from a home connection, which sites refuse less: ask the owner to run the Social Media Manager once on his computer. |
 | Get ready again after the 20 Oct lock | requirements.txt gained instaloader and yt-dlp (every old entry unchanged), so the install stamp changed: existing users see the setup page and must click Get ready once; Install replaces the whole Python (about 130 MB) rather than adding the 4 MB. An add-only update was not built because it cannot be tested from a session. |
 | Super agents: not yet run on a real model | The three flagship agents and the strategy report were tested with sample files and browser checks only. Next: `scripts/pack-run.sh` by hand on one brief each (spends free requests), then fix what the free models get wrong. Web research quality on free models is not measured. |

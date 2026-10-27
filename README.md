@@ -2,7 +2,7 @@
 
 Free-first, local AI router. One Go binary on your machine pools every free model you can reach, fails over when one runs dry or gives a bad answer, and never sends your keys or prompts anywhere except the provider you are calling.
 
-Status: **Phase 1 built (M1 to M4, 20 skill packs, three super agents with a skills library, Guardian, the M6 coding screen); not released yet.** To try it now, build it from the Actions tab (ci, Run workflow, then download the mangoman artifact). See the [PRD](https://claude.ai/code/artifact/cca2344e-8ddc-431f-b053-6c0b2617c29e) and the [Phase 1 build plan](https://claude.ai/code/artifact/1b002e4f-d746-47c0-be64-d6fad377d2d0).
+Status: **Phase 1 built (M1 to M4, 20 skill packs, five super agents with a skills library and community skills, a Buffer connector, Guardian, the M6 coding screen); not released yet.** To try it now, build it from the Actions tab (ci, Run workflow, then download the mangoman artifact). See the [PRD](https://claude.ai/code/artifact/cca2344e-8ddc-431f-b053-6c0b2617c29e) and the [Phase 1 build plan](https://claude.ai/code/artifact/1b002e4f-d746-47c0-be64-d6fad377d2d0).
 
 ## Quick start
 
@@ -362,7 +362,23 @@ Skill packs make specific outputs come out polished on free models. Each is a fo
 | `mangoman-social-research` | The business's and competitors' Instagram usernames, YouTube and TikTok links, brand names and domains for ad libraries, the country | Competitors' latest Instagram posts and reels, YouTube Shorts and TikTok videos with likes, comments and views, read logged out; the text and a screenshot of their running ads (Meta Ad Library, Google Ads Transparency Center, LinkedIn Ad Library) and of TikTok's trending hashtags; what people said about the brand or topic on Reddit and Hacker News in the last 30 days (threads, upvotes, comments, communities); a summary per account: posts a week, format mix, typical engagement, top posts and their hooks, top hashtags, posting days | Every file complete or saying why it could not be read, the summary's numbers recomputed from the files (nothing typed in by hand), old reads and quiet accounts flagged |
 | `mangoman-reel-scripts` | Business and audience, goals, platforms, who appears on camera, facts to use, language | Ready-to-shoot short video scripts (Instagram Reels, YouTube Shorts, Facebook Reels, TikTok): the audience problem each answers, three hook options, value, solution, one call to action, a timed shot list with on-screen text, caption, search keywords, hashtags, cover text and sound; a posting sheet (CSV) | Every reel answers an item from the audience research, hooks said within 3 seconds, value and solution present, one call to action at the end that fits the goal, spoken length within the target, a keyword in every caption, every number from the user's facts |
 
-Besides these packs, five **know-how skills** carry an expert's method for the flagship agents: market research, brand strategy, content strategy, SEO research and copywriting. They are adapted from [marketingskills](https://github.com/coreyhaines31/marketingskills) by Corey Haines (MIT; each keeps its LICENSE.txt) and made to work for any country and language. SEO research also runs a site audit script (robots.txt per search and AI crawler, the sitemap, each page's title, description, headings, canonical, noindex, structured data and alt text, findings in priority order, checked), following [claude-seo](https://github.com/AgriciDaniel/claude-seo) by AgriciDaniel (MIT). The Reddit and Hacker News reading in social research follows [last30days](https://github.com/mvanhorn/last30days-skill) by Matt Van Horn (MIT). The three **agent playbooks** (`mangoman-social-media-manager`, `mangoman-marketing-strategist`, `mangoman-seo-strategist`) say which skill to use at each stage.
+Besides these packs, five **know-how skills** carry an expert's method for the flagship agents: market research, brand strategy, content strategy, SEO research and copywriting. They are adapted from [marketingskills](https://github.com/coreyhaines31/marketingskills) by Corey Haines (MIT; each keeps its LICENSE.txt) and made to work for any country and language. SEO research also runs a site audit script (robots.txt per search and AI crawler, the sitemap, each page's title, description, headings, canonical, noindex, structured data and alt text, findings in priority order, checked), following [claude-seo](https://github.com/AgriciDaniel/claude-seo) by AgriciDaniel (MIT). The Reddit and Hacker News reading in social research follows [last30days](https://github.com/mvanhorn/last30days-skill) by Matt Van Horn (MIT). The **agent playbooks** (`mangoman-social-media-manager`, `mangoman-marketing-strategist`, `mangoman-seo-strategist`, `mangoman-council`, `mangoman-software-engineer`) say which skill to use at each stage.
+
+**Council** (`mangoman-council`) puts one question to several free models from different makers, has them answer on their own, read each other's answers and answer again, then weighs where they agree and differ into a decision with its reasons, risks and a confidence. `scripts/council.py` swaps in a spare model when one fails, waits once on a busy one, and picks up where it stopped. Any question, any industry; private data stays out of it.
+
+**Software Engineer** (`mangoman-software-engineer`, with the `mangoman-engineering` method) builds and changes code the way a careful senior engineer does: a short spec, thin slices, a test first, the simplest thing that works, proof that it runs, a security pass and a review of its own diff before handing over. The method follows [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) by forrestchang, [superpowers](https://github.com/obra/superpowers) by Jesse Vincent and [everything-claude-code](https://github.com/affaan-m/everything-claude-code) by Affaan Mustafa (all MIT; notices in its LICENSE.txt).
+
+**Fewer tokens by default.** OpenCode sends every installed skill's description with every request, so each description is short (240 characters at most, checked) and ends with when to use it, and old tool output is pruned from long sessions. Measured on the pack test runs: about 20% fewer instruction tokens per request, with the same or better scores.
+
+### Community skills
+
+My Agents lists about 580 skills other people published under MIT or Apache-2.0: [everything-claude-code](https://github.com/affaan-m/everything-claude-code), [superpowers](https://github.com/obra/superpowers), [claude-skills](https://github.com/alirezarezvani/claude-skills) by Alireza Rezvani and [Anthropic's skills](https://github.com/anthropics/skills). None costs anything until it is added. `scripts/communityindex` builds the list from pinned commits: each skill's own license decides, files must be small text, nothing built for Claude Code's own settings, and the safety scan must find nothing in any file. Adding one downloads exactly those files from GitHub, checks each SHA-256, and keeps the license next to it. Their scripts ask before they run on a screen and never run in an unattended run.
+
+Importing a skill or agent someone sent runs the same safety scan first (in the spirit of ECC's AgentShield): hidden instructions, sending keys or files out, running a download, destructive commands, keys written in, encoded blocks, invisible characters and look-alike letters. Each finding shows its line before you decide.
+
+### Buffer (optional)
+
+Connect [Buffer](https://buffer.com) with an API key (Buffer, Settings, API; its free plan allows 3 channels) and My Files shows **Send to Buffer** on any task with a posting calendar. You pick a Buffer channel per platform, tick the posts and approve; MangoMan saves them in Buffer as drafts. Nothing is published: in Buffer you add each picture (Buffer's API takes only pictures already online) and schedule it at the time shown. The key stays in the key store.
 
 Numbers are never typed by the model: an `analysis.py` it writes computes them, and the checker re-runs it and traces every figure in the text (headline, titles, notes) back to computed values. Numbers that appear only in text go in a `facts` field.
 
@@ -454,6 +470,17 @@ The coding engine behind `mangoman code` and the coding screen is
 [OpenCode](https://github.com/anomalyco/opencode), open source under the MIT
 licence (Copyright (c) 2025 opencode). MangoMan downloads the tested release
 from OpenCode's own releases and runs it on your computer.
+
+Skills and methods build on open-source work, each kept under its license:
+[marketingskills](https://github.com/coreyhaines31/marketingskills) (Corey Haines),
+[claude-seo](https://github.com/AgriciDaniel/claude-seo) (AgriciDaniel),
+[last30days](https://github.com/mvanhorn/last30days-skill) (Matt Van Horn),
+[andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (forrestchang),
+[superpowers](https://github.com/obra/superpowers) (Jesse Vincent) and
+[everything-claude-code](https://github.com/affaan-m/everything-claude-code) (Affaan Mustafa), all MIT.
+Community skills come from those last two, [claude-skills](https://github.com/alirezarezvani/claude-skills)
+(Alireza Rezvani, MIT) and [Anthropic's skills](https://github.com/anthropics/skills) (Apache-2.0);
+each added skill carries its own license file, and its header says what MangoMan changed.
 
 ## Privacy
 

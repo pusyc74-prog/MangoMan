@@ -5,7 +5,7 @@ license: Proprietary. Free to use inside MangoMan only; no copying, changing or 
 metadata:
   pack: mangoman
   kind: agent
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Social Media Manager
@@ -96,7 +96,9 @@ check, fix, re-check.
   `reels.csv`,
 - the check results in one line,
 - what to do this week (approve the calendar, the posting routine), and
-  offer the next weeks' posts and reels in the same look.
+  offer the next weeks' posts and reels in the same look,
+- that if they use Buffer, **Send to Buffer** in My Files saves the posts
+  they approve there as drafts, to add the pictures and schedule.
 
 ## Standards
 
