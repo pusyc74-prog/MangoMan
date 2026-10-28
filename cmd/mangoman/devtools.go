@@ -48,7 +48,7 @@ func cmdCodeReview(args []string) error {
 		if len(d) > 40000 {
 			d = d[:40000] + "\n[cut]"
 		}
-		opinion, _, _ = askRouter("Review this code change like a careful senior engineer. List real bugs, security problems and missing error handling, " +
+		opinion, _ = askAI("Review this code change like a careful senior engineer. List real bugs, security problems and missing error handling, " +
 			"one short line each with file and line. Say \"No problems found\" if there are none. Do not restate the change.\n\n" + d)
 	}
 	rep := review.Report(found, opinion)
@@ -121,7 +121,7 @@ func cmdChangelog(args []string) error {
 	if len(log) > 30000 {
 		log = log[:30000]
 	}
-	notes, _, err := askRouter("Write release notes from these commit messages for the people who use this software, not its developers. " +
+	notes, err := askAI("Write release notes from these commit messages for the people who use this software, not its developers. " +
 		"Use the headings ### New, ### Fixed and ### Changed (leave out empty ones), one short plain sentence per item, " +
 		"no commit hashes, no internal details. Write only the notes.\n\n" + log)
 	if err != nil {

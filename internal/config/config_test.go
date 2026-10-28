@@ -26,17 +26,17 @@ func TestConcurrentSavesLeaveValidFile(t *testing.T) {
 	}
 }
 
-// The engine: the switch unless "opencode" is set, in the config or (for
-// tests) in MANGOMAN_ENGINE; anything else is the switch.
+// The engine: OpenCode unless "switch" is set, in the config or (for tests)
+// in MANGOMAN_ENGINE; anything else is OpenCode.
 func TestEngine(t *testing.T) {
 	t.Setenv("MANGOMAN_ENGINE", "")
-	for set, want := range map[string]string{"": EngineSwitch, "switch": EngineSwitch, "opencode": EngineOpenCode, " OpenCode ": EngineOpenCode, "opencod": EngineSwitch} {
+	for set, want := range map[string]string{"": EngineOpenCode, "opencode": EngineOpenCode, "switch": EngineSwitch, " Switch ": EngineSwitch, "swich": EngineOpenCode} {
 		if got := (&Config{Engine: set}).GetEngine(); got != want {
 			t.Errorf("%q: %s, want %s", set, got, want)
 		}
 	}
-	t.Setenv("MANGOMAN_ENGINE", "opencode")
-	if (&Config{}).GetEngine() != EngineOpenCode {
+	t.Setenv("MANGOMAN_ENGINE", "switch")
+	if (&Config{}).GetEngine() != EngineSwitch {
 		t.Fatal("MANGOMAN_ENGINE is not read")
 	}
 }

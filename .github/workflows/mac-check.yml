@@ -30,6 +30,7 @@ jobs:
     timeout-minutes: 45
     env:
       MANGOMAN_KEYSTORE: file
+      MANGOMAN_ENGINE: switch # stand-in models and provider keys go through MangoMan's switch
       MANGOMAN_PASSPHRASE: ci
       OPENCODE_DISABLE_MODELS_FETCH: "1"
       OLLAMA_CONTEXT_LENGTH: "131072"

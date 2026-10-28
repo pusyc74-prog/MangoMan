@@ -120,7 +120,7 @@ function renderHead(ov, act) {
     el("span", { class: "lamp on", "aria-hidden": "true" }),
     `Running for ${duration(ov.uptime_s)}`
   );
-  run.title = `127.0.0.1:${ov.port}, version ${ov.version}, catalogue ${ov.catalogue}`;
+  run.title = `127.0.0.1:${ov.port}, version ${ov.version}` + (onOpenCode() ? "" : `, catalogue ${ov.catalogue}`);
   const tokens = (act.rows || []).reduce((a, r) => a + (r.tokens || 0), 0);
   $("t-requests").textContent = NUM.format(act.requests || 0);
   $("t-served").textContent = NUM.format(act.served || 0);
@@ -970,11 +970,15 @@ async function setWeaker(mode) {
 // ---------- the menu ----------
 
 const VIEWS = ["agents", "my-agents", "healing", "chargesheets", "templates", "files", "history", "connections", "usage", "settings"];
+// The switch's pages, hidden on OpenCode's own models (the page starts so,
+// the default, and load() shows them only when the engine is the switch).
+const SWITCH_VIEWS = ["connections", "usage"];
+const onOpenCode = () => document.body.classList.contains("oc");
 
 function showView() {
   const want = location.hash.slice(1);
   const top = want.split("/")[0];
-  const v = VIEWS.includes(top) ? top : "agents";
+  const v = VIEWS.includes(top) && !(onOpenCode() && SWITCH_VIEWS.includes(top)) ? top : "agents";
   for (const id of VIEWS) $("view-" + id).hidden = id !== v;
   for (const a of document.querySelectorAll(".nav a")) {
     if (a.dataset.view === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
@@ -983,7 +987,7 @@ function showView() {
   if (v === "usage" && state.overview) renderChart(state.activity, state.overview);
   if (v === "files" || v === "settings") loadFiles();
   if (v === "healing") { loadGuardian(); loadHealFolders(); }
-  if (v === "settings") loadArch();
+  if (v === "settings" && !onOpenCode()) loadArch();
   // Chargesheets keeps its own place after the slash: #chargesheets/<id>/<tab>.
   if (v === "chargesheets") Sheets.route(want.slice("chargesheets/".length)); else Sheets.leave();
 }
@@ -1713,6 +1717,10 @@ async function load() {
     state.overview = ov; state.activity = act; state.radar = rv;
     $("app").hidden = false; $("nav").hidden = false; $("gate").hidden = true;
     $("set-version").textContent = ov.version;
+    if (onOpenCode() !== (ov.engine !== "switch")) {
+      document.body.classList.toggle("oc", ov.engine !== "switch");
+      showView();
+    }
     renderHead(ov, act);
     loadNow();
     renderBoard(ov, act);

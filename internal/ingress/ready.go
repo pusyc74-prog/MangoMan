@@ -45,6 +45,7 @@ type ReadyView struct {
 	Of       int64        `json:"of,omitempty"`
 	Error    string       `json:"error,omitempty"`
 	Projects string       `json:"projects"` // where the coding screen opens
+	Engine   string       `json:"engine"`   // "opencode": no key to connect
 }
 
 func (s *Server) readyRoutes(mux *http.ServeMux) {
@@ -254,7 +255,7 @@ func (s *Server) readyGet(w http.ResponseWriter, _ *http.Request) {
 	st := &s.ready
 	st.mu.Lock()
 	v := ReadyView{Parts: parts, Ready: len(parts) == 0, Running: st.running, Step: st.what,
-		Done: st.done, Of: st.total, Error: st.err, Projects: ProjectsDir()}
+		Done: st.done, Of: st.total, Error: st.err, Projects: ProjectsDir(), Engine: s.engine()}
 	st.mu.Unlock()
 	for _, p := range v.Parts {
 		v.Total += p.Bytes

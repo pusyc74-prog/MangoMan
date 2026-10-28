@@ -30,6 +30,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/guardian"
 	"github.com/pusyc74-prog/mangoman/internal/ingress"
 	"github.com/pusyc74-prog/mangoman/internal/keys"
+	"github.com/pusyc74-prog/mangoman/internal/opencode"
 	"github.com/pusyc74-prog/mangoman/internal/providers"
 	"github.com/pusyc74-prog/mangoman/internal/pyenv"
 	"github.com/pusyc74-prog/mangoman/internal/radar"
@@ -42,45 +43,61 @@ import (
 // version is set at build time with -ldflags "-X main.version=..."
 var version = "0.1.0-dev"
 
-const usage = `MangoMan: free-first local AI router
+const usage = `MangoMan: AI agents and tools on your computer
 
 Usage:
   mangoman                      open MangoMan in your browser (setup on the first run)
   mangoman ready [--yes]        download what MangoMan needs here: the coding helper and its own Python
-  mangoman setup                guided setup in the terminal: connect free providers step by step
-  mangoman init                 create config and local token, print tool setup
-  mangoman serve [--port N]     run the local endpoint on 127.0.0.1
-  mangoman keys add <provider>  store a provider key on this computer
-  mangoman keys list            show providers and which keys are present
-  mangoman keys rm <provider>   remove a stored key
-  mangoman people [add|rm NAME] one local token per person on a shared machine, for usage per person
-  mangoman dashboard            open the dashboard in your browser
-  mangoman list [add|rm|up|new]  My list: models tried first; new free models
-  mangoman code [--model M] [--ui]  open OpenCode on free models; --ui opens the coding screen in the browser
-  mangoman mcp                  assist mode: MCP server for Claude Code and Codex
+  mangoman init                 create the settings and the local token
+  mangoman serve [--port N]     run MangoMan on 127.0.0.1
+  mangoman dashboard            open MangoMan in your browser
+  mangoman code [--ui]          open OpenCode with MangoMan's skills; --ui opens the coding screen in the browser
   mangoman skills [install|remove]  list or install the skill packs
   mangoman agents [install|remove|exec|eval|new|pack]  advanced agents
-  mangoman brain [on|off|set|test]  decision brain: smarter task detection, refusal checks
-  mangoman group [set|rm]       model groups: "group/<name>" never leaves the group
-  mangoman status               show the running router's providers and quota
-  mangoman models               list the free model catalogue with data policies
-  mangoman test [prompt]        send a test request through the running router
-  mangoman doctor [flags]       live-check every connected provider and model
+  mangoman test [prompt]        ask the AI a test question
   mangoman new NAME             start an app with a development environment from day 1
   mangoman review [DIR]         check a change: secrets, risky code, new dependencies, bugs
   mangoman tests [FILE...]      the QA agent writes tests, then runs them
   mangoman changelog            release notes from recent commits, into CHANGELOG.md
   mangoman qa [DIR] [--url URL] test a project: its tests, and its web app in a browser
   mangoman guardian [init|setup|run|change|approve]  dev next to production; watch, fix, test, ask, deploy
-  mangoman usage [--days N]     summarise requests, failovers and tokens
   mangoman version
 
 Environment:
   MANGOMAN_HOME        config directory (default: OS config dir/mangoman)
+`
+
+// switchUsage is the frozen model switch's commands, listed only when the
+// engine is the switch (they still run when typed).
+const switchUsage = `
+The model switch:
+  mangoman setup                guided setup in the terminal: connect free providers step by step
+  mangoman keys add <provider>  store a provider key on this computer
+  mangoman keys list            show providers and which keys are present
+  mangoman keys rm <provider>   remove a stored key
+  mangoman people [add|rm NAME] one local token per person on a shared machine, for usage per person
+  mangoman list [add|rm|up|new]  My list: models tried first; new free models
+  mangoman code --model M       a switch model: free/coder, free/auto, strict/<model> or group/<name>
+  mangoman mcp                  assist mode: MCP server for Claude Code and Codex
+  mangoman brain [on|off|set|test]  decision brain: smarter task detection, refusal checks
+  mangoman group [set|rm]       model groups: "group/<name>" never leaves the group
+  mangoman status               show the running router's providers and quota
+  mangoman models               list the free model catalogue with data policies
+  mangoman doctor [flags]       live-check every connected provider and model
+  mangoman usage [--days N]     summarise requests, failovers and tokens
+
   MANGOMAN_KEYSTORE    set to "file" to use the encrypted file instead of the keychain
   MANGOMAN_PASSPHRASE  passphrase for the encrypted key file (else prompted)
   GROQ_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY, NVIDIA_API_KEY  key overrides
 `
+
+// help is the command list for the engine in use.
+func help() string {
+	if cfg, err := config.Load(); err == nil && cfg.GetEngine() == config.EngineSwitch {
+		return usage + switchUsage
+	}
+	return usage
+}
 
 func main() {
 	providers.Version = version
@@ -155,9 +172,9 @@ func main() {
 	case "version", "--version", "-v":
 		fmt.Println("mangoman", version)
 	case "help", "--help", "-h":
-		fmt.Print(usage)
+		fmt.Print(help())
 	default:
-		fmt.Fprintf(os.Stderr, "unknown command %q\n\n%s", os.Args[1], usage)
+		fmt.Fprintf(os.Stderr, "unknown command %q\n\n%s", os.Args[1], help())
 		os.Exit(2)
 	}
 	if err != nil {
@@ -166,10 +183,11 @@ func main() {
 	}
 }
 
-// cmdEngine shows or sets where agents get their AI: MangoMan's model
-// switch (the default) or OpenCode's own models.
+// cmdEngine shows or sets where agents get their AI: OpenCode's own models
+// (the default) or MangoMan's frozen model switch. It makes the settings
+// file if there is none yet, so the engine can be set before the first start.
 func cmdEngine(args []string) error {
-	cfg, err := config.Load()
+	cfg, err := ensureConfig()
 	if err != nil {
 		return err
 	}
@@ -183,9 +201,9 @@ func cmdEngine(args []string) error {
 	}
 	switch strings.ToLower(args[0]) {
 	case config.EngineSwitch:
-		cfg.Engine = ""
+		cfg.Engine = config.EngineSwitch
 	case config.EngineOpenCode:
-		cfg.Engine = config.EngineOpenCode
+		cfg.Engine = ""
 	default:
 		return fmt.Errorf("the engine is %s or %s", config.EngineSwitch, config.EngineOpenCode)
 	}
@@ -209,14 +227,18 @@ func cmdInit() error {
 		return err
 	}
 	dir, _ := config.Dir()
-	st, err := openStore()
-	if err != nil {
-		return err
-	}
 	if created {
 		fmt.Println("Created", dir)
 	} else {
 		fmt.Println("Already initialised:", dir)
+	}
+	if cfg.GetEngine() == config.EngineOpenCode {
+		fmt.Print("\nNext:\n  1. mangoman ready    download what MangoMan needs\n  2. mangoman          open MangoMan in your browser\n")
+		return nil
+	}
+	st, err := openStore()
+	if err != nil {
+		return err
 	}
 	base := fmt.Sprintf("http://127.0.0.1:%d/v1", cfg.Port)
 	fmt.Printf(`
@@ -389,7 +411,10 @@ func serve(port int, opened func(connected int)) error {
 	if err := rd.Load(); err != nil {
 		logger.Printf("radar state ignored: %v", err)
 	}
-	go rd.Run(ctx, 30*time.Second, 6*time.Hour, logger.Printf)
+	ocOnly := cfg.GetEngine() == config.EngineOpenCode
+	if !ocOnly { // new models for the switch's providers; OpenCode lists its own
+		go rd.Run(ctx, 30*time.Second, 6*time.Hour, logger.Printf)
+	}
 
 	br := ingress.BrainFromConfig(cfg, rt.InternalCall)
 	rt.Brain = br
@@ -406,11 +431,16 @@ func serve(port int, opened func(connected int)) error {
 			g.Logf = func(f string, a ...any) { logger.Printf("%s: %s", g.Cfg.App, fmt.Sprintf(f, a...)) }
 			return g.Serve(ctx, 5*time.Minute, func([]guardian.Event) {})
 		},
-		Arch: archClient(dir, cat, cfg, rt), Quit: stop,
-		Ask: func(p string) (string, error) { a, _, err := askRouter(p); return a, err }}
+		Arch: archClient(dir, cat, cfg, rt), Quit: stop}
+	// Chargesheets and Guardian's journey writer ask one question at a time:
+	// through the switch, or on OpenCode's own models (the default).
+	ask := func(p string, asJSON bool) (string, error) { a, _, err := askRouterAs(p, asJSON); return a, err }
+	if ocOnly {
+		ask = func(p string, asJSON bool) (string, error) { return askOpenCode(dir, p, asJSON) }
+	}
+	srv.Ask = func(p string) (string, error) { return ask(p, false) }
 	srv.Secrets = st
-	srv.Sheets = &sheets.Store{Dir: filepath.Join(dir, "chargesheets"), Keys: st,
-		Model: func(p string, asJSON bool) (string, error) { a, _, err := askRouterAs(p, asJSON); return a, err }}
+	srv.Sheets = &sheets.Store{Dir: filepath.Join(dir, "chargesheets"), Keys: st, Model: ask}
 	ln, err := net.Listen("tcp", srv.Addr())
 	if err != nil {
 		return fmt.Errorf("cannot listen on %s: %w", srv.Addr(), err)
@@ -434,10 +464,14 @@ func serve(port int, opened func(connected int)) error {
 		}
 	}()
 
-	logger.Printf("listening on http://%s/v1  (%d cloud providers connected, catalogue %s)", srv.Addr(), connected, cat.Version)
+	if ocOnly {
+		logger.Printf("listening on http://%s  (agents use OpenCode's own free models)", srv.Addr())
+	} else {
+		logger.Printf("listening on http://%s/v1  (%d cloud providers connected, catalogue %s)", srv.Addr(), connected, cat.Version)
+	}
 	if opened == nil { // opened in the browser already: the hints would only confuse
 		logger.Printf("dashboard: run `mangoman dashboard` in another terminal")
-		if connected == 0 {
+		if connected == 0 && !ocOnly {
 			logger.Printf("no provider keys yet: run `mangoman keys add groq`")
 		}
 	}
@@ -830,6 +864,14 @@ func cmdTest(args []string) error {
 		prompt = "Reply with one short sentence confirming you are working."
 	}
 	start := time.Now()
+	if cfg, err := config.Load(); err == nil && cfg.GetEngine() == config.EngineOpenCode {
+		answer, err := askAI(prompt)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("OpenCode's own free models, %s\n\n%s\n", time.Since(start).Round(time.Millisecond), answer)
+		return nil
+	}
 	answer, h, err := askRouter(prompt)
 	if err != nil {
 		return err
@@ -839,6 +881,21 @@ func cmdTest(args []string) error {
 		time.Since(start).Round(time.Millisecond), h.Get("X-MangoMan-Class"), h.Get("X-MangoMan-Data-Policy"))
 	fmt.Println(answer)
 	return nil
+}
+
+// askAI asks one question where agents get their AI: OpenCode's own
+// models (the default), or the switch.
+func askAI(prompt string) (string, error) {
+	cfg, err := config.Load()
+	if err == nil && cfg.GetEngine() == config.EngineOpenCode {
+		home, err := config.Dir()
+		if err != nil {
+			return "", err
+		}
+		return askOpenCode(home, prompt, false)
+	}
+	a, _, err := askRouter(prompt)
+	return a, err
 }
 
 // askRouter sends one question through the running router and returns the
@@ -884,6 +941,22 @@ func askRouterAs(prompt string, asJSON bool) (string, http.Header, error) {
 		return "", resp.Header, errors.New("the router returned no answer")
 	}
 	return strings.TrimSpace(out.Choices[0].Message.Content), resp.Header, nil
+}
+
+// askOpenCode puts one question to OpenCode's own free models, as
+// askRouterAs puts it to the switch; asJSON asks for one JSON object.
+func askOpenCode(home, prompt string, asJSON bool) (string, error) {
+	bin, err := opencode.Path(home)
+	if err != nil {
+		return "", errors.New("MangoMan is not set up yet: click Get ready on the setup page")
+	}
+	system := "You answer one request from MangoMan, in one reply. Use no tools."
+	if asJSON {
+		system += " Reply with one JSON object and nothing else."
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	return opencode.Ask(ctx, bin, system, prompt)
 }
 
 func atoi(s string) int {

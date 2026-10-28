@@ -1,9 +1,10 @@
 name: engine-check
 
-# MangoMan on OpenCode's own free models (the hidden engine setting), against
-# the real service: a small task must finish with no request through
-# MangoMan's switch; then, once the runner's free allowance is used up, the
-# same task must stop at once with MangoMan's own message. Spends only
+# MangoMan on OpenCode's own free models (the default engine, no setting),
+# against the real service: a small task, a question (as Chargesheets and
+# Guardian ask) and a council must work with no request through MangoMan's
+# switch; then, once the runner's free allowance is used up, each must stop
+# at once with MangoMan's own message. Spends only
 # OpenCode's free allowance for the runner's address. Run by hand, or by
 # pushing the branch check-engine; the report goes to eval-reports.
 
@@ -23,8 +24,6 @@ jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    env:
-      MANGOMAN_ENGINE: opencode
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -66,6 +65,18 @@ jobs:
           if [ "$via" = 0 ]; then say "- PASS: no request went through MangoMan's switch."; else say "- FAIL: $via requests went through MangoMan's switch."; fi
           if grep -q "free AI messages are used up" one.log; then say "- NOTE: the runner's free allowance ran out during the task (its address was already partly used)."; fi
           say ""
+          say "## 1b. A question (as Chargesheets and Guardian ask) and a council"
+          say ""
+          ans=$(timeout 300 "$mm" test "Reply with the single word OK." 2>&1)
+          if echo "$ans" | grep -q "OpenCode's own free models" && echo "$ans" | grep -qi "ok"; then say "- PASS: the question was answered: $(echo "$ans" | tail -1 | cut -c1-120)"; else say "- FAIL: the question: $(echo "$ans" | tail -3 | tr '\n' ' ' | cut -c1-300)"; fi
+          export MANGOMAN_OPENCODE=$(command -v opencode)
+          P=internal/skills/packs/mangoman-council/scripts
+          timeout 600 python3 $P/council.py internal/skills/testdata/council/question.md --rounds 1 --out council-one > council-one.log 2>&1
+          answered=$(python3 -c "import json;r=json.load(open('council-one/council.json'));print(sum(v['rounds'][0]['ok'] for v in r['voices']), [v['model'] for v in r['voices']])" 2>&1)
+          if [ "${answered%% *}" -ge 2 ] 2>/dev/null; then say "- PASS: a council of OpenCode's free models answered: $answered"; else say "- FAIL: the council: $answered $(tail -2 council-one.log | tr '\n' ' ' | cut -c1-300)"; fi
+          via=$(grep -c "req=" "$RUNNER_TEMP/serve.log")
+          if [ "$via" = 0 ]; then say "- PASS: still no request through MangoMan's switch."; else say "- FAIL: $via requests went through MangoMan's switch."; fi
+          say ""
           say "## 2. The runner's free allowance used up"
           say ""
           mkdir zen && (cd zen && python3 ../scripts/zen-limit.py "" 400 4 > ../zen.log 2>&1)
@@ -81,6 +92,10 @@ jobs:
           say "- Exit $code after ${took}s."
           if grep -q "free AI messages are used up" three.log && [ "$took" -lt 120 ]; then say "- PASS: stopped quickly with MangoMan's message: $(grep -m1 'free AI messages' three.log)"; else say "- FAIL: no quick stop with MangoMan's message."; fi
           if grep -qi "subscribe to Go" three.log; then say "- FAIL: OpenCode's Go advert reached the output."; else say "- PASS: no OpenCode Go advert in the output."; fi
+          start=$(date +%s); ans=$(timeout 300 "$mm" test "Reply with OK." 2>&1); took=$(( $(date +%s) - start ))
+          if echo "$ans" | grep -q "free AI messages are used up" && [ "$took" -lt 60 ]; then say "- PASS: the question stopped in ${took}s with MangoMan's message."; else say "- FAIL: the question at the limit (${took}s): $(echo "$ans" | tail -2 | tr '\n' ' ' | cut -c1-300)"; fi
+          start=$(date +%s); timeout 600 python3 $P/council.py internal/skills/testdata/council/question.md --rounds 1 --out council-limit > council-limit.log 2>&1; took=$(( $(date +%s) - start ))
+          if grep -q "free AI messages are used up" council-limit.log && [ "$took" -lt 120 ]; then say "- PASS: the council stopped in ${took}s with MangoMan's message."; else say "- FAIL: the council at the limit (${took}s): $(tail -2 council-limit.log | tr '\n' ' ' | cut -c1-300)"; fi
           for f in one three; do say ""; say "<details><summary>Output of task $f (last 40 lines)</summary>"; say ""; say '```'; tail -40 "$f.log" | cut -c1-300 | tee -a "$r" > /dev/null; say '```'; say "</details>"; done
           exit 0
       - name: Publish the report to the eval-reports branch

@@ -274,13 +274,22 @@ func (s *Server) status(w http.ResponseWriter, _ *http.Request) {
 func (s *Server) busy(w http.ResponseWriter, _ *http.Request) {
 	n, idle := s.Router.Busy()
 	out := map[string]any{"in_flight": n, "idle_s": int(idle.Seconds())}
-	if s.Cfg != nil && s.Cfg.GetEngine() == config.EngineOpenCode {
-		out["engine"] = config.EngineOpenCode // the switch, the default, goes unnamed
+	if s.engine() == config.EngineOpenCode {
+		out["engine"] = config.EngineOpenCode // the frozen switch goes unnamed
 	}
 	if a, ok := s.Router.Trying(); ok {
 		out["now"], out["waiting_s"] = a, int(time.Since(a.Since).Seconds())
 	}
 	writeJSON(w, out)
+}
+
+// engine is where agents get their AI (config.Config.GetEngine; OpenCode
+// without a config, as by default).
+func (s *Server) engine() string {
+	if s.Cfg == nil {
+		return config.EngineOpenCode
+	}
+	return s.Cfg.GetEngine()
 }
 
 func writeJSON(w http.ResponseWriter, v any) {

@@ -43,7 +43,9 @@ func cmdOpen(app bool) error {
 	fmt.Println("Opening MangoMan in your browser. For commands: mangoman help.")
 	open := func(connected int) {
 		page := "/ui/"
-		if connected == 0 || setup.NeedsReady(home) {
+		// On OpenCode's own models no key is needed: only Get ready is setup.
+		needKey := connected == 0 && cfg.GetEngine() == config.EngineSwitch
+		if needKey || setup.NeedsReady(home) {
 			page = "/ui/setup.html"
 		}
 		url := fmt.Sprintf("http://127.0.0.1:%d%s", cfg.Port, page)

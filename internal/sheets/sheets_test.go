@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/pusyc74-prog/mangoman/internal/opencode"
 )
 
 func TestUnchecked(t *testing.T) {
@@ -327,5 +330,17 @@ func TestCodeLikeNames(t *testing.T) {
 		if got := codeLike.MatchString(name); got != want {
 			t.Errorf("%q: %v, want %v", name, got, want)
 		}
+	}
+}
+
+// Why no model answered, in plain words; OpenCode's free limit keeps its own
+// message, which says when the free messages come back.
+func TestModelError(t *testing.T) {
+	limit := opencode.FreeLimit(time.Date(2026, 10, 28, 21, 0, 0, 0, time.UTC))
+	if got := modelError(limit); got != limit {
+		t.Fatalf("the free limit: %v", got)
+	}
+	if got := modelError(errors.New("HTTP 503: no_candidates")); !strings.Contains(got.Error(), "busy right now") {
+		t.Fatalf("busy: %v", got)
 	}
 }

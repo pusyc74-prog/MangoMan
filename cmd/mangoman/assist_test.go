@@ -15,7 +15,7 @@ import (
 )
 
 func TestOpenCodeConfig(t *testing.T) {
-	t.Setenv("MANGOMAN_ENGINE", "")
+	t.Setenv("MANGOMAN_ENGINE", "switch")
 	// OpenCode keeps its own tools (measured on 8 Oct); instructions only with a rules file.
 	for _, mode := range []int{modeTUI, modeRun} {
 		var c map[string]any
@@ -168,13 +168,13 @@ func TestCommandRunning(t *testing.T) {
 	}
 }
 
-// On OpenCode's own models: no MangoMan provider, only OpenCode's models,
-// and OpenCode picks the model unless one of its own is asked for. The
-// permissions are the same as on the switch.
+// On OpenCode's own models (the default): no MangoMan provider, only
+// OpenCode's models, and OpenCode picks the model unless one of its own is
+// asked for. The permissions are the same as on the switch.
 func TestOpenCodeConfigOpenCodeEngine(t *testing.T) {
 	t.Setenv("MANGOMAN_HOME", t.TempDir())
 	t.Setenv("MANGOMAN_ENGINE", "")
-	cfg := &config.Config{Port: 4141, Engine: config.EngineOpenCode}
+	cfg := &config.Config{Port: 4141}
 	var c map[string]any
 	_ = json.Unmarshal([]byte(openCodeConfig(cfg, "free/coder", modeRun, "", true)), &c)
 	if c["provider"] != nil || c["model"] != nil || c["small_model"] != nil || c["permission"] == nil {
@@ -188,40 +188,17 @@ func TestOpenCodeConfigOpenCodeEngine(t *testing.T) {
 	if c["model"] != "opencode/big-pickle" {
 		t.Fatalf("an OpenCode model asked for: %v", c["model"])
 	}
-	// A setting MangoMan does not know is the switch, today's behaviour.
+	// A setting MangoMan does not know is OpenCode, never the frozen switch.
 	c = nil
-	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141, Engine: "opencod"}, "free/coder", modeRun, "", true)), &c)
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141, Engine: "swich"}, "free/coder", modeRun, "", true)), &c)
+	if c["provider"] != nil || c["enabled_providers"] == nil {
+		t.Fatalf("an unknown engine must be OpenCode: %v", c)
+	}
+	// Only "switch" reaches the switch: MangoMan's provider, its model.
+	c = nil
+	_ = json.Unmarshal([]byte(openCodeConfig(&config.Config{Port: 4141, Engine: config.EngineSwitch}, "free/coder", modeRun, "", true)), &c)
 	if c["model"] != "mangoman/free/coder" || c["provider"] == nil || c["enabled_providers"] != nil {
-		t.Fatalf("an unknown engine must fall back to the switch: %v", c)
-	}
-}
-
-// The free limit is caught from OpenCode's own log line only, never from
-// words the model writes, and says when it comes back.
-func TestFreeLimit(t *testing.T) {
-	for line, want := range map[string]bool{
-		// From OpenCode's real service (engine-check, 27 Oct 18:27 UTC).
-		`timestamp=2026-10-27T18:27:36.068Z level=ERROR run=1776899a message="stream error" providerID=opencode modelID=big-pickle session.id=ses_e8161e0cfffeT4YbAa6oDeV552 small=false agent=build mode=primary error.error="AI_APICallError: Free usage limit reached. Free models work in OpenCode (https://opencode.ai)."`: true,
-		// As OpenCode 1.18.34 logs it (seen with a stand-in answering as OpenCode's service does).
-		`timestamp=2026-10-27T17:56:53.511Z level=ERROR run=211be3c9 message="stream error" providerID=opencode modelID=big-pickle session.id=ses_e8 small=false agent=build mode=primary error.error="AI_APICallError: Free usage limit reached."`:    true,
-		`timestamp=2026-10-27T17:56:53.511Z level=ERROR run=211be3c9 message="stream error" providerID=opencode modelID=big-pickle error.error="AI_APICallError: Rate limit exceeded. Please try again later."`:                                        true,
-		`timestamp=2026-10-27T17:56:58.968Z level=ERROR run=211be3c9 message="stream error" providerID=opencode modelID=big-pickle small=true agent=title error.error="AI_RetryError: Failed after 3 attempts. Last error: Free usage limit reached."`: true,
-		// A provider's own limit that OpenCode's service passes on, and another
-		// provider's limit, are not OpenCode's free limit.
-		`timestamp=2026-10-27T17:56:53.511Z level=ERROR run=211be3c9 message="stream error" providerID=opencode modelID=mimo error.error="AI_APICallError: Error from provider (Xiaomi): Rate limit exceeded. Please try again later."`: false,
-		`timestamp=2026-10-27T17:56:53.511Z level=ERROR run=211be3c9 message="stream error" providerID=groq modelID=x error.error="AI_APICallError: Rate limit exceeded."`:                                                              false,
-		"Our plans: the free usage limit is 3 projects; pick Pro for more.": false,
-		`The error said: "FreeUsageLimitError"`:                             false,
-		`timestamp=2026-10-28T00:15:02.1Z level=ERROR run=ab12 message="stream error" error="Upstream request failed: Model is unavailable."`: false,
-	} {
-		if got := freeLimit.MatchString("Writing the page...\n" + line + "\n"); got != want {
-			t.Errorf("%q: %v, want %v", line, got, want)
-		}
-	}
-	// 9:00 PM UTC: midnight UTC is 3 hours away.
-	now := time.Date(2026, 10, 27, 21, 0, 0, 0, time.UTC)
-	if err := freeLimitError(now); !strings.Contains(err.Error(), now.Add(3*time.Hour).Local().Format("3:04 PM")) {
-		t.Fatalf("reset time: %v", err)
+		t.Fatalf("the switch: %v", c)
 	}
 }
 

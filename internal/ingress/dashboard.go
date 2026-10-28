@@ -103,6 +103,9 @@ type Overview struct {
 	// allow, worked out with TaskCost.
 	Free     []FreeRow `json:"free"`
 	TaskCost TaskCosts `json:"task_cost"`
+	// Engine is "opencode" (the default) or "switch"; on OpenCode's own
+	// models the pages about the switch (keys, models, usage) are hidden.
+	Engine string `json:"engine"`
 }
 
 func (s *Server) dashRoutes(mux *http.ServeMux) {
@@ -185,7 +188,7 @@ func (s *Server) providerStatus(p catalogue.Provider, modelCount int) DashProvid
 
 func (s *Server) overview(w http.ResponseWriter, _ *http.Request) {
 	rt := s.Router
-	ov := Overview{Version: s.Version, UptimeS: int(time.Since(s.Started).Seconds()), Catalogue: rt.Cat.Version, Port: s.port(),
+	ov := Overview{Version: s.Version, UptimeS: int(time.Since(s.Started).Seconds()), Catalogue: rt.Cat.Version, Port: s.port(), Engine: s.engine(),
 		Favorites: nonNil(s.Cfg.GetFavorites()), NewModels: s.radarView().NewCount, Brain: s.brainStats(),
 		TeamKeyNotice: setup.TeamKeyNotice}
 	if st := rt.Keys.Store(); st != nil {

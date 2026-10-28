@@ -12,7 +12,6 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -398,8 +397,10 @@ func cmdCode(args []string) error {
 	}
 
 	// Skill scripts that ask models themselves (the Council) reach the
-	// router with the session's own token.
-	env := append(os.Environ(), "MANGOMAN_TOKEN="+token, fmt.Sprintf("MANGOMAN_URL=http://127.0.0.1:%d/v1", cfg.Port))
+	// router with the session's own token, or on OpenCode's own models (the
+	// engine) the OpenCode program.
+	env := append(os.Environ(), "MANGOMAN_TOKEN="+token, fmt.Sprintf("MANGOMAN_URL=http://127.0.0.1:%d/v1", cfg.Port),
+		"MANGOMAN_ENGINE="+cfg.GetEngine(), "MANGOMAN_OPENCODE="+oc)
 	if os.Getenv("OPENCODE_CONFIG_DIR") == "" {
 		if oc, err := codeSkillsDir(); err == nil {
 			env = append(env, "OPENCODE_CONFIG_DIR="+oc)
@@ -427,7 +428,7 @@ func cmdCode(args []string) error {
 	ocOnly := cfg.GetEngine() == config.EngineOpenCode
 	if ocOnly && mode == modeRun {
 		// OpenCode waits for hours, silently, when its free messages run out;
-		// its error lines are how a run sees that (see freeLimit).
+		// its error lines are how a run sees that (opencode.FreeLimitLine).
 		env = append(env, "OPENCODE_PRINT_LOGS=1", "OPENCODE_LOG_LEVEL=ERROR")
 	}
 	if !*noWeb {
@@ -520,8 +521,8 @@ func cmdCode(args []string) error {
 			err = nil // OpenCode ended; only something it started still holds the output
 		}
 		// Also a limit OpenCode logged just before it ended, between checks.
-		if limited.Load() || (ocOnly && mode == modeRun && freeLimit.MatchString(tail.String())) {
-			return freeLimitError(time.Now())
+		if limited.Load() || (ocOnly && mode == modeRun && opencode.FreeLimitLine.MatchString(tail.String())) {
+			return opencode.FreeLimit(time.Now())
 		}
 		// Measured on real free models: a model that goes quiet in the middle
 		// of an answer is cut off by the router, and OpenCode then ends the
@@ -627,17 +628,6 @@ func runningEngine(cfg *config.Config) string {
 // takes minutes.
 const openCodeStall = 5 * time.Minute
 
-// freeLimit is OpenCode's own log line ("timestamp=... level=...") for an
-// error from its own models' service at the free daily limit. The line
-// carries the error's message only, right after the error's name (also
-// when OpenCode gave up after retries): "Rate limit exceeded. Please try
-// again later." (what the service sends a logged-out user at that limit,
-// read in its code) or "Free usage limit reached" / "Free usage exceeded"
-// (seen by users). A provider's own limit passed on by the service starts
-// "Error from provider" and is not matched; the model's words never start
-// a line so.
-var freeLimit = regexp.MustCompile(`(?im)^timestamp=\S+ level=\S+ .*providerID=opencode\b.*\berror(?:\.error)?="AI_\w+: (?:Failed after \d+ attempts\. Last error: )?(?:Rate limit exceeded\. Please try again later|Free usage (?:limit|exceeded))`)
-
 // watchOpenCode is watchStall for a run on OpenCode's own models: it stops
 // OpenCode at once when the free daily limit shows (OpenCode would wait
 // for hours), and when nothing has been printed for openCodeStall with no
@@ -658,7 +648,7 @@ func watchOpenCode(tail *tailWriter, p *os.Process, done <-chan struct{}, stalle
 		}
 		quiet := time.Since(last)
 		switch {
-		case freeLimit.MatchString(tail.String()):
+		case opencode.FreeLimitLine.MatchString(tail.String()):
 			limited.Store(true)
 		case quiet >= openCodeStall && (quiet >= commandCeiling || !commandRunning(p.Pid)):
 			stalled.Store(true)
@@ -673,14 +663,6 @@ func watchOpenCode(tail *tailWriter, p *os.Process, done <-chan struct{}, stalle
 		}
 		return
 	}
-}
-
-// freeLimitError says OpenCode's free messages are used up and when they
-// come back: OpenCode counts them per internet connection and day, from
-// midnight UTC.
-func freeLimitError(now time.Time) error {
-	reset := now.UTC().Truncate(24 * time.Hour).Add(24 * time.Hour)
-	return fmt.Errorf("today's free AI messages are used up on this internet connection; they come back at %s", reset.Local().Format("3:04 PM"))
 }
 
 // commandRunning reports whether OpenCode is running a command: its bash

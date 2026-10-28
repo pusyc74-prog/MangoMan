@@ -53,7 +53,14 @@ function stepState(id, state) {
 }
 
 function show() {
-  const keyed = view.keys > 0;
+  // On OpenCode's own models (the default) there is no key to connect: the
+  // key step goes and the other two become steps 1 and 2.
+  const oc = view.engine !== "switch";
+  $("s1").hidden = oc;
+  $("s2").querySelector(".num").textContent = oc ? "1" : "2";
+  $("s3").querySelector(".num").textContent = oc ? "2" : "3";
+  document.querySelector(".runline").textContent = oc ? "Free AI on your computer. Two steps, about five minutes." : "Free AI on your computer. Three steps, about five minutes.";
+  const keyed = oc || view.keys > 0;
   const stage = !keyed ? 1 : !view.ready ? 2 : 3;
   stepState("s1", keyed ? "done" : "now");
   stepState("s2", view.ready ? "done" : stage === 2 ? "now" : "later");

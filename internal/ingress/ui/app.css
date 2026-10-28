@@ -592,3 +592,6 @@ body.app { padding: 0; display: grid; grid-template-columns: 248px minmax(0, 1fr
 .file-start label:has(input:focus-visible) { outline: 2px solid var(--leaf); outline-offset: 2px; }
 .file-start .start { margin-top: 0; }
 .file-start .msg { flex-basis: 100%; }
+
+/* On OpenCode's own models (the default) the switch's parts are hidden. */
+.oc .switch-only { display: none !important; }

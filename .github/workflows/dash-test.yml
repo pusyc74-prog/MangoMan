@@ -28,6 +28,7 @@ jobs:
         env:
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          MANGOMAN_ENGINE: switch # tests the switch's pages (Connections, Usage)
         run: python3 scripts/dash-test.py
       - name: Publish the report to the eval-reports branch
         if: always()

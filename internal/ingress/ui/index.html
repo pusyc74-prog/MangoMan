@@ -11,7 +11,7 @@
 <script src="vendor/echarts.min.js" defer></script>
 <script src="sheets.js" defer></script>
 </head>
-<body class="app">
+<body class="app oc">
 <svg class="sprite" aria-hidden="true" focusable="false">
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-agents" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
@@ -43,8 +43,8 @@
     <a href="#history" data-view="history"><svg class="ico" aria-hidden="true"><use href="#i-history"/></svg>History</a>
   </nav>
   <nav class="nav-bottom" aria-label="Setup">
-    <a href="#connections" data-view="connections"><svg class="ico" aria-hidden="true"><use href="#i-plug"/></svg>Connections</a>
-    <a href="#usage" data-view="usage"><svg class="ico" aria-hidden="true"><use href="#i-usage"/></svg>Usage</a>
+    <a href="#connections" data-view="connections" class="switch-only"><svg class="ico" aria-hidden="true"><use href="#i-plug"/></svg>Connections</a>
+    <a href="#usage" data-view="usage" class="switch-only"><svg class="ico" aria-hidden="true"><use href="#i-usage"/></svg>Usage</a>
     <a href="#settings" data-view="settings"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg>Settings</a>
   </nav>
 </aside>
@@ -53,7 +53,7 @@
 <header class="top">
   <p class="runline" id="runline">Connecting to the router…</p>
   <button type="button" class="ghost icon-btn" id="refresh"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg>Refresh</button>
-  <button type="button" class="fab" id="fab" hidden aria-controls="drawer" aria-expanded="false">
+  <button type="button" class="fab switch-only" id="fab" hidden aria-controls="drawer" aria-expanded="false">
     <span class="fab-dot" aria-hidden="true"></span><span id="fab-text">New models</span>
   </button>
 </header>
@@ -390,7 +390,7 @@
       <dt>First-time setup</dt><dd><a href="setup.html">Open the setup page</a></dd>
       <dt>Stop</dt><dd><button type="button" class="ghost danger" id="quit">Stop MangoMan</button> <span class="fine">Open it again from its app or icon.</span></dd>
     </dl>
-    <section class="block" aria-labelledby="h-arch">
+    <section class="block switch-only" aria-labelledby="h-arch">
       <div class="block-head">
         <h2 id="h-arch">Mango Arch</h2>
         <p class="sub">Shared learning. When a free model is slow or failing for many MangoMans at once, every MangoMan learns it within the hour and tries that model last for a while.</p>

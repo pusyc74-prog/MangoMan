@@ -1,6 +1,7 @@
-"""Offline test of council.py: a stand-in for MangoMan's router, so choosing
-models, both rounds, a model that fails and the files written run as they do
-for real. Run: python3 selftest.py <the pack's scripts folder> [out folder].
+"""Offline test of council.py: a stand-in for MangoMan's router (the switch)
+and one for the OpenCode program (the default engine), so choosing models,
+both rounds, a model that fails, OpenCode's free limit and the files written
+run as they do for real. Run: python3 selftest.py <the pack's scripts folder> [out folder].
 It leaves council/council.json and council.md in the out folder (default .)
 for check_council.py."""
 import http.server
@@ -67,6 +68,7 @@ srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Router)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 os.environ["MANGOMAN_URL"] = "http://127.0.0.1:%d/v1" % srv.server_port
 os.environ["MANGOMAN_TOKEN"] = "test-token"
+os.environ["MANGOMAN_ENGINE"] = "switch"  # the switch first; OpenCode's own models further down
 fails, done = [], []
 
 
@@ -152,6 +154,78 @@ with tempfile.TemporaryDirectory() as d:  # a model that fails: the council goes
     except SystemExit as e:
         expect("summarise" in str(e), "a question too long for every voice is refused")
 srv.shutdown()
+
+# ---------- On OpenCode's own models (the default engine) ----------
+
+FAKE = r'''import json, os, sys
+ctl = os.environ["FAKE_OPENCODE_DIR"]
+a = sys.argv[1:]
+if a[:2] == ["models", "opencode"]:
+    print("opencode/big-pickle\nopencode/mimo-v2.6-flash-free\nopencode/nemotron-3.5-lightning-free\nopencode/space-bunny-free")
+    sys.exit()
+prompt = sys.stdin.read()
+cfg = json.loads(os.environ["OPENCODE_CONFIG_CONTENT"])
+agent = cfg["agent"]["mangoman-voice"]
+model = a[a.index("-m") + 1]
+ok = a[:5] == ["run", "--format", "json", "--agent", "mangoman-voice"] and cfg["enabled_providers"] == ["opencode"] \
+    and agent["permission"] == {"*": "deny"} and cfg["agent"]["title"]["disable"] and "Your role" in agent["prompt"] \
+    and not os.listdir(".")
+with open(os.path.join(ctl, "calls.jsonl"), "a", encoding="utf-8") as f:
+    f.write(json.dumps({"model": model, "ok": ok, "round2": "Your first answer was" in prompt, "question": "trial jar" in prompt}) + "\n")
+if os.path.exists(os.path.join(ctl, "limit")):
+    sys.stderr.write('timestamp=2026-10-28T06:50:58.1Z level=ERROR run=ab12 message="stream error" providerID=opencode modelID=%s '
+                     'error.error="AI_APICallError: Free usage limit reached. Free models work in OpenCode (https://opencode.ai)."\n' % model)
+    sys.stderr.flush()
+    import time
+    time.sleep(60)  # as OpenCode: it waits for the limit to end
+    sys.exit()
+if model.endswith("space-bunny-free"):
+    print(json.dumps({"type": "error", "error": {"name": "UnknownError", "data": {"message": "Unexpected server error."}}}))
+    sys.exit()
+conf = 75 if "Your first answer was" in prompt else 70
+print(json.dumps({"type": "step_start"}))
+print(json.dumps({"type": "text", "part": {"text": "POSITION: Launch the trial jar.\nCONFIDENCE: %d\nREASONS:\n- 62%% of reviews come from first-time buyers.\n" % conf}}))
+print(json.dumps({"type": "step_finish", "part": {"tokens": {"input": 800, "output": 200, "reasoning": 0, "cache": {"read": 0}}}}))
+'''
+
+with tempfile.TemporaryDirectory() as d:
+    fake = os.path.join(d, "fake_opencode.py")
+    open(fake, "w", encoding="utf-8").write(FAKE)
+    if os.name == "nt":  # a program Windows can start, which runs the stand-in
+        exe = os.path.join(d, "opencode.cmd")
+        open(exe, "w").write('@"%s" "%s" %%*\n' % (sys.executable, fake))
+    else:
+        exe = os.path.join(d, "opencode")
+        open(exe, "w").write("#!%s\n" % sys.executable + FAKE)
+        os.chmod(exe, 0o755)
+    os.environ.update({"MANGOMAN_ENGINE": "", "MANGOMAN_OPENCODE": exe, "FAKE_OPENCODE_DIR": d})
+    calls = lambda: [json.loads(x) for x in open(os.path.join(d, "calls.jsonl"), encoding="utf-8")]
+    sys.argv = ["council.py", os.path.join(here, "question.md"), "--out", os.path.join(d, "oc")]
+    K.main()
+    o = json.load(open(os.path.join(d, "oc", K.OUT + ".json")))
+    models = [v["model"] for v in o["voices"]]
+    expect(models == ["opencode/big-pickle", "opencode/mimo-v2.6-flash-free", "opencode/nemotron-3.5-lightning-free"],
+           "OpenCode's own free models by default; a broken one is swapped for a spare: %s" % models)
+    expect(all(len(v["rounds"]) == 2 and v["rounds"][1]["ok"] and v["rounds"][1]["confidence"] == 75 for v in o["voices"]),
+           "two rounds on OpenCode's models")
+    c = calls()
+    expect(all(x["ok"] and x["question"] for x in c) and sum(x["round2"] for x in c) == 3,
+           "each voice is an OpenCode run with no tools, its role, the question on standard input, from an empty folder: %s" % c)
+    expect(o["tokens"] == 6000, "tokens come from OpenCode's step reports: %d" % o["tokens"])
+    open(os.path.join(d, "limit"), "w").close()  # OpenCode's free daily limit
+    before = len(calls())
+    started = __import__("time").time()
+    try:
+        sys.argv = ["council.py", os.path.join(here, "question.md"), "--out", os.path.join(d, "limit-run")]
+        K.main()
+        expect(False, "the free limit stops the council")
+    except SystemExit as e:
+        expect("free AI messages are used up" in str(e) and "picks up where it stopped" in str(e), "the free limit stops the council: %s" % e)
+    expect(len(calls()) - before == 3, "at the free limit no spare model is tried: they share it (%d runs)" % (len(calls()) - before))
+    took = __import__("time").time() - started
+    expect(took < 30, "OpenCode waits at the limit; the council stops it at once (%.0f s)" % took)
+    expect(not os.path.exists(os.path.join(d, "limit-run", K.OUT + ".json")) or json.load(open(os.path.join(d, "limit-run", K.OUT + ".json")))["done"] == 0,
+           "the round cut by the limit is asked again next time")
 
 for f in fails:
     print("FAIL  selftest: " + f)

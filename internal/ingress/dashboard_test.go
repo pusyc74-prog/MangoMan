@@ -476,16 +476,17 @@ func TestQuit(t *testing.T) {
 	}
 }
 
-// The busy report names OpenCode's own models, so the coding screen knows
-// MangoMan does not see the model requests; the switch goes unnamed.
+// The busy report names OpenCode's own models (the default), so the coding
+// screen knows MangoMan does not see the model requests; the frozen switch
+// goes unnamed.
 func TestBusyEngine(t *testing.T) {
 	t.Setenv("MANGOMAN_ENGINE", "")
 	h, s := dashServer(t, mem{})
-	if w := call(h, "GET", "/mangoman/busy", "127.0.0.1:4141", authz, ""); strings.Contains(w.Body.String(), "engine") {
-		t.Fatalf("the default, the switch, goes unnamed: %s", w.Body)
-	}
-	s.Cfg.Engine = config.EngineOpenCode
 	if w := call(h, "GET", "/mangoman/busy", "127.0.0.1:4141", authz, ""); !strings.Contains(w.Body.String(), `"engine": "opencode"`) {
-		t.Fatalf("OpenCode engine: %s", w.Body)
+		t.Fatalf("the default, OpenCode: %s", w.Body)
+	}
+	s.Cfg.Engine = config.EngineSwitch
+	if w := call(h, "GET", "/mangoman/busy", "127.0.0.1:4141", authz, ""); strings.Contains(w.Body.String(), "engine") {
+		t.Fatalf("the switch goes unnamed: %s", w.Body)
 	}
 }

@@ -6,12 +6,14 @@ question.md holds the question, the options and the facts. Each voice gets a
 role (advocate, critic, fact-checker, risk officer, the people affected) and
 answers in a fixed shape: position, confidence, reasons, risks, what would
 change its mind. In round 2 each voice reads the others' answers (by letter,
-not by model) and keeps or changes its position. Models come from MangoMan's
-router (MANGOMAN_URL and MANGOMAN_TOKEN, set in every MangoMan session), one
-per maker, so they do not share the same blind spots; a model that cannot
-answer is replaced by the next maker's. --plan only prints the voices and the
-number of AI requests. Progress is saved after every round, so a run that was
-stopped picks up where it ended. Writes council.json and council.md.
+not by model) and keeps or changes its position. Models come from where the
+MangoMan session gets its AI (MANGOMAN_ENGINE, set in every session): OpenCode's
+own free models through the OpenCode program (MANGOMAN_OPENCODE), the default,
+or MangoMan's switch (MANGOMAN_URL and MANGOMAN_TOKEN). One per maker, so they
+do not share the same blind spots; a model that cannot answer is replaced by
+the next maker's. --plan only prints the voices and the number of AI
+requests. Progress is saved after every round, so a run that was stopped
+picks up where it ended. Writes council.json and council.md.
 """
 import concurrent.futures
 import datetime as dt
@@ -19,7 +21,10 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 import threading
 import time
 import urllib.error
@@ -55,7 +60,7 @@ MAKERS = [
     (r"^(llama|meta-llama)", "Meta"), (r"^qwen", "Alibaba"), (r"^deepseek", "DeepSeek"),
     (r"^(mistral|mixtral|codestral|devstral|magistral|ministral)", "Mistral"), (r"^nemotron", "NVIDIA"),
     (r"^(glm|chatglm)", "Zhipu"), (r"^kimi", "Moonshot"), (r"^grok", "xAI"), (r"^(command|aya)", "Cohere"),
-    (r"^phi", "Microsoft"), (r"^minimax", "MiniMax"), (r"^ernie", "Baidu"),
+    (r"^phi", "Microsoft"), (r"^minimax", "MiniMax"), (r"^ernie", "Baidu"), (r"^mimo", "Xiaomi"), (r"^big-pickle", "OpenCode"),
 ]
 SMALL = re.compile(r"(^|[-_.:])(mini|nano|tiny|lightning|xs|small)([-_.:]|$)", re.I)
 HEADS = {"POSITION": "position", "CONFIDENCE": "confidence", "REASONS": "reasons", "RISKS": "risks",
@@ -92,11 +97,104 @@ def ranked(models):
     return first + sorted((m for m in models if m not in first), key=lambda m: (-strength(m), m))
 
 
-def router():
+FREE_LIMIT = "free limit"  # OpenCode's free daily limit: no other free model can answer either
+# OpenCode's own log line at that limit (as MangoMan's opencode.FreeLimitLine reads it).
+LIMIT_LINE = re.compile(r"(?im)^timestamp=\S+ level=\S+ .*providerID=opencode\b.*\berror(?:\.error)?=\"AI_\w+: "
+                        r"(?:Failed after \d+ attempts\. Last error: )?(?:Rate limit exceeded\. Please try again later|Free usage (?:limit|exceeded))")
+
+
+def source():
+    """(list the models, ask one): OpenCode's own free models (the default),
+    or MangoMan's switch when the session's engine is "switch"."""
+    if os.environ.get("MANGOMAN_ENGINE", "").strip().lower() != "switch":
+        oc = os.environ.get("MANGOMAN_OPENCODE") or shutil.which("opencode")
+        if not oc:
+            sys.exit("OpenCode is not set up yet: run this inside a MangoMan coding session")
+        return (lambda: opencode_models(oc)), (lambda model, messages: ask_opencode(oc, model, messages))
     url, token = os.environ.get("MANGOMAN_URL", "").rstrip("/"), os.environ.get("MANGOMAN_TOKEN", "")
     if not url or not token:
         sys.exit("MANGOMAN_URL and MANGOMAN_TOKEN are not set: run this inside a MangoMan coding session")
-    return url, token
+    return (lambda: available(url, token)), (lambda model, messages: ask(url, token, model, messages))
+
+
+def opencode_models(oc):
+    """OpenCode's own free models, as OpenCode lists them logged out."""
+    r = subprocess.run([oc, "models", "opencode"], capture_output=True, text=True, timeout=120)
+    return sorted(line.strip() for line in r.stdout.splitlines() if line.strip().startswith("opencode/"))
+
+
+def ask_opencode(oc, model, messages):
+    """(text, tokens, error) from one OpenCode run: no tools, the voice's role
+    as its instructions, the question (and in round 2 the first answer and the
+    others') on standard input, from an empty folder."""
+    prompt = messages[1]["content"]
+    if len(messages) > 2:
+        prompt += "\n\nYour first answer was:\n\n%s\n\n%s" % (messages[2]["content"], messages[3]["content"])
+    config = json.dumps({"enabled_providers": ["opencode"], "share": "disabled", "autoupdate": False, "agent": {
+        "title": {"disable": True},
+        "mangoman-voice": {"mode": "primary", "description": "One voice of MangoMan's council",
+                           "prompt": messages[0]["content"], "permission": {"*": "deny"}}}})
+    env = dict(os.environ, OPENCODE_CONFIG_CONTENT=config, OPENCODE_PRINT_LOGS="1", OPENCODE_LOG_LEVEL="ERROR",
+               OPENCODE_DISABLE_AUTOUPDATE="1")
+    # At the limit OpenCode keeps waiting for hours: its log line ends the run.
+    with tempfile.TemporaryDirectory(prefix="mangoman-voice-") as work:
+        try:
+            p = subprocess.Popen([oc, "run", "--format", "json", "--agent", "mangoman-voice", "-m", model], stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace",
+                                 cwd=work, env=env)
+        except OSError as e:
+            return "", 0, "no answer (%s)" % type(e).__name__
+        out, logs, limit = [], [], threading.Event()
+
+        def read_logs():
+            for line in p.stderr:
+                logs.append(line)
+                if LIMIT_LINE.search(line):
+                    limit.set()
+                    p.kill()
+        readers = [threading.Thread(target=read_logs, daemon=True),
+                   threading.Thread(target=lambda: out.append(p.stdout.read()), daemon=True)]
+        for t in readers:
+            t.start()
+        try:
+            p.stdin.write(prompt)
+            p.stdin.close()
+        except OSError:
+            pass  # OpenCode ended early; its output says why
+        try:
+            p.wait(timeout=TIMEOUT)
+        except subprocess.TimeoutExpired:
+            p.kill()
+            p.wait()
+            return "", 0, "no answer (TimeoutExpired)"
+        for t in readers:
+            t.join(5)
+    if limit.is_set():
+        return "", 0, FREE_LIMIT
+    text, used, failed = "", 0, ""
+    for line in "".join(out).splitlines():
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        part = ev.get("part") or {}
+        if ev.get("type") == "text":
+            text += part.get("text") or ""
+        elif ev.get("type") == "step_finish":
+            used += sum(v for v in (part.get("tokens") or {}).values() if isinstance(v, int))
+        elif ev.get("type") == "error" and not failed:
+            e = ev.get("error") or {}
+            failed = ((e.get("data") or {}).get("message") or e.get("name") or "an error")[:160]
+    text = clean(text)
+    if text:
+        return text, used, ""
+    return "", used, ("the model failed: " + failed) if failed else "the model gave an empty answer"
+
+
+def free_limit_message():
+    reset = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    return ("Today's free AI messages are used up on this internet connection; they come back at %s. "
+            "Run the council again then: it picks up where it stopped." % reset.astimezone().strftime("%H:%M"))
 
 
 def call(url, token, path, body=None):
@@ -239,18 +337,18 @@ def main():
                  % (a[0], len(question), MAX_QUESTION))
     out = opt.get("--out", OUT)
     digest = hashlib.sha1(question.encode("utf-8")).hexdigest()
-    url, token = router()
+    models, ask_model = source()
     record = resumable(out, digest, rounds)
     if record:
         voices = record["voices"]
         print("Picking up the council saved in %s after round %d." % (out, record["done"]))
     else:
         try:
-            pool = named or ranked(available(url, token))
-        except (urllib.error.URLError, OSError, ValueError) as e:
-            sys.exit("could not read the models from MangoMan (%s); is MangoMan running?" % why(e))
+            pool = named or ranked(models())
+        except (urllib.error.URLError, OSError, ValueError, subprocess.SubprocessError) as e:
+            sys.exit("could not read the models (%s); is MangoMan running?" % why(e))
         if len(pool) < 2:
-            sys.exit("only %d model can be reached now; a council needs at least 2. Add another free provider in Connections." % len(pool))
+            sys.exit("only %d model can be reached now; a council needs at least 2. Try again in a few minutes." % len(pool))
         makers = len({maker(m) for m in pool})
         voices = [{"label": chr(65 + i), "model": m, "maker": maker(m), "role": ROLES[i][0], "rounds": []}
                   for i, m in enumerate(pool[:n])]
@@ -272,17 +370,21 @@ def main():
                     msgs += [{"role": "assistant", "content": v["rounds"][0]["text"]},
                              {"role": "user", "content": "The other voices answered:\n\n%s\n\nReply in the same shape. Keep or change your position; "
                                                          "in REASONS say which voice's point moved you or why it did not." % others_text(voices, v)}]
-                got = ask(url, token, v["model"], msgs)
-                # Round 1: a model that cannot answer is swapped for a spare one.
-                while rnd == 0 and got[2]:
+                got = ask_model(v["model"], msgs)
+                # Round 1: a model that cannot answer is swapped for a spare one
+                # (not at OpenCode's free limit: every free model shares it).
+                while rnd == 0 and got[2] and got[2] != FREE_LIMIT:
                     with lock:
                         if not record["spare"]:
                             break
                         v["model"] = record["spare"].pop(0)
                     v["maker"] = maker(v["model"])
-                    got = ask(url, token, v["model"], msgs)
+                    got = ask_model(v["model"], msgs)
                 return got
-            for v, got in zip(voices, ex.map(job, voices)):
+            got_all = list(ex.map(job, voices))
+            if any(got[2] == FREE_LIMIT for got in got_all):
+                sys.exit(free_limit_message())  # this round is asked again next time
+            for v, got in zip(voices, got_all):
                 v["rounds"].append(answer(*got))
                 record["tokens"] += got[1]
             record["done"] = rnd + 1

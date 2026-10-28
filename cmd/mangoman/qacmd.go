@@ -68,7 +68,7 @@ func cmdQA(args []string) error {
 	problems := qa.Problems(results, found)
 	causes := ""
 	if problems != "" && !*noAI {
-		ans, _, err := askRouter("These problems were found while testing a software project:\n" + problems +
+		ans, err := askAI("These problems were found while testing a software project:\n" + problems +
 			"\nFor each problem, in one short line: the most likely cause and where to look. Say if you are unsure. No fixes.")
 		if err == nil {
 			causes = ans
@@ -127,7 +127,7 @@ func loadGuardian(path string) (*guardian.Guardian, error) {
 	guardian.Register(filepath.Join(cdir, "guardian", "projects.json"), must(filepath.Abs(path)))
 	return &guardian.Guardian{Cfg: cfg, Dir: state, Wait: 10 * time.Second, TG: guardian.LoadTelegram(state),
 		Root: guardianRoot(cdir, cfg.App, must(filepath.Abs(path))),
-		Ask:  func(p string) (string, error) { a, _, err := askRouter(p); return a, err },
+		Ask:  askAI,
 		Agent: func(ctx context.Context, dir, prompt string) error {
 			cmd := exec.CommandContext(ctx, self, "code", "--no-web", "run", "--auto", "--dir", dir, prompt)
 			cmd.Stdout, cmd.Stderr = io.Discard, io.Discard

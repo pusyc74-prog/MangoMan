@@ -5,7 +5,7 @@ license: Proprietary. Free to use inside MangoMan only; no copying, changing or 
 metadata:
   pack: mangoman
   kind: agent
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Council
@@ -74,8 +74,9 @@ Three voices by default, each from a different maker, in two rounds: first
 each answers alone in its role (advocate, critic, fact-checker), then each
 reads the others' answers and keeps or changes its position. Use
 `--voices 4` or `5` for big or many-sided questions (adds a risk officer and
-the people affected). If it says too few models can be reached, tell the
-owner plainly and suggest adding another free provider in Connections.
+the people affected). If it says too few models can be reached, or that
+today's free AI messages are used up, tell the owner that plainly, with the
+time it gives, and stop: do not try again before then.
 
 **4. Weigh.** Read `council/council.md`. For each point: does it rest on a
 fact from `question.md`, or on an assumption? Where do the voices agree,
