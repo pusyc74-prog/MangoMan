@@ -436,7 +436,7 @@ func serve(port int, opened func(connected int)) error {
 	// through the switch, or on OpenCode's own models (the default).
 	ask := func(p string, asJSON bool) (string, error) { a, _, err := askRouterAs(p, asJSON); return a, err }
 	if ocOnly {
-		ask = func(p string, asJSON bool) (string, error) { return askOpenCode(dir, p, asJSON) }
+		ask = func(p string, asJSON bool) (string, error) { return askOpenCode(ctx, dir, p, asJSON) }
 	}
 	srv.Ask = func(p string) (string, error) { return ask(p, false) }
 	srv.Secrets = st
@@ -892,7 +892,9 @@ func askAI(prompt string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return askOpenCode(home, prompt, false)
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop() // OpenCode runs in its own process group: Ctrl-C reaches it through ctx
+		return askOpenCode(ctx, home, prompt, false)
 	}
 	a, _, err := askRouter(prompt)
 	return a, err
@@ -945,7 +947,8 @@ func askRouterAs(prompt string, asJSON bool) (string, http.Header, error) {
 
 // askOpenCode puts one question to OpenCode's own free models, as
 // askRouterAs puts it to the switch; asJSON asks for one JSON object.
-func askOpenCode(home, prompt string, asJSON bool) (string, error) {
+// Ending ctx stops OpenCode.
+func askOpenCode(ctx context.Context, home, prompt string, asJSON bool) (string, error) {
 	bin, err := opencode.Path(home)
 	if err != nil {
 		return "", errors.New("MangoMan is not set up yet: click Get ready on the setup page")
@@ -954,7 +957,7 @@ func askOpenCode(home, prompt string, asJSON bool) (string, error) {
 	if asJSON {
 		system += " Reply with one JSON object and nothing else."
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
 	defer cancel()
 	return opencode.Ask(ctx, bin, system, prompt)
 }

@@ -22,6 +22,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -146,6 +147,7 @@ def ask_opencode(oc, model, messages):
                                  cwd=work, env=env, start_new_session=os.name != "nt")
         except OSError as e:
             return "", 0, "no answer (%s)" % type(e).__name__
+        LIVE.add(p)
         out, logs, limit = [], [], threading.Event()
 
         def read_logs():
@@ -171,6 +173,8 @@ def ask_opencode(oc, model, messages):
             kill_tree(p)
             p.wait()
             return "", 0, "no answer (TimeoutExpired)"
+        finally:
+            LIVE.discard(p)
         for t in threads:
             t.join(5)
     if limit.is_set():
@@ -195,6 +199,16 @@ def ask_opencode(oc, model, messages):
     if text:
         return text, used, ""
     return "", used, ("the model failed: " + failed) if failed else "the model gave an empty answer"
+
+
+LIVE = set()  # OpenCode runs not finished yet
+
+
+def stop_all(signum, frame):
+    """Ctrl-C or a stop: OpenCode runs in its own session and would not hear it."""
+    for p in list(LIVE):
+        kill_tree(p)
+    raise KeyboardInterrupt
 
 
 def kill_tree(p):
@@ -431,4 +445,6 @@ def markdown(r):
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, stop_all)
+    signal.signal(signal.SIGTERM, stop_all)
     main()

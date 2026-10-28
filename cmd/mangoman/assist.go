@@ -393,7 +393,9 @@ func cmdCode(args []string) error {
 	// The screens watch the engine MangoMan runs with; a session on another
 	// one would be restarted as stalled. A MangoMan from before the update
 	// names none: it must be restarted to run the new one.
-	switch running := runningEngine(cfg); {
+	switch running, err := runningEngine(cfg); {
+	case err != nil:
+		return fmt.Errorf("MangoMan did not answer (%v): try again in a minute", err)
 	case running == "":
 		return errors.New("MangoMan was updated while it was running: stop it (Settings, Stop MangoMan) and open it again")
 	case running != cfg.GetEngine():
@@ -614,15 +616,16 @@ func watchStall(cfg *config.Config, p *os.Process, done <-chan struct{}, stalled
 
 // runningEngine is the engine the running MangoMan uses, from its busy
 // report ("" when it names none: a MangoMan from before 28 Oct).
-func runningEngine(cfg *config.Config) string {
+func runningEngine(cfg *config.Config) (string, error) {
 	out, err := localSend(cfg, http.MethodGet, "/mangoman/busy", nil)
+	if err != nil {
+		return "", err
+	}
 	var b struct {
 		Engine string `json:"engine"`
 	}
-	if err != nil || json.Unmarshal(out, &b) != nil {
-		return ""
-	}
-	return b.Engine
+	err = json.Unmarshal(out, &b)
+	return b.Engine, err
 }
 
 // openCodeStall is how long a run on OpenCode's own models may print
