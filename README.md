@@ -1,6 +1,8 @@
 # MangoMan
 
-Free-first, local AI router. One Go binary on your machine pools every free model you can reach, fails over when one runs dry or gives a bad answer, and never sends your keys or prompts anywhere except the provider you are calling.
+AI agents and tools on your computer: super agents, skill packs, a coding screen, Chargesheets and Guardian, in one Go binary.
+
+**AI engine (since 28 Oct 2026):** agents use OpenCode's own free models by default, with no keys to set up; the subscription comes next. The free-first model switch described further down (providers, keys, failover, My list) is kept in the code, frozen, for developers only: `mangoman engine switch` turns it on, `mangoman engine opencode` back off, and no screen shows it. OpenCode's free allowance is about 40 messages per internet connection a day (measured); at the limit MangoMan stops and says when it comes back.
 
 Status: **Phase 1 built (M1 to M4, 20 skill packs, five super agents with a skills library and community skills, a Buffer connector, Guardian, the M6 coding screen); not released yet.** To try it now, build it from the Actions tab (ci, Run workflow, then download the mangoman artifact). See the [PRD](https://claude.ai/code/artifact/cca2344e-8ddc-431f-b053-6c0b2617c29e) and the [Phase 1 build plan](https://claude.ai/code/artifact/1b002e4f-d746-47c0-be64-d6fad377d2d0).
 
