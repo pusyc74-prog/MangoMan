@@ -22,6 +22,19 @@ import (
 // ErrFreeLimit is OpenCode's free daily limit reached.
 var ErrFreeLimit = errors.New("today's free AI messages are used up on this internet connection")
 
+// Said is an error whose message is already worded for the person using
+// MangoMan; callers show it as it is.
+type Said struct{ Err error }
+
+func (e Said) Error() string { return e.Err.Error() }
+func (e Said) Unwrap() error { return e.Err }
+
+// Says reports whether err should be shown as it is: a Said, or the free limit.
+func Says(err error) bool {
+	var s Said
+	return errors.As(err, &s) || errors.Is(err, ErrFreeLimit)
+}
+
 // FreeLimit is ErrFreeLimit with when the messages come back, in local time.
 func FreeLimit(now time.Time) error {
 	reset := now.UTC().Truncate(24 * time.Hour).Add(24 * time.Hour)
@@ -103,6 +116,8 @@ func Ask(ctx context.Context, bin, system, prompt string) (string, error) {
 	ctx, stop := context.WithCancel(ctx)
 	defer stop()
 	cmd := exec.CommandContext(ctx, bin, "run", "--format", "json", "--agent", askAgent)
+	Group(cmd)
+	cmd.Cancel = func() error { return KillTree(cmd) }
 	cmd.Dir = dir
 	cmd.Stdin = strings.NewReader(prompt)
 	var out bytes.Buffer
@@ -141,16 +156,15 @@ func Ask(ctx context.Context, bin, system, prompt string) (string, error) {
 			}
 		}
 	}
-	if s := strings.TrimSpace(text.String()); s != "" {
+	switch s := strings.TrimSpace(text.String()); {
+	case ctx.Err() != nil: // a cut-off answer is not an answer
+		return "", Said{errors.New("the free AI model did not answer in time: try again in a few minutes")}
+	case s != "":
 		return s, nil
-	}
-	switch {
-	case ctx.Err() != nil:
-		return "", fmt.Errorf("OpenCode's free model did not answer in time: %w", ctx.Err())
 	case failed.Len() > 0:
-		return "", fmt.Errorf("OpenCode's free model failed: %s", failed.String())
+		return "", Said{fmt.Errorf("the free AI model failed (%s): try again in a few minutes", failed.String())}
 	case runErr != nil:
-		return "", fmt.Errorf("OpenCode did not run: %w", runErr)
+		return "", Said{fmt.Errorf("the free AI could not start (%v): open MangoMan's setup page and click Get ready", runErr)}
 	}
-	return "", errors.New("OpenCode's free model gave no answer")
+	return "", Said{errors.New("the free AI model gave no answer: try again in a few minutes")}
 }

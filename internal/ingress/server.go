@@ -270,13 +270,10 @@ func (s *Server) status(w http.ResponseWriter, _ *http.Request) {
 // busy says whether any model request is in flight and how long since one
 // began or ended (mangoman code run's watchdog), and the engine: on
 // OpenCode's own models MangoMan sees no requests, so the coding screen
-// watches OpenCode instead.
+// watches OpenCode instead. A MangoMan from before 28 Oct names none.
 func (s *Server) busy(w http.ResponseWriter, _ *http.Request) {
 	n, idle := s.Router.Busy()
-	out := map[string]any{"in_flight": n, "idle_s": int(idle.Seconds())}
-	if s.engine() == config.EngineOpenCode {
-		out["engine"] = config.EngineOpenCode // the frozen switch goes unnamed
-	}
+	out := map[string]any{"in_flight": n, "idle_s": int(idle.Seconds()), "engine": s.engine()}
 	if a, ok := s.Router.Trying(); ok {
 		out["now"], out["waiting_s"] = a, int(time.Since(a.Since).Seconds())
 	}

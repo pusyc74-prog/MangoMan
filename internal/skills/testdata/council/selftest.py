@@ -185,7 +185,7 @@ if model.endswith("space-bunny-free"):
 conf = 75 if "Your first answer was" in prompt else 70
 print(json.dumps({"type": "step_start"}))
 print(json.dumps({"type": "text", "part": {"text": "POSITION: Launch the trial jar.\nCONFIDENCE: %d\nREASONS:\n- 62%% of reviews come from first-time buyers.\n" % conf}}))
-print(json.dumps({"type": "step_finish", "part": {"tokens": {"input": 800, "output": 200, "reasoning": 0, "cache": {"read": 0}}}}))
+print(json.dumps({"type": "step_finish", "part": {"tokens": {"total": 1000, "input": 800, "output": 200, "reasoning": 0, "cache": {"read": 0}}}}))
 '''
 
 with tempfile.TemporaryDirectory() as d:

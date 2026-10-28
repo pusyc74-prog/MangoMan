@@ -391,9 +391,13 @@ func cmdCode(args []string) error {
 		fmt.Printf("Started MangoMan for this session (log: %s).\n", logPath)
 	}
 	// The screens watch the engine MangoMan runs with; a session on another
-	// one would be restarted as stalled.
-	if running := runningEngine(cfg); running != cfg.GetEngine() {
-		return fmt.Errorf("MangoMan is running on the %s engine and this session asks for %s: restart MangoMan with the same setting", running, cfg.GetEngine())
+	// one would be restarted as stalled. A MangoMan from before the update
+	// names none: it must be restarted to run the new one.
+	switch running := runningEngine(cfg); {
+	case running == "":
+		return errors.New("MangoMan was updated while it was running: stop it (Settings, Stop MangoMan) and open it again")
+	case running != cfg.GetEngine():
+		return errors.New("MangoMan is running with other settings than this session: stop it (Settings, Stop MangoMan) and open it again")
 	}
 
 	// Skill scripts that ask models themselves (the Council) reach the
@@ -511,7 +515,7 @@ func cmdCode(args []string) error {
 		var stalled, limited atomic.Bool
 		switch {
 		case mode == modeRun && ocOnly:
-			go watchOpenCode(&tail, cmd.Process, done, &stalled, &limited)
+			go watchOpenCode(&tail, cmd, done, &stalled, &limited)
 		case mode == modeRun:
 			go watchStall(cfg, cmd.Process, done, &stalled)
 		}
@@ -608,17 +612,17 @@ func watchStall(cfg *config.Config, p *os.Process, done <-chan struct{}, stalled
 	}
 }
 
-// runningEngine is the engine the running MangoMan uses: its busy report
-// names it only for OpenCode's own models.
+// runningEngine is the engine the running MangoMan uses, from its busy
+// report ("" when it names none: a MangoMan from before 28 Oct).
 func runningEngine(cfg *config.Config) string {
 	out, err := localSend(cfg, http.MethodGet, "/mangoman/busy", nil)
 	var b struct {
 		Engine string `json:"engine"`
 	}
-	if err != nil || json.Unmarshal(out, &b) != nil || b.Engine != config.EngineOpenCode {
-		return config.EngineSwitch
+	if err != nil || json.Unmarshal(out, &b) != nil {
+		return ""
 	}
-	return config.EngineOpenCode
+	return b.Engine
 }
 
 // openCodeStall is how long a run on OpenCode's own models may print
@@ -632,7 +636,8 @@ const openCodeStall = 5 * time.Minute
 // OpenCode at once when the free daily limit shows (OpenCode would wait
 // for hours), and when nothing has been printed for openCodeStall with no
 // command running.
-func watchOpenCode(tail *tailWriter, p *os.Process, done <-chan struct{}, stalled, limited *atomic.Bool) {
+func watchOpenCode(tail *tailWriter, cmd *exec.Cmd, done <-chan struct{}, stalled, limited *atomic.Bool) {
+	p := cmd.Process
 	started := time.Now()
 	tick := time.NewTicker(2 * time.Second)
 	defer tick.Stop()
@@ -659,7 +664,7 @@ func watchOpenCode(tail *tailWriter, p *os.Process, done <-chan struct{}, stalle
 		select {
 		case <-done:
 		case <-time.After(5 * time.Second):
-			_ = p.Kill()
+			_ = opencode.KillTree(cmd) // on Windows, also OpenCode under an npm opencode.cmd
 		}
 		return
 	}

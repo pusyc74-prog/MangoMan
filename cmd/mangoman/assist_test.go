@@ -218,7 +218,7 @@ func TestWatchOpenCode(t *testing.T) {
 		done := make(chan struct{})
 		ended := make(chan struct{})
 		go func() { _ = c.Wait(); close(ended) }()
-		go watchOpenCode(&tw, c.Process, done, &stalled, &limited)
+		go watchOpenCode(&tw, c, done, &stalled, &limited)
 		_, _ = tw.Write([]byte(out))
 		select {
 		case <-ended:

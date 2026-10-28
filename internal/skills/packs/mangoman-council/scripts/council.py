@@ -33,7 +33,7 @@ import urllib.request
 OUT = "council"
 MAX_QUESTION = 12000  # characters: every voice reads it every round, and small free models allow few tokens a minute
 MAX_VOICES = 5
-TIMEOUT = 200  # seconds: just over the router's own 180 s for a whole answer, so its retries can finish
+TIMEOUT = 200  # seconds for a whole answer: just over MangoMan's own 180 s, so its retries can finish
 WAIT_MAX = 90  # seconds to wait once when the router says free capacity returns soon
 ROLES = [
     ("Advocate", "Make the strongest honest case for the option you think is best."),
@@ -137,11 +137,13 @@ def ask_opencode(oc, model, messages):
     env = dict(os.environ, OPENCODE_CONFIG_CONTENT=config, OPENCODE_PRINT_LOGS="1", OPENCODE_LOG_LEVEL="ERROR",
                OPENCODE_DISABLE_AUTOUPDATE="1")
     # At the limit OpenCode keeps waiting for hours: its log line ends the run.
-    with tempfile.TemporaryDirectory(prefix="mangoman-voice-") as work:
+    # A killed OpenCode can leave files open on Windows for a moment: never fail on them.
+    with tempfile.TemporaryDirectory(prefix="mangoman-voice-", ignore_cleanup_errors=True) as work:
         try:
+            # Its own process group, so a stop reaches OpenCode, not only a wrapper.
             p = subprocess.Popen([oc, "run", "--format", "json", "--agent", "mangoman-voice", "-m", model], stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace",
-                                 cwd=work, env=env)
+                                 cwd=work, env=env, start_new_session=os.name != "nt")
         except OSError as e:
             return "", 0, "no answer (%s)" % type(e).__name__
         out, logs, limit = [], [], threading.Event()
@@ -149,25 +151,27 @@ def ask_opencode(oc, model, messages):
         def read_logs():
             for line in p.stderr:
                 logs.append(line)
-                if LIMIT_LINE.search(line):
+                if LIMIT_LINE.search(line) and not limit.is_set():
                     limit.set()
-                    p.kill()
-        readers = [threading.Thread(target=read_logs, daemon=True),
+                    kill_tree(p)
+
+        def send():  # in a thread: a long prompt would block while OpenCode does not read
+            try:
+                p.stdin.write(prompt)
+                p.stdin.close()
+            except (OSError, ValueError):
+                pass  # OpenCode ended early; its output says why
+        threads = [threading.Thread(target=read_logs, daemon=True), threading.Thread(target=send, daemon=True),
                    threading.Thread(target=lambda: out.append(p.stdout.read()), daemon=True)]
-        for t in readers:
+        for t in threads:
             t.start()
-        try:
-            p.stdin.write(prompt)
-            p.stdin.close()
-        except OSError:
-            pass  # OpenCode ended early; its output says why
         try:
             p.wait(timeout=TIMEOUT)
         except subprocess.TimeoutExpired:
-            p.kill()
+            kill_tree(p)
             p.wait()
             return "", 0, "no answer (TimeoutExpired)"
-        for t in readers:
+        for t in threads:
             t.join(5)
     if limit.is_set():
         return "", 0, FREE_LIMIT
@@ -181,7 +185,9 @@ def ask_opencode(oc, model, messages):
         if ev.get("type") == "text":
             text += part.get("text") or ""
         elif ev.get("type") == "step_finish":
-            used += sum(v for v in (part.get("tokens") or {}).values() if isinstance(v, int))
+            t = part.get("tokens") or {}  # total, when given, already holds input, output and reasoning
+            used += t["total"] if isinstance(t.get("total"), int) else sum(
+                v for k, v in t.items() if k in ("input", "output", "reasoning") and isinstance(v, int))
         elif ev.get("type") == "error" and not failed:
             e = ev.get("error") or {}
             failed = ((e.get("data") or {}).get("message") or e.get("name") or "an error")[:160]
@@ -189,6 +195,21 @@ def ask_opencode(oc, model, messages):
     if text:
         return text, used, ""
     return "", used, ("the model failed: " + failed) if failed else "the model gave an empty answer"
+
+
+def kill_tree(p):
+    """Stops OpenCode and anything it started."""
+    try:
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(p.pid)], capture_output=True, timeout=10)
+        else:
+            os.killpg(p.pid, 9)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    try:
+        p.kill()
+    except OSError:
+        pass
 
 
 def free_limit_message():

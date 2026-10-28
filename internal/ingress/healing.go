@@ -18,6 +18,7 @@ import (
 	"github.com/pusyc74-prog/mangoman/internal/config"
 	"github.com/pusyc74-prog/mangoman/internal/core"
 	"github.com/pusyc74-prog/mangoman/internal/guardian"
+	"github.com/pusyc74-prog/mangoman/internal/opencode"
 	"github.com/pusyc74-prog/mangoman/internal/qa"
 )
 
@@ -294,8 +295,15 @@ func (s *Server) healJourney(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ans, err := s.Ask(fmt.Sprintf(journeyPrompt, cfg.Prod.URL, strings.TrimSpace(in.Text)))
-	if err != nil {
+	switch {
+	case err != nil && opencode.Says(err): // OpenCode's own models: what happened, and when to try again
+		core.WriteError(w, http.StatusBadGateway, "model_failed", "No AI model answered: "+err.Error()+".")
+		return
+	case err != nil && s.engine() == config.EngineSwitch:
 		core.WriteError(w, http.StatusBadGateway, "model_failed", "No AI model answered. Check Connections has a working provider, then try again.")
+		return
+	case err != nil:
+		core.WriteError(w, http.StatusBadGateway, "model_failed", "No AI model answered. Try again in a few minutes.")
 		return
 	}
 	steps, err := parseSteps(ans, cfg.Prod.URL)

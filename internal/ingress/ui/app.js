@@ -1736,7 +1736,7 @@ async function load() {
     renderRecent(ov, act);
   } catch (err) {
     if (err.status === 401) { $("app").hidden = true; $("nav").hidden = true; $("gate").hidden = false; $("runline").textContent = "No access token."; return; }
-    $("runline").replaceChildren(el("span", { class: "lamp bad", "aria-hidden": "true" }), `Can't reach the router: ${err.message}. Is mangoman serve running?`);
+    $("runline").replaceChildren(el("span", { class: "lamp bad", "aria-hidden": "true" }), `Can't reach MangoMan: ${err.message}. Is it still running?`);
   }
 }
 

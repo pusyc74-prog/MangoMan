@@ -48,6 +48,9 @@ func fakeOpenCode(mode string) {
 	case mode == "limit":
 		fmt.Fprintln(os.Stderr, `timestamp=2026-10-27T18:27:36.068Z level=ERROR run=1776899a message="stream error" providerID=opencode modelID=big-pickle error.error="AI_APICallError: Free usage limit reached. Free models work in OpenCode (https://opencode.ai)."`)
 		time.Sleep(time.Minute) // as OpenCode: it waits for the limit to end
+	case mode == "slow":
+		fmt.Println(`{"type":"text","part":{"text":"half an ans"}}`)
+		time.Sleep(time.Minute)
 	case mode == "fail":
 		fmt.Println(`{"type":"error","error":{"name":"APIError","data":{"message":"Upstream request failed: Model is unavailable."}}}`)
 	}
@@ -71,15 +74,23 @@ func TestAsk(t *testing.T) {
 		t.Fatalf("at the free limit OpenCode keeps waiting; Ask must stop it at once, took %s", took)
 	}
 	t.Setenv("MANGOMAN_FAKE_OPENCODE", "fail")
-	if _, err := Ask(ctx, bin, "x", "y"); err == nil || !strings.Contains(err.Error(), "Model is unavailable") || errors.Is(err, ErrFreeLimit) {
-		t.Fatalf("an error from OpenCode: %v", err)
+	if _, err := Ask(ctx, bin, "x", "y"); err == nil || !strings.Contains(err.Error(), "Model is unavailable") || errors.Is(err, ErrFreeLimit) || !Says(err) {
+		t.Fatalf("an error from OpenCode, worded for the user: %v", err)
 	}
 	t.Setenv("MANGOMAN_FAKE_OPENCODE", "quiet")
 	if _, err := Ask(ctx, bin, "x", "y"); err == nil || !strings.Contains(err.Error(), "no answer") {
 		t.Fatalf("no answer: %v", err)
 	}
-	if _, err := Ask(ctx, "/no/such/opencode", "x", "y"); err == nil || !strings.Contains(err.Error(), "did not run") {
+	if _, err := Ask(ctx, "/no/such/opencode", "x", "y"); err == nil || !strings.Contains(err.Error(), "Get ready") || !Says(err) {
 		t.Fatalf("no OpenCode: %v", err)
+	}
+	// Cut off by the caller's time limit: no half answer, and OpenCode is stopped.
+	t.Setenv("MANGOMAN_FAKE_OPENCODE", "slow")
+	short, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	start = time.Now()
+	if got, err := Ask(short, bin, "x", "y"); got != "" || err == nil || !strings.Contains(err.Error(), "in time") || time.Since(start) > 15*time.Second {
+		t.Fatalf("a cut-off run: %q %v after %s", got, err, time.Since(start))
 	}
 }
 

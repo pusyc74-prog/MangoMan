@@ -478,7 +478,7 @@ func serve(port int, opened func(connected int)) error {
 	errc := make(chan error, 1)
 	go func() { errc <- hs.Serve(ln) }()
 	srv.StartHealing(ctx)
-	if a := srv.Arch; a != nil {
+	if a := srv.Arch; a != nil && !ocOnly { // lessons about the switch's free models
 		go a.Run(ctx, time.Hour, logger.Printf)
 	}
 	if opened != nil {

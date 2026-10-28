@@ -229,8 +229,8 @@ func parseJSON(text string, v any) error {
 // modelError says in plain words why no model answered.
 func modelError(err error) error {
 	switch msg := err.Error(); {
-	case errors.Is(err, opencode.ErrFreeLimit):
-		return err // says when the free messages come back
+	case opencode.Says(err):
+		return err // worded for the user: what happened, and when to try again
 	case strings.Contains(msg, "no_providers_connected"):
 		return errors.New("no free AI is connected yet: add a key in Connections")
 	case strings.Contains(msg, "connection refused"):

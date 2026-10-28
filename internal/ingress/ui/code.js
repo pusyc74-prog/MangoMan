@@ -83,7 +83,7 @@ async function start() {
   const fromDashboard = new URLSearchParams(location.search).has("open");
   for (let i = 0; ; i++) {
     try { st.info = await api("/mangoman/code/info"); }
-    catch (err) { offline(`The router did not answer: ${err.message}`); return; }
+    catch (err) { offline(`MangoMan did not answer: ${err.message}`); return; }
     if (st.info.attached && fromDashboard && !st.info.in_projects) {
       offline(`A coding workspace is open in ${st.info.dir} (from mangoman code --ui). Close it there, then press Start again.`);
       return;
