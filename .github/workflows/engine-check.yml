@@ -67,16 +67,19 @@ jobs:
           say ""
           say "## 1b. A question (as Chargesheets and Guardian ask) and a council"
           say ""
-          # The same run as MangoMan's Ask, with OpenCode's own log kept: which
-          # model it used and what the service said.
-          cfg='{"enabled_providers":["opencode"],"share":"disabled","autoupdate":false,"agent":{"title":{"disable":true},"mangoman-ask":{"mode":"primary","description":"Answers one request for MangoMan","prompt":"You answer one request from MangoMan, in one reply. Use no tools.","permission":{"*":"deny"}}}}'
-          (mkdir -p ask-diag && cd ask-diag && echo "Reply with the single word OK." | OPENCODE_CONFIG_CONTENT="$cfg" timeout 120 opencode run --format json --agent mangoman-ask --print-logs --log-level INFO > ../ask-diag.out 2> ../ask-diag.log)
-          say "- Diagnosis: OpenCode's free models here: $(opencode models opencode 2>/dev/null | tr '\n' ' ')"
-          say "- Diagnosis: recent model file: $(cat ~/.local/state/opencode/model.json 2>/dev/null | tr -d '\n' | cut -c1-200)"
-          say "- Diagnosis: models the Ask run used: $(grep -o 'modelID=[^ ]*' ask-diag.log | sort | uniq -c | tr '\n' ' ')"
-          say "- Diagnosis: its errors: $(grep 'level=ERROR' ask-diag.log | grep -o 'error.error=.*' | cut -c1-200 | sort -u | head -3 | tr '\n' ' ')"
-          say "- Diagnosis: its answer: $(grep -o '"text":"[^"]*"' ask-diag.out | head -1 | cut -c1-120)"
-          { echo "<details><summary>OpenCode's log for that run (last 25 lines)</summary>"; echo; echo '```'; tail -25 ask-diag.log | cut -c1-400; echo '```'; echo "</details>"; echo; } >> "$r"
+          # Which kind of run OpenCode's free models answer (28 Oct: MangoMan's
+          # Ask, its own agent with no tools, was refused while OpenCode's own
+          # agent was answered). One message each, OpenCode's log kept.
+          variant() { # name, inline config, agent
+            mkdir -p "v-$1" && (cd "v-$1" && echo "Reply with the single word OK." | OPENCODE_CONFIG_CONTENT="$2" timeout 120 opencode run --format json ${3:+--agent "$3"} --print-logs --log-level INFO > out 2> log)
+            if grep -q '"type":"text"' "v-$1/out"; then res="answered"; else res="refused: $(grep 'level=ERROR' "v-$1/log" | grep -o 'error.error=.*' | cut -c1-140 | head -1)"; fi
+            say "- Variant $1: $res ($(grep -o 'modelID=[^ ]*' "v-$1/log" | sort -u | tr '\n' ' '))"
+          }
+          base='"enabled_providers":["opencode"],"share":"disabled","autoupdate":false'
+          variant "A: OpenCode's own agent, as is" "{$base,\"agent\":{\"title\":{\"disable\":true}}}" ""
+          variant "B: OpenCode's own agent, no tools" "{$base,\"agent\":{\"title\":{\"disable\":true},\"build\":{\"permission\":{\"*\":\"deny\"}}}}" ""
+          variant "C: own instructions, tools kept" "{$base,\"agent\":{\"title\":{\"disable\":true},\"mm\":{\"mode\":\"primary\",\"prompt\":\"You answer one request from MangoMan, in one reply.\"}}}" mm
+          variant "D: MangoMan's Ask today" "{$base,\"agent\":{\"title\":{\"disable\":true},\"mm\":{\"mode\":\"primary\",\"prompt\":\"You answer one request from MangoMan, in one reply. Use no tools.\",\"permission\":{\"*\":\"deny\"}}}}" mm
           ans=$(timeout 300 "$mm" test "Reply with the single word OK." 2>&1)
           if echo "$ans" | grep -q "OpenCode's own free models" && echo "$ans" | grep -qi "ok"; then say "- PASS: the question was answered: $(echo "$ans" | tail -1 | cut -c1-120)"; else say "- FAIL: the question: $(echo "$ans" | tail -3 | tr '\n' ' ' | cut -c1-300)"; fi
           export MANGOMAN_OPENCODE=$(command -v opencode)
