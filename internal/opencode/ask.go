@@ -78,12 +78,19 @@ func (w *limitWatch) hit() bool {
 	return w.seen
 }
 
-// askAgent is the agent an Ask runs as: no tools, the caller's instructions.
+// askAgent is the agent an Ask runs as: read-only tools, the caller's instructions.
 const askAgent = "mangoman-ask"
+
+// ReadOnly lets the agent only read, like OpenCode's own Plan mode, in the
+// empty folder it runs in (anything outside is refused: a run answers no
+// questions). OpenCode's service refuses its free models to a request
+// with no tools at all (engine-check, 28 Oct). JSON writes the keys
+// sorted, so "*" comes first and the later rules win.
+var ReadOnly = map[string]string{"*": "deny", "read": "allow", "glob": "allow", "grep": "allow", "list": "allow"}
 
 // AskConfig is OpenCode's inline config for one question: OpenCode's own
 // models only, no chat title (a second request), and an agent with the
-// given instructions that may use no tool.
+// given instructions that may only read.
 func AskConfig(system string) string {
 	b, _ := json.Marshal(map[string]any{
 		"enabled_providers": []string{"opencode"},
@@ -95,7 +102,7 @@ func AskConfig(system string) string {
 				"mode":        "primary",
 				"description": "Answers one request for MangoMan",
 				"prompt":      system,
-				"permission":  map[string]string{"*": "deny"},
+				"permission":  ReadOnly,
 			},
 		},
 	})

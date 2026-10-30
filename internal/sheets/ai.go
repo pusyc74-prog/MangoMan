@@ -234,7 +234,7 @@ func modelError(err error) error {
 	case strings.Contains(msg, "no_providers_connected"):
 		return errors.New("no free AI is connected yet: add a key in Connections")
 	case strings.Contains(msg, "connection refused"):
-		return errors.New("MangoMan's router is not running: restart MangoMan")
+		return errors.New("MangoMan is not running: open it again")
 	default:
 		return errors.New("the free AI models are busy right now: try again in a minute")
 	}

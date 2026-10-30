@@ -470,7 +470,7 @@ func serve(port int, opened func(connected int)) error {
 		logger.Printf("listening on http://%s/v1  (%d cloud providers connected, catalogue %s)", srv.Addr(), connected, cat.Version)
 	}
 	if opened == nil { // opened in the browser already: the hints would only confuse
-		logger.Printf("dashboard: run `mangoman dashboard` in another terminal")
+		logger.Printf("dashboard: keep this window open, then open MangoMan from its shortcut (or run mangoman dashboard in another window)")
 		if connected == 0 && !ocOnly {
 			logger.Printf("no provider keys yet: run `mangoman keys add groq`")
 		}

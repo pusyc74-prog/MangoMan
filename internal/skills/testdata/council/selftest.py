@@ -168,7 +168,7 @@ cfg = json.loads(os.environ["OPENCODE_CONFIG_CONTENT"])
 agent = cfg["agent"]["mangoman-voice"]
 model = a[a.index("-m") + 1]
 ok = a[:5] == ["run", "--format", "json", "--agent", "mangoman-voice"] and cfg["enabled_providers"] == ["opencode"] \
-    and agent["permission"] == {"*": "deny"} and cfg["agent"]["title"]["disable"] and "Your role" in agent["prompt"] \
+    and list(agent["permission"].items()) == [("*", "deny"), ("read", "allow"), ("glob", "allow"), ("grep", "allow"), ("list", "allow")] and cfg["agent"]["title"]["disable"] and "Your role" in agent["prompt"] \
     and not os.listdir(".")
 with open(os.path.join(ctl, "calls.jsonl"), "a", encoding="utf-8") as f:
     f.write(json.dumps({"model": model, "ok": ok, "round2": "Your first answer was" in prompt, "question": "trial jar" in prompt}) + "\n")

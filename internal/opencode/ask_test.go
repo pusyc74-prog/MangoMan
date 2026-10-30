@@ -37,7 +37,7 @@ func fakeOpenCode(mode string) {
 	_ = json.Unmarshal([]byte(os.Getenv("OPENCODE_CONFIG_CONTENT")), &cfg)
 	a := cfg.Agent[askAgent]
 	ok := strings.Join(os.Args[1:], " ") == "run --format json --agent "+askAgent && len(cfg.EnabledProviders) == 1 &&
-		cfg.EnabledProviders[0] == "opencode" && a.Permission["*"] == "deny" && cfg.Agent["title"].Disable
+		cfg.EnabledProviders[0] == "opencode" && a.Permission["*"] == "deny" && a.Permission["read"] == "allow" && a.Permission["bash"] == "" && a.Permission["edit"] == "" && cfg.Agent["title"].Disable
 	switch {
 	case !ok:
 		fmt.Println(`{"type":"error","error":{"name":"BadCall","data":{"message":"called wrongly: ` + strings.Join(os.Args[1:], " ") + `"}}}`)

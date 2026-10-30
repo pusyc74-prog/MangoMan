@@ -124,8 +124,14 @@ def opencode_models(oc):
     return sorted(line.strip() for line in r.stdout.splitlines() if line.strip().startswith("opencode/"))
 
 
+# Only reading, in an empty folder, like OpenCode's own Plan mode: OpenCode's
+# service refuses its free models to a request with no tools (28 Oct). "*"
+# first, so the later rules win.
+READ_ONLY = {"*": "deny", "read": "allow", "glob": "allow", "grep": "allow", "list": "allow"}
+
+
 def ask_opencode(oc, model, messages):
-    """(text, tokens, error) from one OpenCode run: no tools, the voice's role
+    """(text, tokens, error) from one OpenCode run: read-only, the voice's role
     as its instructions, the question (and in round 2 the first answer and the
     others') on standard input, from an empty folder."""
     prompt = messages[1]["content"]
@@ -134,7 +140,7 @@ def ask_opencode(oc, model, messages):
     config = json.dumps({"enabled_providers": ["opencode"], "share": "disabled", "autoupdate": False, "agent": {
         "title": {"disable": True},
         "mangoman-voice": {"mode": "primary", "description": "One voice of MangoMan's council",
-                           "prompt": messages[0]["content"], "permission": {"*": "deny"}}}})
+                           "prompt": messages[0]["content"], "permission": READ_ONLY}}})
     env = dict(os.environ, OPENCODE_CONFIG_CONTENT=config, OPENCODE_PRINT_LOGS="1", OPENCODE_LOG_LEVEL="ERROR",
                OPENCODE_DISABLE_AUTOUPDATE="1")
     # At the limit OpenCode keeps waiting for hours: its log line ends the run.

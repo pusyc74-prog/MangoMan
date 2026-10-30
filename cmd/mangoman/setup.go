@@ -62,7 +62,7 @@ func cmdDashboard() error {
 	}
 	resp, err := localGet(cfg, "/healthz")
 	if err != nil {
-		return fmt.Errorf("the router is not running on 127.0.0.1:%d: start it with `mangoman serve`", cfg.Port)
+		return fmt.Errorf("MangoMan is not running on 127.0.0.1:%d: open it from its shortcut, or run mangoman serve and keep that window open", cfg.Port)
 	}
 	resp.Body.Close()
 	page := fmt.Sprintf("http://127.0.0.1:%d/ui/", cfg.Port)
