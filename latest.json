@@ -1,9 +1,9 @@
 {
   "mangoman_version": "0.1.0-dev",
   "catalogue": "seed-2026-10-20.1",
-  "started": "2026-10-30T08:48:25.53265204Z",
-  "duration": "6m0s",
-  "requests": 34,
+  "started": "2026-10-31T08:35:13.430275675Z",
+  "duration": "3m24s",
+  "requests": 40,
   "providers": [
     {
       "id": "cerebras",
@@ -39,50 +39,50 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 305,
+              "latency_ms": 330,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "7788",
+                "x-ratelimit-remaining-tokens": "7591",
                 "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "1.589s"
+                "x-ratelimit-reset-tokens": "3.067s"
               }
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 440,
-              "first_output_ms": 421,
+              "latency_ms": 330,
+              "first_output_ms": 309,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "998",
-                "x-ratelimit-remaining-tokens": "7784",
+                "x-ratelimit-remaining-tokens": "7864",
                 "x-ratelimit-reset-requests": "2m52.8s",
-                "x-ratelimit-reset-tokens": "1.62s"
+                "x-ratelimit-reset-tokens": "1.02s"
               }
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 196,
+              "latency_ms": 330,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "997",
-                "x-ratelimit-remaining-tokens": "7802",
+                "x-ratelimit-remaining-tokens": "7811",
                 "x-ratelimit-reset-requests": "4m19.2s",
-                "x-ratelimit-reset-tokens": "1.485s"
+                "x-ratelimit-reset-tokens": "1.417s"
               }
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 315,
+              "latency_ms": 326,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
@@ -103,57 +103,57 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 276,
+              "latency_ms": 248,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "7361",
+                "x-ratelimit-remaining-tokens": "7242",
                 "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "4.792s"
+                "x-ratelimit-reset-tokens": "5.685s"
               }
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 222,
-              "first_output_ms": 209,
+              "latency_ms": 324,
+              "first_output_ms": 311,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "998",
-                "x-ratelimit-remaining-tokens": "7447",
+                "x-ratelimit-remaining-tokens": "7198",
                 "x-ratelimit-reset-requests": "2m52.8s",
-                "x-ratelimit-reset-tokens": "4.147s"
+                "x-ratelimit-reset-tokens": "6.015s"
               }
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 175,
+              "latency_ms": 198,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "997",
-                "x-ratelimit-remaining-tokens": "7810",
+                "x-ratelimit-remaining-tokens": "7838",
                 "x-ratelimit-reset-requests": "4m19.2s",
-                "x-ratelimit-reset-tokens": "1.425s"
+                "x-ratelimit-reset-tokens": "1.215s"
               }
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 337,
+              "latency_ms": 243,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "996",
-                "x-ratelimit-remaining-tokens": "7240",
+                "x-ratelimit-remaining-tokens": "7791",
                 "x-ratelimit-reset-requests": "5m45.6s",
-                "x-ratelimit-reset-tokens": "5.7s"
+                "x-ratelimit-reset-tokens": "1.567s"
               }
             }
           ]
@@ -167,40 +167,58 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 133,
+              "latency_ms": 302,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "7823",
+                "x-ratelimit-remaining-tokens": "7442",
                 "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "1.327s"
+                "x-ratelimit-reset-tokens": "4.185s"
               }
             },
             {
               "case": "stream",
-              "status": "skip",
-              "detail": "rate limited",
-              "http": 429,
-              "latency_ms": 91,
+              "status": "pass",
+              "http": 200,
+              "latency_ms": 84,
+              "first_output_ms": 66,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
-                "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "8000",
-                "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "1ms"
+                "x-ratelimit-remaining-requests": "998",
+                "x-ratelimit-remaining-tokens": "7404",
+                "x-ratelimit-reset-requests": "2m52.8s",
+                "x-ratelimit-reset-tokens": "4.47s"
               }
             },
             {
               "case": "tools",
-              "status": "skip",
-              "detail": "rate limited earlier in this run"
+              "status": "pass",
+              "http": 200,
+              "latency_ms": 163,
+              "rate_headers": {
+                "x-ratelimit-limit-requests": "1000",
+                "x-ratelimit-limit-tokens": "8000",
+                "x-ratelimit-remaining-requests": "997",
+                "x-ratelimit-remaining-tokens": "7712",
+                "x-ratelimit-reset-requests": "4m19.2s",
+                "x-ratelimit-reset-tokens": "2.159s"
+              }
             },
             {
               "case": "json",
-              "status": "skip",
-              "detail": "rate limited earlier in this run"
+              "status": "pass",
+              "http": 200,
+              "latency_ms": 109,
+              "rate_headers": {
+                "x-ratelimit-limit-requests": "1000",
+                "x-ratelimit-limit-tokens": "8000",
+                "x-ratelimit-remaining-requests": "996",
+                "x-ratelimit-remaining-tokens": "7799",
+                "x-ratelimit-reset-requests": "5m45.6s",
+                "x-ratelimit-reset-tokens": "1.577s"
+              }
             }
           ]
         }
@@ -210,15 +228,15 @@
         "status": "pass",
         "detail": "HTTP 404: The model `mangoman-conformance-no-such-model` does not exis...",
         "http": 404,
-        "latency_ms": 92
+        "latency_ms": 37
       },
       "rate_headers_seen": {
         "x-ratelimit-limit-requests": "1000",
         "x-ratelimit-limit-tokens": "8000",
-        "x-ratelimit-remaining-requests": "999",
-        "x-ratelimit-remaining-tokens": "8000",
-        "x-ratelimit-reset-requests": "1m26.4s",
-        "x-ratelimit-reset-tokens": "1ms"
+        "x-ratelimit-remaining-requests": "996",
+        "x-ratelimit-remaining-tokens": "7799",
+        "x-ratelimit-reset-requests": "5m45.6s",
+        "x-ratelimit-reset-tokens": "1.577s"
       }
     },
     {
@@ -323,26 +341,26 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 1338
+              "latency_ms": 915
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 1384,
-              "first_output_ms": 1151
+              "latency_ms": 1764,
+              "first_output_ms": 1602
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 1279
+              "latency_ms": 1322
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 4899
+              "latency_ms": 3405
             }
           ]
         },
@@ -380,23 +398,28 @@
           "results": [
             {
               "case": "basic",
-              "status": "fail",
-              "detail": "no complete answer within 1m0s"
+              "status": "pass",
+              "http": 200,
+              "latency_ms": 2078
             },
             {
               "case": "stream",
-              "status": "skip",
-              "detail": "skipped: timed out earlier in this run"
+              "status": "fail",
+              "detail": "HTTP 502: ",
+              "http": 502,
+              "latency_ms": 23
             },
             {
               "case": "tools",
-              "status": "skip",
-              "detail": "skipped: timed out earlier in this run"
+              "status": "pass",
+              "http": 200,
+              "latency_ms": 1244
             },
             {
               "case": "json",
-              "status": "skip",
-              "detail": "skipped: timed out earlier in this run"
+              "status": "pass",
+              "http": 200,
+              "latency_ms": 2769
             }
           ]
         },
@@ -409,26 +432,26 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 715
+              "latency_ms": 684
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 778,
-              "first_output_ms": 722
+              "latency_ms": 1161,
+              "first_output_ms": 1110
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 3936
+              "latency_ms": 778
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 4763
+              "latency_ms": 1165
             }
           ]
         },
@@ -442,28 +465,28 @@
               "status": "fail",
               "detail": "HTTP 404: ",
               "http": 404,
-              "latency_ms": 75
+              "latency_ms": 52
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 404: ",
               "http": 404,
-              "latency_ms": 77
+              "latency_ms": 45
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 404: ",
               "http": 404,
-              "latency_ms": 73
+              "latency_ms": 42
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 404: ",
               "http": 404,
-              "latency_ms": 75
+              "latency_ms": 47
             }
           ]
         },
@@ -476,26 +499,26 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 1620
+              "latency_ms": 2755
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 4399,
-              "first_output_ms": 4310
+              "latency_ms": 9367,
+              "first_output_ms": 9270
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 1216
+              "latency_ms": 922
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 3571
+              "latency_ms": 9009
             }
           ]
         },
@@ -535,24 +558,26 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 53014
+              "latency_ms": 147
             },
             {
               "case": "stream",
-              "status": "fail",
-              "detail": "error in body: ResourceExhausted: Worker local total request limit reached (38/32)",
+              "status": "pass",
               "http": 200,
-              "latency_ms": 81
+              "latency_ms": 168,
+              "first_output_ms": 123
             },
             {
               "case": "tools",
-              "status": "fail",
-              "detail": "no complete answer within 1m0s"
+              "status": "pass",
+              "http": 200,
+              "latency_ms": 327
             },
             {
               "case": "json",
-              "status": "skip",
-              "detail": "skipped: timed out earlier in this run"
+              "status": "pass",
+              "http": 200,
+              "latency_ms": 267
             }
           ]
         }
@@ -562,7 +587,7 @@
         "status": "pass",
         "detail": "HTTP 404: 404 page not found",
         "http": 404,
-        "latency_ms": 53
+        "latency_ms": 22
       }
     },
     {
