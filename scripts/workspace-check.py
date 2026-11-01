@@ -56,6 +56,7 @@ with sync_playwright() as p:
     page.screenshot(path=f"{out}/end.png", full_page=True)
     notes = page.locator("li.note").all_inner_texts()
     changes = page.inner_text("#changes")
+    handed = " ".join(page.locator("li.handed").all_inner_texts())
     page.click("#tab-terminal")
     term = page.inner_text("#term")
 
@@ -69,6 +70,7 @@ checks = [
     ("heading text in the page", "Hello from MangoMan" in html),
     ("a button in the page", "<button" in html.lower()),
     ("Changes tab lists index.html", "index.html" in changes),
+    ("the chat hands over index.html, to open or save", "index.html" in handed and "Download" in handed),
     ("Terminal shows the ls output", "index.html" in term),
     ("no errors in the browser console", not errors),
 ]

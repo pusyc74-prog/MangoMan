@@ -41,6 +41,11 @@ body.code { padding: 0 16px 16px; }
 .ask button[aria-pressed="true"] { border-color: var(--leaf); background: var(--leaf-wash); color: var(--leaf); }
 .ask.done { border-color: var(--hair); opacity: 0.75; }
 .note { font-size: 14px; color: var(--muted); }
+.handed { display: grid; gap: 8px; }
+.handed p { margin: 0; font-size: 14px; }
+.filecard { border: 1px solid var(--hair); border-left: 3px solid var(--leaf); border-radius: 8px; padding: 8px 12px; background: var(--surface); display: grid; gap: 8px; }
+.filecard strong { word-break: break-all; }
+.filecard .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .note.err { color: var(--critical); }
 .busy { margin: 0; padding: 6px 14px; font-size: 14px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
 .busy .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mango); animation: pulse 1.2s infinite ease-in-out; }

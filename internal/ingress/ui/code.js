@@ -19,6 +19,8 @@ const st = {
   restartedAt: 0,      // a send or a restart needs a minute of its own before the next restart
   lastEvent: 0,        // when OpenCode last reported anything about this chat (on its own models)
   limitShown: false,   // the free limit message, once per message sent
+  stepStart: 0,        // when your last message was sent: the documents made since are handed over
+  handed: new Set(),   // documents already handed over (path and time changed)
 };
 
 function $(id) { return document.getElementById(id); }
@@ -191,6 +193,7 @@ async function send(text) {
     // The router's idle time counts from its last request, which can be long
     // before this message: a minute of nothing is measured from sending.
     st.restartedAt = Date.now();
+    st.stepStart = Date.now() - 2000; // a file written while the message was on its way counts
     busy(true);
   } catch (err) { note(`Not sent: ${err.message}`, true); }
   $("send").disabled = false;
@@ -421,11 +424,12 @@ function onEvent(ev) {
       else if (p.status?.type === "retry") busy(true, `The free model is busy, trying again${p.status.message ? `: ${p.status.message}` : ""}…`);
       else busy(true);
       break;
-    case "session.idle": if (p.sessionID === st.session.id) { busy(false); settle(); refreshChanges(); } break;
+    case "session.idle": if (p.sessionID === st.session.id) { busy(false); settle(); refreshChanges(); handOver(); } break;
     case "session.error":
       if (p.sessionID === st.session.id) {
         busy(false);
         settle();
+        handOver(); // what was made before it stopped is still yours
         const e = p.error || {};
         if (e.name !== "MessageAbortedError") note(`Stopped: ${e.data?.message || e.message || e.name || "an error"}`, true);
       }
@@ -451,6 +455,57 @@ function refreshChanges() {
       el("pre", { class: "diff" }, (f.patch || "").split("\n").filter((l) => !/^(diff --git|index |--- |\+\+\+ )/.test(l)).map((l) =>
         el("span", { class: l.startsWith("+") ? "a" : l.startsWith("-") ? "d" : l.startsWith("@@") ? "h" : "" }, l || " "))))));
   }, 300);
+}
+
+// ---------- files from this step ----------
+
+// handOver puts the documents made since your last message (by the AI, or
+// by a script it ran) into the chat, to open, save or find on this computer.
+async function handOver() {
+  if (!st.stepStart) return;
+  const r = await api(`/mangoman/code/files?since=${st.stepStart}`).catch(() => null);
+  const files = (r?.files || []).filter((f) => !st.handed.has(f.path + "@" + f.modified));
+  if (!files.length) return;
+  files.forEach((f) => st.handed.add(f.path + "@" + f.modified));
+  $("log").append(el("li", { class: "handed" },
+    el("p", { class: "dim" }, files.length === 1 ? "Your file from this step" : "Your files from this step"),
+    ...files.map(fileCard)));
+  scroll();
+}
+
+function fileCard(f) {
+  const cut = f.path.lastIndexOf("/");
+  const name = f.path.slice(cut + 1);
+  const status = el("span", { class: "dim" });
+  const act = (label, run) => el("button", { type: "button", class: "ghost", onclick: async () => {
+    status.textContent = "";
+    try { await run(); } catch (err) { status.textContent = `Could not ${label.toLowerCase()}: ${err.message}`; }
+  } }, label);
+  const open = (folder) => api("/mangoman/code/file/open", { method: "POST", body: JSON.stringify({ path: f.path, folder }) });
+  return el("div", { class: "filecard" },
+    el("div", {}, el("strong", {}, name), el("span", { class: "dim" }, ` ${cut > 0 ? f.path.slice(0, cut) + " · " : ""}${size(f.size)}`)),
+    el("div", { class: "row" },
+      act("Open", () => open(false)),
+      act("Download", () => download(f.path, name)),
+      act("Show in folder", () => open(true)),
+      status));
+}
+
+function size(n) {
+  return n < 1024 ? `${n} B` : n < 1048576 ? `${Math.round(n / 1024)} KB` : `${(n / 1048576).toFixed(1)} MB`;
+}
+
+// download saves a copy where the browser keeps downloads: the page holds
+// the token, so the file comes through it, never through a bare link.
+async function download(path, name) {
+  const res = await fetch(`/mangoman/code/file?path=${encodeURIComponent(path)}`, { headers: { "Authorization": "Bearer " + st.token } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const u = URL.createObjectURL(await res.blob());
+  const a = el("a", { href: u, download: name });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 60000);
 }
 
 // ---------- terminal ----------

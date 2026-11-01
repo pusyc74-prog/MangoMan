@@ -56,6 +56,9 @@ func (s *Server) codeRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /mangoman/code/info", s.auth(http.HandlerFunc(s.codeInfo)))
 	mux.Handle("POST /mangoman/code/ship", s.auth(http.HandlerFunc(s.codeShip)))
 	mux.Handle("/mangoman/code/oc/", s.auth(http.HandlerFunc(s.codeProxy)))
+	mux.Handle("GET /mangoman/code/files", s.auth(http.HandlerFunc(s.codeFiles))) // codefiles.go
+	mux.Handle("GET /mangoman/code/file", s.auth(http.HandlerFunc(s.codeFile)))
+	mux.Handle("POST /mangoman/code/file/open", s.auth(http.HandlerFunc(s.codeFileOpen)))
 }
 
 func (s *Server) codeAttach(w http.ResponseWriter, r *http.Request) {
