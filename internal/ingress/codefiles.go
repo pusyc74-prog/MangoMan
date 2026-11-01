@@ -63,6 +63,9 @@ func (s *Server) codeFiles(w http.ResponseWriter, r *http.Request) {
 
 func stepFiles(dir string, since time.Time) []StepFile {
 	files, walked := []StepFile{}, 0
+	if real, err := filepath.EvalSymlinks(dir); err == nil {
+		dir = real // a walk does not enter a folder reached through a link
+	}
 	_ = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if walked++; walked > maxWalked {
 			return fs.SkipAll
@@ -97,27 +100,31 @@ func stepFiles(dir string, since time.Time) []StepFile {
 	return files
 }
 
-// stepFile is the full path of rel inside the workspace's folder when it is
-// a document there (not reached through a link), else an error.
-func stepFile(dir, rel string) (string, error) {
+// stepFile is the real folder of the workspace and the full path of rel in
+// it when rel is a document there, reached only through plain folders: no
+// link and no Windows junction (Go reports a junction as irregular, and
+// filepath.EvalSymlinks does not follow it), else an error.
+func stepFile(dir, rel string) (root, path string, err error) {
+	bad := errors.New("not a document in this workspace (or over 50 MB)")
 	rel = filepath.FromSlash(rel)
 	if !filepath.IsLocal(rel) || !handedOver(rel) {
-		return "", errors.New("not a document in this workspace")
+		return "", "", bad
 	}
-	root, err := filepath.EvalSymlinks(dir)
-	if err != nil {
-		return "", err
+	if root, err = filepath.EvalSymlinks(dir); err != nil {
+		return "", "", err
 	}
-	path := filepath.Join(root, rel)
-	resolved, err := filepath.EvalSymlinks(path)
-	if err != nil || resolved != path && !(runtime.GOOS == "windows" && strings.EqualFold(resolved, path)) {
-		return "", errors.New("not a document in this workspace")
+	path = root
+	parts := strings.Split(rel, string(filepath.Separator))
+	for i, part := range parts {
+		path = filepath.Join(path, part)
+		fi, err := os.Lstat(path)
+		last := i == len(parts)-1
+		if err != nil || last && (!fi.Mode().IsRegular() || fi.Size() > maxFileSize) || !last && !fi.IsDir() ||
+			fi.Mode()&(os.ModeSymlink|os.ModeIrregular) != 0 {
+			return "", "", bad
+		}
 	}
-	fi, err := os.Lstat(path)
-	if err != nil || !fi.Mode().IsRegular() || fi.Size() > maxFileSize {
-		return "", errors.New("not a document in this workspace (or over 50 MB)")
-	}
-	return path, nil
+	return root, path, nil
 }
 
 // codeFile sends one document (?path=) for the chat to save.
@@ -127,20 +134,33 @@ func (s *Server) codeFile(w http.ResponseWriter, r *http.Request) {
 		core.WriteError(w, http.StatusServiceUnavailable, "no_workspace", "no coding workspace is open")
 		return
 	}
-	path, err := stepFile(b.dir, r.URL.Query().Get("path"))
+	root, path, err := stepFile(b.dir, r.URL.Query().Get("path"))
 	if err != nil {
 		core.WriteError(w, http.StatusNotFound, "not_found", err.Error())
 		return
 	}
-	f, err := os.Open(path)
+	// Read inside the folder only: a link put in between the check and
+	// the read cannot lead out of it.
+	rel, err := filepath.Rel(root, path)
+	if err != nil {
+		core.WriteError(w, http.StatusNotFound, "not_found", err.Error())
+		return
+	}
+	fsRoot, err := os.OpenRoot(root)
+	if err != nil {
+		core.WriteError(w, http.StatusNotFound, "not_found", err.Error())
+		return
+	}
+	defer fsRoot.Close()
+	f, err := fsRoot.Open(rel)
 	if err != nil {
 		core.WriteError(w, http.StatusNotFound, "not_found", err.Error())
 		return
 	}
 	defer f.Close()
 	fi, err := f.Stat()
-	if err != nil {
-		core.WriteError(w, http.StatusInternalServerError, "internal", err.Error())
+	if err != nil || !fi.Mode().IsRegular() {
+		core.WriteError(w, http.StatusNotFound, "not_found", "not a document in this workspace")
 		return
 	}
 	kind := mime.TypeByExtension(filepath.Ext(path))
@@ -170,7 +190,7 @@ func (s *Server) codeFileOpen(w http.ResponseWriter, r *http.Request) {
 		core.WriteError(w, http.StatusBadRequest, "bad_request", "send {\"path\"}")
 		return
 	}
-	path, err := stepFile(b.dir, in.Path)
+	_, path, err := stepFile(b.dir, in.Path)
 	if err != nil {
 		core.WriteError(w, http.StatusNotFound, "not_found", err.Error())
 		return

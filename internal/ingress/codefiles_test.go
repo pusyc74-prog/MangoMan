@@ -42,9 +42,15 @@ func TestCodeStepFiles(t *testing.T) {
 	write("build.py", "print(1)", 0)            // a script, not a document
 	outside := filepath.Join(t.TempDir(), "secret.pdf")
 	_ = os.WriteFile(outside, []byte("secret"), 0o644)
-	linked := os.Symlink(outside, filepath.Join(dir, "link.pdf")) == nil
+	linked := os.Symlink(outside, filepath.Join(dir, "link.pdf")) == nil &&
+		os.Symlink(filepath.Dir(outside), filepath.Join(dir, "away")) == nil // a linked folder
+	// The workspace itself reached through a link (as /tmp on a Mac).
+	via := dir
+	if alias := filepath.Join(t.TempDir(), "ws"); os.Symlink(dir, alias) == nil {
+		via = alias
+	}
 
-	body, _ := json.Marshal(map[string]string{"url": "http://127.0.0.1:1", "password": "x", "dir": dir})
+	body, _ := json.Marshal(map[string]string{"url": "http://127.0.0.1:1", "password": "x", "dir": via})
 	if w := call(h, "POST", "/mangoman/code/attach", host, authz, string(body)); w.Code != 200 {
 		t.Fatalf("attach: %d %s", w.Code, w.Body)
 	}
@@ -77,7 +83,7 @@ func TestCodeStepFiles(t *testing.T) {
 	}
 	bad := []string{"../" + filepath.Base(filepath.Dir(outside)) + "/secret.pdf", outside, "council/council.json", "build.py", "missing.pdf", "", "site"}
 	if linked {
-		bad = append(bad, "link.pdf")
+		bad = append(bad, "link.pdf", "away/secret.pdf")
 	}
 	for _, p := range bad {
 		if w := call(h, "GET", "/mangoman/code/file?path="+url.QueryEscape(p), host, authz, ""); w.Code != 404 {

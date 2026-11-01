@@ -461,7 +461,12 @@ function refreshChanges() {
 
 // handOver puts the documents made since your last message (by the AI, or
 // by a script it ran) into the chat, to open, save or find on this computer.
-async function handOver() {
+// One at a time: OpenCode reports an error and then idle, and both hand over.
+function handOver() {
+  st.handing = (st.handing || Promise.resolve()).then(handOverNow);
+}
+
+async function handOverNow() {
   if (!st.stepStart) return;
   const r = await api(`/mangoman/code/files?since=${st.stepStart}`).catch(() => null);
   const files = (r?.files || []).filter((f) => !st.handed.has(f.path + "@" + f.modified));
