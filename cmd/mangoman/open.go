@@ -55,7 +55,7 @@ func cmdOpen(app bool) error {
 			fmt.Printf("Open this in your browser:\n  %s#token=%s\n", url, cfg.Token)
 		}
 	}
-	if routerUp(cfg) {
+	if routerUp(cfg) && !replaceOlder(cfg) {
 		open(connectedNow(cfg))
 		return nil
 	}
@@ -64,6 +64,27 @@ func cmdOpen(app bool) error {
 	}
 	fmt.Println("Keep this window open while you use MangoMan; closing it stops MangoMan.")
 	return serve(0, open)
+}
+
+// replaceOlder stops a running MangoMan of another version (one left
+// running by an update would keep the old engine and screens) and reports
+// whether it stopped; this one then starts in its place.
+func replaceOlder(cfg *config.Config) bool {
+	out, err := localSend(cfg, "GET", "/mangoman/status", nil)
+	var st struct {
+		Version string `json:"version"`
+	}
+	if err != nil || json.Unmarshal(out, &st) != nil || st.Version == "" || st.Version == version {
+		return false
+	}
+	fmt.Printf("Stopping MangoMan %s to start %s.\n", st.Version, version)
+	if _, err := localSend(cfg, "POST", "/mangoman/quit", nil); err != nil {
+		return false
+	}
+	for i := 0; i < 150 && routerUp(cfg); i++ { // 15 s
+		time.Sleep(100 * time.Millisecond)
+	}
+	return !routerUp(cfg)
 }
 
 // serveInBackground starts the router as its own process, logging to
