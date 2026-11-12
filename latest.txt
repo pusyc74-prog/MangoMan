@@ -22,8 +22,8 @@ Done in 55s, 46 requests.
 PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
 cerebras    no_key  0              0                         0
 groq        ok      11             0                         0
-nvidia      ok      84             0                         0
-openrouter  ok      433            3                         8
+nvidia      ok      83             0                         0
+openrouter  ok      432            3                         8
 
 PROVIDER  MODEL                   PASS  WARN  FAIL  SKIP  VERDICT
 groq      gpt-oss-120b            4     0     0     0     ready
