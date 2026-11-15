@@ -10,25 +10,25 @@ groq        gpt-oss-120b               basic:P stream:P tools:P json:P
 nvidia      deepseek-v4.1-flash        basic:F stream:F tools:F json:F
 groq        gpt-oss-20b                basic:P stream:P tools:P json:P
 nvidia      glm-5.3-flash              basic:F stream:F tools:F json:F
-groq        qwen3.8-27b                basic:- stream:- tools:- json:-
+groq        qwen3.8-27b                basic:P stream:P tools:P json:P
 nvidia      nemotron-3-ultra-550b      basic:F stream:F tools:F json:F
 nvidia      nemotron-3-super-120b      basic:F stream:F tools:F json:F
 nvidia      nemotron-3.5-lightning     basic:F stream:F tools:F json:F
 nvidia      gemma-4-31b                basic:F stream:F tools:F json:F
 nvidia      laguna-xs-2.1              basic:F stream:F tools:F json:F
 
-Done in 54s, 43 requests.
+Done in 54s, 46 requests.
 
 PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
 cerebras    no_key  0              0                         0
 groq        ok      11             0                         0
 nvidia      ok      83             0                         0
-openrouter  ok      436            3                         9
+openrouter  ok      435            3                         9
 
 PROVIDER  MODEL                   PASS  WARN  FAIL  SKIP  VERDICT
 groq      gpt-oss-120b            4     0     0     0     ready
 groq      gpt-oss-20b             4     0     0     0     ready
-groq      qwen3.8-27b             0     0     0     4     not tested
+groq      qwen3.8-27b             4     0     0     0     ready
 nvidia    gpt-oss-20b             0     0     4     0     needs work
 nvidia    deepseek-v4.1-flash     0     0     4     0     needs work
 nvidia    glm-5.3-flash           0     0     4     0     needs work
