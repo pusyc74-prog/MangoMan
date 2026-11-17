@@ -1,9 +1,9 @@
 {
   "mangoman_version": "0.1.0-dev",
   "catalogue": "seed-2026-10-20.1",
-  "started": "2026-11-16T09:57:01.754812141Z",
-  "duration": "1m10s",
-  "requests": 61,
+  "started": "2026-11-17T10:53:07.1295866Z",
+  "duration": "44s",
+  "requests": 40,
   "providers": [
     {
       "id": "cerebras",
@@ -39,57 +39,57 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 356,
+              "latency_ms": 287,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "7670",
+                "x-ratelimit-remaining-tokens": "7592",
                 "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "2.475s"
+                "x-ratelimit-reset-tokens": "3.059s"
               }
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 210,
-              "first_output_ms": 205,
+              "latency_ms": 398,
+              "first_output_ms": 379,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "998",
-                "x-ratelimit-remaining-tokens": "7616",
+                "x-ratelimit-remaining-tokens": "7667",
                 "x-ratelimit-reset-requests": "2m52.8s",
-                "x-ratelimit-reset-tokens": "2.88s"
+                "x-ratelimit-reset-tokens": "2.497s"
               }
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 395,
+              "latency_ms": 227,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "997",
-                "x-ratelimit-remaining-tokens": "7579",
+                "x-ratelimit-remaining-tokens": "7509",
                 "x-ratelimit-reset-requests": "4m19.2s",
-                "x-ratelimit-reset-tokens": "3.157s"
+                "x-ratelimit-reset-tokens": "3.682s"
               }
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 382,
+              "latency_ms": 445,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "996",
-                "x-ratelimit-remaining-tokens": "7831",
+                "x-ratelimit-remaining-tokens": "7538",
                 "x-ratelimit-reset-requests": "5m45.6s",
-                "x-ratelimit-reset-tokens": "1.267s"
+                "x-ratelimit-reset-tokens": "3.465s"
               }
             }
           ]
@@ -103,57 +103,57 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 300,
+              "latency_ms": 391,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "7652",
+                "x-ratelimit-remaining-tokens": "7268",
                 "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "2.61s"
+                "x-ratelimit-reset-tokens": "5.49s"
               }
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 269,
-              "first_output_ms": 252,
+              "latency_ms": 442,
+              "first_output_ms": 441,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "998",
-                "x-ratelimit-remaining-tokens": "7588",
+                "x-ratelimit-remaining-tokens": "7214",
                 "x-ratelimit-reset-requests": "2m52.8s",
-                "x-ratelimit-reset-tokens": "3.09s"
+                "x-ratelimit-reset-tokens": "5.895s"
               }
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 160,
+              "latency_ms": 169,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "997",
-                "x-ratelimit-remaining-tokens": "7708",
+                "x-ratelimit-remaining-tokens": "7282",
                 "x-ratelimit-reset-requests": "4m19.2s",
-                "x-ratelimit-reset-tokens": "2.19s"
+                "x-ratelimit-reset-tokens": "5.385s"
               }
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 222,
+              "latency_ms": 366,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "996",
-                "x-ratelimit-remaining-tokens": "7799",
+                "x-ratelimit-remaining-tokens": "7818",
                 "x-ratelimit-reset-requests": "5m45.6s",
-                "x-ratelimit-reset-tokens": "1.507s"
+                "x-ratelimit-reset-tokens": "1.365s"
               }
             }
           ]
@@ -167,57 +167,57 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 135,
+              "latency_ms": 113,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "7817",
+                "x-ratelimit-remaining-tokens": "7889",
                 "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "1.372s"
+                "x-ratelimit-reset-tokens": "832ms"
               }
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 150,
-              "first_output_ms": 132,
+              "latency_ms": 133,
+              "first_output_ms": 107,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "998",
-                "x-ratelimit-remaining-tokens": "7812",
+                "x-ratelimit-remaining-tokens": "7909",
                 "x-ratelimit-reset-requests": "2m52.8s",
-                "x-ratelimit-reset-tokens": "1.41s"
+                "x-ratelimit-reset-tokens": "682ms"
               }
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 300,
+              "latency_ms": 267,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "997",
-                "x-ratelimit-remaining-tokens": "7550",
+                "x-ratelimit-remaining-tokens": "7622",
                 "x-ratelimit-reset-requests": "4m19.2s",
-                "x-ratelimit-reset-tokens": "3.375s"
+                "x-ratelimit-reset-tokens": "2.835s"
               }
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 205,
+              "latency_ms": 169,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "996",
-                "x-ratelimit-remaining-tokens": "7649",
+                "x-ratelimit-remaining-tokens": "7756",
                 "x-ratelimit-reset-requests": "5m45.6s",
-                "x-ratelimit-reset-tokens": "11.04s"
+                "x-ratelimit-reset-tokens": "4.38s"
               }
             }
           ]
@@ -228,25 +228,24 @@
         "status": "pass",
         "detail": "HTTP 404: The model `mangoman-conformance-no-such-model` does not exis...",
         "http": 404,
-        "latency_ms": 31
+        "latency_ms": 36
       },
       "rate_headers_seen": {
         "x-ratelimit-limit-requests": "1000",
         "x-ratelimit-limit-tokens": "8000",
         "x-ratelimit-remaining-requests": "996",
-        "x-ratelimit-remaining-tokens": "7649",
+        "x-ratelimit-remaining-tokens": "7756",
         "x-ratelimit-reset-requests": "5m45.6s",
-        "x-ratelimit-reset-tokens": "11.04s"
+        "x-ratelimit-reset-tokens": "4.38s"
       }
     },
     {
       "id": "nvidia",
       "name": "NVIDIA",
       "status": "ok",
-      "listed_models": 33,
+      "listed_models": 32,
       "listed_model_ids": [
         "bigcode/starcoder2-15b",
-        "deepseek-ai/deepseek-v4.1-flash",
         "google/gemma-3-12b-it",
         "google/gemma-3-4b-it",
         "google/gemma-4-31b-it",
@@ -280,6 +279,7 @@
         "z-ai/glm-5.3-flash"
       ],
       "catalogue_models_not_listed": [
+        "deepseek-ai/deepseek-v4.1-flash",
         "nvidia/nemotron-3-super-120b-a12b"
       ],
       "models": [
@@ -293,63 +293,43 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 57
+              "latency_ms": 28
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 51
+              "latency_ms": 24
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 49
+              "latency_ms": 24
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 52
+              "latency_ms": 24
             }
           ]
         },
         {
           "canonical": "deepseek-v4.1-flash",
           "upstream": "deepseek-ai/deepseek-v4.1-flash",
-          "listed_by_provider": true,
+          "listed_by_provider": false,
+          "note": "not in the provider's model list; ran basic only to confirm the id",
           "results": [
             {
               "case": "basic",
               "status": "fail",
-              "detail": "HTTP 403: ",
-              "http": 403,
-              "latency_ms": 54
-            },
-            {
-              "case": "stream",
-              "status": "fail",
-              "detail": "HTTP 403: ",
-              "http": 403,
-              "latency_ms": 53
-            },
-            {
-              "case": "tools",
-              "status": "fail",
-              "detail": "HTTP 403: ",
-              "http": 403,
-              "latency_ms": 50
-            },
-            {
-              "case": "json",
-              "status": "fail",
-              "detail": "HTTP 403: ",
-              "http": 403,
-              "latency_ms": 52
+              "detail": "HTTP 410: ",
+              "http": 410,
+              "latency_ms": 4
             }
           ]
         },
@@ -363,28 +343,28 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 49
+              "latency_ms": 24
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 49
+              "latency_ms": 28
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 51
+              "latency_ms": 24
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 53
+              "latency_ms": 23
             }
           ]
         },
@@ -398,28 +378,28 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 52
+              "latency_ms": 26
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 50
+              "latency_ms": 25
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 50
+              "latency_ms": 23
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 50
+              "latency_ms": 25
             }
           ]
         },
@@ -434,7 +414,7 @@
               "status": "fail",
               "detail": "HTTP 410: ",
               "http": 410,
-              "latency_ms": 32
+              "latency_ms": 4
             }
           ]
         },
@@ -448,28 +428,28 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 53
+              "latency_ms": 23
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 49
+              "latency_ms": 24
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 53
+              "latency_ms": 23
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 50
+              "latency_ms": 23
             }
           ]
         },
@@ -483,28 +463,28 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 52
+              "latency_ms": 25
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 51
+              "latency_ms": 24
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 50
+              "latency_ms": 26
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 50
+              "latency_ms": 23
             }
           ]
         },
@@ -518,28 +498,28 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 52
+              "latency_ms": 23
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 49
+              "latency_ms": 24
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 51
+              "latency_ms": 27
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 52
+              "latency_ms": 26
             }
           ]
         }
@@ -549,14 +529,14 @@
         "status": "pass",
         "detail": "HTTP 404: 404 page not found",
         "http": 404,
-        "latency_ms": 31
+        "latency_ms": 3
       }
     },
     {
       "id": "openrouter",
       "name": "OpenRouter (free models)",
       "status": "ok",
-      "listed_models": 433,
+      "listed_models": 435,
       "listed_model_ids": [
         "aion-labs/aion-2.0",
         "aion-labs/aion-3.0",
@@ -921,6 +901,7 @@
         "tencent/hy3",
         "tencent/hy3-preview",
         "tencent/hy4",
+        "tencent/hy4-flash",
         "tencent/hy4-preview",
         "thedrummer/cydonia-24b-v4.1",
         "thedrummer/skyfall-36b-v2",
@@ -964,6 +945,7 @@
         "z-ai/glm-5-turbo",
         "z-ai/glm-5.1",
         "z-ai/glm-5.2",
+        "z-ai/glm-5.2:batch",
         "z-ai/glm-5.3",
         "z-ai/glm-5.3-flash",
         "z-ai/glm-5.3-flash:batch",
@@ -1007,215 +989,7 @@
         "particle-ai/particle-1:free",
         "recursive/flint-v1.0:free",
         "thinkingmachines/inkling-2-small:free"
-      ],
-      "models": [
-        {
-          "canonical": "nemotron-3-ultra-550b",
-          "upstream": "nvidia/nemotron-3-ultra-550b-a55b:free",
-          "listed_by_provider": true,
-          "results": [
-            {
-              "case": "basic",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 1630
-            },
-            {
-              "case": "stream",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 784,
-              "first_output_ms": 747
-            },
-            {
-              "case": "tools",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 950
-            },
-            {
-              "case": "json",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 1444
-            }
-          ]
-        },
-        {
-          "canonical": "nemotron-3-super-120b",
-          "upstream": "nvidia/nemotron-3-super-120b-a12b:free",
-          "listed_by_provider": false,
-          "note": "not in the provider's model list; ran basic only to confirm the id",
-          "results": [
-            {
-              "case": "basic",
-              "status": "fail",
-              "detail": "HTTP 404: This model is unavailable for free. The paid version is available now - use this slug instead: nvidi...",
-              "http": 404,
-              "latency_ms": 21
-            }
-          ]
-        },
-        {
-          "canonical": "nemotron-3.5-lightning",
-          "upstream": "nvidia/nemotron-3.5-lightning:free",
-          "listed_by_provider": true,
-          "results": [
-            {
-              "case": "basic",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 3083
-            },
-            {
-              "case": "stream",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 1004,
-              "first_output_ms": 990
-            },
-            {
-              "case": "tools",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 446
-            },
-            {
-              "case": "json",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 1571
-            }
-          ]
-        },
-        {
-          "canonical": "gemma-4-31b",
-          "upstream": "google/gemma-4-31b-it:free",
-          "listed_by_provider": true,
-          "results": [
-            {
-              "case": "basic",
-              "status": "skip",
-              "detail": "rate limited",
-              "http": 429,
-              "latency_ms": 119
-            },
-            {
-              "case": "stream",
-              "status": "skip",
-              "detail": "rate limited earlier in this run"
-            },
-            {
-              "case": "tools",
-              "status": "skip",
-              "detail": "rate limited earlier in this run"
-            },
-            {
-              "case": "json",
-              "status": "skip",
-              "detail": "rate limited earlier in this run"
-            }
-          ]
-        },
-        {
-          "canonical": "gemma-4-26b-a4b",
-          "upstream": "google/gemma-4-26b-a4b-it:free",
-          "listed_by_provider": true,
-          "results": [
-            {
-              "case": "basic",
-              "status": "skip",
-              "detail": "rate limited",
-              "http": 429,
-              "latency_ms": 111
-            },
-            {
-              "case": "stream",
-              "status": "skip",
-              "detail": "rate limited earlier in this run"
-            },
-            {
-              "case": "tools",
-              "status": "skip",
-              "detail": "rate limited earlier in this run"
-            },
-            {
-              "case": "json",
-              "status": "skip",
-              "detail": "rate limited earlier in this run"
-            }
-          ]
-        },
-        {
-          "canonical": "laguna-xs-2.1",
-          "upstream": "poolside/laguna-xs-2.1:free",
-          "listed_by_provider": false,
-          "note": "not in the provider's model list; ran basic only to confirm the id",
-          "results": [
-            {
-              "case": "basic",
-              "status": "fail",
-              "detail": "HTTP 404: poolside/laguna-xs-2.1:free is no longer available on OpenRouter: no provider serves this model anym...",
-              "http": 404,
-              "latency_ms": 26
-            }
-          ]
-        },
-        {
-          "canonical": "laguna-s-2.1",
-          "upstream": "poolside/laguna-s-2.1:free",
-          "listed_by_provider": false,
-          "note": "not in the provider's model list; ran basic only to confirm the id",
-          "results": [
-            {
-              "case": "basic",
-              "status": "fail",
-              "detail": "HTTP 404: poolside/laguna-s-2.1:free is no longer available on OpenRouter: no provider serves this model anymo...",
-              "http": 404,
-              "latency_ms": 46
-            }
-          ]
-        },
-        {
-          "canonical": "north-mini-code",
-          "upstream": "cohere/north-mini-code:free",
-          "listed_by_provider": true,
-          "results": [
-            {
-              "case": "basic",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 387
-            },
-            {
-              "case": "stream",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 634,
-              "first_output_ms": 624
-            },
-            {
-              "case": "tools",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 718
-            },
-            {
-              "case": "json",
-              "status": "pass",
-              "http": 200,
-              "latency_ms": 767
-            }
-          ]
-        }
-      ],
-      "bad_model": {
-        "case": "bad_model",
-        "status": "pass",
-        "detail": "HTTP 400: mangoman-conformance-no-such-model is not a valid model ID",
-        "http": 400,
-        "latency_ms": 29
-      }
+      ]
     }
   ]
 }
