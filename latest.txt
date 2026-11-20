@@ -22,8 +22,8 @@ Done in 39s, 37 requests.
 PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
 cerebras    no_key  0              0                         0
 groq        ok      11             0                         0
-nvidia      ok      32             3                         0
-openrouter  ok      445            3                         9
+nvidia      ok      33             3                         0
+openrouter  ok      442            4                         8
 
 PROVIDER  MODEL                   PASS  WARN  FAIL  SKIP  VERDICT
 groq      gpt-oss-120b            4     0     0     0     ready
@@ -68,7 +68,8 @@ Notes:
   CATALOGUE openrouter: "nvidia/nemotron-3-super-120b-a12b:free" is not in the provider's model list
   CATALOGUE openrouter: "poolside/laguna-xs-2.1:free" is not in the provider's model list
   CATALOGUE openrouter: "poolside/laguna-s-2.1:free" is not in the provider's model list
-  RADAR openrouter: 9 free models not in the catalogue, e.g. baidu/ernie-5.5-flash-preview:free, dots-studio/dots-3-note-preview:free, inclusionai/ling-3.2-flash:free
+  CATALOGUE openrouter: "cohere/north-mini-code:free" is not in the provider's model list
+  RADAR openrouter: 8 free models not in the catalogue, e.g. baidu/ernie-5.5-flash-preview:free, dots-studio/dots-3-note-preview:free, inclusionai/ling-3.2-flash:free
 
 Full report: doctor-report.json
 It holds no keys and no model answers, so it is safe to share.
