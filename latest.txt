@@ -12,18 +12,18 @@ nvidia      glm-5.3-flash              basic:F stream:F tools:F json:F
 nvidia      nemotron-3-ultra-550b      basic:F stream:F tools:F json:F
 nvidia      nemotron-3-super-120b      basic:F  (not in the provider's model list; ran basic only to confirm the id)
 groq        gpt-oss-20b                basic:P stream:P tools:P json:P
-groq        qwen3.8-27b                basic:P stream:P tools:P json:P
 nvidia      nemotron-3.5-lightning     basic:F stream:F tools:F json:F
+groq        qwen3.8-27b                basic:P stream:P tools:P json:P
 nvidia      gemma-4-31b                basic:F stream:F tools:F json:F
 nvidia      laguna-xs-2.1              basic:F stream:F tools:F json:F
 
-Done in 39s, 37 requests.
+Done in 40s, 37 requests.
 
 PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
 cerebras    no_key  0              0                         0
 groq        ok      11             0                         0
 nvidia      ok      33             3                         0
-openrouter  ok      442            4                         8
+openrouter  ok      441            4                         7
 
 PROVIDER  MODEL                   PASS  WARN  FAIL  SKIP  VERDICT
 groq      gpt-oss-120b            4     0     0     0     ready
@@ -69,7 +69,7 @@ Notes:
   CATALOGUE openrouter: "poolside/laguna-xs-2.1:free" is not in the provider's model list
   CATALOGUE openrouter: "poolside/laguna-s-2.1:free" is not in the provider's model list
   CATALOGUE openrouter: "cohere/north-mini-code:free" is not in the provider's model list
-  RADAR openrouter: 8 free models not in the catalogue, e.g. baidu/ernie-5.5-flash-preview:free, dots-studio/dots-3-note-preview:free, inclusionai/ling-3.2-flash:free
+  RADAR openrouter: 7 free models not in the catalogue, e.g. baidu/ernie-5.5-flash-preview:free, inclusionai/ling-3.2-flash:free, liquid/lfm-3-1.7b:free
 
 Full report: doctor-report.json
 It holds no keys and no model answers, so it is safe to share.
