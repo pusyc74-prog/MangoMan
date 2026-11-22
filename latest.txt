@@ -12,12 +12,12 @@ nvidia      glm-5.3-flash              basic:F stream:F tools:F json:F
 nvidia      nemotron-3-ultra-550b      basic:F stream:F tools:F json:F
 nvidia      nemotron-3-super-120b      basic:F  (not in the provider's model list; ran basic only to confirm the id)
 groq        gpt-oss-20b                basic:P stream:P tools:P json:P
-nvidia      nemotron-3.5-lightning     basic:F stream:F tools:F json:F
 groq        qwen3.8-27b                basic:P stream:P tools:P json:P
+nvidia      nemotron-3.5-lightning     basic:F stream:F tools:F json:F
 nvidia      gemma-4-31b                basic:F stream:F tools:F json:F
 nvidia      laguna-xs-2.1              basic:F stream:F tools:F json:F
 
-Done in 40s, 37 requests.
+Done in 39s, 37 requests.
 
 PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
 cerebras    no_key  0              0                         0
