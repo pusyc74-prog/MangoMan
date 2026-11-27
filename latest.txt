@@ -17,13 +17,13 @@ nvidia      nemotron-3.5-lightning     basic:F stream:F tools:F json:F
 nvidia      gemma-4-31b                basic:F  (not in the provider's model list; ran basic only to confirm the id)
 nvidia      laguna-xs-2.1              basic:F stream:F tools:F json:F
 
-Done in 33s, 34 requests.
+Done in 34s, 34 requests.
 
 PROVIDER    STATUS  MODELS LISTED  CATALOGUE MODELS MISSING  NEW FREE MODELS
 cerebras    no_key  0              0                         0
 groq        ok      11             0                         0
 nvidia      ok      30             4                         0
-openrouter  ok      438            4                         7
+openrouter  ok      441            4                         7
 
 PROVIDER  MODEL                   PASS  WARN  FAIL  SKIP  VERDICT
 groq      gpt-oss-120b            4     0     0     0     ready

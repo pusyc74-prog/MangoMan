@@ -1,8 +1,8 @@
 {
   "mangoman_version": "0.1.0-dev",
   "catalogue": "seed-2026-10-20.1",
-  "started": "2026-11-26T11:10:30.610283665Z",
-  "duration": "33s",
+  "started": "2026-11-27T11:02:53.747483759Z",
+  "duration": "34s",
   "requests": 34,
   "providers": [
     {
@@ -39,57 +39,57 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 238,
+              "latency_ms": 450,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "7762",
+                "x-ratelimit-remaining-tokens": "7639",
                 "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "1.785s"
+                "x-ratelimit-reset-tokens": "2.707s"
               }
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 236,
-              "first_output_ms": 217,
+              "latency_ms": 285,
+              "first_output_ms": 263,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "998",
-                "x-ratelimit-remaining-tokens": "7772",
+                "x-ratelimit-remaining-tokens": "7836",
                 "x-ratelimit-reset-requests": "2m52.8s",
-                "x-ratelimit-reset-tokens": "1.71s"
+                "x-ratelimit-reset-tokens": "1.23s"
               }
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 219,
+              "latency_ms": 166,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "997",
-                "x-ratelimit-remaining-tokens": "7716",
+                "x-ratelimit-remaining-tokens": "7535",
                 "x-ratelimit-reset-requests": "4m19.2s",
-                "x-ratelimit-reset-tokens": "2.13s"
+                "x-ratelimit-reset-tokens": "3.487s"
               }
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 365,
+              "latency_ms": 300,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "996",
-                "x-ratelimit-remaining-tokens": "7827",
+                "x-ratelimit-remaining-tokens": "7821",
                 "x-ratelimit-reset-requests": "5m45.6s",
-                "x-ratelimit-reset-tokens": "1.297s"
+                "x-ratelimit-reset-tokens": "1.342s"
               }
             }
           ]
@@ -103,57 +103,57 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 153,
+              "latency_ms": 355,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "7538",
+                "x-ratelimit-remaining-tokens": "7791",
                 "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "3.465s"
+                "x-ratelimit-reset-tokens": "1.567s"
               }
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 279,
-              "first_output_ms": 277,
+              "latency_ms": 208,
+              "first_output_ms": 198,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "998",
-                "x-ratelimit-remaining-tokens": "7584",
+                "x-ratelimit-remaining-tokens": "7682",
                 "x-ratelimit-reset-requests": "2m52.8s",
-                "x-ratelimit-reset-tokens": "3.119s"
+                "x-ratelimit-reset-tokens": "2.385s"
               }
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 174,
+              "latency_ms": 265,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "997",
-                "x-ratelimit-remaining-tokens": "7817",
+                "x-ratelimit-remaining-tokens": "7629",
                 "x-ratelimit-reset-requests": "4m19.2s",
-                "x-ratelimit-reset-tokens": "1.372s"
+                "x-ratelimit-reset-tokens": "2.782s"
               }
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 419,
+              "latency_ms": 202,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "996",
-                "x-ratelimit-remaining-tokens": "7820",
+                "x-ratelimit-remaining-tokens": "7654",
                 "x-ratelimit-reset-requests": "5m45.6s",
-                "x-ratelimit-reset-tokens": "1.349s"
+                "x-ratelimit-reset-tokens": "2.594s"
               }
             }
           ]
@@ -167,57 +167,57 @@
               "case": "basic",
               "status": "pass",
               "http": 200,
-              "latency_ms": 138,
+              "latency_ms": 52,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "999",
-                "x-ratelimit-remaining-tokens": "7681",
+                "x-ratelimit-remaining-tokens": "7726",
                 "x-ratelimit-reset-requests": "1m26.4s",
-                "x-ratelimit-reset-tokens": "2.392s"
+                "x-ratelimit-reset-tokens": "2.055s"
               }
             },
             {
               "case": "stream",
               "status": "pass",
               "http": 200,
-              "latency_ms": 188,
-              "first_output_ms": 122,
+              "latency_ms": 67,
+              "first_output_ms": 49,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "998",
-                "x-ratelimit-remaining-tokens": "7815",
+                "x-ratelimit-remaining-tokens": "7974",
                 "x-ratelimit-reset-requests": "2m52.8s",
-                "x-ratelimit-reset-tokens": "1.387s"
+                "x-ratelimit-reset-tokens": "194ms"
               }
             },
             {
               "case": "tools",
               "status": "pass",
               "http": 200,
-              "latency_ms": 276,
+              "latency_ms": 332,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "997",
-                "x-ratelimit-remaining-tokens": "7401",
+                "x-ratelimit-remaining-tokens": "7450",
                 "x-ratelimit-reset-requests": "4m19.2s",
-                "x-ratelimit-reset-tokens": "4.492s"
+                "x-ratelimit-reset-tokens": "4.125s"
               }
             },
             {
               "case": "json",
               "status": "pass",
               "http": 200,
-              "latency_ms": 199,
+              "latency_ms": 95,
               "rate_headers": {
                 "x-ratelimit-limit-requests": "1000",
                 "x-ratelimit-limit-tokens": "8000",
                 "x-ratelimit-remaining-requests": "996",
-                "x-ratelimit-remaining-tokens": "7736",
+                "x-ratelimit-remaining-tokens": "7568",
                 "x-ratelimit-reset-requests": "5m45.6s",
-                "x-ratelimit-reset-tokens": "5.64s"
+                "x-ratelimit-reset-tokens": "16.08s"
               }
             }
           ]
@@ -228,15 +228,15 @@
         "status": "pass",
         "detail": "HTTP 404: The model `mangoman-conformance-no-such-model` does not exis...",
         "http": 404,
-        "latency_ms": 35
+        "latency_ms": 24
       },
       "rate_headers_seen": {
         "x-ratelimit-limit-requests": "1000",
         "x-ratelimit-limit-tokens": "8000",
         "x-ratelimit-remaining-requests": "996",
-        "x-ratelimit-remaining-tokens": "7736",
+        "x-ratelimit-remaining-tokens": "7568",
         "x-ratelimit-reset-requests": "5m45.6s",
-        "x-ratelimit-reset-tokens": "5.64s"
+        "x-ratelimit-reset-tokens": "16.08s"
       }
     },
     {
@@ -294,7 +294,7 @@
               "status": "fail",
               "detail": "HTTP 410: ",
               "http": 410,
-              "latency_ms": 4
+              "latency_ms": 12
             }
           ]
         },
@@ -309,7 +309,7 @@
               "status": "fail",
               "detail": "HTTP 410: ",
               "http": 410,
-              "latency_ms": 4
+              "latency_ms": 12
             }
           ]
         },
@@ -323,28 +323,28 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 28
+              "latency_ms": 31
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 26
+              "latency_ms": 34
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 25
+              "latency_ms": 29
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 22
+              "latency_ms": 29
             }
           ]
         },
@@ -358,28 +358,28 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 25
+              "latency_ms": 29
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 25
+              "latency_ms": 30
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 22
+              "latency_ms": 28
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 26
+              "latency_ms": 27
             }
           ]
         },
@@ -394,7 +394,7 @@
               "status": "fail",
               "detail": "HTTP 410: ",
               "http": 410,
-              "latency_ms": 5
+              "latency_ms": 13
             }
           ]
         },
@@ -408,21 +408,21 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 23
+              "latency_ms": 32
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 27
+              "latency_ms": 30
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 22
+              "latency_ms": 40
             },
             {
               "case": "json",
@@ -444,7 +444,7 @@
               "status": "fail",
               "detail": "HTTP 410: ",
               "http": 410,
-              "latency_ms": 5
+              "latency_ms": 12
             }
           ]
         },
@@ -458,28 +458,28 @@
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 22
+              "latency_ms": 30
             },
             {
               "case": "stream",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 23
+              "latency_ms": 29
             },
             {
               "case": "tools",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 20
+              "latency_ms": 41
             },
             {
               "case": "json",
               "status": "fail",
               "detail": "HTTP 403: ",
               "http": 403,
-              "latency_ms": 24
+              "latency_ms": 33
             }
           ]
         }
@@ -489,14 +489,14 @@
         "status": "pass",
         "detail": "HTTP 404: 404 page not found",
         "http": 404,
-        "latency_ms": 4
+        "latency_ms": 12
       }
     },
     {
       "id": "openrouter",
       "name": "OpenRouter (free models)",
       "status": "ok",
-      "listed_models": 438,
+      "listed_models": 441,
       "listed_model_ids": [
         "aion-labs/aion-2.0",
         "aion-labs/aion-3.0",
@@ -619,6 +619,7 @@
         "inclusionai/ling-3.0-tiny",
         "inclusionai/ling-3.1-flash",
         "inclusionai/ling-3.2-flash:free",
+        "inclusionai/lingsante-3.1-air-vl",
         "inference-net/schematron-v2-small",
         "inference-net/schematron-v2-turbo",
         "kt/midm-k-3.0-pro",
@@ -673,6 +674,8 @@
         "mistralai/voxtral-small-24b-2507",
         "moondream/moondream3-preview",
         "moondream/moondream3.1-9b-a2b",
+        "moonshotai/kimi-k2",
+        "moonshotai/kimi-k2-0905",
         "moonshotai/kimi-k2.5",
         "moonshotai/kimi-k2.6",
         "moonshotai/kimi-k2.7-code",
